@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
 
 <title>Homepage Builder</title>
 
-<link rel="stylesheet" href="homepage-builder.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="stylesheet"
+href="homepage-builder.css">
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
@@ -21,6 +29,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
 <body>
 
 <div class="builder">
+
+<!-- HEADER -->
 
 <header class="builder-header">
 
@@ -36,7 +46,7 @@ Homepage Builder
 
 <p>
 
-Drag sections to rearrange homepage
+Create your homepage using drag & drop sections
 
 </p>
 
@@ -44,7 +54,7 @@ Drag sections to rearrange homepage
 
 <div class="header-right">
 
-<button class="btn btn-secondary">
+<button class="btn secondary">
 
 <i class="fa-solid fa-rotate"></i>
 
@@ -52,7 +62,7 @@ Reset
 
 </button>
 
-<button class="btn btn-success">
+<button class="btn success">
 
 <i class="fa-solid fa-floppy-disk"></i>
 
@@ -60,7 +70,7 @@ Save
 
 </button>
 
-<button class="btn btn-primary">
+<button class="btn primary">
 
 <i class="fa-solid fa-upload"></i>
 
@@ -72,830 +82,107 @@ Publish
 
 </header>
 
-<div class="builder-body">
+<!-- CONTENT -->
 
-<!-- LEFT -->
+<div class="builder-content">
 
-<div class="left-panel">
+<!-- LEFT SIDEBAR -->
 
-<div class="panel-title">
+<aside class="sidebar">
+
+<div class="sidebar-top">
+
+<div class="sidebar-title">
 
 Homepage Sections
 
 </div>
 
-<div id="sectionList">
-
-<!-- HERO -->
-
-<div class="section-card" data-type="hero">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Hero Banner
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- OFFER -->
-
-<div class="section-card" data-type="offer">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Offer Banner
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- PRODUCT -->
-
-<div class="section-card">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Product Carousel
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- IMAGE -->
-
-<div class="section-card">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Image Carousel
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- CATEGORY -->
-
-<div class="section-card">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Category Carousel
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- YOUTUBE -->
-
-<div class="section-card">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Youtube Shorts
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- REVIEW -->
-
-<div class="section-card">
-
-<div class="section-header">
-
-<div class="section-name">
-
-<i class="fa-solid fa-grip drag"></i>
-
-Review Carousel
-
-</div>
-
-<div class="section-actions">
-
-<button>
-
-<i class="fa-solid fa-eye"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-copy"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<button>
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<button id="addSectionBtn" class="add-section">
+<button
+id="addSectionButton"
+class="add-section">
 
 <i class="fa-solid fa-plus"></i>
 
-Add New Section
+Add Section
 
 </button>
 
 </div>
 
-<!-- RIGHT SETTINGS PANEL -->
+<div
+id="sectionList"
+class="section-list">
 
-<div class="right-panel">
-
-<div class="settings-header">
-
-<h3>
-
-Section Settings
-
-</h3>
+<!-- Sections Added Dynamically -->
 
 </div>
 
-<div class="settings-body">
+</aside>
 
-<div class="form-group">
+<!-- SETTINGS -->
 
-<label>
+<main class="settings">
 
-Heading
+<div class="settings-empty">
 
-</label>
+<div class="empty-icon">
 
-<input
-type="text"
-placeholder="Enter Heading">
+<i class="fa-solid fa-sliders"></i>
 
 </div>
-
-<div class="form-group">
-
-<label>
-
-Sub Heading
-
-</label>
-
-<input
-type="text"
-placeholder="Enter Sub Heading">
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Heading Type
-
-</label>
-
-<select>
-
-<option>Text</option>
-
-<option>Logo</option>
-
-<option>Logo + Text</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Background Color
-
-</label>
-
-<input type="color">
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Padding
-
-</label>
-
-<input
-type="number"
-value="20">
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Border Radius
-
-</label>
-
-<input
-type="number"
-value="18">
-
-</div>
-<div class="form-group">
-
-<label>
-
-Section Width
-
-</label>
-
-<select>
-
-<option>100%</option>
-
-<option>95%</option>
-
-<option>90%</option>
-
-<option>80%</option>
-
-<option>Boxed</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Section Height</label>
-
-<input type="number" value="320">
-
-</div>
-
-<div class="form-group">
-
-<label>
-
-Gap Between Cards</label>
-
-<input type="number" value="15">
-
-</div>
-
-<hr>
-
-<h3>Banner Settings</h3>
-
-<div class="form-group">
-
-<label>Desktop Banner</label>
-
-<input type="file">
-
-</div>
-
-<div class="form-group">
-
-<label>Mobile Banner</label>
-
-<input type="file">
-
-</div>
-
-<div class="form-group">
-
-<label>Banner Link</label>
-
-<input type="text" placeholder="https://">
-
-</div>
-
-<div class="form-group">
-
-<label>Button Text</label>
-
-<input type="text">
-
-</div>
-
-<div class="form-group">
-
-<label>Button Link</label>
-
-<input type="text">
-
-</div>
-
-<hr>
-
-<h3>Product Carousel</h3>
-
-<div class="form-group">
-
-<label>Heading Logo</label>
-
-<input type="file">
-
-</div>
-
-<div class="form-group">
-
-<label>Product Source</label>
-
-<select>
-
-<option>Category</option>
-
-<option>Sub Category</option>
-
-<option>Featured</option>
-
-<option>Best Seller</option>
-
-<option>Newest</option>
-
-<option>Trending</option>
-
-<option>Manual Selection</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Category</label>
-
-<select id="categorySelect">
-
-<option>Select Category</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Sub Category</label>
-
-<select id="subCategorySelect">
-
-<option>Select Sub Category</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Products Count</label>
-
-<input type="number" value="10">
-
-</div>
-
-<div class="form-group">
-
-<label>Visible Cards</label>
-
-<input type="number" value="4">
-
-</div>
-
-<div class="form-group">
-
-<label>Card Height</label>
-
-<input type="number" value="360">
-
-</div>
-
-<div class="form-group">
-
-<label>Image Height</label>
-
-<input type="number" value="240">
-
-</div>
-
-<div class="checkbox-group">
-
-<label>
-
-<input type="checkbox" checked>
-
-Show Price
-
-</label>
-
-<label>
-
-<input type="checkbox" checked>
-
-Show Rating
-
-</label>
-
-<label>
-
-<input type="checkbox" checked>
-
-Show Wishlist
-
-</label>
-
-<label>
-
-<input type="checkbox" checked>
-
-Show Cart
-
-</label>
-
-</div>
-
-<hr>
-
-<h3>Image Carousel</h3>
-
-<button class="btn btn-primary">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Image
-
-</button>
-
-<div id="imageList">
-
-</div>
-
-<hr>
-
-<h3>Category Carousel</h3>
-
-<button class="btn btn-primary">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Category
-
-</button>
-
-<div id="categoryList">
-
-</div>
-
-<hr>
-
-<h3>YouTube Shorts</h3>
-
-<button class="btn btn-primary">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Video
-
-</button>
-
-<div id="youtubeList">
-
-</div>
-
-<hr>
-
-<h3>Reviews</h3>
-
-<button class="btn btn-primary">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Review
-
-</button>
-
-<div id="reviewList">
-
-</div>
-
-<hr>
-
-<h3>Advanced Settings</h3>
-
-<div class="form-group">
-
-<label>Background Image</label>
-
-<input type="file">
-
-</div>
-
-<div class="form-group">
-
-<label>Animation</label>
-
-<select>
-
-<option>None</option>
-
-<option>Fade</option>
-
-<option>Zoom</option>
-
-<option>Slide Left</option>
-
-<option>Slide Right</option>
-
-<option>Bounce</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>CSS Class</label>
-
-<input type="text">
-
-</div>
-
-<div class="form-group">
-
-<label>Status</label>
-
-<select>
-
-<option>Visible</option>
-
-<option>Hidden</option>
-
-</select>
-
-</div>
-
-</div>
-
-<div class="settings-footer">
-
-<button class="btn btn-secondary">
-
-Cancel
-
-</button>
-
-<button class="btn btn-success">
-
-Save Section
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ADD SECTION MODAL -->
-
-<div id="sectionModal" class="modal">
-
-<div class="modal-content">
-
-<div class="modal-header">
 
 <h2>
 
-Add New Section
+No Section Selected
 
 </h2>
 
-<button class="closeModal">
+<p>
+
+Select a section from the left side
+to edit its settings.
+
+</p>
+
+<button
+id="chooseSection"
+class="btn primary">
+
+Choose Section
+
+</button>
+
+</div>
+
+<div
+id="settingsPanel"
+class="settings-panel">
+
+<!-- Dynamic Editor -->
+
+</div>
+
+</main>
+
+</div>
+
+<!-- ADD SECTION DRAWER -->
+
+<div
+id="sectionDrawer"
+class="drawer">
+
+<div class="drawer-header">
+
+<h2>
+
+Add Section
+
+</h2>
+
+<button
+id="closeDrawer">
 
 <i class="fa-solid fa-xmark"></i>
 
@@ -903,93 +190,247 @@ Add New Section
 
 </div>
 
-<div class="section-grid">
+<div class="drawer-search">
 
-<div class="section-item" data-type="hero">
-
-<i class="fa-solid fa-image"></i>
-
-<span>Hero Banner</span>
-
-</div>
-
-<div class="section-item" data-type="offer">
-
-<i class="fa-solid fa-tag"></i>
-
-<span>Offer Banner</span>
+<input
+type="text"
+id="searchSection"
+placeholder="Search Section...">
 
 </div>
 
-<div class="section-item" data-type="products">
+<div
+id="drawerList"
+class="drawer-list">
+    <!-- Banner -->
 
-<i class="fa-solid fa-cart-shopping"></i>
+    <div class="drawer-item" data-type="heroBanner">
+        <i class="fa-solid fa-image"></i>
+        <div>
+            <h4>Hero Banner</h4>
+            <p>Main homepage banner</p>
+        </div>
+    </div>
 
-<span>Product Carousel</span>
+    <div class="drawer-item" data-type="offerBanner">
+        <i class="fa-solid fa-tags"></i>
+        <div>
+            <h4>Offer Banner</h4>
+            <p>Offer flyer or promotion</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="imageCarousel">
+        <i class="fa-solid fa-images"></i>
+        <div>
+            <h4>Image Carousel</h4>
+            <p>Linked image slider</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="productCarousel">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <div>
+            <h4>Product Carousel</h4>
+            <p>Products from category</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="categoryCarousel">
+        <i class="fa-solid fa-table-cells-large"></i>
+        <div>
+            <h4>Category Carousel</h4>
+            <p>Category image slider</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="youtubeShorts">
+        <i class="fa-brands fa-youtube"></i>
+        <div>
+            <h4>YouTube Shorts</h4>
+            <p>Video carousel</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="reviews">
+        <i class="fa-solid fa-star"></i>
+        <div>
+            <h4>Reviews</h4>
+            <p>Customer reviews slider</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="features">
+        <i class="fa-solid fa-truck-fast"></i>
+        <div>
+            <h4>Feature Icons</h4>
+            <p>Delivery, Secure Payment etc.</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="divider">
+        <i class="fa-solid fa-minus"></i>
+        <div>
+            <h4>Divider</h4>
+            <p>Section separator</p>
+        </div>
+    </div>
+
+    <div class="drawer-item" data-type="spacer">
+        <i class="fa-solid fa-arrows-up-down"></i>
+        <div>
+            <h4>Spacer</h4>
+            <p>Add vertical spacing</p>
+        </div>
+    </div>
 
 </div>
 
-<div class="section-item" data-type="images">
+</div>
 
-<i class="fa-solid fa-images"></i>
+<!-- Toast -->
 
-<span>Image Carousel</span>
+<div id="toast" class="toast">
+
+<i class="fa-solid fa-circle-check"></i>
+
+<span id="toastMessage">
+
+Saved Successfully
+
+</span>
 
 </div>
 
-<div class="section-item" data-type="category">
+<!-- Loader -->
 
-<i class="fa-solid fa-table-cells"></i>
+<div id="loader" class="loader hidden">
 
-<span>Category Carousel</span>
+<div class="loader-box">
 
-</div>
+<div class="spinner"></div>
 
-<div class="section-item" data-type="youtube">
+<h3>
 
-<i class="fa-brands fa-youtube"></i>
+Loading Builder...
 
-<span>YouTube Shorts</span>
+</h3>
 
-</div>
+<p>
 
-<div class="section-item" data-type="review">
+Please wait
 
-<i class="fa-solid fa-star"></i>
-
-<span>Review Carousel</span>
-
-</div>
-
-<div class="section-item" data-type="features">
-
-<i class="fa-solid fa-truck-fast"></i>
-
-<span>Feature Icons</span>
-
-</div>
-
-<div class="section-item" data-type="divider">
-
-<i class="fa-solid fa-minus"></i>
-
-<span>Divider</span>
-
-</div>
-
-<div class="section-item" data-type="spacer">
-
-<i class="fa-solid fa-arrows-up-down"></i>
-
-<span>Spacer</span>
+</p>
 
 </div>
 
 </div>
 
+<!-- Delete Confirmation -->
+
+<div id="deleteModal" class="modal hidden">
+
+<div class="modal-box">
+
+<h3>
+
+Delete Section?
+
+</h3>
+
+<p>
+
+This action cannot be undone.
+
+</p>
+
+<div class="modal-buttons">
+
+<button
+class="btn secondary"
+id="cancelDelete">
+
+Cancel
+
+</button>
+
+<button
+class="btn danger"
+id="confirmDelete">
+
+Delete
+
+</button>
+
 </div>
 
 </div>
+
+</div>
+
+<!-- Empty Template -->
+
+<template id="sectionCardTemplate">
+
+<div class="section-card">
+
+<div class="section-card-header">
+
+<div class="left">
+
+<i class="fa-solid fa-grip drag-handle"></i>
+
+<div>
+
+<h4 class="section-title">
+
+Banner
+
+</h4>
+
+<p class="section-subtitle">
+
+Visible
+
+</p>
+
+</div>
+
+</div>
+
+<div class="right">
+
+<button class="icon-btn visibilityBtn">
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button class="icon-btn duplicateBtn">
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button class="icon-btn editBtn">
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button class="icon-btn deleteBtn">
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</template>
 
 <script src="homepage-builder.js"></script>
 
