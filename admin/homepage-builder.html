@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Homepage Builder</title>
+
+<link rel="stylesheet" href="homepage-builder.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="builder">
+
+<header class="builder-header">
+
+<div class="header-left">
+
+<h2>
+
+<i class="fa-solid fa-layer-group"></i>
+
+Homepage Builder
+
+</h2>
+
+<p>
+
+Drag sections to rearrange homepage
+
+</p>
+
+</div>
+
+<div class="header-right">
+
+<button class="btn btn-secondary">
+
+<i class="fa-solid fa-rotate"></i>
+
+Reset
+
+</button>
+
+<button class="btn btn-success">
+
+<i class="fa-solid fa-floppy-disk"></i>
+
+Save
+
+</button>
+
+<button class="btn btn-primary">
+
+<i class="fa-solid fa-upload"></i>
+
+Publish
+
+</button>
+
+</div>
+
+</header>
+
+<div class="builder-body">
+
+<!-- LEFT -->
+
+<div class="left-panel">
+
+<div class="panel-title">
+
+Homepage Sections
+
+</div>
+
+<div id="sectionList">
+
+<!-- HERO -->
+
+<div class="section-card" data-type="hero">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Hero Banner
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- OFFER -->
+
+<div class="section-card" data-type="offer">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Offer Banner
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCT -->
+
+<div class="section-card">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Product Carousel
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- IMAGE -->
+
+<div class="section-card">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Image Carousel
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- CATEGORY -->
+
+<div class="section-card">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Category Carousel
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- YOUTUBE -->
+
+<div class="section-card">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Youtube Shorts
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- REVIEW -->
+
+<div class="section-card">
+
+<div class="section-header">
+
+<div class="section-name">
+
+<i class="fa-solid fa-grip drag"></i>
+
+Review Carousel
+
+</div>
+
+<div class="section-actions">
+
+<button>
+
+<i class="fa-solid fa-eye"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-copy"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<button>
+
+<i class="fa-solid fa-trash"></i>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<button id="addSectionBtn" class="add-section">
+
+<i class="fa-solid fa-plus"></i>
+
+Add New Section
+
+</button>
+
+</div>
+
+<!-- RIGHT SETTINGS PANEL -->
+
+<div class="right-panel">
+
+<div class="settings-header">
+
+<h3>
+
+Section Settings
+
+</h3>
+
+</div>
+
+<div class="settings-body">
+
+<div class="form-group">
+
+<label>
+
+Heading
+
+</label>
+
+<input
+type="text"
+placeholder="Enter Heading">
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Sub Heading
+
+</label>
+
+<input
+type="text"
+placeholder="Enter Sub Heading">
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Heading Type
+
+</label>
+
+<select>
+
+<option>Text</option>
+
+<option>Logo</option>
+
+<option>Logo + Text</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Background Color
+
+</label>
+
+<input type="color">
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Padding
+
+</label>
+
+<input
+type="number"
+value="20">
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Border Radius
+
+</label>
+
+<input
+type="number"
+value="18">
+
+</div>
