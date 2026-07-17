@@ -24,7 +24,7 @@ let subCategories = [];
 
 let activeCategory = "all";
 let activeSubCategory = "all";
-let activeTag = "bestseller";
+let activeTag = "all";
 let searchQuery = "";
 
 /* ================= URL SYSTEM ================= */
