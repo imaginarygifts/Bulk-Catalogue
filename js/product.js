@@ -225,7 +225,7 @@ let html = `
 
   // SIZES
   if (product.variants?.sizes?.length) {
-    html += `<h4>Sizes</h4><div class="variant-row">`;
+    html += `<h4>Quantity</h4><div class="variant-row">`;
     product.variants.sizes.forEach((s, i) => {
       html += `<button class="btn-outline size-btn" onclick="selectSize(${i})">${s.name}</button>`;
     });
