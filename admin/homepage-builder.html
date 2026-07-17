@@ -523,3 +523,476 @@ type="number"
 value="18">
 
 </div>
+<div class="form-group">
+
+<label>
+
+Section Width
+
+</label>
+
+<select>
+
+<option>100%</option>
+
+<option>95%</option>
+
+<option>90%</option>
+
+<option>80%</option>
+
+<option>Boxed</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Section Height</label>
+
+<input type="number" value="320">
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Gap Between Cards</label>
+
+<input type="number" value="15">
+
+</div>
+
+<hr>
+
+<h3>Banner Settings</h3>
+
+<div class="form-group">
+
+<label>Desktop Banner</label>
+
+<input type="file">
+
+</div>
+
+<div class="form-group">
+
+<label>Mobile Banner</label>
+
+<input type="file">
+
+</div>
+
+<div class="form-group">
+
+<label>Banner Link</label>
+
+<input type="text" placeholder="https://">
+
+</div>
+
+<div class="form-group">
+
+<label>Button Text</label>
+
+<input type="text">
+
+</div>
+
+<div class="form-group">
+
+<label>Button Link</label>
+
+<input type="text">
+
+</div>
+
+<hr>
+
+<h3>Product Carousel</h3>
+
+<div class="form-group">
+
+<label>Heading Logo</label>
+
+<input type="file">
+
+</div>
+
+<div class="form-group">
+
+<label>Product Source</label>
+
+<select>
+
+<option>Category</option>
+
+<option>Sub Category</option>
+
+<option>Featured</option>
+
+<option>Best Seller</option>
+
+<option>Newest</option>
+
+<option>Trending</option>
+
+<option>Manual Selection</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Category</label>
+
+<select id="categorySelect">
+
+<option>Select Category</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Sub Category</label>
+
+<select id="subCategorySelect">
+
+<option>Select Sub Category</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Products Count</label>
+
+<input type="number" value="10">
+
+</div>
+
+<div class="form-group">
+
+<label>Visible Cards</label>
+
+<input type="number" value="4">
+
+</div>
+
+<div class="form-group">
+
+<label>Card Height</label>
+
+<input type="number" value="360">
+
+</div>
+
+<div class="form-group">
+
+<label>Image Height</label>
+
+<input type="number" value="240">
+
+</div>
+
+<div class="checkbox-group">
+
+<label>
+
+<input type="checkbox" checked>
+
+Show Price
+
+</label>
+
+<label>
+
+<input type="checkbox" checked>
+
+Show Rating
+
+</label>
+
+<label>
+
+<input type="checkbox" checked>
+
+Show Wishlist
+
+</label>
+
+<label>
+
+<input type="checkbox" checked>
+
+Show Cart
+
+</label>
+
+</div>
+
+<hr>
+
+<h3>Image Carousel</h3>
+
+<button class="btn btn-primary">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Image
+
+</button>
+
+<div id="imageList">
+
+</div>
+
+<hr>
+
+<h3>Category Carousel</h3>
+
+<button class="btn btn-primary">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Category
+
+</button>
+
+<div id="categoryList">
+
+</div>
+
+<hr>
+
+<h3>YouTube Shorts</h3>
+
+<button class="btn btn-primary">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Video
+
+</button>
+
+<div id="youtubeList">
+
+</div>
+
+<hr>
+
+<h3>Reviews</h3>
+
+<button class="btn btn-primary">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Review
+
+</button>
+
+<div id="reviewList">
+
+</div>
+
+<hr>
+
+<h3>Advanced Settings</h3>
+
+<div class="form-group">
+
+<label>Background Image</label>
+
+<input type="file">
+
+</div>
+
+<div class="form-group">
+
+<label>Animation</label>
+
+<select>
+
+<option>None</option>
+
+<option>Fade</option>
+
+<option>Zoom</option>
+
+<option>Slide Left</option>
+
+<option>Slide Right</option>
+
+<option>Bounce</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>CSS Class</label>
+
+<input type="text">
+
+</div>
+
+<div class="form-group">
+
+<label>Status</label>
+
+<select>
+
+<option>Visible</option>
+
+<option>Hidden</option>
+
+</select>
+
+</div>
+
+</div>
+
+<div class="settings-footer">
+
+<button class="btn btn-secondary">
+
+Cancel
+
+</button>
+
+<button class="btn btn-success">
+
+Save Section
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ADD SECTION MODAL -->
+
+<div id="sectionModal" class="modal">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h2>
+
+Add New Section
+
+</h2>
+
+<button class="closeModal">
+
+<i class="fa-solid fa-xmark"></i>
+
+</button>
+
+</div>
+
+<div class="section-grid">
+
+<div class="section-item" data-type="hero">
+
+<i class="fa-solid fa-image"></i>
+
+<span>Hero Banner</span>
+
+</div>
+
+<div class="section-item" data-type="offer">
+
+<i class="fa-solid fa-tag"></i>
+
+<span>Offer Banner</span>
+
+</div>
+
+<div class="section-item" data-type="products">
+
+<i class="fa-solid fa-cart-shopping"></i>
+
+<span>Product Carousel</span>
+
+</div>
+
+<div class="section-item" data-type="images">
+
+<i class="fa-solid fa-images"></i>
+
+<span>Image Carousel</span>
+
+</div>
+
+<div class="section-item" data-type="category">
+
+<i class="fa-solid fa-table-cells"></i>
+
+<span>Category Carousel</span>
+
+</div>
+
+<div class="section-item" data-type="youtube">
+
+<i class="fa-brands fa-youtube"></i>
+
+<span>YouTube Shorts</span>
+
+</div>
+
+<div class="section-item" data-type="review">
+
+<i class="fa-solid fa-star"></i>
+
+<span>Review Carousel</span>
+
+</div>
+
+<div class="section-item" data-type="features">
+
+<i class="fa-solid fa-truck-fast"></i>
+
+<span>Feature Icons</span>
+
+</div>
+
+<div class="section-item" data-type="divider">
+
+<i class="fa-solid fa-minus"></i>
+
+<span>Divider</span>
+
+</div>
+
+<div class="section-item" data-type="spacer">
+
+<i class="fa-solid fa-arrows-up-down"></i>
+
+<span>Spacer</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="homepage-builder.js"></script>
+
+</body>
+
+</html>
