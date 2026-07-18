@@ -1,0 +1,483 @@
+/* ===================================================
+   HOMEPAGE
+=================================================== */
+
+:root {
+
+    --bg: #0f0f13;
+    --card: #18181d;
+    --card2: #202028;
+
+    --text: #ffffff;
+    --textLight: #bdbdbd;
+
+    --border: rgba(255,255,255,.08);
+
+    --radius: 18px;
+
+    --gradient:
+        linear-gradient(
+            135deg,
+            #ff8a00,
+            #ff2d55,
+            #8a2be2
+        );
+
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    background:var(--bg);
+
+    color:var(--text);
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+}
+
+
+/* ===================================================
+   MAIN
+=================================================== */
+
+#homepage{
+
+    width:100%;
+
+    min-height:100vh;
+
+    overflow:hidden;
+
+    padding-bottom:30px;
+
+}
+
+
+/* ===================================================
+   COMMON SECTION
+=================================================== */
+
+.home-section{
+
+    width:100%;
+
+    margin:20px 0;
+
+    position:relative;
+
+}
+
+.section-inner{
+
+    width:100%;
+
+    max-width:1500px;
+
+    margin:auto;
+
+    padding:0 16px;
+
+}
+
+
+/* ===================================================
+   SECTION TITLE
+=================================================== */
+
+.section-title{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:14px;
+
+}
+
+.section-title h2{
+
+    font-size:24px;
+
+    font-weight:700;
+
+    color:#fff;
+
+}
+
+.section-title p{
+
+    font-size:14px;
+
+    color:var(--textLight);
+
+    margin-top:4px;
+
+}
+
+
+/* ===================================================
+   BUTTONS
+=================================================== */
+
+.gradient-btn{
+
+    border:none;
+
+    outline:none;
+
+    color:#fff;
+
+    cursor:pointer;
+
+    padding:10px 18px;
+
+    border-radius:50px;
+
+    background:var(--gradient);
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.outline-btn{
+
+    background:none;
+
+    color:#fff;
+
+    border:1px solid var(--border);
+
+    border-radius:50px;
+
+    padding:10px 18px;
+
+}
+
+
+/* ===================================================
+   CARD
+=================================================== */
+
+.home-card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    overflow:hidden;
+
+    border:1px solid var(--border);
+
+}
+
+
+/* ===================================================
+   IMAGES
+=================================================== */
+
+img{
+
+    display:block;
+
+    width:100%;
+
+}
+
+.home-image{
+
+    width:100%;
+
+    border-radius:18px;
+
+}
+
+
+/* ===================================================
+   CAROUSEL
+=================================================== */
+
+.carousel{
+
+    display:flex;
+
+    gap:14px;
+
+    overflow-x:auto;
+
+    scroll-behavior:smooth;
+
+    scrollbar-width:none;
+
+    padding-bottom:4px;
+
+}
+
+.carousel::-webkit-scrollbar{
+
+    display:none;
+
+}
+
+.carousel-item{
+
+    flex:0 0 auto;
+
+}
+
+
+/* ===================================================
+   LOADER
+=================================================== */
+
+#homepage-loader{
+
+    position:fixed;
+
+    inset:0;
+
+    background:#0f0f13;
+
+    z-index:99999;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    transition:.35s;
+
+}
+
+.loader-logo{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+    background:var(--gradient);
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+
+}
+
+.loader-line{
+
+    width:170px;
+
+    height:5px;
+
+    margin-top:20px;
+
+    border-radius:30px;
+
+    overflow:hidden;
+
+    background:#24242c;
+
+    position:relative;
+
+}
+
+.loader-line::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:-50%;
+
+    width:50%;
+
+    height:100%;
+
+    background:var(--gradient);
+
+    animation:loading 1.2s linear infinite;
+
+}
+
+@keyframes loading{
+
+    from{
+
+        left:-50%;
+
+    }
+
+    to{
+
+        left:100%;
+
+    }
+
+}
+
+
+/* ===================================================
+   SKELETON
+=================================================== */
+
+.skeleton{
+
+    background:
+        linear-gradient(
+            90deg,
+            #1f1f24 25%,
+            #2a2a30 50%,
+            #1f1f24 75%
+        );
+
+    background-size:300% 100%;
+
+    animation:skeleton 1.4s infinite;
+
+}
+
+@keyframes skeleton{
+
+    0%{
+
+        background-position:100%;
+
+    }
+
+    100%{
+
+        background-position:-100%;
+
+    }
+
+}
+
+
+/* ===================================================
+   EMPTY
+=================================================== */
+
+.empty-home{
+
+    padding:90px 20px;
+
+    text-align:center;
+
+}
+
+.empty-home h2{
+
+    font-size:26px;
+
+    margin-bottom:10px;
+
+}
+
+.empty-home p{
+
+    color:var(--textLight);
+
+}
+
+
+/* ===================================================
+   SCROLL TOP
+=================================================== */
+
+#scrollTopBtn{
+
+    position:fixed;
+
+    right:18px;
+
+    bottom:20px;
+
+    width:52px;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:50%;
+
+    cursor:pointer;
+
+    color:#fff;
+
+    font-size:20px;
+
+    background:var(--gradient);
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.35);
+
+    display:none;
+
+    z-index:999;
+
+}
+
+
+/* ===================================================
+   SPACING HELPERS
+=================================================== */
+
+.mt-10{margin-top:10px;}
+.mt-20{margin-top:20px;}
+.mt-30{margin-top:30px;}
+.mt-40{margin-top:40px;}
+
+.mb-10{margin-bottom:10px;}
+.mb-20{margin-bottom:20px;}
+.mb-30{margin-bottom:30px;}
+.mb-40{margin-bottom:40px;}
+
+
+/* ===================================================
+   RESPONSIVE
+=================================================== */
+
+@media(min-width:768px){
+
+    .section-inner{
+
+        padding:0 24px;
+
+    }
+
+}
+
+@media(min-width:1024px){
+
+    .section-inner{
+
+        padding:0 30px;
+
+    }
+
+}
