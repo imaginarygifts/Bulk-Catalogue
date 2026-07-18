@@ -406,3 +406,360 @@ function showToast(message){
     },2500);
 
 }
+/*==================================================
+DELETE SECTION
+==================================================*/
+
+let deleteSectionId = null;
+
+function deleteSection(id){
+
+    deleteSectionId = id;
+
+    document
+        .getElementById("deleteModal")
+        .classList
+        .remove("hidden");
+
+}
+
+function confirmDelete(){
+
+    if(!deleteSectionId) return;
+
+    Builder.sections =
+        Builder.sections.filter(
+            s => s.id !== deleteSectionId
+        );
+
+    deleteSectionId = null;
+
+    renderSections();
+
+    clearEditor();
+
+    closeDeleteModal();
+
+    showToast("Section Deleted");
+
+}
+
+function closeDeleteModal(){
+
+    document
+        .getElementById("deleteModal")
+        .classList
+        .add("hidden");
+
+}
+
+/*==================================================
+DUPLICATE
+==================================================*/
+
+function duplicateSection(id){
+
+    const section = findSection(id);
+
+    if(!section) return;
+
+    const copy = JSON.parse(
+        JSON.stringify(section)
+    );
+
+    copy.id = createId();
+
+    Builder.sections.push(copy);
+
+    renderSections();
+
+    showToast("Section Duplicated");
+
+}
+
+/*==================================================
+VISIBILITY
+==================================================*/
+
+function toggleVisibility(id){
+
+    const section = findSection(id);
+
+    if(!section) return;
+
+    section.visible = !section.visible;
+
+    renderSections();
+
+}
+
+/*==================================================
+CLEAR EDITOR
+==================================================*/
+
+function clearEditor(){
+
+    Builder.selectedSection = null;
+
+    document
+        .querySelector(".settings-empty")
+        .style.display = "flex";
+
+    document
+        .getElementById("settingsPanel")
+        .style.display = "none";
+
+}
+
+/*==================================================
+SECTION EVENTS
+==================================================*/
+
+function bindCardEvents(){
+
+    document
+        .querySelectorAll(".section-card")
+        .forEach(card=>{
+
+            const id = card.dataset.id;
+
+            card
+            .querySelector(".deleteBtn")
+            ?.addEventListener("click",e=>{
+
+                e.stopPropagation();
+
+                deleteSection(id);
+
+            });
+
+            card
+            .querySelector(".duplicateBtn")
+            ?.addEventListener("click",e=>{
+
+                e.stopPropagation();
+
+                duplicateSection(id);
+
+            });
+
+            card
+            .querySelector(".visibilityBtn")
+            ?.addEventListener("click",e=>{
+
+                e.stopPropagation();
+
+                toggleVisibility(id);
+
+            });
+
+        });
+
+}
+
+/*==================================================
+OVERRIDE RENDER
+==================================================*/
+
+const oldRender = renderSections;
+
+renderSections = function(){
+
+    oldRender();
+
+    bindCardEvents();
+
+}
+
+/*==================================================
+SAVE JSON
+==================================================*/
+
+function saveBuilder(){
+
+    const json =
+        JSON.stringify(
+            Builder.sections,
+            null,
+            2
+        );
+
+    localStorage.setItem(
+
+        "homepageBuilder",
+
+        json
+
+    );
+
+    showToast(
+
+        "Homepage Saved"
+
+    );
+
+}
+
+/*==================================================
+LOAD JSON
+==================================================*/
+
+function loadBuilder(){
+
+    const json =
+        localStorage.getItem(
+            "homepageBuilder"
+        );
+
+    if(!json) return;
+
+    Builder.sections =
+        JSON.parse(json);
+
+    renderSections();
+
+}
+
+/*==================================================
+RESET
+==================================================*/
+
+function resetBuilder(){
+
+    if(
+
+        !confirm(
+
+            "Remove all sections?"
+
+        )
+
+    ) return;
+
+    Builder.sections = [];
+
+    renderSections();
+
+    clearEditor();
+
+}
+
+/*==================================================
+UNDO
+==================================================*/
+
+function pushHistory(){
+
+    Builder.history.push(
+
+        JSON.stringify(
+
+            Builder.sections
+
+        )
+
+    );
+
+}
+
+function undo(){
+
+    if(
+
+        Builder.history.length < 2
+
+    ) return;
+
+    Builder.history.pop();
+
+    Builder.sections = JSON.parse(
+
+        Builder.history[
+
+            Builder.history.length-1
+
+        ]
+
+    );
+
+    renderSections();
+
+}
+
+/*==================================================
+AUTO SAVE
+==================================================*/
+
+setInterval(()=>{
+
+    saveBuilder();
+
+},30000);
+
+/*==================================================
+HEADER BUTTONS
+==================================================*/
+
+document
+
+.querySelector(".success")
+
+?.addEventListener(
+
+"click",
+
+saveBuilder
+
+);
+
+document
+
+.querySelector(".secondary")
+
+?.addEventListener(
+
+"click",
+
+resetBuilder
+
+);
+
+document
+
+.getElementById(
+
+"confirmDelete"
+
+)
+
+?.addEventListener(
+
+"click",
+
+confirmDelete
+
+);
+
+document
+
+.getElementById(
+
+"cancelDelete"
+
+)
+
+?.addEventListener(
+
+"click",
+
+closeDeleteModal
+
+);
+
+/*==================================================
+LOAD ON START
+==================================================*/
+
+loadBuilder();
+
+pushHistory();
