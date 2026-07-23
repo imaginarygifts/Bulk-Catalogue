@@ -4,7 +4,7 @@
 ==================================================*/
 
 import { db } from "../js/firebase.js";
-
+import { enableDragDrop } from "./drag-drop.js";
 import {
     collection,
     getDocs,
@@ -66,8 +66,9 @@ async function initBuilder(){
 
     bindEvents();
 
-}
+    initializeDragDrop();
 
+}
 /*==================================================
     EVENTS
 ==================================================*/
@@ -380,6 +381,8 @@ async function createSection(type){
 
     renderSectionList();
 
+    initializeDragDrop();
+
     renderPreview();
 
 }
@@ -423,6 +426,8 @@ async function duplicateSelectedSection(){
     await loadSections();
 
     renderSectionList();
+
+    initializeDragDrop();
 
     renderPreview();
 
@@ -469,6 +474,8 @@ selectedSection.id
     await loadSections();
 
     renderSectionList();
+
+    initializeDragDrop();
 
     renderPreview();
 
@@ -525,6 +532,8 @@ async function refresh(){
     await loadSections();
 
     renderSectionList();
+    
+    initializeDragDrop();
 
     renderPreview();
 
