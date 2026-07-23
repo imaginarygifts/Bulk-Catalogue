@@ -1,14 +1,15 @@
 /*==================================================
     HOMEPAGE BUILDER
-    homepage-builder.js
 ==================================================*/
 
 import { db } from "../js/firebase.js";
-import { enableDragDrop } from "./drag-drop.js";
-import { renderHomepagePreview }
 
-from "./preview.js";
+import { enableDragDrop } from "./drag-drop.js";
+
+import { renderHomepagePreview } from "./preview.js";
+
 import {
+
     collection,
     getDocs,
     addDoc,
@@ -17,6 +18,7 @@ import {
     doc,
     query,
     orderBy
+
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /*==================================================
@@ -63,15 +65,12 @@ async function initBuilder(){
 
     await loadSections();
 
-    renderSectionList();
-
-    renderPreview();
+    refreshUI();
 
     bindEvents();
 
-    initializeDragDrop();
-
 }
+
 /*==================================================
     EVENTS
 ==================================================*/
@@ -89,12 +88,12 @@ function bindEvents(){
 }
 
 /*==================================================
-    LOAD SECTIONS
+    LOAD FIRESTORE
 ==================================================*/
 
 async function loadSections(){
 
-    const q=query(
+    const q = query(
 
         collection(
 
@@ -108,19 +107,35 @@ async function loadSections(){
 
     );
 
-    const snap=
+    const snapshot =
 
     await getDocs(q);
 
-    homepageSections=
+    homepageSections =
 
-    snap.docs.map(doc=>({
+    snapshot.docs.map(doc=>({
 
         id:doc.id,
 
         ...doc.data()
 
     }));
+
+}
+
+/*==================================================
+    REFRESH UI
+==================================================*/
+
+function refreshUI(){
+
+    renderSectionList();
+
+    initializeDragDrop();
+
+    renderPreview();
+
+    renderSettings();
 
 }
 
@@ -132,59 +147,67 @@ function renderSectionList(){
 
     sectionList.innerHTML="";
 
-    homepageSections.forEach(
+    homepageSections.forEach(section=>{
 
-        section=>{
+        const item =
 
-            const item=
+        document.createElement("div");
 
-            document.createElement("div");
+        item.className="builder-section";
 
-            item.className=
+        if(
 
-            "builder-section";
+            selectedSection &&
 
-            item.innerHTML=
+            selectedSection.id===section.id
 
-            `
+        ){
 
-<div>
+            item.classList.add(
 
-<strong>
-
-${section.type}
-
-</strong>
-
-</div>
-
-<div>
-
-#${section.order}
-
-</div>
-
-`;
-
-            item.onclick=()=>{
-
-                selectSection(
-
-                    section.id
-
-                );
-
-            };
-
-            sectionList.appendChild(
-
-                item
+                "active"
 
             );
 
         }
 
-    );
+        item.innerHTML=`
+
+<div class="builder-section-name">
+
+<strong>
+
+${section.title || section.type}
+
+</strong>
+
+</div>
+
+<div class="builder-section-type">
+
+${section.type}
+
+</div>
+
+`;
+
+        item.onclick=()=>{
+
+            selectSection(
+
+                section.id
+
+            );
+
+        };
+
+        sectionList.appendChild(
+
+            item
+
+        );
+
+    });
 
 }
 
@@ -205,20 +228,47 @@ function renderPreview(){
 }
 
 /*==================================================
+    DRAG & DROP
+==================================================*/
+
+function initializeDragDrop(){
+
+    enableDragDrop({
+
+        container:sectionList,
+
+        items:homepageSections,
+
+        onChange:async()=>{
+
+            await saveOrder();
+
+            renderPreview();
+
+            renderSectionList();
+
+        }
+
+    });
+
+}
+
+
+/*==================================================
     SELECT SECTION
 ==================================================*/
 
 function selectSection(id){
 
-    selectedSection=
+    selectedSection =
 
     homepageSections.find(
 
-        s=>s.id===id
+        section=>section.id===id
 
     );
 
-    renderSettings();
+    refreshUI();
 
 }
 
@@ -230,23 +280,63 @@ function renderSettings(){
 
     if(!selectedSection){
 
-        settingsPanel.innerHTML=
+        settingsPanel.innerHTML=`
 
-        "Select a section";
+<div class="empty-settings">
+
+Select a section to edit.
+
+</div>
+
+`;
 
         return;
 
     }
 
-    settingsPanel.innerHTML=
-
-`
+    settingsPanel.innerHTML=`
 
 <h3>
 
-${selectedSection.type}
+${selectedSection.title || selectedSection.type}
 
 </h3>
+
+<div class="builder-setting">
+
+<label>
+
+Title
+
+</label>
+
+<input
+
+type="text"
+
+id="settingTitle"
+
+value="${selectedSection.title || ""}">
+
+</div>
+
+<div class="builder-setting">
+
+<label>
+
+Subtitle
+
+</label>
+
+<textarea
+
+id="settingSubtitle"
+
+rows="4">${selectedSection.subtitle || ""}</textarea>
+
+</div>
+
+<div class="builder-actions">
 
 <button id="duplicateSection">
 
@@ -260,31 +350,117 @@ Delete
 
 </button>
 
+</div>
+
 `;
 
-document
+    document
 
-.getElementById(
+    .getElementById(
 
-"duplicateSection"
+        "settingTitle"
 
-)
+    )
 
-.onclick=
+    .addEventListener(
 
-duplicateSelectedSection;
+        "input",
 
-document
+        updateSetting
 
-.getElementById(
+    );
 
-"deleteSection"
+    document
 
-)
+    .getElementById(
 
-.onclick=
+        "settingSubtitle"
 
-deleteSelectedSection;
+    )
+
+    .addEventListener(
+
+        "input",
+
+        updateSetting
+
+    );
+
+    document
+
+    .getElementById(
+
+        "duplicateSection"
+
+    )
+
+    .onclick=
+
+    duplicateSelectedSection;
+
+    document
+
+    .getElementById(
+
+        "deleteSection"
+
+    )
+
+    .onclick=
+
+    deleteSelectedSection;
+
+}
+
+/*==================================================
+    UPDATE SETTINGS
+==================================================*/
+
+async function updateSetting(){
+
+    if(!selectedSection) return;
+
+    selectedSection.title =
+
+    document.getElementById(
+
+        "settingTitle"
+
+    ).value;
+
+    selectedSection.subtitle =
+
+    document.getElementById(
+
+        "settingSubtitle"
+
+    ).value;
+
+    await updateDoc(
+
+        doc(
+
+            db,
+
+            "homepageSections",
+
+            selectedSection.id
+
+        ),
+
+        {
+
+            title:selectedSection.title,
+
+            subtitle:selectedSection.subtitle
+
+        }
+
+    );
+
+    renderSectionList();
+
+    renderPreview();
 
 }
 
@@ -294,24 +470,16 @@ deleteSelectedSection;
 
 function showAddSectionDialog(){
 
-    const type=
+    const type = prompt(
 
-    prompt(
-
-`Enter section type
+`Section Type
 
 banner
-
 heading
-
 productCarousel
-
 imageCarousel
-
 youtubeCarousel
-
 reviewCarousel
-
 spacer`
 
     );
@@ -328,19 +496,19 @@ spacer`
 
 async function createSection(type){
 
-    const data={
+    const data =
 
-        type,
+    getDefaultSection(type);
 
-        order:
+    data.order=
 
-        homepageSections.length+1,
+    homepageSections.length+1;
 
-        published:true,
+    data.createdAt=
 
-        createdAt:Date.now()
+    Date.now();
 
-    };
+    data.published=true;
 
     await addDoc(
 
@@ -358,44 +526,161 @@ async function createSection(type){
 
     await loadSections();
 
-    renderSectionList();
+    selectedSection=
 
-    initializeDragDrop();
+    homepageSections[
 
-    renderPreview();
+        homepageSections.length-1
+
+    ];
+
+    refreshUI();
 
 }
 
 /*==================================================
-    DUPLICATE
+    DEFAULT SECTION DATA
+==================================================*/
+
+function getDefaultSection(type){
+
+    switch(type){
+
+        case "banner":
+
+            return{
+
+                type,
+
+                title:"",
+
+                subtitle:"",
+
+                slides:[]
+
+            };
+
+        case "heading":
+
+            return{
+
+                type,
+
+                title:"New Heading",
+
+                subtitle:""
+
+            };
+
+        case "productCarousel":
+
+            return{
+
+                type,
+
+                title:"Products",
+
+                subtitle:"",
+
+                filterType:"latest",
+
+                limit:10,
+
+                autoPlay:false
+
+            };
+
+        case "imageCarousel":
+
+            return{
+
+                type,
+
+                title:"Gallery",
+
+                subtitle:"",
+
+                images:[],
+
+                autoPlay:false
+
+            };
+
+        case "youtubeCarousel":
+
+            return{
+
+                type,
+
+                title:"Videos",
+
+                subtitle:"",
+
+                videos:[],
+
+                autoPlay:false
+
+            };
+
+        case "reviewCarousel":
+
+            return{
+
+                type,
+
+                title:"Customer Reviews",
+
+                subtitle:"",
+
+                reviews:[],
+
+                autoPlay:true
+
+            };
+
+        case "spacer":
+
+            return{
+
+                type,
+
+                height:40
+
+            };
+
+        default:
+
+            return{
+
+                type
+
+            };
+
+    }
+
+}
+
+/*==================================================
+    DUPLICATE SECTION
 ==================================================*/
 
 async function duplicateSelectedSection(){
 
-    if(!selectedSection)
+    if(!selectedSection) return;
 
-    return;
-
-    const copy={
-
-        ...selectedSection,
-
-        order:
-
-        homepageSections.length+1
-
-    };
+    const copy = structuredClone(selectedSection);
 
     delete copy.id;
+
+    copy.order = homepageSections.length + 1;
+
+    copy.createdAt = Date.now();
 
     await addDoc(
 
         collection(
-
             db,
-
             "homepageSections"
-
         ),
 
         copy
@@ -404,61 +689,48 @@ async function duplicateSelectedSection(){
 
     await loadSections();
 
-    renderSectionList();
+    selectedSection =
+        homepageSections[
+            homepageSections.length - 1
+        ];
 
-    initializeDragDrop();
-
-    renderPreview();
+    refreshUI();
 
 }
 
 /*==================================================
-    DELETE
+    DELETE SECTION
 ==================================================*/
 
 async function deleteSelectedSection(){
 
-    if(!selectedSection)
+    if(!selectedSection) return;
 
-    return;
+    const ok = confirm(
+        "Delete this section?"
+    );
 
-    if(
-
-!confirm(
-
-"Delete section?"
-
-)
-
-)
-
-return;
+    if(!ok) return;
 
     await deleteDoc(
 
-doc(
+        doc(
+            db,
+            "homepageSections",
+            selectedSection.id
+        )
 
-db,
+    );
 
-"homepageSections",
-
-selectedSection.id
-
-)
-
-);
-
-    selectedSection=null;
+    selectedSection = null;
 
     await loadSections();
 
-    renderSectionList();
+    await reorderSections();
 
-    initializeDragDrop();
+    await loadSections();
 
-    renderPreview();
-
-    renderSettings();
+    refreshUI();
 
 }
 
@@ -469,36 +741,74 @@ selectedSection.id
 async function saveOrder(){
 
     for(
+        let i = 0;
+        i < homepageSections.length;
+        i++
+    ){
 
-let i=0;
+        homepageSections[i].order = i + 1;
 
-i<homepageSections.length;
+        await updateDoc(
 
-i++
+            doc(
 
-){
+                db,
 
-await updateDoc(
+                "homepageSections",
 
-doc(
+                homepageSections[i].id
 
-db,
+            ),
 
-"homepageSections",
+            {
 
-homepageSections[i].id
+                order:i+1
 
-),
+            }
 
-{
+        );
 
-order:i+1
+    }
 
 }
 
-);
+/*==================================================
+    REORDER ALL
+==================================================*/
 
-}
+async function reorderSections(){
+
+    for(
+
+        let i=0;
+
+        i<homepageSections.length;
+
+        i++
+
+    ){
+
+        await updateDoc(
+
+            doc(
+
+                db,
+
+                "homepageSections",
+
+                homepageSections[i].id
+
+            ),
+
+            {
+
+                order:i+1
+
+            }
+
+        );
+
+    }
 
 }
 
@@ -510,10 +820,20 @@ async function refresh(){
 
     await loadSections();
 
-    renderSectionList();
-    
-    initializeDragDrop();
+    refreshUI();
 
-    renderPreview();
+}
+
+/*==================================================
+    GET SECTION
+==================================================*/
+
+function getSection(id){
+
+    return homepageSections.find(
+
+        section=>section.id===id
+
+    );
 
 }
