@@ -551,3 +551,348 @@ function getDefaultSection(type){
     }
 
 }
+
+
+
+/*==================================================
+    DUPLICATE SECTION
+==================================================*/
+
+async function duplicateSelectedSection(){
+
+    if(!selectedSection) return;
+
+    const clone = structuredClone(selectedSection);
+
+    delete clone.id;
+
+    clone.order = homepageSections.length + 1;
+
+    clone.createdAt = Date.now();
+
+    clone.updatedAt = Date.now();
+
+    const ref = await addDoc(
+
+        collection(
+            db,
+            "homepageSections"
+        ),
+
+        clone
+
+    );
+
+    await refresh();
+
+    selectedSection = homepageSections.find(
+        section => section.id === ref.id
+    );
+
+    refreshUI();
+
+}
+
+/*==================================================
+    DELETE SECTION
+==================================================*/
+
+async function deleteSelectedSection(){
+
+    if(!selectedSection) return;
+
+    const ok = confirm(
+        "Delete this section?"
+    );
+
+    if(!ok) return;
+
+    await deleteDoc(
+
+        doc(
+            db,
+            "homepageSections",
+            selectedSection.id
+        )
+
+    );
+
+    homepageSections = homepageSections.filter(
+
+        section => section.id !== selectedSection.id
+
+    );
+
+    homepageSections.forEach((section,index)=>{
+
+        section.order = index + 1;
+
+    });
+
+    await saveOrder();
+
+    selectedSection = null;
+
+    refreshUI();
+
+}
+
+/*==================================================
+    DRAG DROP
+==================================================*/
+
+function initializeDragDrop(){
+
+    enableDragDrop({
+
+        container:sectionList,
+
+        items:".builder-section",
+
+        onChange:newOrder=>{
+
+            reorderSections(newOrder);
+
+        }
+
+    });
+
+}
+
+/*==================================================
+    REORDER
+==================================================*/
+
+function reorderSections(order){
+
+    const reordered=[];
+
+    order.forEach(id=>{
+
+        const section = homepageSections.find(
+
+            item=>item.id===id
+
+        );
+
+        if(section){
+
+            reordered.push(section);
+
+        }
+
+    });
+
+    reordered.forEach((section,index)=>{
+
+        section.order=index+1;
+
+    });
+
+    homepageSections=reordered;
+
+    renderPreview();
+
+    saveOrder();
+
+}
+
+/*==================================================
+    SAVE ORDER
+==================================================*/
+
+async function saveOrder(){
+
+    const promises=[];
+
+    homepageSections.forEach(section=>{
+
+        promises.push(
+
+            updateDoc(
+
+                doc(
+
+                    db,
+
+                    "homepageSections",
+
+                    section.id
+
+                ),
+
+                {
+
+                    order:section.order,
+
+                    updatedAt:Date.now()
+
+                }
+
+            )
+
+        );
+
+    });
+
+    await Promise.all(promises);
+
+    renderSectionList();
+
+}
+
+/*==================================================
+    MOVE UP
+==================================================*/
+
+async function moveUp(){
+
+    if(!selectedSection) return;
+
+    const index = homepageSections.findIndex(
+
+        s=>s.id===selectedSection.id
+
+    );
+
+    if(index<=0) return;
+
+    [
+
+        homepageSections[index-1],
+
+        homepageSections[index]
+
+    ]=[
+
+        homepageSections[index],
+
+        homepageSections[index-1]
+
+    ];
+
+    homepageSections.forEach((s,i)=>{
+
+        s.order=i+1;
+
+    });
+
+    await saveOrder();
+
+    refreshUI();
+
+}
+
+/*==================================================
+    MOVE DOWN
+==================================================*/
+
+async function moveDown(){
+
+    if(!selectedSection) return;
+
+    const index = homepageSections.findIndex(
+
+        s=>s.id===selectedSection.id
+
+    );
+
+    if(index===homepageSections.length-1) return;
+
+    [
+
+        homepageSections[index+1],
+
+        homepageSections[index]
+
+    ]=[
+
+        homepageSections[index],
+
+        homepageSections[index+1]
+
+    ];
+
+    homepageSections.forEach((s,i)=>{
+
+        s.order=i+1;
+
+    });
+
+    await saveOrder();
+
+    refreshUI();
+
+}
+
+/*==================================================
+    TOGGLE PUBLISH
+==================================================*/
+
+async function togglePublish(){
+
+    if(!selectedSection) return;
+
+    selectedSection.published = !selectedSection.published;
+
+    await updateDoc(
+
+        doc(
+
+            db,
+
+            "homepageSections",
+
+            selectedSection.id
+
+        ),
+
+        {
+
+            published:selectedSection.published,
+
+            updatedAt:Date.now()
+
+        }
+
+    );
+
+    renderSectionList();
+
+    renderPreview();
+
+}
+
+/*==================================================
+    HELPERS
+==================================================*/
+
+function getSection(id){
+
+    return homepageSections.find(
+
+        section=>section.id===id
+
+    );
+
+}
+
+function getSelectedSection(){
+
+    return selectedSection;
+
+}
+
+export{
+
+    refresh,
+
+    refreshUI,
+
+    getSection,
+
+    getSelectedSection,
+
+    updateSection
+
+};
