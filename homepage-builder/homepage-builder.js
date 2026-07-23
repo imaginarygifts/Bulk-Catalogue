@@ -292,3 +292,262 @@ function selectSection(id){
     refreshUI();
 
 }
+
+/*==================================================
+    ADD SECTION
+==================================================*/
+
+function showAddSectionDialog(){
+
+    const type = prompt(
+
+`Enter Section Type
+
+banner
+heading
+productCarousel
+imageCarousel
+youtubeCarousel
+reviewCarousel
+spacer`
+
+    );
+
+    if(!type) return;
+
+    createSection(type);
+
+}
+
+/*==================================================
+    CREATE SECTION
+==================================================*/
+
+async function createSection(type){
+
+    const data = getDefaultSection(type);
+
+    data.order = homepageSections.length + 1;
+
+    data.createdAt = Date.now();
+
+    data.updatedAt = Date.now();
+
+    data.published = true;
+
+    const ref = await addDoc(
+
+        collection(
+            db,
+            "homepageSections"
+        ),
+
+        data
+
+    );
+
+    data.id = ref.id;
+
+    await refresh();
+
+    selectedSection = homepageSections.find(
+
+        section => section.id === ref.id
+
+    );
+
+    refreshUI();
+
+}
+
+/*==================================================
+    UPDATE SECTION
+==================================================*/
+
+async function updateSection(data){
+
+    if(!selectedSection) return;
+
+    Object.assign(
+
+        selectedSection,
+
+        data,
+
+        {
+
+            updatedAt:Date.now()
+
+        }
+
+    );
+
+    await updateDoc(
+
+        doc(
+
+            db,
+
+            "homepageSections",
+
+            selectedSection.id
+
+        ),
+
+        selectedSection
+
+    );
+
+    renderSectionList();
+
+    renderPreview();
+
+}
+
+/*==================================================
+    DEFAULT SECTION
+==================================================*/
+
+function getDefaultSection(type){
+
+    switch(type){
+
+        case "banner":
+
+            return{
+
+                type,
+
+                title:"",
+
+                subtitle:"",
+
+                slides:[],
+
+                autoPlay:true,
+
+                interval:5000
+
+            };
+
+        case "heading":
+
+            return{
+
+                type,
+
+                badge:"",
+
+                title:"Heading",
+
+                subtitle:""
+
+            };
+
+        case "productCarousel":
+
+            return{
+
+                type,
+
+                title:"Products",
+
+                subtitle:"",
+
+                filterType:"latest",
+
+                categoryId:"",
+
+                subCategoryId:"",
+
+                tag:"",
+
+                limit:10,
+
+                autoPlay:false,
+
+                interval:5000,
+
+                viewAllLink:""
+
+            };
+
+        case "imageCarousel":
+
+            return{
+
+                type,
+
+                title:"Gallery",
+
+                subtitle:"",
+
+                images:[],
+
+                autoPlay:false,
+
+                interval:5000
+
+            };
+
+        case "youtubeCarousel":
+
+            return{
+
+                type,
+
+                title:"Videos",
+
+                subtitle:"",
+
+                videos:[],
+
+                autoPlay:false,
+
+                interval:5000
+
+            };
+
+        case "reviewCarousel":
+
+            return{
+
+                type,
+
+                title:"Reviews",
+
+                subtitle:"",
+
+                reviews:[],
+
+                autoPlay:true,
+
+                interval:5000,
+
+                limit:10
+
+            };
+
+        case "spacer":
+
+            return{
+
+                type,
+
+                height:40,
+
+                background:"transparent"
+
+            };
+
+        default:
+
+            return{
+
+                type
+
+            };
+
+    }
+
+}
