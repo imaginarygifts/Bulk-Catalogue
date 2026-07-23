@@ -5,12 +5,16 @@
 import {
     collection,
     getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { db } from "../firebase.js";
 
 import { createProductCard } from "./product-card.js";
 import { createCarousel } from "./carousel.js";
+
+/*==================================================
+    RENDER PRODUCT CAROUSEL
+==================================================*/
 
 export async function renderProductCarousel(container, section){
 
@@ -83,8 +87,50 @@ export async function renderProductCarousel(container, section){
     const carousel =
         wrapper.querySelector(".product-carousel");
 
-    const products =
-        await loadProducts(section);
+    /*------------------------------------------
+        USE PRODUCTS PASSED FROM HOMEPAGE
+    ------------------------------------------*/
+
+    let products =
+        section.products || [];
+
+    /*------------------------------------------
+        FALLBACK TO FIRESTORE
+    ------------------------------------------*/
+
+    if(products.length===0){
+
+        products = await loadProducts();
+
+    }
+
+    /*------------------------------------------
+        FILTER PRODUCTS
+    ------------------------------------------*/
+
+    products = filterProducts(
+
+        products,
+
+        section
+
+    );
+
+    /*------------------------------------------
+        LIMIT
+    ------------------------------------------*/
+
+    products = products.slice(
+
+        0,
+
+        section.limit || 10
+
+    );
+
+    /*------------------------------------------
+        RENDER
+    ------------------------------------------*/
 
     products.forEach(product=>{
 
@@ -115,68 +161,58 @@ export async function renderProductCarousel(container, section){
 }
 
 /*==================================================
-    LOAD PRODUCTS
+    FILTER PRODUCTS
 ==================================================*/
 
-async function loadProducts(section){
-
-    const snapshot =
-        await getDocs(collection(db,"products"));
-
-    let products =
-        snapshot.docs.map(doc=>({
-
-            id:doc.id,
-
-            ...doc.data()
-
-        }));
+function filterProducts(products, section){
 
     switch(section.filterType){
 
         case "category":
 
-            products = products.filter(product=>
+            return products.filter(product=>
 
                 product.categoryId===section.categoryId
 
             );
 
-            break;
-
         case "subcategory":
 
-            products = products.filter(product=>
+            return products.filter(product=>
 
                 product.subCategoryId===section.subCategoryId
 
             );
 
-            break;
-
         case "tag":
 
-            products = products.filter(product=>
+            return products.filter(product=>
 
                 (product.tags || []).includes(section.tag)
 
             );
 
-            break;
-
         case "manual":
 
-            products = products.filter(product=>
+            return products.filter(product=>
 
-                (section.productIds || []).includes(product.id)
+                (section.productIds || [])
+
+                .includes(product.id)
 
             );
 
-            break;
+        case "bestseller":
+
+            return products.filter(product=>
+
+                product.isBestseller
+
+            );
 
         case "latest":
 
-            products.sort(
+            return [...products].sort(
 
                 (a,b)=>
 
@@ -188,26 +224,38 @@ async function loadProducts(section){
 
             );
 
-            break;
+        default:
 
-        case "bestseller":
-
-            products = products.filter(product=>
-
-                product.isBestseller
-
-            );
-
-            break;
+            return products;
 
     }
 
-    return products.slice(
+}
 
-        0,
+/*==================================================
+    FALLBACK FIRESTORE LOAD
+==================================================*/
 
-        section.limit || 10
+async function loadProducts(){
+
+    const snapshot = await getDocs(
+
+        collection(
+
+            db,
+
+            "products"
+
+        )
 
     );
+
+    return snapshot.docs.map(doc=>({
+
+        id:doc.id,
+
+        ...doc.data()
+
+    }));
 
 }
