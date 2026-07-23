@@ -10,11 +10,8 @@
     <title>Imaginary Gifts</title>
 
     <meta name="description"
-        content="Personalized Gifts, Name Plates, Photo Frames, Corporate Gifts and More.">
+        content="Personalized Gifts, Name Plates, Photo Frames, Corporate Gifts & More">
 
-    <meta name="theme-color" content="#0f0f13">
-
-    <!-- CSS -->
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/footer.css">
@@ -25,74 +22,223 @@
 <body>
 
     <!-- ========================= -->
+    <!-- TOP BAR -->
+    <!-- ========================= -->
+
+    <div id="topBar"></div>
+
+    <!-- ========================= -->
     <!-- HEADER -->
     <!-- ========================= -->
 
-    <div id="header-container"></div>
-
-
-    <!-- ========================= -->
-    <!-- LOADER -->
-    <!-- ========================= -->
-
-    <div id="homepage-loader">
-
-        <div class="loader-logo">
-            Imaginary Gifts
-        </div>
-
-        <div class="loader-line"></div>
-
-    </div>
-
+    <div id="header"></div>
 
     <!-- ========================= -->
-    <!-- MAIN HOME PAGE -->
+    <!-- HOME PAGE -->
     <!-- ========================= -->
 
-    <main id="homepage">
+    <main class="homepage">
 
-        <!--
-            Homepage Builder
-            will inject sections here
-        -->
+        <!-- ================= HERO BANNER ================= -->
+
+        <section id="heroBanner"
+            class="hero-banner-section">
+        </section>
+
+        <!-- ================= IMAGE CAROUSEL 1 ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Shop By Category</h2>
+
+                <a href="shop">View All</a>
+
+            </div>
+
+            <div id="categoryCarousel"
+                class="image-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT CAROUSEL ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Best Sellers</h2>
+
+                <a href="shop?tag=bestseller">
+                    View All
+                </a>
+
+            </div>
+
+            <div id="bestSellerProducts"
+                class="product-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= IMAGE CAROUSEL 2 ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Trending Collections</h2>
+
+            </div>
+
+            <div id="collectionCarousel"
+                class="image-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT CAROUSEL ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Name Plates</h2>
+
+                <a href="shop">
+                    View All
+                </a>
+
+            </div>
+
+            <div id="namePlateProducts"
+                class="product-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= YOUTUBE ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Watch Our Videos</h2>
+
+            </div>
+
+            <div id="youtubeCarousel"
+                class="youtube-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT CAROUSEL ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Personalized Gifts</h2>
+
+                <a href="shop">
+                    View All
+                </a>
+
+            </div>
+
+            <div id="giftProducts"
+                class="product-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= REVIEW ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Happy Customers</h2>
+
+            </div>
+
+            <div id="reviewCarousel"
+                class="review-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT CAROUSEL ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Corporate Gifts</h2>
+
+                <a href="shop">
+                    View All
+                </a>
+
+            </div>
+
+            <div id="corporateProducts"
+                class="product-carousel">
+            </div>
+
+        </section>
+
+        <!-- ================= PRODUCT CAROUSEL ================= -->
+
+        <section class="home-section">
+
+            <div class="section-heading">
+
+                <h2>Latest Products</h2>
+
+                <a href="shop">
+                    View All
+                </a>
+
+            </div>
+
+            <div id="latestProducts"
+                class="product-carousel">
+            </div>
+
+        </section>
 
     </main>
-
 
     <!-- ========================= -->
     <!-- FOOTER -->
     <!-- ========================= -->
 
-    <div id="footer-container"></div>
-
+    <div id="footer"></div>
 
     <!-- ========================= -->
     <!-- SCROLL TO TOP -->
     <!-- ========================= -->
 
-    <button id="scrollTopBtn">
+    <button id="scrollTop">
 
         ↑
 
     </button>
 
-
-    <!-- Firebase -->
-
-    <script type="module" src="js/firebase.js"></script>
-
-    <!-- Header -->
+    <!-- ========================= -->
+    <!-- SCRIPTS -->
+    <!-- ========================= -->
 
     <script src="js/header.js"></script>
 
-    <!-- Footer -->
-
     <script src="js/footer.js"></script>
 
-    <!-- Homepage -->
-
-    <script type="module" src="js/homepage.js"></script>
+    <script type="module"
+        src="js/homepage.js"></script>
 
 </body>
 
