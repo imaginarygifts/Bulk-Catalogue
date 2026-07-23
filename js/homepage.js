@@ -456,3 +456,292 @@ function showError(error){
 `;
 
 }
+
+
+/*==================================================
+    LOADER
+==================================================*/
+
+function showLoader(){
+
+    homepage.innerHTML = `
+
+<div class="homepage-loader">
+
+    <div class="loader-spinner"></div>
+
+    <p>
+
+        Loading Homepage...
+
+    </p>
+
+</div>
+
+`;
+
+}
+
+function hideLoader(){
+
+    const loader =
+
+    homepage.querySelector(
+
+        ".homepage-loader"
+
+    );
+
+    if(loader){
+
+        loader.remove();
+
+    }
+
+}
+
+/*==================================================
+    SCROLL TO TOP
+==================================================*/
+
+function initializeScrollButton(){
+
+    if(!scrollTopBtn) return;
+
+    window.addEventListener(
+
+        "scroll",
+
+        ()=>{
+
+            if(window.scrollY>400){
+
+                scrollTopBtn.classList.add(
+
+                    "show"
+
+                );
+
+            }
+
+            else{
+
+                scrollTopBtn.classList.remove(
+
+                    "show"
+
+                );
+
+            }
+
+        }
+
+    );
+
+    scrollTopBtn.addEventListener(
+
+        "click",
+
+        ()=>{
+
+            window.scrollTo({
+
+                top:0,
+
+                behavior:"smooth"
+
+            });
+
+        }
+
+    );
+
+}
+
+/*==================================================
+    REFRESH HOMEPAGE
+==================================================*/
+
+export async function refreshHomepage(){
+
+    await Promise.all([
+
+        loadHomepageSections(),
+
+        loadProducts(),
+
+        loadCategories(),
+
+        loadReviews()
+
+    ]);
+
+    renderHomepage();
+
+}
+
+/*==================================================
+    GET PRODUCT
+==================================================*/
+
+export function getProduct(id){
+
+    return products.find(
+
+        product=>product.id===id
+
+    );
+
+}
+
+/*==================================================
+    GET CATEGORY
+==================================================*/
+
+export function getCategory(id){
+
+    return categories.find(
+
+        category=>category.id===id
+
+    );
+
+}
+
+/*==================================================
+    GET REVIEWS
+==================================================*/
+
+export function getReviews(){
+
+    return reviews;
+
+}
+
+/*==================================================
+    FORMAT PRICE
+==================================================*/
+
+export function money(price){
+
+    if(price==null) return "₹0";
+
+    return "₹"+
+
+    Number(price).toLocaleString(
+
+        "en-IN"
+
+    );
+
+}
+
+/*==================================================
+    DISCOUNT
+==================================================*/
+
+export function getDiscount(
+
+    original,
+
+    sale
+
+){
+
+    if(
+
+        !original ||
+
+        !sale ||
+
+        sale>=original
+
+    ){
+
+        return 0;
+
+    }
+
+    return Math.round(
+
+        (
+
+            (original-sale)
+
+            /
+
+            original
+
+        )*100
+
+    );
+
+}
+
+/*==================================================
+    EMPTY IMAGE
+==================================================*/
+
+export function placeholderImage(){
+
+    return
+
+    "assets/images/placeholder.png";
+
+}
+
+/*==================================================
+    IS MOBILE
+==================================================*/
+
+export function isMobile(){
+
+    return window.innerWidth<=768;
+
+}
+
+/*==================================================
+    DEBOUNCE
+==================================================*/
+
+export function debounce(
+
+    callback,
+
+    delay=300
+
+){
+
+    let timer;
+
+    return(...args)=>{
+
+        clearTimeout(timer);
+
+        timer=setTimeout(
+
+            ()=>callback(...args),
+
+            delay
+
+        );
+
+    };
+
+}
+
+/*==================================================
+    LOG
+==================================================*/
+
+function log(){
+
+    console.log(
+
+        "Homepage Loaded"
+
+    );
+
+}
+
+log();
