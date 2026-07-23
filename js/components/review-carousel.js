@@ -2,9 +2,20 @@
     REVIEW CAROUSEL COMPONENT
 ==================================================*/
 
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { db } from "../firebase.js";
+
 import { createCarousel } from "./carousel.js";
 
-export function renderReviewCarousel(container, section){
+/*==================================================
+    RENDER REVIEW CAROUSEL
+==================================================*/
+
+export async function renderReviewCarousel(container, section){
 
     const wrapper = document.createElement("section");
 
@@ -59,8 +70,38 @@ export function renderReviewCarousel(container, section){
     const carousel =
         wrapper.querySelector(".review-carousel");
 
-    const reviews =
+    /*------------------------------------------
+        USE REVIEWS FROM HOMEPAGE
+    ------------------------------------------*/
+
+    let reviews =
         section.reviews || [];
+
+    /*------------------------------------------
+        FALLBACK TO FIRESTORE
+    ------------------------------------------*/
+
+    if(reviews.length===0){
+
+        reviews = await loadReviews();
+
+    }
+
+    /*------------------------------------------
+        LIMIT
+    ------------------------------------------*/
+
+    reviews = reviews.slice(
+
+        0,
+
+        section.limit || 10
+
+    );
+
+    /*------------------------------------------
+        RENDER
+    ------------------------------------------*/
 
     reviews.forEach(review=>{
 
@@ -190,5 +231,33 @@ function renderStars(rating){
     }
 
     return stars;
+
+}
+
+/*==================================================
+    LOAD REVIEWS (Fallback)
+==================================================*/
+
+async function loadReviews(){
+
+    const snapshot = await getDocs(
+
+        collection(
+
+            db,
+
+            "reviews"
+
+        )
+
+    );
+
+    return snapshot.docs.map(doc=>({
+
+        id:doc.id,
+
+        ...doc.data()
+
+    }));
 
 }
