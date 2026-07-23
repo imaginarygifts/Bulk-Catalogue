@@ -1,19 +1,16 @@
 /*==================================================
-    PRODUCT CAROUSEL
+    PRODUCT CAROUSEL COMPONENT
 ==================================================*/
-
-import { db } from "../firebase.js";
 
 import {
     collection,
     getDocs
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { db } from "../firebase.js";
 
 import { createProductCard } from "./product-card.js";
-
-/*==================================================
-    RENDER PRODUCT CAROUSEL
-==================================================*/
+import { createCarousel } from "./carousel.js";
 
 export async function renderProductCarousel(container, section){
 
@@ -29,7 +26,7 @@ export async function renderProductCarousel(container, section){
 
         <h2>
 
-            ${section.title || "Products"}
+            ${section.title || ""}
 
         </h2>
 
@@ -42,47 +39,36 @@ export async function renderProductCarousel(container, section){
     </div>
 
     ${
-        section.showViewAll
-
+        section.viewAllLink
         ?
-
-        `<a
-
-            href="${section.viewAllLink || "#"}"
-
+        `
+        <a
+            href="${section.viewAllLink}"
             class="view-all-btn">
 
             View All
 
-        </a>`
-
+        </a>
+        `
         :
-
         ""
-
     }
 
 </div>
 
 <div class="carousel-wrapper">
 
-    <button
-
-        class="carousel-arrow left">
+    <button class="carousel-arrow left">
 
         ❮
 
     </button>
 
-    <div
-
-        class="product-carousel">
+    <div class="product-carousel">
 
     </div>
 
-    <button
-
-        class="carousel-arrow right">
+    <button class="carousel-arrow right">
 
         ❯
 
@@ -95,56 +81,10 @@ export async function renderProductCarousel(container, section){
     container.appendChild(wrapper);
 
     const carousel =
+        wrapper.querySelector(".product-carousel");
 
-    wrapper.querySelector(
-
-        ".product-carousel"
-
-    );
-
-    const left =
-
-    wrapper.querySelector(
-
-        ".left"
-
-    );
-
-    const right =
-
-    wrapper.querySelector(
-
-        ".right"
-
-    );
-
-    let products =
-
-    await loadProducts();
-
-    products =
-
-    filterProducts(
-
-        products,
-
-        section
-
-    );
-
-    if(section.limit){
-
-        products =
-
-        products.slice(
-
-            0,
-
-            section.limit
-
-        );
-
-    }
+    const products =
+        await loadProducts(section);
 
     products.forEach(product=>{
 
@@ -156,29 +96,21 @@ export async function renderProductCarousel(container, section){
 
     });
 
-    left.onclick=()=>{
+    createCarousel({
 
-        carousel.scrollBy({
+        container:carousel,
 
-            left:-350,
+        leftButton:wrapper.querySelector(".left"),
 
-            behavior:"smooth"
+        rightButton:wrapper.querySelector(".right"),
 
-        });
+        autoPlay:section.autoPlay || false,
 
-    };
+        interval:section.interval || 5000,
 
-    right.onclick=()=>{
+        scrollAmount:320
 
-        carousel.scrollBy({
-
-            left:350,
-
-            behavior:"smooth"
-
-        });
-
-    };
+    });
 
 }
 
@@ -186,106 +118,96 @@ export async function renderProductCarousel(container, section){
     LOAD PRODUCTS
 ==================================================*/
 
-async function loadProducts(){
+async function loadProducts(section){
 
-    const snap=
+    const snapshot =
+        await getDocs(collection(db,"products"));
 
-    await getDocs(
+    let products =
+        snapshot.docs.map(doc=>({
 
-        collection(
+            id:doc.id,
 
-            db,
+            ...doc.data()
 
-            "products"
-
-        )
-
-    );
-
-    return snap.docs.map(doc=>({
-
-        id:doc.id,
-
-        ...doc.data()
-
-    }));
-
-}
-
-/*==================================================
-    FILTER
-==================================================*/
-
-function filterProducts(
-
-    products,
-
-    section
-
-){
+        }));
 
     switch(section.filterType){
 
         case "category":
 
-            return products.filter(
+            products = products.filter(product=>
 
-                p=>
-
-                p.categoryId===
-
-                section.filterValue
+                product.categoryId===section.categoryId
 
             );
+
+            break;
 
         case "subcategory":
 
-            return products.filter(
+            products = products.filter(product=>
 
-                p=>
-
-                p.subCategoryId===
-
-                section.filterValue
+                product.subCategoryId===section.subCategoryId
 
             );
+
+            break;
 
         case "tag":
 
-            return products.filter(
+            products = products.filter(product=>
 
-                p=>
-
-                Array.isArray(p.tags)
-
-                &&
-
-                p.tags.includes(
-
-                    section.filterValue
-
-                )
+                (product.tags || []).includes(section.tag)
 
             );
+
+            break;
 
         case "manual":
 
-            return products.filter(
+            products = products.filter(product=>
 
-                p=>
-
-                section.productIds?.includes(
-
-                    p.id
-
-                )
+                (section.productIds || []).includes(product.id)
 
             );
 
-        default:
+            break;
 
-            return products;
+        case "latest":
+
+            products.sort(
+
+                (a,b)=>
+
+                (b.createdAt?.seconds || 0)
+
+                -
+
+                (a.createdAt?.seconds || 0)
+
+            );
+
+            break;
+
+        case "bestseller":
+
+            products = products.filter(product=>
+
+                product.isBestseller
+
+            );
+
+            break;
 
     }
+
+    return products.slice(
+
+        0,
+
+        section.limit || 10
+
+    );
 
 }
