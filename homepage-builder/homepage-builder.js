@@ -5,6 +5,9 @@
 
 import { db } from "../js/firebase.js";
 import { enableDragDrop } from "./drag-drop.js";
+import { renderHomepagePreview }
+
+from "./preview.js";
 import {
     collection,
     getDocs,
@@ -191,35 +194,11 @@ ${section.type}
 
 function renderPreview(){
 
-    preview.innerHTML="";
+    renderHomepagePreview(
 
-    homepageSections.forEach(
+        preview,
 
-        section=>{
-
-            const box=
-
-            document.createElement("div");
-
-            box.className=
-
-            "preview-section";
-
-            box.innerHTML=
-
-            `
-
-<div class="preview-title">
-
-${section.type}
-
-</div>
-
-`;
-
-            preview.appendChild(box);
-
-        }
+        homepageSections
 
     );
 
