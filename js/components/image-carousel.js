@@ -1,72 +1,68 @@
 /*==================================================
-    IMAGE CAROUSEL
+    IMAGE CAROUSEL COMPONENT
 ==================================================*/
+
+import { createCarousel } from "./carousel.js";
 
 export function renderImageCarousel(container, section){
 
-    const carousel = document.createElement("section");
+    const wrapper = document.createElement("section");
 
-    carousel.className = "image-carousel-section";
+    wrapper.className = "image-carousel-section";
 
-    carousel.innerHTML = `
+    wrapper.innerHTML = `
 
-    <div class="section-header">
+<div class="section-header">
 
-        <div>
+    <div>
 
-            <h2>
+        <h2>
 
-                ${section.title || ""}
+            ${section.title || ""}
 
-            </h2>
+        </h2>
 
-            <p>
+        <p>
 
-                ${section.subtitle || ""}
+            ${section.subtitle || ""}
 
-            </p>
-
-        </div>
+        </p>
 
     </div>
 
-    <div class="image-carousel-wrapper">
+</div>
 
-        <button class="carousel-arrow left">
+<div class="carousel-wrapper">
 
-            ❮
+    <button class="carousel-arrow left">
 
-        </button>
+        ❮
 
-        <div class="image-carousel-track">
+    </button>
 
-        </div>
-
-        <button class="carousel-arrow right">
-
-            ❯
-
-        </button>
+    <div class="image-carousel-track">
 
     </div>
 
-    `;
+    <button class="carousel-arrow right">
 
-    container.appendChild(carousel);
+        ❯
+
+    </button>
+
+</div>
+
+`;
+
+    container.appendChild(wrapper);
 
     const track =
-        carousel.querySelector(".image-carousel-track");
+        wrapper.querySelector(".image-carousel-track");
 
-    const left =
-        carousel.querySelector(".left");
-
-    const right =
-        carousel.querySelector(".right");
-
-    const slides =
+    const images =
         section.images || [];
 
-    slides.forEach(image=>{
+    images.forEach(image=>{
 
         track.appendChild(
 
@@ -76,29 +72,21 @@ export function renderImageCarousel(container, section){
 
     });
 
-    left.onclick=()=>{
+    createCarousel({
 
-        track.scrollBy({
+        container:track,
 
-            left:-350,
+        leftButton:wrapper.querySelector(".left"),
 
-            behavior:"smooth"
+        rightButton:wrapper.querySelector(".right"),
 
-        });
+        autoPlay:section.autoPlay || false,
 
-    };
+        interval:section.interval || 4000,
 
-    right.onclick=()=>{
+        scrollAmount:320
 
-        track.scrollBy({
-
-            left:350,
-
-            behavior:"smooth"
-
-        });
-
-    };
+    });
 
 }
 
@@ -108,42 +96,50 @@ export function renderImageCarousel(container, section){
 
 function createImageCard(image){
 
-    const card = document.createElement("div");
+    const card =
+        document.createElement("div");
 
-    card.className="image-card";
+    card.className =
+        "image-card";
 
-    card.innerHTML=`
+    card.innerHTML = `
 
-    <img
+<img
 
-    src="${image.image}"
+src="${image.image || ""}"
 
-    loading="lazy"
+loading="lazy"
 
-    alt="${image.title || ""}">
+alt="${image.title || ""}"
 
-    ${
-        image.title
+class="image-card-image">
 
-        ?
+${
+image.title
 
-        `
+?
 
-        <div class="image-card-title">
+`
 
-            ${image.title}
+<div class="image-card-overlay">
 
-        </div>
+<h3>
 
-        `
+${image.title}
 
-        :
+</h3>
 
-        ""
+</div>
 
-    }
+`
 
-    `;
+:
+
+""
+
+}
+
+`;
 
     if(image.link){
 
