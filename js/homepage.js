@@ -1,6 +1,5 @@
 /*==================================================
     HOMEPAGE.JS
-    Base File
 ==================================================*/
 
 import { db } from "./firebase.js";
@@ -9,320 +8,137 @@ import {
     collection,
     getDocs,
     query,
+    where,
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { renderBanner } from "./components/banner.js";
+import { renderHeading } from "./components/heading.js";
+import { renderProductCarousel } from "./components/product-carousel.js";
+import { renderImageCarousel } from "./components/image-carousel.js";
+import { renderYoutubeCarousel } from "./components/youtube-carousel.js";
+import { renderReviewCarousel } from "./components/review-carousel.js";
+import { renderSpacer } from "./components/spacer.js";
 
 /*==================================================
     ELEMENTS
 ==================================================*/
 
-const home = document.querySelector(".homepage");
-
-const scrollTopBtn =
-    document.getElementById("scrollTop");
+const homepage = document.getElementById("homepage");
 
 /*==================================================
     DATA
 ==================================================*/
 
-let products = [];
-let categories = [];
-let reviews = [];
+let homepageSections = [];
 
 /*==================================================
-    SETTINGS
+    LOAD HOMEPAGE
 ==================================================*/
 
-const HOME = {
+async function loadHomepage() {
 
-    productLimit: 10,
+    try {
 
-    autoSlideDelay: 4000,
-
-    animationSpeed: 300
-
-};
-
-/*==================================================
-    LOAD DATA
-==================================================*/
-
-async function loadProducts(){
-
-    try{
-
-        const snap = await getDocs(
-            collection(db,"products")
+        const q = query(
+            collection(db, "homepageSections"),
+            where("published", "==", true),
+            orderBy("order")
         );
 
-        products = snap.docs.map(doc=>({
+        const snap = await getDocs(q);
 
-            id:doc.id,
-
+        homepageSections = snap.docs.map(doc => ({
+            id: doc.id,
             ...doc.data()
-
         }));
 
-        console.log(
-            "Products Loaded:",
-            products.length
-        );
+        renderHomepage();
 
     }
 
-    catch(err){
+    catch (err) {
 
-        console.error(err);
-
-    }
-
-}
-
-async function loadCategories(){
-
-    try{
-
-        const snap = await getDocs(
-
-            query(
-
-                collection(db,"categories"),
-
-                orderBy("order")
-
-            )
-
-        );
-
-        categories = snap.docs.map(doc=>({
-
-            id:doc.id,
-
-            ...doc.data()
-
-        }));
-
-    }
-
-    catch(err){
-
-        console.error(err);
-
-    }
-
-}
-
-async function loadReviews(){
-
-    try{
-
-        const snap = await getDocs(
-            collection(db,"reviews")
-        );
-
-        reviews = snap.docs.map(doc=>({
-
-            id:doc.id,
-
-            ...doc.data()
-
-        }));
-
-    }
-
-    catch{
-
-        reviews=[];
+        console.error("Homepage Load Error", err);
 
     }
 
 }
 
 /*==================================================
-    HELPERS
+    RENDER HOMEPAGE
 ==================================================*/
 
-function money(price){
+function renderHomepage() {
 
-    return "₹"+Number(price).toLocaleString();
+    homepage.innerHTML = "";
 
-}
+    homepageSections.forEach(section => {
 
-function discount(product){
+        switch (section.type) {
 
-    if(
+            case "banner":
 
-        !product.salePrice ||
+                renderBanner(homepage, section);
 
-        product.salePrice>=product.basePrice
+                break;
 
-    ){
+            case "heading":
 
-        return 0;
+                renderHeading(homepage, section);
 
-    }
+                break;
 
-    return Math.round(
+            case "productCarousel":
 
-        (
+                renderProductCarousel(homepage, section);
 
-            (product.basePrice-
+                break;
 
-            product.salePrice)
+            case "imageCarousel":
 
-            /
+                renderImageCarousel(homepage, section);
 
-            product.basePrice
+                break;
 
-        )*100
+            case "youtubeCarousel":
 
-    );
+                renderYoutubeCarousel(homepage, section);
 
-}
+                break;
 
-function getCategory(id){
+            case "reviewCarousel":
 
-    return categories.find(
+                renderReviewCarousel(homepage, section);
 
-        c=>c.id===id
+                break;
 
-    );
+            case "spacer":
 
-}
+                renderSpacer(homepage, section);
 
-function byCategory(id){
+                break;
 
-    return products.filter(
+            default:
 
-        p=>p.categoryId===id
-
-    );
-
-}
-
-function bySubCategory(id){
-
-    return products.filter(
-
-        p=>p.subCategoryId===id
-
-    );
-
-}
-
-function byTag(tag){
-
-    return products.filter(
-
-        p=>
-
-        Array.isArray(p.tags)
-
-        &&
-
-        p.tags.includes(tag)
-
-    );
-
-}
-
-function latest(limit=10){
-
-    return [...products]
-
-    .sort(
-
-        (a,b)=>
-
-        b.createdAt-a.createdAt
-
-    )
-
-    .slice(0,limit);
-
-}
-
-/*==================================================
-    RENDER
-==================================================*/
-
-function renderHome(){
-
-    console.log("Homepage Ready");
-
-    /*
-        Banner Slider
-
-        Image Carousel
-
-        Product Carousel
-
-        Youtube Carousel
-
-        Review Carousel
-
-        Future Sections
-    */
-
-}
-
-/*==================================================
-    SCROLL TOP
-==================================================*/
-
-window.addEventListener(
-
-    "scroll",
-
-    ()=>{
-
-        if(window.scrollY>300){
-
-            scrollTopBtn.style.display="flex";
+                console.warn(
+                    "Unknown Section",
+                    section.type
+                );
 
         }
-
-        else{
-
-            scrollTopBtn.style.display="none";
-
-        }
-
-    }
-
-);
-
-scrollTopBtn.onclick=()=>{
-
-    window.scrollTo({
-
-        top:0,
-
-        behavior:"smooth"
 
     });
 
-};
+}
 
 /*==================================================
     INIT
 ==================================================*/
 
-async function init(){
+async function init() {
 
-    console.log("Loading Homepage...");
-
-    await Promise.all([
-
-        loadProducts(),
-
-        loadCategories(),
-
-        loadReviews()
-
-    ]);
-
-    renderHome();
+    await loadHomepage();
 
 }
 
