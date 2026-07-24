@@ -458,7 +458,7 @@ function getDefaultSection(type){
 
                 categoryId:"",
 
-                subCategoryId:"",
+                categoryType:"all",
 
                 tag:"",
 
