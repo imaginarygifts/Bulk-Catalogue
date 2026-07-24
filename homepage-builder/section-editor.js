@@ -1222,19 +1222,135 @@ function rerender(
 }
 
 /*==================================================
-    PLACEHOLDER
-    FIREBASE STORAGE
+    FIREBASE IMAGE UPLOAD
 ==================================================*/
 
-async function uploadImage(){
+async function uploadImage(file, folder){
 
-    alert(
+    if(!file) return "";
 
-`Firebase Storage upload
-will be connected in
-image-upload.js`
+    const extension=file.name.split(".").pop();
+
+    const fileName=
+
+    `${Date.now()}-${Math.random().toString(36).substring(2,8)}.${extension}`;
+
+    const storageRef=
+
+    ref(
+
+        storage,
+
+        `${folder}/${fileName}`
 
     );
+
+    await uploadBytes(
+
+        storageRef,
+
+        file
+
+    );
+
+    return await getDownloadURL(storageRef);
+
+}
+
+
+/*==================================================
+    IMAGE UPLOAD FIELD
+==================================================*/
+
+function addImageUploadField(
+
+    parent,
+
+    label,
+
+    image,
+
+    folder,
+
+    callback
+
+){
+
+    const div=document.createElement("div");
+
+    div.className="editor-field";
+
+    const title=document.createElement("label");
+
+    title.textContent=label;
+
+    div.appendChild(title);
+
+    const preview=document.createElement("img");
+
+    preview.className="editor-image-preview";
+
+    preview.src=image || "";
+
+    preview.style.maxWidth="180px";
+
+    preview.style.marginBottom="10px";
+
+    preview.style.display=image ? "block" : "none";
+
+    div.appendChild(preview);
+
+    const input=document.createElement("input");
+
+    input.type="file";
+
+    input.accept="image/*";
+
+    input.onchange=async(e)=>{
+
+        const file=e.target.files[0];
+
+        if(!file) return;
+
+        input.disabled=true;
+
+        input.value="";
+
+        try{
+
+            const url=
+
+            await uploadImage(
+
+                file,
+
+                folder
+
+            );
+
+            preview.src=url;
+
+            preview.style.display="block";
+
+            callback(url);
+
+        }
+
+        catch(error){
+
+            console.error(error);
+
+            alert("Image upload failed");
+
+        }
+
+        input.disabled=false;
+
+    };
+
+    div.appendChild(input);
+
+    parent.appendChild(div);
 
 }
 
