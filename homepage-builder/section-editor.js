@@ -1,9 +1,11 @@
 /*==================================================
     SECTION EDITOR
 ==================================================*/
-import { storage } from "../js/firebase.js";
+import { storage, db } from "../js/firebase.js";
 
-import {
+import { 
+    collection,
+    getDocs,
     ref,
     uploadBytes,
     getDownloadURL
@@ -595,23 +597,25 @@ Slide ${index+1}
 
             );
 
-            addTextField(
+            addImageUploadField(
 
-                card,
+    card,
 
-                "Image URL",
+    "Banner Image",
 
-                slide.image || "",
+    slide.image,
 
-                value=>{
+    "homepage/banners",
 
-                    slide.image=value;
+    url=>{
 
-                    onUpdate(section);
+        slide.image=url;
 
-                }
+        onUpdate(section);
 
-            );
+    }
+
+);
 
             addTextField(
 
@@ -702,35 +706,17 @@ function renderProductCarouselEditor(
         }
     );
 
-    addTextField(
-        container,
-        "Category ID",
-        section.categoryId || "",
-        value=>{
-            section.categoryId=value;
-            onUpdate(section);
-        }
-    );
+    await renderCategoryDropdown(
+    container,
+    section,
+    onUpdate
+);
 
-    addTextField(
-        container,
-        "Sub Category ID",
-        section.subCategoryId || "",
-        value=>{
-            section.subCategoryId=value;
-            onUpdate(section);
-        }
-    );
-
-    addTextField(
-        container,
-        "Tag",
-        section.tag || "",
-        value=>{
-            section.tag=value;
-            onUpdate(section);
-        }
-    );
+await renderTagDropdown(
+    container,
+    section,
+    onUpdate
+);
 
     addNumberField(
         container,
@@ -788,15 +774,25 @@ function renderImageCarouselEditor(
 
         container.appendChild(card);
 
-        addTextField(
-            card,
-            "Image URL",
-            image.src || "",
-            value=>{
-                image.src=value;
-                onUpdate(section);
-            }
-        );
+        addImageUploadField(
+
+    card,
+
+    "Image",
+
+    image.src,
+
+    "homepage/images",
+
+    url=>{
+
+        image.src=url;
+
+        onUpdate(section);
+
+    }
+
+);
 
         addTextField(
             card,
@@ -1353,6 +1349,144 @@ function addImageUploadField(
     parent.appendChild(div);
 
 }
+
+
+async function renderCategoryDropdown(
+    parent,
+    section,
+    onUpdate
+){
+
+    const snap = await getDocs(
+        collection(db,"categories")
+    );
+
+    const categories = snap.docs.map(doc=>({
+
+        id:doc.id,
+
+        ...doc.data()
+
+    }));
+
+    const div = document.createElement("div");
+
+    div.className="editor-field";
+
+    div.innerHTML="<label>Category</label>";
+
+    const select=document.createElement("select");
+
+    select.innerHTML=`
+<option value="">All Products</option>
+`;
+
+    categories.forEach(category=>{
+
+        const option=document.createElement("option");
+
+        option.value=category.id;
+
+        option.textContent=category.name;
+
+        select.appendChild(option);
+
+    });
+
+    select.value=section.categoryId || "";
+
+    select.onchange=()=>{
+
+        section.categoryId=select.value;
+
+        const selected=categories.find(
+            c=>c.id===select.value
+        );
+
+        section.categoryType=
+            selected?.parentId
+            ? "subcategory"
+            : "parent";
+
+        onUpdate(section);
+
+    };
+
+    div.appendChild(select);
+
+    parent.appendChild(div);
+
+}
+
+
+
+async function renderTagDropdown(
+    parent,
+    section,
+    onUpdate
+){
+
+    const tags=[
+        "Featured",
+        "Bestseller",
+        "Trending",
+        "New Arrival",
+        "Popular"
+    ];
+
+    const div=document.createElement("div");
+
+    div.className="editor-field";
+
+    div.innerHTML="<label>Tags</label>";
+
+    tags.forEach(tag=>{
+
+        const label=document.createElement("label");
+
+        label.style.display="block";
+
+        const checkbox=document.createElement("input");
+
+        checkbox.type="checkbox";
+
+        checkbox.checked=
+            section.tags?.includes(tag);
+
+        checkbox.onchange=()=>{
+
+            section.tags ??=[];
+
+            if(checkbox.checked){
+
+                section.tags.push(tag);
+
+            }else{
+
+                section.tags=
+                section.tags.filter(
+                    t=>t!==tag
+                );
+
+            }
+
+            onUpdate(section);
+
+        };
+
+        label.appendChild(checkbox);
+
+        label.append(" "+tag);
+
+        div.appendChild(label);
+
+    });
+
+    parent.appendChild(div);
+
+}
+
+
 
 /*==================================================
     EXPORTS
