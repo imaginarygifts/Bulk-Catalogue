@@ -166,69 +166,99 @@ export async function renderProductCarousel(container, section){
 
 function filterProducts(products, section){
 
-    switch(section.filterType){
+    let filtered = [...products];
 
-        case "category":
+    /*------------------------------------------
+        CATEGORY
+    ------------------------------------------*/
 
-            return products.filter(product=>
+    if(section.categoryId){
+
+        if(section.categoryType==="main"){
+
+            filtered = filtered.filter(product=>
 
                 product.categoryId===section.categoryId
 
             );
 
-        case "subcategory":
+        }
 
-            return products.filter(product=>
+        else if(section.categoryType==="sub"){
 
-                product.subCategoryId===section.subCategoryId
+            filtered = filtered.filter(product=>
 
-            );
-
-        case "tag":
-
-            return products.filter(product=>
-
-                (product.tags || []).includes(section.tag)
+                product.subCategoryId===section.categoryId
 
             );
 
-        case "manual":
-
-            return products.filter(product=>
-
-                (section.productIds || [])
-
-                .includes(product.id)
-
-            );
-
-        case "bestseller":
-
-            return products.filter(product=>
-
-                product.isBestseller
-
-            );
-
-        case "latest":
-
-            return [...products].sort(
-
-                (a,b)=>
-
-                (b.createdAt?.seconds || 0)
-
-                -
-
-                (a.createdAt?.seconds || 0)
-
-            );
-
-        default:
-
-            return products;
+        }
 
     }
+
+    /*------------------------------------------
+        TAGS
+    ------------------------------------------*/
+
+    if(section.tags?.length){
+
+        filtered = filtered.filter(product=>
+
+            section.tags.some(tag=>
+
+                (product.tags || []).includes(tag)
+
+            )
+
+        );
+
+    }
+
+    /*------------------------------------------
+        BESTSELLER
+    ------------------------------------------*/
+
+    if(section.filterType==="bestseller"){
+
+        filtered = filtered.filter(product=>
+
+            product.isBestseller
+
+        );
+
+    }
+
+    /*------------------------------------------
+        MANUAL
+    ------------------------------------------*/
+
+    if(section.filterType==="manual"){
+
+        filtered = filtered.filter(product=>
+
+            (section.productIds || []).includes(product.id)
+
+        );
+
+    }
+
+    /*------------------------------------------
+        LATEST
+    ------------------------------------------*/
+
+    if(section.filterType==="latest"){
+
+        filtered.sort((a,b)=>
+
+            (b.createdAt || 0) -
+
+            (a.createdAt || 0)
+
+        );
+
+    }
+
+    return filtered;
 
 }
 
