@@ -4,63 +4,79 @@
 
 export function createProductCard(product){
 
-    const card = document.createElement("div");
+    const card=document.createElement("div");
 
-    card.className = "product-card";
+    card.className="product-card";
 
-    const image =
-        product.images?.[0] || "";
+    const image=
 
-    const basePrice =
-        Number(product.basePrice || 0);
+        product.images?.[0] ||
 
-    const salePrice =
-        Number(product.salePrice || 0);
+        "assets/no-image.png";
 
-    const discount =
-        getDiscount(basePrice,salePrice);
+    const original=
 
-    const inStock =
-        product.inStock !== false;
+        Number(product.basePrice||0);
 
-    card.innerHTML = `
+    const sale=
+
+        Number(product.salePrice||original);
+
+    const discount=
+
+        original>sale
+
+        ? Math.round(
+            ((original-sale)/original)*100
+        )
+
+        :0;
+
+    card.innerHTML=`
 
 <div class="product-image">
 
-    <img
-        src="${image}"
-        loading="lazy"
-        alt="${product.name}">
-
     ${
-        discount > 0
+        discount
         ?
-
-        `<span class="discount-badge">
+        `
+        <span class="product-badge">
 
             ${discount}% OFF
 
-        </span>`
-
-        :
-
-        ""
+        </span>
+        `
+        :""
     }
 
     ${
-        !inStock
+        product.isBestseller
         ?
+        `
+        <span class="product-bestseller">
 
-        `<span class="out-of-stock">
+            Bestseller
 
-            Out of Stock
-
-        </span>`
-
-        :
-
-        ""
+        </span>
+        `
+        :""
     }
+
+    <button class="product-wishlist">
+
+        ♡
+
+    </button>
+
+    <img
+
+        src="${image}"
+
+        alt="${product.name}"
+
+        loading="lazy"
+
+    >
 
 </div>
 
@@ -72,42 +88,64 @@ export function createProductCard(product){
 
     </h3>
 
+    <div class="product-description">
+
+        ${product.description || ""}
+
+    </div>
+
     <div class="product-price">
 
+        <span class="product-sale-price">
+
+            ₹${sale.toLocaleString("en-IN")}
+
+        </span>
+
         ${
-            salePrice > 0 &&
-            salePrice < basePrice
-
+            original>sale
             ?
-
             `
+            <span class="product-original-price">
 
-            <span class="sale-price">
-
-                ${money(salePrice)}
+                ₹${original.toLocaleString("en-IN")}
 
             </span>
 
-            <span class="old-price">
+            <span class="product-discount">
 
-                ${money(basePrice)}
-
-            </span>
-
-            `
-
-            :
-
-            `
-
-            <span class="sale-price">
-
-                ${money(basePrice)}
+                ${discount}% OFF
 
             </span>
-
             `
+            :""
         }
+
+    </div>
+
+    <div class="product-stock ${product.inStock ? "" : "out"}">
+
+        ${
+            product.inStock
+            ? "✓ In Stock"
+            : "Out of Stock"
+        }
+
+    </div>
+
+    <div class="product-actions">
+
+        <button class="btn btn-outline">
+
+            View
+
+        </button>
+
+        <button class="btn btn-primary">
+
+            Buy Now
+
+        </button>
 
     </div>
 
@@ -115,76 +153,6 @@ export function createProductCard(product){
 
 `;
 
-    card.addEventListener(
-
-        "click",
-
-        ()=>{
-
-            window.location.href =
-
-            `product?id=${product.id}`;
-
-        }
-
-    );
-
     return card;
-
-}
-
-/*==================================================
-    MONEY
-==================================================*/
-
-function money(value){
-
-    return "₹" +
-
-    Number(value).toLocaleString(
-
-        "en-IN"
-
-    );
-
-}
-
-/*==================================================
-    DISCOUNT
-==================================================*/
-
-function getDiscount(
-
-    base,
-
-    sale
-
-){
-
-    if(
-
-        sale <= 0 ||
-
-        sale >= base
-
-    ){
-
-        return 0;
-
-    }
-
-    return Math.round(
-
-        (
-
-            (base-sale)
-
-            /
-
-            base
-
-        )*100
-
-    );
 
 }
