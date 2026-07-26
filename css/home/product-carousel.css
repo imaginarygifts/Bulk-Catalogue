@@ -1,0 +1,203 @@
+/*==================================================
+    PRODUCT CAROUSEL
+==================================================*/
+
+.product-carousel-section{
+
+    position:relative;
+
+    margin-bottom:70px;
+
+}
+
+.product-carousel-wrapper{
+
+    position:relative;
+
+}
+
+.product-carousel{
+
+    display:flex;
+
+    gap:20px;
+
+    overflow-x:auto;
+
+    overflow-y:hidden;
+
+    scroll-behavior:smooth;
+
+    scroll-snap-type:x proximity;
+
+    padding:8px 2px 16px;
+
+    scrollbar-width:none;
+
+}
+
+.product-carousel::-webkit-scrollbar{
+
+    display:none;
+
+}
+
+.product-carousel>*{
+
+    flex:0 0 auto;
+
+    scroll-snap-align:start;
+
+}
+
+/*==================================================
+    GRADIENT EDGES
+==================================================*/
+
+.product-carousel-wrapper::before,
+
+.product-carousel-wrapper::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    width:80px;
+
+    height:100%;
+
+    z-index:3;
+
+    pointer-events:none;
+
+}
+
+.product-carousel-wrapper::before{
+
+    left:0;
+
+    background:linear-gradient(
+        90deg,
+        var(--bg),
+        transparent
+    );
+
+}
+
+.product-carousel-wrapper::after{
+
+    right:0;
+
+    background:linear-gradient(
+        -90deg,
+        var(--bg),
+        transparent
+    );
+
+}
+
+/*==================================================
+    ARROWS
+==================================================*/
+
+.product-carousel-section .carousel-arrow{
+
+    position:absolute;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    width:48px;
+
+    height:48px;
+
+    border-radius:50%;
+
+    background:#fff;
+
+    box-shadow:var(--shadow);
+
+    border:1px solid var(--border);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    z-index:5;
+
+}
+
+.product-carousel-section .carousel-arrow:hover{
+
+    background:var(--primary);
+
+    color:#fff;
+
+    transform:translateY(-50%) scale(1.08);
+
+}
+
+.product-carousel-section .left{
+
+    left:-24px;
+
+}
+
+.product-carousel-section .right{
+
+    right:-24px;
+
+}
+
+/*==================================================
+    RESPONSIVE
+==================================================*/
+
+@media(max-width:992px){
+
+    .product-carousel{
+
+        gap:16px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .product-carousel-section .carousel-arrow{
+
+        display:none;
+
+    }
+
+    .product-carousel-wrapper::before,
+
+    .product-carousel-wrapper::after{
+
+        display:none;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .product-carousel{
+
+        gap:12px;
+
+        padding-bottom:10px;
+
+    }
+
+}
