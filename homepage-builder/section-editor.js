@@ -6,6 +6,8 @@ import { storage, db } from "../js/firebase.js";
 import { 
     collection,
     getDocs,
+    query,
+    orderBy,
     ref,
     uploadBytes,
     getDownloadURL
@@ -690,7 +692,7 @@ Slide ${index+1}
     PRODUCT CAROUSEL EDITOR
 ==================================================*/
 
-function renderProductCarouselEditor(
+async function renderProductCarouselEditor(
     container,
     section,
     onUpdate
@@ -1358,38 +1360,62 @@ async function renderCategoryDropdown(
 ){
 
     const snap = await getDocs(
-        collection(db,"categories")
+        query(
+            collection(db,"categories"),
+            orderBy("order")
+        )
     );
 
-    const categories = snap.docs.map(doc=>({
+    const categories = [];
 
-        id:doc.id,
+    snap.forEach(doc=>{
 
-        ...doc.data()
+        categories.push({
+            id:doc.id,
+            ...doc.data()
+        });
 
-    }));
+    });
 
-    const div = document.createElement("div");
-
+    const div=document.createElement("div");
     div.className="editor-field";
 
-    div.innerHTML="<label>Category</label>";
+    const label=document.createElement("label");
+    label.textContent="Category";
+
+    div.appendChild(label);
 
     const select=document.createElement("select");
 
     select.innerHTML=`
-<option value="">All Products</option>
-`;
+        <option value="">All Products</option>
+    `;
 
-    categories.forEach(category=>{
+    const mains=categories.filter(c=>!c.parentId);
+
+    mains.forEach(main=>{
 
         const option=document.createElement("option");
 
-        option.value=category.id;
-
-        option.textContent=category.name;
+        option.value=main.id;
+        option.textContent=main.name;
+        option.dataset.type="main";
 
         select.appendChild(option);
+
+        categories
+        .filter(c=>c.parentId===main.id)
+        .forEach(sub=>{
+
+            const subOption=document.createElement("option");
+
+            subOption.value=sub.id;
+            subOption.textContent="— "+sub.name;
+            subOption.dataset.type="sub";
+
+            select.appendChild(subOption);
+
+        });
 
     });
 
@@ -1397,16 +1423,10 @@ async function renderCategoryDropdown(
 
     select.onchange=()=>{
 
-        section.categoryId=select.value;
+        const selected=select.selectedOptions[0];
 
-        const selected=categories.find(
-            c=>c.id===select.value
-        );
-
-        section.categoryType=
-            selected?.parentId
-            ? "subcategory"
-            : "parent";
+        section.categoryId=selected.value;
+        section.categoryType=selected.dataset.type || "";
 
         onUpdate(section);
 
@@ -1426,13 +1446,9 @@ async function renderTagDropdown(
     onUpdate
 ){
 
-    const tags=[
-        "Featured",
-        "Bestseller",
-        "Trending",
-        "New Arrival",
-        "Popular"
-    ];
+    const snap=await getDocs(
+        collection(db,"tags")
+    );
 
     const div=document.createElement("div");
 
@@ -1440,7 +1456,11 @@ async function renderTagDropdown(
 
     div.innerHTML="<label>Tags</label>";
 
-    tags.forEach(tag=>{
+    section.tags ??=[];
+
+    snap.forEach(doc=>{
+
+        const tag=doc.data();
 
         const label=document.createElement("label");
 
@@ -1451,21 +1471,23 @@ async function renderTagDropdown(
         checkbox.type="checkbox";
 
         checkbox.checked=
-            section.tags?.includes(tag);
+            section.tags.includes(tag.slug);
 
         checkbox.onchange=()=>{
 
-            section.tags ??=[];
-
             if(checkbox.checked){
 
-                section.tags.push(tag);
+                if(!section.tags.includes(tag.slug)){
+
+                    section.tags.push(tag.slug);
+
+                }
 
             }else{
 
                 section.tags=
                 section.tags.filter(
-                    t=>t!==tag
+                    t=>t!==tag.slug
                 );
 
             }
@@ -1476,7 +1498,7 @@ async function renderTagDropdown(
 
         label.appendChild(checkbox);
 
-        label.append(" "+tag);
+        label.append(" "+tag.name);
 
         div.appendChild(label);
 
@@ -1485,7 +1507,6 @@ async function renderTagDropdown(
     parent.appendChild(div);
 
 }
-
 
 
 /*==================================================
