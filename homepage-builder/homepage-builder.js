@@ -219,6 +219,43 @@ function getSectionIcon(type){
 
 }
 
+
+
+
+
+function getSectionLabel(type){
+
+    switch(type){
+
+        case "banner":
+            return "Hero Banner";
+
+        case "heading":
+            return "Heading";
+
+        case "productCarousel":
+            return "Product Carousel";
+
+        case "imageCarousel":
+            return "Image Gallery";
+
+        case "youtubeCarousel":
+            return "YouTube Videos";
+
+        case "reviewCarousel":
+            return "Customer Reviews";
+
+        case "spacer":
+            return "Spacer";
+
+        default:
+            return type;
+
+    }
+
+}
+
+
 /*==================================================
     RENDER SECTION LIST
 ==================================================*/
@@ -254,13 +291,13 @@ function renderSectionList(){
 
 <div class="section-title">
 
-${section.title || "Untitled"}
+${section.order}. ${section.title || getSectionLabel(section.type)}
 
 </div>
 
 <div class="section-subtitle">
 
-${section.type}
+${getSectionLabel(section.type)}
 
 </div>
 
