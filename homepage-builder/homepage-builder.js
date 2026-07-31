@@ -39,6 +39,18 @@ document.getElementById("settingsPanel");
 const addSectionBtn =
 document.getElementById("addSection");
 
+const drawer =
+document.getElementById("sectionDrawer");
+
+const drawerList =
+document.getElementById("drawerList");
+
+const drawerSearch =
+document.getElementById("drawerSearch");
+
+const closeDrawer =
+document.getElementById("closeDrawer");
+
 /*==================================================
     DATA
 ==================================================*/
@@ -81,7 +93,23 @@ function bindEvents(){
 
         "click",
 
-        showAddSectionDialog
+        openSectionDrawer
+
+    );
+
+    closeDrawer.addEventListener(
+
+        "click",
+
+        closeSectionDrawer
+
+    );
+
+    drawerSearch.addEventListener(
+
+        "input",
+
+        renderDrawerItems
 
     );
 
@@ -339,25 +367,146 @@ function selectSection(id){
     ADD SECTION
 ==================================================*/
 
-function showAddSectionDialog(){
+const availableSections = [
 
-    const type = prompt(
+{
+    category:"Basic",
+    items:[
+        {
+            type:"banner",
+            title:"Hero Banner",
+            icon:"fa-image"
+        },
+        {
+            type:"heading",
+            title:"Heading",
+            icon:"fa-heading"
+        },
+        {
+            type:"spacer",
+            title:"Spacer",
+            icon:"fa-arrows-up-down"
+        }
+    ]
+},
 
-`Enter Section Type
+{
+    category:"Products",
+    items:[
+        {
+            type:"productCarousel",
+            title:"Product Carousel",
+            icon:"fa-box"
+        }
+    ]
+},
 
-banner
-heading
-productCarousel
-imageCarousel
-youtubeCarousel
-reviewCarousel
-spacer`
+{
+    category:"Media",
+    items:[
+        {
+            type:"imageCarousel",
+            title:"Image Carousel",
+            icon:"fa-images"
+        },
+        {
+            type:"youtubeCarousel",
+            title:"YouTube Carousel",
+            icon:"fa-circle-play"
+        }
+    ]
+},
 
-    );
+{
+    category:"Social Proof",
+    items:[
+        {
+            type:"reviewCarousel",
+            title:"Review Carousel",
+            icon:"fa-star"
+        }
+    ]
+}
 
-    if(!type) return;
+];
 
-    createSection(type);
+function openSectionDrawer(){
+
+    drawer.classList.add("open");
+
+    drawerSearch.value="";
+
+    renderDrawerItems();
+
+}
+
+function closeSectionDrawer(){
+
+    drawer.classList.remove("open");
+
+}
+
+function renderDrawerItems(){
+
+    const keyword = drawerSearch.value
+        .toLowerCase()
+        .trim();
+
+    drawerList.innerHTML = "";
+
+    availableSections.forEach(group=>{
+
+        const items = group.items.filter(item=>
+
+            item.title
+            .toLowerCase()
+            .includes(keyword)
+
+        );
+
+        if(items.length===0) return;
+
+        const heading=document.createElement("h3");
+
+        heading.className="drawer-category";
+
+        heading.textContent=group.category;
+
+        drawerList.appendChild(heading);
+
+        items.forEach(item=>{
+
+            const div=document.createElement("div");
+
+            div.className="drawer-item";
+
+            div.innerHTML=`
+
+<i class="fa-solid ${item.icon}"></i>
+
+<div>
+
+<h4>${item.title}</h4>
+
+<p>${item.type}</p>
+
+</div>
+
+`;
+
+            div.onclick=async()=>{
+
+                closeSectionDrawer();
+
+                await createSection(item.type);
+
+            };
+
+            drawerList.appendChild(div);
+
+        });
+
+    });
 
 }
 
