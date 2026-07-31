@@ -161,45 +161,40 @@ async function loadSections(){
 
 function renderSectionList(){
 
-    sectionList.innerHTML="";
+    sectionList.innerHTML = "";
 
     homepageSections.forEach(section=>{
 
-        const item =
+        const card=document.createElement("div");
 
-        document.createElement("div");
-
-        item.className=
-
-        "builder-section";
+        card.className="section-card";
 
         if(
-
             selectedSection &&
-
             selectedSection.id===section.id
-
         ){
 
-            item.classList.add(
-
-                "active"
-
-            );
+            card.classList.add("active");
 
         }
 
-        item.innerHTML=`
+        card.innerHTML=`
 
-<div class="builder-section-left">
+<div class="section-card-header">
 
-<strong>
+<div class="left">
 
-${section.title || section.type}
+<i class="fa-solid fa-grip-vertical drag-handle"></i>
 
-</strong>
+<div>
 
-<div class="builder-section-type">
+<div class="section-title">
+
+${section.title || "Untitled Section"}
+
+</div>
+
+<div class="section-subtitle">
 
 ${section.type}
 
@@ -207,34 +202,81 @@ ${section.type}
 
 </div>
 
-<div class="builder-section-right">
+</div>
 
-#${section.order}
+<div class="right">
+
+<button class="icon-btn duplicate-btn">
+
+<i class="fa-regular fa-copy"></i>
+
+</button>
+
+<button class="icon-btn delete-btn">
+
+<i class="fa-regular fa-trash-can"></i>
+
+</button>
+
+</div>
 
 </div>
 
 `;
 
-        item.onclick=()=>{
+        card.addEventListener(
 
-            selectSection(
+            "click",
 
-                section.id
+            ()=>{
 
-            );
+                selectSection(section.id);
 
-        };
-
-        sectionList.appendChild(
-
-            item
+            }
 
         );
+
+        card.querySelector(".duplicate-btn")
+
+        .addEventListener(
+
+            "click",
+
+            e=>{
+
+                e.stopPropagation();
+
+                selectedSection=section;
+
+                duplicateSelectedSection();
+
+            }
+
+        );
+
+        card.querySelector(".delete-btn")
+
+        .addEventListener(
+
+            "click",
+
+            e=>{
+
+                e.stopPropagation();
+
+                selectedSection=section;
+
+                deleteSelectedSection();
+
+            }
+
+        );
+
+        sectionList.appendChild(card);
 
     });
 
 }
-
 /*==================================================
     PREVIEW
 ==================================================*/
