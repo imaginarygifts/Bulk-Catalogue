@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>
+<title>Homepage Builder</title>
 
-Homepage Builder
-
-</title>
+<link rel="stylesheet" href="../css/homepage-builder.css">
 
 <link rel="stylesheet"
-href="../css/homepage-builder.css">
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
 </head>
 
@@ -24,59 +20,209 @@ href="../css/homepage-builder.css">
 
 <div class="builder">
 
-<!-- LEFT -->
+    <!-- HEADER -->
 
-<div class="sidebar">
+    <header class="builder-header">
 
-<h2>
+        <div class="header-left">
 
-Homepage Builder
+            <h2>
 
-</h2>
+                <i class="fa-solid fa-layer-group"></i>
 
-<button id="addSection">
+                Homepage Builder
 
-+ Add Section
+            </h2>
 
-</button>
+            <p>Build your homepage visually</p>
 
-<div id="sectionList">
+        </div>
+
+        <div class="header-right">
+
+            <button class="btn secondary">
+
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+
+                Undo
+
+            </button>
+
+            <button class="btn secondary">
+
+                <i class="fa-solid fa-arrow-rotate-right"></i>
+
+                Redo
+
+            </button>
+
+            <button class="btn secondary">
+
+                <i class="fa-solid fa-eye"></i>
+
+                Preview
+
+            </button>
+
+            <button class="btn success">
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Publish
+
+            </button>
+
+        </div>
+
+    </header>
+
+    <!-- MAIN -->
+
+    <div class="builder-content">
+
+        <!-- LEFT SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-top">
+
+                <h3 class="sidebar-title">
+
+                    Sections
+
+                </h3>
+
+                <input
+                    type="text"
+                    id="sectionSearch"
+                    placeholder="Search sections...">
+
+                <button
+                    id="addSection"
+                    class="add-section">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Section
+
+                </button>
+
+            </div>
+
+            <div
+                id="sectionList"
+                class="section-list">
+
+            </div>
+
+        </aside>
+
+        <!-- PREVIEW -->
+
+        <main class="preview">
+
+            <div class="preview-header">
+
+                <div class="preview-title">
+
+                    Live Preview
+
+                </div>
+
+                <div class="preview-device">
+
+                    <button class="icon-btn">
+
+                        <i class="fa-solid fa-desktop"></i>
+
+                    </button>
+
+                    <button class="icon-btn">
+
+                        <i class="fa-solid fa-tablet-screen-button"></i>
+
+                    </button>
+
+                    <button class="icon-btn">
+
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="preview-inner">
+
+                <div id="homepagePreview">
+
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- PROPERTIES -->
+
+        <aside class="settings">
+
+            <div class="property-tabs">
+
+                <button class="property-tab active">
+
+                    Content
+
+                </button>
+
+                <button class="property-tab">
+
+                    Design
+
+                </button>
+
+                <button class="property-tab">
+
+                    Advanced
+
+                </button>
+
+            </div>
+
+            <div id="settingsPanel">
+
+                <div class="settings-empty">
+
+                    <div class="empty-icon">
+
+                        <i class="fa-solid fa-sliders"></i>
+
+                    </div>
+
+                    <h2>
+
+                        No Section Selected
+
+                    </h2>
+
+                    <p>
+
+                        Select a section from the left panel to edit its settings.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
 
 </div>
 
-</div>
-
-<!-- CENTER -->
-
-<div class="preview">
-
-<div id="homepagePreview">
-
-</div>
-
-</div>
-
-<!-- RIGHT -->
-
-<div class="settings">
-
-<h2>
-
-Section Settings
-
-</h2>
-
-<div id="settingsPanel">
-
-Select a section
-
-</div>
-
-</div>
-
-</div>
-
-<script type="module"
+<script
+type="module"
 src="homepage-builder.js">
 
 </script>
