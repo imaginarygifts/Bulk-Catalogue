@@ -155,11 +155,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
             <div class="preview-inner">
 
-                <div id="homepagePreview">
+    <div
+        id="homepagePreview"
+        class="homepage-preview">
 
-                </div>
+    </div>
 
-            </div>
+</div>
 
         </main>
 
@@ -169,23 +171,29 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
             <div class="property-tabs">
 
-                <button class="property-tab active">
+                <button
+class="property-tab active"
+data-tab="content">
 
-                    Content
+Content
 
-                </button>
+</button>
 
-                <button class="property-tab">
+<button
+class="property-tab"
+data-tab="design">
 
-                    Design
+Design
 
-                </button>
+</button>
 
-                <button class="property-tab">
+<button
+class="property-tab"
+data-tab="advanced">
 
-                    Advanced
+Advanced
 
-                </button>
+</button>
 
             </div>
 
@@ -255,11 +263,39 @@ ADD SECTION DRAWER
 
 </div>
 
+
+<div
+id="toast"
+class="toast hidden">
+
+</div>
+
+<div
+id="loader"
+class="loader hidden">
+
+<div class="loader-box">
+
+<div class="spinner">
+
+</div>
+
+<p>
+
+Loading...
+
+</p>
+
+</div>
+
+</div>
+
 <script
 type="module"
 src="homepage-builder.js">
 
 </script>
+
 
 </body>
 
