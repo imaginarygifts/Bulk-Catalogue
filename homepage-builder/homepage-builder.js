@@ -183,13 +183,49 @@ async function loadSections(){
 
 }
 
+
+
+
+
+function getSectionIcon(type){
+
+    switch(type){
+
+        case "banner":
+            return "fa-image";
+
+        case "heading":
+            return "fa-heading";
+
+        case "productCarousel":
+            return "fa-box";
+
+        case "imageCarousel":
+            return "fa-images";
+
+        case "youtubeCarousel":
+            return "fa-circle-play";
+
+        case "reviewCarousel":
+            return "fa-star";
+
+        case "spacer":
+            return "fa-arrows-up-down";
+
+        default:
+            return "fa-layer-group";
+
+    }
+
+}
+
 /*==================================================
     RENDER SECTION LIST
 ==================================================*/
 
 function renderSectionList(){
 
-    sectionList.innerHTML = "";
+    sectionList.innerHTML="";
 
     homepageSections.forEach(section=>{
 
@@ -201,9 +237,7 @@ function renderSectionList(){
             selectedSection &&
             selectedSection.id===section.id
         ){
-
             card.classList.add("active");
-
         }
 
         card.innerHTML=`
@@ -214,11 +248,13 @@ function renderSectionList(){
 
 <i class="fa-solid fa-grip-vertical drag-handle"></i>
 
+<i class="fa-solid ${getSectionIcon(section.type)} section-icon"></i>
+
 <div>
 
 <div class="section-title">
 
-${section.title || "Untitled Section"}
+${section.title || "Untitled"}
 
 </div>
 
@@ -233,6 +269,12 @@ ${section.type}
 </div>
 
 <div class="right">
+
+<span class="status-badge ${section.published ? "published" : "draft"}">
+
+${section.published ? "Live" : "Draft"}
+
+</span>
 
 <button class="icon-btn duplicate-btn">
 
@@ -270,13 +312,13 @@ ${section.type}
 
             "click",
 
-            e=>{
+            async e=>{
 
                 e.stopPropagation();
 
                 selectedSection=section;
 
-                duplicateSelectedSection();
+                await duplicateSelectedSection();
 
             }
 
@@ -288,13 +330,13 @@ ${section.type}
 
             "click",
 
-            e=>{
+            async e=>{
 
                 e.stopPropagation();
 
                 selectedSection=section;
 
-                deleteSelectedSection();
+                await deleteSelectedSection();
 
             }
 
