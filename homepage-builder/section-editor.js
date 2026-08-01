@@ -1,13 +1,16 @@
 /*==================================================
     SECTION EDITOR
 ==================================================*/
-import { storage, db } from "../js/firebase.js";
+import { db, storage } from "../js/firebase.js";
 
-import { 
+import {
     collection,
     getDocs,
     query,
-    orderBy,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import {
     ref,
     uploadBytes,
     getDownloadURL
