@@ -1069,17 +1069,25 @@ async function createNewSection(){
 
     catch(error){
 
-        console.error(
-            "Create section error:",
-            error
-        );
+    console.error(
+        "CREATE SECTION ERROR:",
+        error
+    );
 
-        showToast(
-            "Failed to create section",
-            "error"
-        );
+    alert(
+        "Firebase Error:\n\n" +
+        "Code: " +
+        (error.code || "unknown") +
+        "\n\nMessage: " +
+        (error.message || error)
+    );
 
-    }
+    showToast(
+        "Failed to create section",
+        "error"
+    );
+
+}
 
     finally{
 
