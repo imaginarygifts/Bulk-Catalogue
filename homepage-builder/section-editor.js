@@ -1,20 +1,17 @@
-/\*==================================================
+/*==================================================
     SECTION EDITOR
-\==================================================\*/
-import { db, storage } from "../js/firebase.js";
+==================================================*/
+import { storage, db } from "../js/firebase.js";
 
-import {
+import { 
     collection,
     getDocs,
     query,
-    orderBy
-} from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js)";
-
-import {
+    orderBy,
     ref,
     uploadBytes,
     getDownloadURL
-} from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js)";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 
 export function renderSectionEditor({
@@ -30,17 +27,17 @@ export function renderSectionEditor({
 
     if(!section){
 
-        container.innerHTML = \`
+        container.innerHTML = `
 
-        \<div class="editor-empty">
+        <div class="editor-empty">
 
-            \<h3>No Section Selected\</h3>
+            <h3>No Section Selected</h3>
 
-            \<p>Select a section from the left panel.\</p>
+            <p>Select a section from the left panel.</p>
 
-        \</div>
+        </div>
 
-        \`;
+        `;
 
         return;
 
@@ -50,35 +47,35 @@ export function renderSectionEditor({
 
     wrapper.className = "section-editor";
 
-    wrapper.innerHTML = \`
+    wrapper.innerHTML = `
 
-        \<div class="editor-header">
+        <div class="editor-header">
 
-            \<h2>${capitalize(section.type)}\</h2>
+            <h2>${capitalize(section.type)}</h2>
 
-        \</div>
+        </div>
 
-        \<div class="editor-body">
+        <div class="editor-body">
 
-            \<div id="commonFields">\</div>
+            <div id="commonFields"></div>
 
-            \<div id="typeFields">\</div>
+            <div id="typeFields"></div>
 
-        \</div>
+        </div>
 
-        \<div class="editor-footer">
+        <div class="editor-footer">
 
-            \<button id="duplicateBtn">
+            <button id="duplicateBtn">
                 Duplicate
-            \</button>
+            </button>
 
-            \<button id="deleteBtn">
+            <button id="deleteBtn">
                 Delete
-            \</button>
+            </button>
 
-        \</div>
+        </div>
 
-    \`;
+    `;
 
     container.appendChild(wrapper);
 
@@ -102,9 +99,9 @@ export function renderSectionEditor({
 
 }
 
-/\*==================================================
+/*==================================================
     COMMON FIELDS
-\==================================================\*/
+==================================================*/
 
 function renderCommonFields(
     container,
@@ -144,9 +141,9 @@ function renderCommonFields(
 
 }
 
-/\*==================================================
+/*==================================================
     TYPE ROUTER
-\==================================================\*/
+==================================================*/
 
 function renderTypeEditor(
     container,
@@ -232,9 +229,9 @@ function renderTypeEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     INPUT COMPONENTS
-\==================================================\*/
+==================================================*/
 
 function addTextField(
     parent,
@@ -247,16 +244,16 @@ function addTextField(
 
     div.className = "editor-field";
 
-    div.innerHTML = \`
+    div.innerHTML = `
 
-        \<label>${label}\</label>
+        <label>${label}</label>
 
-        \<input
+        <input
             type="text"
             value="${value}"
-        \>
+        >
 
-    \`;
+    `;
 
     div.querySelector("input")
         .addEventListener("input",e=>{
@@ -280,13 +277,13 @@ function addTextareaField(
 
     div.className = "editor-field";
 
-    div.innerHTML = \`
+    div.innerHTML = `
 
-        \<label>${label}\</label>
+        <label>${label}</label>
 
-        \<textarea rows="3">${value}\</textarea>
+        <textarea rows="3">${value}</textarea>
 
-    \`;
+    `;
 
     div.querySelector("textarea")
         .addEventListener("input",e=>{
@@ -310,16 +307,16 @@ function addNumberField(
 
     div.className = "editor-field";
 
-    div.innerHTML = \`
+    div.innerHTML = `
 
-        \<label>${label}\</label>
+        <label>${label}</label>
 
-        \<input
+        <input
             type="number"
             value="${value}"
-        \>
+        >
 
-    \`;
+    `;
 
     div.querySelector("input")
         .addEventListener("input",e=>{
@@ -343,21 +340,21 @@ function addCheckboxField(
 
     div.className = "editor-field";
 
-    div.innerHTML = \`
+    div.innerHTML = `
 
-        \<label>
+        <label>
 
-            \<input
+            <input
                 type="checkbox"
                 ${checked ? "checked" : ""}
 
-            \>
+            >
 
             ${label}
 
-        \</label>
+        </label>
 
-    \`;
+    `;
 
     div.querySelector("input")
         .addEventListener("change",e=>{
@@ -370,22 +367,22 @@ function addCheckboxField(
 
 }
 
-/\*==================================================
+/*==================================================
     HELPERS
-\==================================================\*/
+==================================================*/
 
 function capitalize(text){
 
     if(!text) return "";
 
     return text.charAt(0).toUpperCase()
-        \+ text.slice(1);
+        + text.slice(1);
 
 }
 
-/\*==================================================
+/*==================================================
     HEADING EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderHeadingEditor(
     container,
@@ -408,9 +405,9 @@ function renderHeadingEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     SPACER EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderSpacerEditor(
     container,
@@ -446,9 +443,9 @@ function renderSpacerEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     BANNER EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderBannerEditor(
     container,
@@ -530,9 +527,9 @@ function renderBannerEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     SLIDES
-\==================================================\*/
+==================================================*/
 
 function renderSlides(
     container,
@@ -554,15 +551,15 @@ function renderSlides(
 
             card.className="editor-card";
 
-            card.innerHTML=\`
+            card.innerHTML=`
 
-\<h3>
+<h3>
 
 Slide ${index+1}
 
-\</h3>
+</h3>
 
-\`;
+`;
 
             container.appendChild(card);
 
@@ -691,9 +688,9 @@ Slide ${index+1}
 }
 
 
-/\*==================================================
+/*==================================================
     PRODUCT CAROUSEL EDITOR
-\==================================================\*/
+==================================================*/
 
 async function renderProductCarouselEditor(
     container,
@@ -755,9 +752,9 @@ await renderTagDropdown(
 
 }
 
-/\*==================================================
+/*==================================================
     IMAGE CAROUSEL EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderImageCarouselEditor(
     container,
@@ -775,7 +772,7 @@ function renderImageCarouselEditor(
 
         card.className="editor-card";
 
-        card.innerHTML=\`\<h3>Image ${index+1}\</h3>\`;
+        card.innerHTML=`<h3>Image ${index+1}</h3>`;
 
         container.appendChild(card);
 
@@ -873,9 +870,9 @@ function renderImageCarouselEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     YOUTUBE EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderYoutubeEditor(
     container,
@@ -893,7 +890,7 @@ function renderYoutubeEditor(
 
         card.className="editor-card";
 
-        card.innerHTML=\`\<h3>Video ${index+1}\</h3>\`;
+        card.innerHTML=`<h3>Video ${index+1}</h3>`;
 
         container.appendChild(card);
 
@@ -970,9 +967,9 @@ function renderYoutubeEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     REVIEW EDITOR
-\==================================================\*/
+==================================================*/
 
 function renderReviewEditor(
     container,
@@ -1024,9 +1021,9 @@ function renderReviewEditor(
 
 }
 
-/\*==================================================
+/*==================================================
     SELECT FIELD
-\==================================================\*/
+==================================================*/
 
 function addSelectField(
     parent,
@@ -1074,9 +1071,9 @@ function addSelectField(
 
 }
 
-/\*==================================================
+/*==================================================
     COLOR FIELD
-\==================================================\*/
+==================================================*/
 
 function addColorField(
     parent,
@@ -1089,15 +1086,15 @@ function addColorField(
 
     div.className="editor-field";
 
-    div.innerHTML=\`
+    div.innerHTML=`
 
-\<label>${label}\</label>
+<label>${label}</label>
 
-\<input
+<input
 type="color"
 value="${value || "#000000"}">
 
-\`;
+`;
 
     div.querySelector("input")
 
@@ -1121,9 +1118,9 @@ value="${value || "#000000"}">
 
 }
 
-/\*==================================================
+/*==================================================
     IMAGE PREVIEW
-\==================================================\*/
+==================================================*/
 
 function createImagePreview(
     parent,
@@ -1132,13 +1129,13 @@ function createImagePreview(
 
     const preview=document.createElement("img");
 
-    preview\.className="editor-image-preview";
+    preview.className="editor-image-preview";
 
-    preview\.src=image || "";
+    preview.src=image || "";
 
-    preview\.onerror=()=>{
+    preview.onerror=()=>{
 
-        preview\.style.display="none";
+        preview.style.display="none";
 
     };
 
@@ -1148,9 +1145,9 @@ function createImagePreview(
 
 }
 
-/\*==================================================
+/*==================================================
     VALIDATION
-\==================================================\*/
+==================================================*/
 
 function isValidUrl(url){
 
@@ -1180,9 +1177,9 @@ function isEmpty(value){
 
 }
 
-/\*==================================================
+/*==================================================
     SAVE HELPER
-\==================================================\*/
+==================================================*/
 
 function saveSection(
     section,
@@ -1197,9 +1194,9 @@ function saveSection(
 
 }
 
-/\*==================================================
+/*==================================================
     REFRESH HELPER
-\==================================================\*/
+==================================================*/
 
 function rerender(
     renderer,
@@ -1222,9 +1219,9 @@ function rerender(
 
 }
 
-/\*==================================================
+/*==================================================
     FIREBASE IMAGE UPLOAD
-\==================================================\*/
+==================================================*/
 
 async function uploadImage(file, folder){
 
@@ -1234,7 +1231,7 @@ async function uploadImage(file, folder){
 
     const fileName=
 
-    \`${Date.now()}-${Math.random().toString(36).substring(2,8)}.${extension}\`;
+    `${Date.now()}-${Math.random().toString(36).substring(2,8)}.${extension}`;
 
     const storageRef=
 
@@ -1242,7 +1239,7 @@ async function uploadImage(file, folder){
 
         storage,
 
-        \`${folder}/${fileName}\`
+        `${folder}/${fileName}`
 
     );
 
@@ -1259,9 +1256,9 @@ async function uploadImage(file, folder){
 }
 
 
-/\*==================================================
+/*==================================================
     IMAGE UPLOAD FIELD
-\==================================================\*/
+==================================================*/
 
 function addImageUploadField(
 
@@ -1289,15 +1286,15 @@ function addImageUploadField(
 
     const preview=document.createElement("img");
 
-    preview\.className="editor-image-preview";
+    preview.className="editor-image-preview";
 
-    preview\.src=image || "";
+    preview.src=image || "";
 
-    preview\.style.maxWidth="180px";
+    preview.style.maxWidth="180px";
 
-    preview\.style.marginBottom="10px";
+    preview.style.marginBottom="10px";
 
-    preview\.style.display=image ? "block" : "none";
+    preview.style.display=image ? "block" : "none";
 
     div.appendChild(preview);
 
@@ -1305,7 +1302,7 @@ function addImageUploadField(
 
     input.type="file";
 
-    input.accept="image/\*";
+    input.accept="image/*";
 
     input.onchange=async(e)=>{
 
@@ -1329,9 +1326,9 @@ function addImageUploadField(
 
             );
 
-            preview\.src=url;
+            preview.src=url;
 
-            preview\.style.display="block";
+            preview.style.display="block";
 
             callback(url);
 
@@ -1374,7 +1371,7 @@ async function renderCategoryDropdown(
     snap.forEach(doc=>{
 
         categories.push({
-            id\:doc.id,
+            id:doc.id,
             ...doc.data()
         });
 
@@ -1390,9 +1387,9 @@ async function renderCategoryDropdown(
 
     const select=document.createElement("select");
 
-    select.innerHTML=\`
-        \<option value="">All Products\</option>
-    \`;
+    select.innerHTML=`
+        <option value="">All Products</option>
+    `;
 
     const mains=categories.filter(c=>!c.parentId);
 
@@ -1457,7 +1454,7 @@ async function renderTagDropdown(
 
     div.className="editor-field";
 
-    div.innerHTML="\<label>Tags\</label>";
+    div.innerHTML="<label>Tags</label>";
 
     section.tags ??=[];
 
@@ -1512,9 +1509,9 @@ async function renderTagDropdown(
 }
 
 
-/\*==================================================
+/*==================================================
     EXPORTS
-\==================================================\*/
+==================================================*/
 
 export{
 
@@ -1536,4 +1533,4 @@ export{
 
     uploadImage
 
-}; 
+};
