@@ -1,5 +1,5 @@
 /*==================================================
-    HOMEPAGE RENDERER
+    HOMEPAGE
     MOBILE FIRST
 ==================================================*/
 
@@ -7,9 +7,7 @@ import { db } from "./firebase.js";
 
 import {
     collection,
-    getDocs,
-    query,
-    orderBy
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
@@ -20,16 +18,8 @@ import {
 const homepage =
     document.getElementById("homepage");
 
-
-/*==================================================
-    STATE
-==================================================*/
-
-let homepageSections = [];
-
-let products = [];
-
-let currentBannerIntervals = [];
+const loader =
+    document.getElementById("homepageLoader");
 
 
 /*==================================================
@@ -38,33 +28,94 @@ let currentBannerIntervals = [];
 
 document.addEventListener(
     "DOMContentLoaded",
-    initHomepage
+    loadHomepage
 );
 
 
-async function initHomepage(){
+/*==================================================
+    LOAD HOMEPAGE
+==================================================*/
 
-    if(!homepage){
-
-        console.error(
-            "Homepage container #homepage not found."
-        );
-
-        return;
-
-    }
-
-    showLoader();
+async function loadHomepage(){
 
     try{
 
-        await loadHomepageSections();
+        showLoader();
 
-        await loadProducts();
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "homepageSections"
+                )
+            );
 
-        renderHomepage();
 
-        initializeCarousels();
+        let sections =
+            snapshot.docs.map(docSnap => ({
+
+                id: docSnap.id,
+
+                ...docSnap.data()
+
+            }));
+
+
+        /* ONLY PUBLISHED */
+
+        sections =
+            sections.filter(
+                section =>
+                    section.published !== false
+            );
+
+
+        /* SORT */
+
+        sections.sort(
+            (a,b) =>
+                Number(a.order || 0) -
+                Number(b.order || 0)
+        );
+
+
+        homepage.innerHTML = "";
+
+
+        if(!sections.length){
+
+            homepage.innerHTML = `
+
+                <div class="homepage-empty">
+
+                    <h2>Homepage</h2>
+
+                    <p>
+                        No sections have been published yet.
+                    </p>
+
+                </div>
+
+            `;
+
+            hideLoader();
+
+            return;
+
+        }
+
+
+        for(const section of sections){
+
+            await renderSection(
+                homepage,
+                section
+            );
+
+        }
+
+
+        hideLoader();
 
     }
 
@@ -75,135 +126,25 @@ async function initHomepage(){
             error
         );
 
-        renderHomepageError();
-
-    }
-
-    hideLoader();
-
-}
-
-
-/*==================================================
-    LOAD SECTIONS
-==================================================*/
-
-async function loadHomepageSections(){
-
-    const q = query(
-
-        collection(
-            db,
-            "homepageSections"
-        ),
-
-        orderBy("order")
-
-    );
-
-    const snapshot =
-        await getDocs(q);
-
-    homepageSections =
-        snapshot.docs
-
-        .map(doc => ({
-
-            id:doc.id,
-
-            ...doc.data()
-
-        }))
-
-        .filter(section =>
-            section.published !== false
-        );
-
-}
-
-
-/*==================================================
-    LOAD PRODUCTS
-==================================================*/
-
-async function loadProducts(){
-
-    try{
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "products"
-                )
-            );
-
-        products =
-            snapshot.docs.map(doc => ({
-
-                id:doc.id,
-
-                ...doc.data()
-
-            }));
-
-    }
-
-    catch(error){
-
-        console.error(
-            "Products loading error:",
-            error
-        );
-
-        products=[];
-
-    }
-
-}
-
-
-/*==================================================
-    RENDER HOMEPAGE
-==================================================*/
-
-function renderHomepage(){
-
-    homepage.innerHTML="";
-
-    if(!homepageSections.length){
-
         homepage.innerHTML = `
 
-            <div class="homepage-empty">
+            <div class="homepage-error">
 
-                <h2>No Homepage Sections</h2>
+                <h2>
+                    Unable to load homepage
+                </h2>
 
                 <p>
-                    Add sections from the admin homepage builder.
+                    Please try again later.
                 </p>
 
             </div>
 
         `;
 
-        return;
+        hideLoader();
 
     }
-
-
-    homepageSections.forEach(section => {
-
-        const element =
-            renderSection(section);
-
-        if(element){
-
-            homepage.appendChild(element);
-
-        }
-
-    });
 
 }
 
@@ -212,43 +153,108 @@ function renderHomepage(){
     SECTION ROUTER
 ==================================================*/
 
-function renderSection(section){
+async function renderSection(
+    parent,
+    section
+){
+
+    const wrapper =
+        document.createElement("section");
+
+
+    wrapper.className =
+        "home-section";
+
+
+    wrapper.classList.add(
+        `home-section-${section.type}`
+    );
+
+
+    wrapper.dataset.sectionId =
+        section.id;
+
+
+    /* BACKGROUND */
+
+    if(section.backgroundColor){
+
+        wrapper.style.backgroundColor =
+            section.backgroundColor;
+
+    }
+
 
     switch(section.type){
 
         case "heading":
 
-            return renderHeading(section);
+            renderHeading(
+                wrapper,
+                section
+            );
+
+            break;
 
 
         case "banner":
 
-            return renderBanner(section);
+            renderBanner(
+                wrapper,
+                section
+            );
 
-
-        case "imageCarousel":
-
-            return renderImageCarousel(section);
+            break;
 
 
         case "productCarousel":
 
-            return renderProductCarousel(section);
+            await renderProductCarousel(
+                wrapper,
+                section
+            );
+
+            break;
+
+
+        case "imageCarousel":
+
+            renderImageCarousel(
+                wrapper,
+                section
+            );
+
+            break;
 
 
         case "youtubeCarousel":
 
-            return renderYoutubeCarousel(section);
+            renderYoutubeCarousel(
+                wrapper,
+                section
+            );
+
+            break;
 
 
         case "reviewCarousel":
 
-            return renderReviewCarousel(section);
+            renderReviewCarousel(
+                wrapper,
+                section
+            );
+
+            break;
 
 
         case "spacer":
 
-            return renderSpacer(section);
+            renderSpacer(
+                wrapper,
+                section
+            );
+
+            break;
 
 
         default:
@@ -258,28 +264,12 @@ function renderSection(section){
                 section.type
             );
 
-            return null;
+            return;
 
     }
 
-}
 
-
-/*==================================================
-    COMMON SECTION STYLE
-==================================================*/
-
-function applySectionStyle(
-    element,
-    section
-){
-
-    if(section.backgroundColor){
-
-        element.style.backgroundColor =
-            section.backgroundColor;
-
-    }
+    parent.appendChild(wrapper);
 
 }
 
@@ -288,69 +278,72 @@ function applySectionStyle(
     HEADING
 ==================================================*/
 
-function renderHeading(section){
+function renderHeading(
+    container,
+    section
+){
 
-    const wrapper =
-        createSectionWrapper(
-            "heading",
-            section
-        );
+    container.innerHTML = `
 
+        <div class="home-container">
 
-    const container =
-        createContainer();
+            <div class="heading-section">
 
+                ${
+                    section.badge
+                    ?
+                    `
+                    <div class="heading-badge">
 
-    const content =
-        document.createElement("div");
+                        ${escapeHtml(
+                            section.badge
+                        )}
 
-    content.className =
-        "home-heading";
-
-
-    if(section.badge){
-
-        const badge =
-            document.createElement("div");
-
-        badge.className =
-            "home-heading-badge";
-
-        badge.textContent =
-            section.badge;
-
-        content.appendChild(badge);
-
-    }
+                    </div>
+                    `
+                    :
+                    ""
+                }
 
 
-    const title =
-        document.createElement("h2");
+                ${
+                    section.title
+                    ?
+                    `
+                    <h2>
 
-    title.textContent =
-        section.title || "Heading";
+                        ${escapeHtml(
+                            section.title
+                        )}
 
-    content.appendChild(title);
-
-
-    if(section.subtitle){
-
-        const subtitle =
-            document.createElement("p");
-
-        subtitle.textContent =
-            section.subtitle;
-
-        content.appendChild(subtitle);
-
-    }
+                    </h2>
+                    `
+                    :
+                    ""
+                }
 
 
-    container.appendChild(content);
+                ${
+                    section.subtitle
+                    ?
+                    `
+                    <p>
 
-    wrapper.appendChild(container);
+                        ${escapeHtml(
+                            section.subtitle
+                        )}
 
-    return wrapper;
+                    </p>
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+        </div>
+
+    `;
 
 }
 
@@ -359,32 +352,10 @@ function renderHeading(section){
     BANNER
 ==================================================*/
 
-function renderBanner(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "banner",
-            section
-        );
-
-
-    const container =
-        createContainer();
-
-
-    const banner =
-        document.createElement("div");
-
-    banner.className =
-        "home-banner";
-
-
-    const track =
-        document.createElement("div");
-
-    track.className =
-        "banner-track";
-
+function renderBanner(
+    container,
+    section
+){
 
     const slides =
         Array.isArray(section.slides)
@@ -392,1426 +363,241 @@ function renderBanner(section){
             : [];
 
 
-    slides.forEach(
-        (slide,index)=>{
+    if(!slides.length){
 
-            const slideElement =
-                document.createElement("div");
-
-            slideElement.className =
-                "banner-slide";
-
-
-            if(index===0){
-
-                slideElement.classList.add(
-                    "active"
-                );
-
-            }
-
-
-            if(slide.image){
-
-                const image =
-                    document.createElement("img");
-
-                image.src =
-                    slide.image;
-
-                image.alt =
-                    slide.title || "Banner";
-
-                image.loading =
-                    index===0
-                        ? "eager"
-                        : "lazy";
-
-                slideElement.appendChild(
-                    image
-                );
-
-            }
-
-
-            const hasContent =
-                slide.title ||
-                slide.subtitle ||
-                slide.buttonText;
-
-
-            if(hasContent){
-
-                const content =
-                    document.createElement("div");
-
-                content.className =
-                    "banner-content";
-
-
-                const position =
-                    slide.buttonPosition ||
-                    "center";
-
-
-                content.classList.add(
-                    `banner-content-${position}`
-                );
-
-
-                if(slide.title){
-
-                    const title =
-                        document.createElement("h2");
-
-                    title.textContent =
-                        slide.title;
-
-                    content.appendChild(
-                        title
-                    );
-
-                }
-
-
-                if(slide.subtitle){
-
-                    const subtitle =
-                        document.createElement("p");
-
-                    subtitle.textContent =
-                        slide.subtitle;
-
-                    content.appendChild(
-                        subtitle
-                    );
-
-                }
-
-
-                if(
-                    slide.buttonText &&
-                    slide.buttonLink
-                ){
-
-                    const button =
-                        document.createElement("a");
-
-                    button.className =
-                        "banner-button";
-
-                    button.href =
-                        slide.buttonLink;
-
-                    button.textContent =
-                        slide.buttonText;
-
-                    content.appendChild(
-                        button
-                    );
-
-                }
-
-
-                slideElement.appendChild(
-                    content
-                );
-
-            }
-
-
-            track.appendChild(
-                slideElement
-            );
-
-        }
-    );
-
-
-    banner.appendChild(track);
-
-
-    if(slides.length > 1){
-
-        const prev =
-            document.createElement("button");
-
-        prev.className =
-            "banner-prev";
-
-        prev.innerHTML =
-            "&#10094;";
-
-        prev.setAttribute(
-            "aria-label",
-            "Previous"
-        );
-
-
-        const next =
-            document.createElement("button");
-
-        next.className =
-            "banner-next";
-
-        next.innerHTML =
-            "&#10095;";
-
-        next.setAttribute(
-            "aria-label",
-            "Next"
-        );
-
-
-        banner.appendChild(prev);
-
-        banner.appendChild(next);
-
-
-        const dots =
-            document.createElement("div");
-
-        dots.className =
-            "banner-dots";
-
-
-        slides.forEach(
-            (_,index)=>{
-
-                const dot =
-                    document.createElement("button");
-
-                dot.className =
-                    "banner-dot";
-
-                if(index===0){
-
-                    dot.classList.add(
-                        "active"
-                    );
-
-                }
-
-                dot.dataset.index =
-                    index;
-
-                dots.appendChild(dot);
-
-            }
-        );
-
-
-        banner.appendChild(dots);
-
-
-        setupBanner(
-            banner,
-            section
-        );
-
-    }
-
-
-    container.appendChild(
-        banner
-    );
-
-    wrapper.appendChild(
-        container
-    );
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    IMAGE CAROUSEL
-==================================================*/
-
-function renderImageCarousel(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "imageCarousel",
-            section
-        );
-
-
-    const container =
-        createContainer();
-
-
-    addCarouselHeading(
-        container,
-        section
-    );
-
-
-    const carousel =
-        document.createElement("div");
-
-    carousel.className =
-        "category-carousel";
-
-
-    const images =
-        Array.isArray(section.images)
-            ? section.images
-            : [];
-
-
-    images.forEach(
-        image=>{
-
-            const item =
-                document.createElement("div");
-
-            item.className =
-                "category-card";
-
-
-            const imageWrapper =
-                document.createElement("div");
-
-            imageWrapper.className =
-                "category-image";
-
-
-            if(image.link){
-
-                const link =
-                    document.createElement("a");
-
-                link.href =
-                    image.link;
-
-
-                const img =
-                    createImage(
-                        image.src,
-                        image.title
-                    );
-
-                link.appendChild(img);
-
-                imageWrapper.appendChild(link);
-
-            }
-
-            else{
-
-                imageWrapper.appendChild(
-                    createImage(
-                        image.src,
-                        image.title
-                    )
-                );
-
-            }
-
-
-            item.appendChild(
-                imageWrapper
-            );
-
-
-            if(image.title){
-
-                const title =
-                    document.createElement("div");
-
-                title.className =
-                    "category-title";
-
-                title.textContent =
-                    image.title;
-
-                item.appendChild(
-                    title
-                );
-
-            }
-
-
-            carousel.appendChild(
-                item
-            );
-
-        }
-    );
-
-
-    container.appendChild(
-        carousel
-    );
-
-
-    addCarouselDots(
-        container,
-        carousel,
-        images.length
-    );
-
-
-    wrapper.appendChild(
-        container
-    );
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    PRODUCT CAROUSEL
-==================================================*/
-
-function renderProductCarousel(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "productCarousel",
-            section
-        );
-
-
-    const container =
-        createContainer();
-
-
-    addCarouselHeading(
-        container,
-        section
-    );
-
-
-    const carousel =
-        document.createElement("div");
-
-    carousel.className =
-        "product-carousel";
-
-
-    let filteredProducts =
-        getFilteredProducts(
-            section
-        );
-
-
-    const limit =
-        Number(section.limit) || 10;
-
-
-    filteredProducts =
-        filteredProducts.slice(
-            0,
-            limit
-        );
-
-
-    filteredProducts.forEach(
-        product=>{
-
-            carousel.appendChild(
-                createProductCard(
-                    product
-                )
-            );
-
-        }
-    );
-
-
-    container.appendChild(
-        carousel
-    );
-
-
-    addCarouselDots(
-        container,
-        carousel,
-        filteredProducts.length
-    );
-
-
-    wrapper.appendChild(
-        container
-    );
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    FILTER PRODUCTS
-==================================================*/
-
-function getFilteredProducts(section){
-
-    let result =
-        [...products];
-
-
-    /* CATEGORY */
-
-    if(section.categoryId){
-
-        result =
-            result.filter(
-                product=>{
-
-                    const categoryId =
-                        product.categoryId ||
-                        product.category ||
-                        product.categoryID;
-
-                    const subCategoryId =
-                        product.subCategoryId ||
-                        product.subcategoryId;
-
-
-                    return (
-
-                        categoryId ===
-                        section.categoryId
-
-                        ||
-
-                        subCategoryId ===
-                        section.categoryId
-
-                    );
-
-                }
-            );
-
-    }
-
-
-    /* TAGS */
-
-    if(
-        Array.isArray(section.tags) &&
-        section.tags.length
-    ){
-
-        result =
-            result.filter(
-                product=>{
-
-                    const productTags =
-                        product.tags || [];
-
-
-                    return section.tags.some(
-                        tag =>
-                            productTags.includes(tag)
-                    );
-
-                }
-            );
-
-    }
-
-
-    /* LATEST */
-
-    if(
-        section.filterType === "latest" ||
-        !section.filterType
-    ){
-
-        result.sort(
-            (a,b)=>
-                getTime(b.createdAt)
-                -
-                getTime(a.createdAt)
-        );
-
-    }
-
-
-    /* RANDOM */
-
-    if(
-        section.filterType === "random"
-    ){
-
-        result.sort(
-            ()=>Math.random()-.5
-        );
-
-    }
-
-
-    return result;
-
-}
-
-
-/*==================================================
-    PRODUCT CARD
-==================================================*/
-
-function createProductCard(product){
-
-    const card =
-        document.createElement("article");
-
-    card.className =
-        "product-card";
-
-
-    const imageBox =
-        document.createElement("div");
-
-    imageBox.className =
-        "product-card-image";
-
-
-    const image =
-        createImage(
-            getProductImage(product),
-            product.name ||
-            product.title ||
-            "Product"
-        );
-
-
-    imageBox.appendChild(
-        image
-    );
-
-
-    /* FAVORITE */
-
-    const favorite =
-        document.createElement("button");
-
-    favorite.className =
-        "product-favorite";
-
-    favorite.innerHTML =
-        "♡";
-
-    favorite.setAttribute(
-        "aria-label",
-        "Add to wishlist"
-    );
-
-
-    favorite.onclick =
-        event=>{
-
-            event.preventDefault();
-
-            favorite.classList.toggle(
-                "active"
-            );
-
-            favorite.innerHTML =
-                favorite.classList.contains("active")
-                    ? "♥"
-                    : "♡";
-
-        };
-
-
-    imageBox.appendChild(
-        favorite
-    );
-
-
-    card.appendChild(
-        imageBox
-    );
-
-
-    const info =
-        document.createElement("div");
-
-    info.className =
-        "product-card-info";
-
-
-    const name =
-        document.createElement("h3");
-
-    name.textContent =
-        product.name ||
-        product.title ||
-        "Product";
-
-
-    info.appendChild(
-        name
-    );
-
-
-    const pricing =
-        getProductPricing(product);
-
-
-    if(pricing){
-
-        const priceBox =
-            document.createElement("div");
-
-        priceBox.className =
-            "product-pricing";
-
-
-        if(
-            pricing.oldPrice &&
-            pricing.oldPrice >
-            pricing.price
-        ){
-
-            const oldPrice =
-                document.createElement("span");
-
-            oldPrice.className =
-                "old-price";
-
-            oldPrice.textContent =
-                formatPrice(
-                    pricing.oldPrice
-                );
-
-            priceBox.appendChild(
-                oldPrice
-            );
-
-        }
-
-
-        const price =
-            document.createElement("strong");
-
-        price.className =
-            "current-price";
-
-        price.textContent =
-            formatPrice(
-                pricing.price
-            );
-
-        priceBox.appendChild(
-            price
-        );
-
-
-        info.appendChild(
-            priceBox
-        );
-
-    }
-
-
-    const button =
-        document.createElement("button");
-
-    button.className =
-        "product-action";
-
-
-    const hasVariants =
-        product.variants ||
-        product.options ||
-        product.customOptions;
-
-
-    button.textContent =
-        hasVariants
-            ? "SELECT OPTIONS"
-            : "ADD TO CART";
-
-
-    button.onclick =
-        ()=>{
-
-            if(product.url){
-
-                window.location.href =
-                    product.url;
-
-                return;
-
-            }
-
-            if(product.slug){
-
-                window.location.href =
-                    `/product.html?slug=${encodeURIComponent(product.slug)}`;
-
-                return;
-
-            }
-
-            if(product.id){
-
-                window.location.href =
-                    `/product.html?id=${encodeURIComponent(product.id)}`;
-
-            }
-
-        };
-
-
-    info.appendChild(
-        button
-    );
-
-
-    card.appendChild(
-        info
-    );
-
-
-    return card;
-
-}
-
-
-/*==================================================
-    YOUTUBE CAROUSEL
-==================================================*/
-
-function renderYoutubeCarousel(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "youtubeCarousel",
-            section
-        );
-
-
-    const container =
-        createContainer();
-
-
-    addCarouselHeading(
-        container,
-        section
-    );
-
-
-    const carousel =
-        document.createElement("div");
-
-    carousel.className =
-        "youtube-carousel";
-
-
-    const videos =
-        Array.isArray(section.videos)
-            ? section.videos
-            : [];
-
-
-    videos.forEach(
-        video=>{
-
-            const item =
-                document.createElement("div");
-
-            item.className =
-                "youtube-card";
-
-
-            const iframe =
-                document.createElement("iframe");
-
-
-            iframe.src =
-                getYoutubeEmbedUrl(
-                    video.url
-                );
-
-
-            iframe.loading =
-                "lazy";
-
-
-            iframe.allow =
-                "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-
-
-            iframe.allowFullscreen =
-                true;
-
-
-            item.appendChild(
-                iframe
-            );
-
-
-            carousel.appendChild(
-                item
-            );
-
-        }
-    );
-
-
-    container.appendChild(
-        carousel
-    );
-
-
-    addCarouselDots(
-        container,
-        carousel,
-        videos.length
-    );
-
-
-    wrapper.appendChild(
-        container
-    );
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    YOUTUBE URL
-==================================================*/
-
-function getYoutubeEmbedUrl(url){
-
-    if(!url) return "";
-
-    try{
-
-        const parsed =
-            new URL(url);
-
-
-        let id =
-            parsed.searchParams.get("v");
-
-
-        if(
-            parsed.hostname.includes(
-                "youtu.be"
-            )
-        ){
-
-            id =
-                parsed.pathname
-                    .replace("/","");
-
-        }
-
-
-        if(
-            parsed.pathname.includes(
-                "/shorts/"
-            )
-        ){
-
-            id =
-                parsed.pathname
-                    .split("/shorts/")[1]
-                    ?.split("?")[0];
-
-        }
-
-
-        if(!id){
-
-            return "";
-
-        }
-
-
-        return `https://www.youtube.com/embed/${id}?rel=0`;
-
-    }
-
-    catch{
-
-        return "";
-
-    }
-
-}
-
-
-/*==================================================
-    REVIEW CAROUSEL
-==================================================*/
-
-function renderReviewCarousel(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "reviewCarousel",
-            section
-        );
-
-
-    const container =
-        createContainer();
-
-
-    addCarouselHeading(
-        container,
-        section
-    );
-
-
-    const carousel =
-        document.createElement("div");
-
-    carousel.className =
-        "review-carousel";
-
-
-    const reviews =
-        Array.isArray(section.reviews)
-            ? section.reviews
-            : [];
-
-
-    const limit =
-        Number(section.limit) || 10;
-
-
-    reviews
-        .slice(0,limit)
-        .forEach(
-            review=>{
-
-                const card =
-                    document.createElement("article");
-
-                card.className =
-                    "review-card";
-
-
-                if(review.image){
-
-                    const avatar =
-                        createImage(
-                            review.image,
-                            review.name ||
-                            "Customer"
-                        );
-
-                    avatar.className =
-                        "review-avatar";
-
-                    card.appendChild(
-                        avatar
-                    );
-
-                }
-
-
-                const stars =
-                    document.createElement("div");
-
-                stars.className =
-                    "review-stars";
-
-
-                const rating =
-                    Math.max(
-                        0,
-                        Math.min(
-                            5,
-                            Number(
-                                review.stars
-                            ) || 5
-                        )
-                    );
-
-
-                stars.textContent =
-                    "★".repeat(rating) +
-                    "☆".repeat(5-rating);
-
-
-                card.appendChild(
-                    stars
-                );
-
-
-                const text =
-                    document.createElement("p");
-
-                text.className =
-                    "review-text";
-
-                text.textContent =
-                    review.review ||
-                    "";
-
-
-                card.appendChild(
-                    text
-                );
-
-
-                if(review.name){
-
-                    const name =
-                        document.createElement("div");
-
-                    name.className =
-                        "review-name";
-
-                    name.textContent =
-                        review.name;
-
-                    card.appendChild(
-                        name
-                    );
-
-                }
-
-
-                carousel.appendChild(
-                    card
-                );
-
-            }
-        );
-
-
-    container.appendChild(
-        carousel
-    );
-
-
-    addCarouselDots(
-        container,
-        carousel,
-        reviews.length
-    );
-
-
-    wrapper.appendChild(
-        container
-    );
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    SPACER
-==================================================*/
-
-function renderSpacer(section){
-
-    const wrapper =
-        createSectionWrapper(
-            "spacer",
-            section
-        );
-
-
-    wrapper.style.height =
-        `${Number(section.height) || 40}px`;
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    SECTION WRAPPER
-==================================================*/
-
-function createSectionWrapper(
-    type,
-    section
-){
-
-    const wrapper =
-        document.createElement("section");
-
-
-    wrapper.className =
-        `home-section home-section-${type}`;
-
-
-    applySectionStyle(
-        wrapper,
-        section
-    );
-
-
-    return wrapper;
-
-}
-
-
-/*==================================================
-    CONTAINER
-==================================================*/
-
-function createContainer(){
-
-    const container =
-        document.createElement("div");
-
-    container.className =
-        "home-container";
-
-    return container;
-
-}
-
-
-/*==================================================
-    CAROUSEL HEADING
-==================================================*/
-
-function addCarouselHeading(
-    container,
-    section
-){
-
-    if(
-        !section.title &&
-        !section.subtitle
-    ){
+        container.remove();
 
         return;
 
     }
 
 
-    const heading =
-        document.createElement("div");
+    container.innerHTML = `
 
-    heading.className =
-        "carousel-heading";
+        <div class="home-container banner-container">
 
+            <div class="home-banner">
 
-    const text =
-        document.createElement("div");
+                <div class="banner-track">
 
+                    ${
+                        slides.map(
+                            (slide,index) => `
 
-    if(section.title){
+                            <div
+                                class="
+                                    banner-slide
+                                    ${index === 0 ? "active" : ""}
+                                "
+                                data-index="${index}"
+                            >
 
-        const title =
-            document.createElement("h2");
-
-        title.textContent =
-            section.title;
-
-        text.appendChild(
-            title
-        );
-
-    }
-
-
-    if(section.subtitle){
-
-        const subtitle =
-            document.createElement("p");
-
-        subtitle.textContent =
-            section.subtitle;
-
-        text.appendChild(
-            subtitle
-        );
-
-    }
-
-
-    heading.appendChild(
-        text
-    );
+                                ${
+                                    slide.image
+                                    ?
+                                    `
+                                    <img
+                                        src="${escapeAttribute(
+                                            slide.image
+                                        )}"
+                                        alt="${escapeAttribute(
+                                            slide.title || "Banner"
+                                        )}"
+                                    >
+                                    `
+                                    :
+                                    `
+                                    <div class="banner-no-image">
+                                        Banner
+                                    </div>
+                                    `
+                                }
 
 
-    if(section.viewAllLink){
+                                ${
+                                    slide.title ||
+                                    slide.subtitle ||
+                                    slide.buttonText
+                                    ?
+                                    `
+                                    <div
+                                        class="
+                                            banner-content
+                                            banner-content-${
+                                                slide.buttonPosition ||
+                                                "center"
+                                            }
+                                        "
+                                    >
 
-        const viewAll =
-            document.createElement("a");
-
-        viewAll.className =
-            "view-all";
-
-        viewAll.href =
-            section.viewAllLink;
-
-        viewAll.textContent =
-            "View All";
-
-        heading.appendChild(
-            viewAll
-        );
-
-    }
-
-
-    container.appendChild(
-        heading
-    );
-
-}
-
-
-/*==================================================
-    CAROUSEL DOTS
-==================================================*/
-
-function addCarouselDots(
-    container,
-    carousel,
-    count
-){
-
-    if(count <= 1) return;
+                                        ${
+                                            slide.title
+                                            ?
+                                            `
+                                            <h2>
+                                                ${escapeHtml(
+                                                    slide.title
+                                                )}
+                                            </h2>
+                                            `
+                                            :
+                                            ""
+                                        }
 
 
-    const dots =
-        document.createElement("div");
-
-    dots.className =
-        "carousel-dots";
-
-
-    const dotCount =
-        Math.min(
-            6,
-            Math.max(
-                2,
-                Math.ceil(count / 3)
-            )
-        );
+                                        ${
+                                            slide.subtitle
+                                            ?
+                                            `
+                                            <p>
+                                                ${escapeHtml(
+                                                    slide.subtitle
+                                                )}
+                                            </p>
+                                            `
+                                            :
+                                            ""
+                                        }
 
 
-    for(
-        let i=0;
-        i<dotCount;
-        i++
-    ){
+                                        ${
+                                            slide.buttonText
+                                            ?
+                                            `
+                                            <a
+                                                class="banner-button"
+                                                href="${escapeAttribute(
+                                                    slide.buttonLink || "#"
+                                                )}"
+                                            >
+                                                ${escapeHtml(
+                                                    slide.buttonText
+                                                )}
+                                            </a>
+                                            `
+                                            :
+                                            ""
+                                        }
 
-        const dot =
-            document.createElement("span");
+                                    </div>
+                                    `
+                                    :
+                                    ""
+                                }
 
-        if(i===0){
+                            </div>
 
-            dot.classList.add(
-                "active"
-            );
-
-        }
-
-
-        dots.appendChild(
-            dot
-        );
-
-    }
-
-
-    container.appendChild(
-        dots
-    );
-
-
-    carousel.addEventListener(
-        "scroll",
-        ()=>{
-
-            const max =
-                carousel.scrollWidth -
-                carousel.clientWidth;
-
-
-            if(max <= 0) return;
-
-
-            const position =
-                carousel.scrollLeft /
-                max;
-
-
-            const index =
-                Math.round(
-                    position *
-                    (dotCount-1)
-                );
-
-
-            [...dots.children]
-                .forEach(
-                    (dot,i)=>{
-
-                        dot.classList.toggle(
-                            "active",
-                            i===index
-                        );
-
+                        `
+                        ).join("")
                     }
-                );
 
-        }
+                </div>
+
+
+                ${
+                    slides.length > 1
+                    ?
+                    `
+
+                    <button
+                        class="banner-prev"
+                        type="button"
+                        aria-label="Previous banner"
+                    >
+                        ‹
+                    </button>
+
+                    <button
+                        class="banner-next"
+                        type="button"
+                        aria-label="Next banner"
+                    >
+                        ›
+                    </button>
+
+                    <div class="banner-dots">
+
+                        ${
+                            slides.map(
+                                (_,index) => `
+
+                                <button
+                                    class="
+                                        banner-dot
+                                        ${
+                                            index === 0
+                                            ? "active"
+                                            : ""
+                                        }
+                                    "
+                                    data-index="${index}"
+                                    type="button"
+                                ></button>
+
+                            `
+                            ).join("")
+                        }
+
+                    </div>
+
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    initBannerSlider(
+        container,
+        section
     );
 
 }
 
 
 /*==================================================
-    BANNER SETUP
+    BANNER SLIDER
 ==================================================*/
 
-function setupBanner(
-    banner,
+function initBannerSlider(
+    container,
     section
 ){
 
     const slides =
-        [...banner.querySelectorAll(
+        container.querySelectorAll(
             ".banner-slide"
-        )];
+        );
+
+
+    if(slides.length <= 1){
+
+        return;
+
+    }
 
 
     const dots =
-        [...banner.querySelectorAll(
+        container.querySelectorAll(
             ".banner-dot"
-        )];
-
-
-    const prev =
-        banner.querySelector(
-            ".banner-prev"
         );
 
 
-    const next =
-        banner.querySelector(
-            ".banner-next"
-        );
+    let current = 0;
+
+    let timer = null;
 
 
-    let current=0;
-
-
-    function show(index){
+    function showSlide(index){
 
         current =
-            (index + slides.length)
-            % slides.length;
+            (index + slides.length) %
+            slides.length;
 
 
         slides.forEach(
@@ -1819,7 +605,7 @@ function setupBanner(
 
                 slide.classList.toggle(
                     "active",
-                    i===current
+                    i === current
                 );
 
             }
@@ -1831,7 +617,7 @@ function setupBanner(
 
                 dot.classList.toggle(
                     "active",
-                    i===current
+                    i === current
                 );
 
             }
@@ -1840,95 +626,578 @@ function setupBanner(
     }
 
 
-    prev?.addEventListener(
-        "click",
-        ()=>show(current-1)
-    );
+    function start(){
+
+        if(section.autoPlay === false){
+
+            return;
+
+        }
 
 
-    next?.addEventListener(
-        "click",
-        ()=>show(current+1)
-    );
+        const interval =
+            Number(
+                section.interval || 5000
+            );
+
+
+        timer =
+            setInterval(
+                () => {
+
+                    showSlide(
+                        current + 1
+                    );
+
+                },
+                interval
+            );
+
+    }
+
+
+    function stop(){
+
+        if(timer){
+
+            clearInterval(timer);
+
+            timer = null;
+
+        }
+
+    }
+
+
+    container
+        .querySelector(".banner-next")
+        ?.addEventListener(
+            "click",
+            ()=>{
+
+                stop();
+
+                showSlide(
+                    current + 1
+                );
+
+                start();
+
+            }
+        );
+
+
+    container
+        .querySelector(".banner-prev")
+        ?.addEventListener(
+            "click",
+            ()=>{
+
+                stop();
+
+                showSlide(
+                    current - 1
+                );
+
+                start();
+
+            }
+        );
 
 
     dots.forEach(
-        (dot,index)=>{
+        dot=>{
 
             dot.addEventListener(
                 "click",
-                ()=>show(index)
+                ()=>{
+
+                    stop();
+
+                    showSlide(
+                        Number(
+                            dot.dataset.index
+                        )
+                    );
+
+                    start();
+
+                }
             );
 
         }
     );
 
 
-    if(section.autoPlay !== false){
+    start();
 
-        const interval =
-            Number(
-                section.interval
-            ) || 5000;
+}
 
 
-        const timer =
-            setInterval(
-                ()=>show(current+1),
-                interval
+/*==================================================
+    PRODUCT CAROUSEL
+==================================================*/
+
+async function renderProductCarousel(
+    container,
+    section
+){
+
+    const snapshot =
+        await getDocs(
+            collection(
+                db,
+                "products"
+            )
+        );
+
+
+    let products =
+        snapshot.docs.map(
+            docSnap => ({
+
+                id:docSnap.id,
+
+                ...docSnap.data()
+
+            })
+        );
+
+
+    /* CATEGORY */
+
+    if(section.categoryId){
+
+        products =
+            products.filter(
+                product => {
+
+                    if(
+                        section.categoryType ===
+                        "main"
+                    ){
+
+                        return (
+
+                            product.categoryId ===
+                            section.categoryId
+
+                        ) ||
+
+                        (
+
+                            product.category?.id ===
+                            section.categoryId
+
+                        );
+
+                    }
+
+
+                    if(
+                        section.categoryType ===
+                        "sub"
+                    ){
+
+                        return (
+
+                            product.subCategoryId ===
+                            section.categoryId
+
+                        ) ||
+
+                        (
+
+                            product.subcategoryId ===
+                            section.categoryId
+
+                        ) ||
+
+                        (
+
+                            product.subCategory?.id ===
+                            section.categoryId
+
+                        );
+
+                    }
+
+
+                    return (
+
+                        product.categoryId ===
+                        section.categoryId
+
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* TAG */
+
+    if(
+        Array.isArray(section.tags) &&
+        section.tags.length
+    ){
+
+        products =
+            products.filter(
+                product => {
+
+                    const tags =
+                        getProductTags(
+                            product
+                        );
+
+
+                    return section.tags.some(
+                        selectedTag =>
+                            tags.includes(
+                                String(
+                                    selectedTag
+                                ).toLowerCase()
+                            )
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* SPECIFIC PRODUCTS */
+
+    if(
+        Array.isArray(section.productIds) &&
+        section.productIds.length
+    ){
+
+        const ids =
+            new Set(
+                section.productIds
             );
 
 
-        currentBannerIntervals.push(
-            timer
+        products =
+            products.filter(
+                product =>
+                    ids.has(product.id)
+            );
+
+    }
+
+
+    /* FILTER TYPE */
+
+    if(
+        section.filterType ===
+        "latest"
+    ){
+
+        products.sort(
+            (a,b)=>
+                getTimestamp(
+                    b.createdAt
+                )
+                -
+                getTimestamp(
+                    a.createdAt
+                )
         );
 
     }
 
+
+    if(
+        section.filterType ===
+        "random"
+    ){
+
+        products.sort(
+            ()=>Math.random() - 0.5
+        );
+
+    }
+
+
+    const limit =
+        Number(
+            section.limit || 10
+        );
+
+
+    products =
+        products.slice(
+            0,
+            limit
+        );
+
+
+    container.innerHTML = `
+
+        <div class="home-container">
+
+            ${
+                section.title ||
+                section.subtitle
+                ?
+                `
+                <div class="carousel-heading">
+
+                    <div>
+
+                        ${
+                            section.title
+                            ?
+                            `
+                            <h2>
+                                ${escapeHtml(
+                                    section.title
+                                )}
+                            </h2>
+                            `
+                            :
+                            ""
+                        }
+
+                        ${
+                            section.subtitle
+                            ?
+                            `
+                            <p>
+                                ${escapeHtml(
+                                    section.subtitle
+                                )}
+                            </p>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+
+                    ${
+                        section.viewAllLink
+                        ?
+                        `
+                        <a
+                            class="view-all"
+                            href="${escapeAttribute(
+                                section.viewAllLink
+                            )}"
+                        >
+                            View All
+                        </a>
+                        `
+                        :
+                        ""
+                    }
+
+                </div>
+                `
+                :
+                ""
+            }
+
+
+            ${
+                products.length
+                ?
+                `
+                <div class="product-carousel">
+
+                    ${
+                        products.map(
+                            product =>
+                                createProductCard(
+                                    product
+                                )
+                        ).join("")
+                    }
+
+                </div>
+
+                <div class="carousel-dots product-dots">
+
+                    <span class="active"></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+                `
+                :
+                `
+                <div class="carousel-empty">
+                    No products found.
+                </div>
+                `
+            }
+
+        </div>
+
+    `;
+
+
+    initHorizontalCarousel(
+        container,
+        ".product-carousel"
+    );
+
 }
 
 
 /*==================================================
-    IMAGE HELPER
+    PRODUCT CARD
 ==================================================*/
 
-function createImage(
-    src,
-    alt=""
+function createProductCard(
+    product
 ){
 
     const image =
-        document.createElement("img");
+        getProductImage(
+            product
+        );
 
 
-    image.src =
-        src || "";
+    const name =
+        product.name ||
+        product.title ||
+        "Product";
 
 
-    image.alt =
-        alt || "";
+    const price =
+        getProductPrice(
+            product
+        );
 
 
-    image.loading =
-        "lazy";
+    const oldPrice =
+        getProductOldPrice(
+            product
+        );
 
 
-    image.onerror =
-        ()=>{
+    return `
 
-            image.style.display =
-                "none";
+        <a
+            class="product-card"
+            href="${getProductLink(
+                product
+            )}"
+        >
 
-        };
+            <div class="product-image">
+
+                ${
+                    image
+                    ?
+                    `
+                    <img
+                        src="${escapeAttribute(
+                            image
+                        )}"
+                        alt="${escapeAttribute(
+                            name
+                        )}"
+                        loading="lazy"
+                    >
+                    `
+                    :
+                    `
+                    <div class="product-image-empty">
+                        No Image
+                    </div>
+                    `
+                }
 
 
-    return image;
+                <button
+                    class="product-wishlist"
+                    type="button"
+                    aria-label="Wishlist"
+                    onclick="
+                        event.preventDefault();
+                        event.stopPropagation();
+                        this.classList.toggle('active');
+                    "
+                >
+                    ♡
+                </button>
+
+            </div>
+
+
+            <div class="product-info">
+
+                <h3>
+                    ${escapeHtml(
+                        name
+                    )}
+                </h3>
+
+
+                ${
+                    price !== ""
+                    ?
+                    `
+                    <div class="product-prices">
+
+                        ${
+                            oldPrice !== ""
+                            ?
+                            `
+                            <span class="product-old-price">
+                                ₹${escapeHtml(
+                                    String(oldPrice)
+                                )}
+                            </span>
+                            `
+                            :
+                            ""
+                        }
+
+                        <strong>
+                            ₹${escapeHtml(
+                                String(price)
+                            )}
+                        </strong>
+
+                    </div>
+                    `
+                    :
+                    ""
+                }
+
+
+                <span class="product-button">
+
+                    ${
+                        product.variants ||
+                        product.options
+                        ?
+                        "SELECT OPTIONS"
+                        :
+                        "ADD TO CART"
+                    }
+
+                </span>
+
+            </div>
+
+        </a>
+
+    `;
 
 }
 
 
 /*==================================================
-    PRODUCT IMAGE
+    PRODUCT HELPERS
 ==================================================*/
 
 function getProductImage(product){
@@ -1942,16 +1211,21 @@ function getProductImage(product){
             product.images[0];
 
 
-        if(typeof first === "string"){
+        if(
+            typeof first ===
+            "string"
+        ){
 
             return first;
 
         }
 
 
-        return first?.url ||
+        return (
+            first?.url ||
             first?.src ||
-            "";
+            ""
+        );
 
     }
 
@@ -1966,63 +1240,883 @@ function getProductImage(product){
 }
 
 
-/*==================================================
-    PRODUCT PRICE
-==================================================*/
+function getProductPrice(product){
 
-function getProductPricing(product){
+    if(
+        product.price !== undefined &&
+        product.price !== null
+    ){
 
-    const price =
-        Number(
-            product.salePrice ??
-            product.finalPrice ??
-            product.price ??
-            0
-        );
-
-
-    if(!price){
-
-        return null;
+        return product.price;
 
     }
 
 
-    const oldPrice =
-        Number(
-            product.comparePrice ??
-            product.mrp ??
-            product.originalPrice ??
-            0
+    if(
+        product.basePrice !== undefined &&
+        product.basePrice !== null
+    ){
+
+        return product.basePrice;
+
+    }
+
+
+    if(
+        product.pricing?.price !== undefined
+    ){
+
+        return product.pricing.price;
+
+    }
+
+
+    return "";
+
+}
+
+
+function getProductOldPrice(product){
+
+    return (
+        product.comparePrice ??
+        product.mrp ??
+        product.originalPrice ??
+        ""
+    );
+
+}
+
+
+function getProductLink(product){
+
+    if(product.link){
+
+        return product.link;
+
+    }
+
+
+    return `product.html?id=${encodeURIComponent(
+        product.id
+    )}`;
+
+}
+
+
+function getProductTags(product){
+
+    let tags=[];
+
+
+    if(Array.isArray(product.tags)){
+
+        tags.push(
+            ...product.tags
         );
 
+    }
 
-    return {
 
-        price,
+    if(product.tag){
 
-        oldPrice
+        if(Array.isArray(product.tag)){
 
-    };
+            tags.push(
+                ...product.tag
+            );
+
+        }
+        else{
+
+            tags.push(
+                product.tag
+            );
+
+        }
+
+    }
+
+
+    return tags.map(
+        tag=>{
+
+            if(typeof tag === "object"){
+
+                return String(
+                    tag.slug ||
+                    tag.name ||
+                    ""
+                ).toLowerCase();
+
+            }
+
+
+            return String(
+                tag
+            ).toLowerCase();
+
+        }
+    );
 
 }
 
 
 /*==================================================
-    FORMAT PRICE
+    IMAGE CAROUSEL
 ==================================================*/
 
-function formatPrice(value){
+function renderImageCarousel(
+    container,
+    section
+){
 
-    return "₹" +
-        Number(value || 0)
-            .toLocaleString(
-                "en-IN",
-                {
-                    minimumFractionDigits:2,
-                    maximumFractionDigits:2
+    const images =
+        Array.isArray(section.images)
+            ? section.images
+            : [];
+
+
+    if(!images.length){
+
+        container.remove();
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="home-container">
+
+            ${
+                section.title ||
+                section.subtitle
+                ?
+                `
+                <div class="carousel-heading">
+
+                    <div>
+
+                        ${
+                            section.title
+                            ?
+                            `
+                            <h2>
+                                ${escapeHtml(
+                                    section.title
+                                )}
+                            </h2>
+                            `
+                            :
+                            ""
+                        }
+
+                        ${
+                            section.subtitle
+                            ?
+                            `
+                            <p>
+                                ${escapeHtml(
+                                    section.subtitle
+                                )}
+                            </p>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                </div>
+                `
+                :
+                ""
+            }
+
+
+            <div class="image-carousel">
+
+                ${
+                    images.map(
+                        image=>{
+
+                            const html = `
+
+                                <div class="image-box">
+
+                                    <img
+                                        src="${escapeAttribute(
+                                            image.src || ""
+                                        )}"
+                                        alt="${escapeAttribute(
+                                            image.title || ""
+                                        )}"
+                                        loading="lazy"
+                                    >
+
+                                </div>
+
+
+                                ${
+                                    image.title
+                                    ?
+                                    `
+                                    <div class="image-carousel-title">
+
+                                        ${escapeHtml(
+                                            image.title
+                                        )}
+
+                                    </div>
+                                    `
+                                    :
+                                    ""
+                                }
+
+                            `;
+
+
+                            if(image.link){
+
+                                return `
+
+                                    <a
+                                        class="
+                                            image-carousel-item
+                                        "
+                                        href="${escapeAttribute(
+                                            image.link
+                                        )}"
+                                    >
+
+                                        ${html}
+
+                                    </a>
+
+                                `;
+
+                            }
+
+
+                            return `
+
+                                <div
+                                    class="
+                                        image-carousel-item
+                                    "
+                                >
+
+                                    ${html}
+
+                                </div>
+
+                            `;
+
+                        }
+                    ).join("")
                 }
+
+            </div>
+
+
+            <div class="carousel-dots">
+
+                <span class="active"></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    initHorizontalCarousel(
+        container,
+        ".image-carousel"
+    );
+
+}
+
+
+/*==================================================
+    YOUTUBE CAROUSEL
+==================================================*/
+
+function renderYoutubeCarousel(
+    container,
+    section
+){
+
+    const videos =
+        Array.isArray(section.videos)
+            ? section.videos
+            : [];
+
+
+    if(!videos.length){
+
+        container.remove();
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="home-container">
+
+            ${
+                section.title ||
+                section.subtitle
+                ?
+                `
+                <div class="carousel-heading">
+
+                    <div>
+
+                        ${
+                            section.title
+                            ?
+                            `
+                            <h2>
+                                ${escapeHtml(
+                                    section.title
+                                )}
+                            </h2>
+                            `
+                            :
+                            ""
+                        }
+
+                        ${
+                            section.subtitle
+                            ?
+                            `
+                            <p>
+                                ${escapeHtml(
+                                    section.subtitle
+                                )}
+                            </p>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                </div>
+                `
+                :
+                ""
+            }
+
+
+            <div class="youtube-carousel">
+
+                ${
+                    videos.map(
+                        video=>{
+
+                            const embed =
+                                getYoutubeEmbedUrl(
+                                    video.url
+                                );
+
+
+                            if(!embed){
+
+                                return "";
+
+                            }
+
+
+                            return `
+
+                                <div class="youtube-item">
+
+                                    <iframe
+                                        src="${escapeAttribute(
+                                            embed
+                                        )}"
+                                        title="${escapeAttribute(
+                                            video.title ||
+                                            "YouTube Shorts"
+                                        )}"
+                                        loading="lazy"
+                                        allow="
+                                            accelerometer;
+                                            autoplay;
+                                            clipboard-write;
+                                            encrypted-media;
+                                            gyroscope;
+                                            picture-in-picture;
+                                            web-share
+                                        "
+                                        allowfullscreen
+                                    ></iframe>
+
+                                </div>
+
+                            `;
+
+                        }
+                    ).join("")
+                }
+
+            </div>
+
+
+            <div class="carousel-dots">
+
+                <span class="active"></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    initHorizontalCarousel(
+        container,
+        ".youtube-carousel"
+    );
+
+}
+
+
+/*==================================================
+    YOUTUBE URL
+==================================================*/
+
+function getYoutubeEmbedUrl(url){
+
+    if(!url){
+
+        return "";
+
+    }
+
+
+    try{
+
+        const parsed =
+            new URL(url);
+
+
+        if(
+            parsed.pathname.startsWith(
+                "/shorts/"
+            )
+        ){
+
+            const id =
+                parsed.pathname
+                    .split("/shorts/")[1]
+                    .split("/")[0];
+
+
+            return id
+                ? `https://www.youtube.com/embed/${id}`
+                : "";
+
+        }
+
+
+        if(
+            parsed.searchParams.get("v")
+        ){
+
+            return `https://www.youtube.com/embed/${
+                parsed.searchParams.get("v")
+            }`;
+
+        }
+
+
+        if(
+            parsed.hostname === "youtu.be"
+        ){
+
+            const id =
+                parsed.pathname.replace(
+                    "/",
+                    ""
+                );
+
+
+            return id
+                ? `https://www.youtube.com/embed/${id}`
+                : "";
+
+        }
+
+    }
+
+    catch(error){
+
+        console.warn(
+            "Invalid YouTube URL:",
+            url
+        );
+
+    }
+
+
+    return "";
+
+}
+
+
+/*==================================================
+    REVIEWS
+==================================================*/
+
+function renderReviewCarousel(
+    container,
+    section
+){
+
+    const reviews =
+        Array.isArray(section.reviews)
+            ? section.reviews
+            : [];
+
+
+    if(!reviews.length){
+
+        container.remove();
+
+        return;
+
+    }
+
+
+    const limit =
+        Number(
+            section.limit || 10
+        );
+
+
+    const visible =
+        reviews.slice(
+            0,
+            limit
+        );
+
+
+    container.innerHTML = `
+
+        <div class="home-container">
+
+            ${
+                section.title ||
+                section.subtitle
+                ?
+                `
+                <div class="carousel-heading">
+
+                    <div>
+
+                        ${
+                            section.title
+                            ?
+                            `
+                            <h2>
+                                ${escapeHtml(
+                                    section.title
+                                )}
+                            </h2>
+                            `
+                            :
+                            ""
+                        }
+
+                        ${
+                            section.subtitle
+                            ?
+                            `
+                            <p>
+                                ${escapeHtml(
+                                    section.subtitle
+                                )}
+                            </p>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                </div>
+                `
+                :
+                ""
+            }
+
+
+            <div class="review-carousel">
+
+                ${
+                    visible.map(
+                        review=>`
+
+                        <article class="review-card">
+
+                            ${
+                                review.image
+                                ?
+                                `
+                                <img
+                                    class="review-avatar"
+                                    src="${escapeAttribute(
+                                        review.image
+                                    )}"
+                                    alt="${escapeAttribute(
+                                        review.name || "Customer"
+                                    )}"
+                                    loading="lazy"
+                                >
+                                `
+                                :
+                                `
+                                <div class="review-avatar review-avatar-empty">
+                                    ${escapeHtml(
+                                        (review.name || "C")
+                                            .charAt(0)
+                                            .toUpperCase()
+                                    )}
+                                </div>
+                                `
+                            }
+
+
+                            <div class="review-stars">
+
+                                ${renderStars(
+                                    review.stars || 5
+                                )}
+
+                            </div>
+
+
+                            <p class="review-text">
+
+                                ${escapeHtml(
+                                    review.review ||
+                                    review.text ||
+                                    ""
+                                )}
+
+                            </p>
+
+
+                            ${
+                                review.name
+                                ?
+                                `
+                                <h3 class="review-name">
+
+                                    ${escapeHtml(
+                                        review.name
+                                    )}
+
+                                </h3>
+                                `
+                                :
+                                ""
+                            }
+
+                        </article>
+
+                    `
+                    ).join("")
+                }
+
+            </div>
+
+
+            <div class="carousel-dots">
+
+                <span class="active"></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    initHorizontalCarousel(
+        container,
+        ".review-carousel"
+    );
+
+}
+
+
+/*==================================================
+    STARS
+==================================================*/
+
+function renderStars(stars){
+
+    const rating =
+        Math.max(
+            0,
+            Math.min(
+                5,
+                Number(stars) || 0
+            )
+        );
+
+
+    return (
+        "★".repeat(rating) +
+        "☆".repeat(5-rating)
+    );
+
+}
+
+
+/*==================================================
+    SPACER
+==================================================*/
+
+function renderSpacer(
+    container,
+    section
+){
+
+    container.style.height =
+        `${Number(
+            section.height || 40
+        )}px`;
+
+
+    if(section.background){
+
+        container.style.background =
+            section.background;
+
+    }
+
+
+    if(section.backgroundColor){
+
+        container.style.backgroundColor =
+            section.backgroundColor;
+
+    }
+
+}
+
+
+/*==================================================
+    HORIZONTAL CAROUSEL
+==================================================*/
+
+function initHorizontalCarousel(
+    container,
+    selector
+){
+
+    const carousel =
+        container.querySelector(
+            selector
+        );
+
+
+    if(!carousel){
+
+        return;
+
+    }
+
+
+    carousel.addEventListener(
+        "scroll",
+        ()=>{
+
+            updateCarouselDots(
+                carousel,
+                container
             );
+
+        },
+        {
+            passive:true
+        }
+    );
+
+}
+
+
+/*==================================================
+    CAROUSEL DOTS
+==================================================*/
+
+function updateCarouselDots(
+    carousel,
+    container
+){
+
+    const dots =
+        container.querySelectorAll(
+            ".carousel-dots span"
+        );
+
+
+    if(!dots.length){
+
+        return;
+
+    }
+
+
+    const max =
+        carousel.scrollWidth -
+        carousel.clientWidth;
+
+
+    if(max <= 0){
+
+        return;
+
+    }
+
+
+    const progress =
+        carousel.scrollLeft /
+        max;
+
+
+    const index =
+        Math.round(
+            progress *
+            (dots.length - 1)
+        );
+
+
+    dots.forEach(
+        (dot,i)=>{
+
+            dot.classList.toggle(
+                "active",
+                i === index
+            );
+
+        }
+    );
 
 }
 
@@ -2031,9 +2125,13 @@ function formatPrice(value){
     TIMESTAMP
 ==================================================*/
 
-function getTime(value){
+function getTimestamp(value){
 
-    if(!value) return 0;
+    if(!value){
+
+        return 0;
+
+    }
 
 
     if(
@@ -2066,12 +2164,6 @@ function getTime(value){
 
 function showLoader(){
 
-    const loader =
-        document.getElementById(
-            "homepageLoader"
-        );
-
-
     if(loader){
 
         loader.classList.remove(
@@ -2085,12 +2177,6 @@ function showLoader(){
 
 function hideLoader(){
 
-    const loader =
-        document.getElementById(
-            "homepageLoader"
-        );
-
-
     if(loader){
 
         loader.classList.add(
@@ -2103,25 +2189,55 @@ function hideLoader(){
 
 
 /*==================================================
-    ERROR
+    ESCAPE
 ==================================================*/
 
-function renderHomepageError(){
+function escapeHtml(value){
 
-    homepage.innerHTML = `
-
-        <div class="homepage-error">
-
-            <h2>
-                Unable to load homepage
-            </h2>
-
-            <p>
-                Please refresh the page and try again.
-            </p>
-
-        </div>
-
-    `;
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
 
 }
+
+
+function escapeAttribute(value){
+
+    return escapeHtml(
+        value
+    );
+
+}
+
+
+/*==================================================
+    EXPORT
+==================================================*/
+
+export {
+
+    loadHomepage,
+
+    renderSection
+
+};
