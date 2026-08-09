@@ -13,36 +13,304 @@
 
 <title>Homepage</title>
 
+
+<!-- HOMEPAGE CSS -->
+
 <link
     rel="stylesheet"
     href="css/homepage.css"
 >
 
+
+<!-- FONT AWESOME -->
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+>
+
 </head>
+
 
 <body>
 
-<div id="homepage">
 
-    <!-- Sections will be loaded here -->
+<!-- ==================================================
+     TOP BAR
+================================================== -->
+
+<header class="topbar">
+
+
+    <!-- MENU BUTTON -->
+
+    <button
+        class="menu-btn"
+        type="button"
+        onclick="toggleSidebar()"
+        aria-label="Open menu"
+    >
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+
+
+    <!-- LOGO -->
+
+    <a
+        class="logo"
+        href="https://imaginarygifts.shopcom.in/"
+    >
+
+        <img
+            src="https://firebasestorage.googleapis.com/v0/b/imaginary-gifts.firebasestorage.app/o/product-images%2FIG%2F1000273765.webp?alt=media&token=e093bc6c-c32b-407b-b75c-cfc5eef152ef"
+            alt="Imaginary Gifts"
+        >
+
+    </a>
+
+
+
+    <!-- SEARCH BUTTON -->
+
+    <button
+        class="search-icon"
+        type="button"
+        onclick="openSearch()"
+        aria-label="Search"
+    >
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+    </button>
+
+
+</header>
+
+
+
+<!-- ==================================================
+     SEARCH OVERLAY
+================================================== -->
+
+<div
+    id="searchOverlay"
+    class="search-overlay"
+>
+
+
+    <div class="search-box">
+
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search for products..."
+            autocomplete="off"
+        >
+
+
+        <button
+            type="button"
+            onclick="closeSearch()"
+            aria-label="Close search"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+    </div>
+
 
 </div>
 
+
+
+<!-- ==================================================
+     SIDEBAR
+================================================== -->
+
+<aside
+    id="sidebar"
+    class="sidebar"
+>
+
+
+    <!-- SIDEBAR HEADER -->
+
+    <div class="sidebar-header">
+
+
+        <strong>
+            Imaginary Gifts
+        </strong>
+
+
+        <button
+            type="button"
+            onclick="toggleSidebar()"
+            aria-label="Close menu"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- MENU ITEMS -->
+
+
+    <a href="https://imaginarygifts.shopcom.in/">
+
+        <i class="fa-solid fa-house"></i>
+
+        <span>
+            Home
+        </span>
+
+    </a>
+
+
+
+    <a href="aboutus">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <span>
+            About Us
+        </span>
+
+    </a>
+
+
+
+    <a href="contact-us">
+
+        <i class="fa-solid fa-phone"></i>
+
+        <span>
+            Contact Us
+        </span>
+
+    </a>
+
+
+
+    <a href="t&c">
+
+        <i class="fa-solid fa-file-contract"></i>
+
+        <span>
+            Terms & Conditions
+        </span>
+
+    </a>
+
+
+
+    <a href="privacy-policy">
+
+        <i class="fa-solid fa-lock"></i>
+
+        <span>
+            Privacy Policy
+        </span>
+
+    </a>
+
+
+
+    <a href="refund">
+
+        <i class="fa-solid fa-money-bill-transfer"></i>
+
+        <span>
+            Refund Policy
+        </span>
+
+    </a>
+
+
+
+    <a href="shipping">
+
+        <i class="fa-solid fa-truck"></i>
+
+        <span>
+            Shipping Policy
+        </span>
+
+    </a>
+
+
+</aside>
+
+
+
+<!-- ==================================================
+     SIDEBAR OVERLAY
+================================================== -->
+
+<div
+    id="overlay"
+    class="overlay"
+    onclick="toggleSidebar()"
+></div>
+
+
+
+<!-- ==================================================
+     HOMEPAGE
+================================================== -->
+
+<main id="homepage">
+
+    <!-- Sections will be loaded from Firestore -->
+
+</main>
+
+
+
+<!-- ==================================================
+     HOMEPAGE LOADER
+================================================== -->
 
 <div
     id="homepageLoader"
     class="homepage-loader"
 >
 
-    Loading...
+    <div class="homepage-loader-box">
+
+        <div class="homepage-spinner"></div>
+
+        <p>
+            Loading...
+        </p>
+
+    </div>
 
 </div>
 
+
+
+<!-- ==================================================
+     HOMEPAGE JAVASCRIPT
+================================================== -->
 
 <script
     type="module"
     src="js/homepage.js"
 ></script>
+
 
 </body>
 
