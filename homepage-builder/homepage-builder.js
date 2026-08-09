@@ -1,5 +1,6 @@
 /*==================================================
     HOMEPAGE BUILDER
+    MOBILE FRIENDLY VERSION
 ==================================================*/
 
 import { db } from "../js/firebase.js";
@@ -15,73 +16,200 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { enableDragDrop } from "./drag-drop.js";
-
-import { renderHomepagePreview } from "./preview.js";
-
 import {
     renderSectionEditor
 } from "./section-editor.js";
+
+import {
+    renderHomepagePreview
+} from "./preview.js";
+
 
 /*==================================================
     ELEMENTS
 ==================================================*/
 
-const sectionList =
-document.getElementById("sectionList");
+const sectionNameInput =
+    document.getElementById("sectionName");
 
-const preview =
-document.getElementById("homepagePreview");
-
-const settingsPanel =
-document.getElementById("settingsPanel");
+const sectionTypeSelect =
+    document.getElementById("sectionType");
 
 const addSectionBtn =
-document.getElementById("addSection");
+    document.getElementById("addSectionBtn");
 
-const drawer =
-document.getElementById("sectionDrawer");
+const sectionList =
+    document.getElementById("sectionList");
 
-const drawerList =
-document.getElementById("drawerList");
+const sectionsEmpty =
+    document.getElementById("sectionsEmpty");
 
-const drawerSearch =
-document.getElementById("drawerSearch");
+const sectionCount =
+    document.getElementById("sectionCount");
 
-const closeDrawer =
-document.getElementById("closeDrawer");
+const sectionPreviewModal =
+    document.getElementById("sectionPreviewModal");
+
+const sectionPreviewContent =
+    document.getElementById("sectionPreviewContent");
+
+const previewModalTitle =
+    document.getElementById("previewModalTitle");
+
+const closePreviewBtn =
+    document.getElementById("closePreviewBtn");
+
+const homepagePreviewModal =
+    document.getElementById("homepagePreviewModal");
+
+const homepagePreviewContent =
+    document.getElementById("homepagePreviewContent");
+
+const closeHomepagePreviewBtn =
+    document.getElementById("closeHomepagePreviewBtn");
+
+const fullPreviewBtn =
+    document.getElementById("fullPreviewBtn");
+
+const publishBtn =
+    document.getElementById("publishBtn");
+
+const toast =
+    document.getElementById("toast");
+
+const toastMessage =
+    document.getElementById("toastMessage");
+
+const loader =
+    document.getElementById("loader");
+
 
 /*==================================================
     DATA
 ==================================================*/
 
-let homepageSections=[];
+let homepageSections = [];
 
-let selectedSection=null;
+let expandedSectionId = null;
+
+let draggedSectionId = null;
+
+
+/*==================================================
+    SECTION INFORMATION
+==================================================*/
+
+const sectionInfo = {
+
+    heading: {
+
+        label: "Heading",
+
+        icon: "fa-heading"
+
+    },
+
+    spacer: {
+
+        label: "Spacer",
+
+        icon: "fa-arrows-up-down"
+
+    },
+
+    banner: {
+
+        label: "Banner",
+
+        icon: "fa-image"
+
+    },
+
+    imageCarousel: {
+
+        label: "Image Carousel",
+
+        icon: "fa-images"
+
+    },
+
+    productCarousel: {
+
+        label: "Product Carousel",
+
+        icon: "fa-box"
+
+    },
+
+    youtubeCarousel: {
+
+        label: "YouTube Carousel",
+
+        icon: "fa-circle-play"
+
+    },
+
+    reviewCarousel: {
+
+        label: "Reviews Carousel",
+
+        icon: "fa-star"
+
+    }
+
+};
+
 
 /*==================================================
     INIT
 ==================================================*/
 
 document.addEventListener(
-
     "DOMContentLoaded",
-
     initBuilder
-
 );
 
+
 /*==================================================
-    INIT BUILDER
+    INITIALIZE
 ==================================================*/
 
 async function initBuilder(){
 
     bindEvents();
 
-    await refresh();
+    showLoader(true);
+
+    try{
+
+        await loadSections();
+
+        renderSectionList();
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Homepage builder initialization failed:",
+            error
+        );
+
+        showToast(
+            "Failed to load homepage sections",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        showLoader(false);
+
+    }
 
 }
+
 
 /*==================================================
     EVENTS
@@ -89,62 +217,120 @@ async function initBuilder(){
 
 function bindEvents(){
 
-    addSectionBtn.addEventListener(
+    /* Add section */
 
+    addSectionBtn?.addEventListener(
         "click",
-
-        openSectionDrawer
-
+        createNewSection
     );
 
-    closeDrawer.addEventListener(
 
+    /* Individual preview */
+
+    closePreviewBtn?.addEventListener(
         "click",
-
-        closeSectionDrawer
-
+        closeSectionPreview
     );
 
-    drawerSearch.addEventListener(
 
-        "input",
+    /* Full homepage preview */
 
-        renderDrawerItems
+    fullPreviewBtn?.addEventListener(
+        "click",
+        openHomepagePreview
+    );
 
+
+    closeHomepagePreviewBtn?.addEventListener(
+        "click",
+        closeHomepagePreview
+    );
+
+
+    /* Publish */
+
+    publishBtn?.addEventListener(
+        "click",
+        publishHomepage
+    );
+
+
+    /* Close modal when clicking background */
+
+    sectionPreviewModal?.addEventListener(
+        "click",
+        event=>{
+
+            if(
+                event.target ===
+                sectionPreviewModal
+            ){
+
+                closeSectionPreview();
+
+            }
+
+        }
+    );
+
+
+    homepagePreviewModal?.addEventListener(
+        "click",
+        event=>{
+
+            if(
+                event.target ===
+                homepagePreviewModal
+            ){
+
+                closeHomepagePreview();
+
+            }
+
+        }
+    );
+
+
+    /* Escape key */
+
+    document.addEventListener(
+        "keydown",
+        event=>{
+
+            if(event.key !== "Escape") return;
+
+            closeSectionPreview();
+
+            closeHomepagePreview();
+
+        }
+    );
+
+
+    /* Enter in section name */
+
+    sectionNameInput?.addEventListener(
+        "keydown",
+        event=>{
+
+            if(
+                event.key === "Enter"
+            ){
+
+                event.preventDefault();
+
+                createNewSection();
+
+            }
+
+        }
     );
 
 }
 
-/*==================================================
-    REFRESH
-==================================================*/
-
-async function refresh(){
-
-    await loadSections();
-
-    refreshUI();
-
-}
 
 /*==================================================
-    REFRESH UI
-==================================================*/
-
-function refreshUI(){
-
-    renderSectionList();
-
-    renderPreview();
-
-    renderSettings();
-
-    initializeDragDrop();
-
-}
-
-/*==================================================
-    LOAD HOMEPAGE SECTIONS
+    LOAD SECTIONS
 ==================================================*/
 
 async function loadSections(){
@@ -152,106 +338,25 @@ async function loadSections(){
     const q = query(
 
         collection(
-
             db,
-
             "homepageSections"
-
         ),
 
-        orderBy(
-
-            "order"
-
-        )
+        orderBy("order")
 
     );
 
     const snapshot =
-
-    await getDocs(q);
+        await getDocs(q);
 
     homepageSections =
+        snapshot.docs.map(item=>({
 
-    snapshot.docs.map(doc=>({
+            id:item.id,
 
-        id:doc.id,
+            ...item.data()
 
-        ...doc.data()
-
-    }));
-
-}
-
-
-
-
-
-function getSectionIcon(type){
-
-    switch(type){
-
-        case "banner":
-            return "fa-image";
-
-        case "heading":
-            return "fa-heading";
-
-        case "productCarousel":
-            return "fa-box";
-
-        case "imageCarousel":
-            return "fa-images";
-
-        case "youtubeCarousel":
-            return "fa-circle-play";
-
-        case "reviewCarousel":
-            return "fa-star";
-
-        case "spacer":
-            return "fa-arrows-up-down";
-
-        default:
-            return "fa-layer-group";
-
-    }
-
-}
-
-
-
-
-
-function getSectionLabel(type){
-
-    switch(type){
-
-        case "banner":
-            return "Hero Banner";
-
-        case "heading":
-            return "Heading";
-
-        case "productCarousel":
-            return "Product Carousel";
-
-        case "imageCarousel":
-            return "Image Gallery";
-
-        case "youtubeCarousel":
-            return "YouTube Videos";
-
-        case "reviewCarousel":
-            return "Customer Reviews";
-
-        case "spacer":
-            return "Spacer";
-
-        default:
-            return type;
-
-    }
+        }));
 
 }
 
@@ -262,417 +367,728 @@ function getSectionLabel(type){
 
 function renderSectionList(){
 
-    sectionList.innerHTML="";
+    sectionList.innerHTML = "";
 
-    homepageSections.forEach(section=>{
 
-        const card=document.createElement("div");
+    /* Empty */
 
-        card.className="section-card";
+    if(
+        homepageSections.length === 0
+    ){
 
-        if(
-            selectedSection &&
-            selectedSection.id===section.id
-        ){
-            card.classList.add("active");
-        }
-
-        card.innerHTML=`
-
-<div class="section-card-header">
-
-<div class="left">
-
-<i class="fa-solid fa-grip-vertical drag-handle"></i>
-
-<i class="fa-solid ${getSectionIcon(section.type)} section-icon"></i>
-
-<div>
-
-<div class="section-title">
-
-${section.order}. ${section.title || getSectionLabel(section.type)}
-
-</div>
-
-<div class="section-subtitle">
-
-${getSectionLabel(section.type)}
-
-</div>
-
-</div>
-
-</div>
-
-<div class="right">
-
-<span class="status-badge ${section.published ? "published" : "draft"}">
-
-${section.published ? "Live" : "Draft"}
-
-</span>
-
-<button class="icon-btn duplicate-btn">
-
-<i class="fa-regular fa-copy"></i>
-
-</button>
-
-<button class="icon-btn delete-btn">
-
-<i class="fa-regular fa-trash-can"></i>
-
-</button>
-
-</div>
-
-</div>
-
-`;
-
-        card.addEventListener(
-
-            "click",
-
-            ()=>{
-
-                selectSection(section.id);
-
-            }
-
+        sectionList.appendChild(
+            sectionsEmpty
         );
 
-        card.querySelector(".duplicate-btn")
-
-        .addEventListener(
-
-            "click",
-
-            async e=>{
-
-                e.stopPropagation();
-
-                selectedSection=section;
-
-                await duplicateSelectedSection();
-
-            }
-
+        sectionsEmpty.classList.remove(
+            "hidden"
         );
 
-        card.querySelector(".delete-btn")
+        updateSectionCount();
 
-        .addEventListener(
+        return;
 
-            "click",
+    }
 
-            async e=>{
 
-                e.stopPropagation();
-
-                selectedSection=section;
-
-                await deleteSelectedSection();
-
-            }
-
-        );
-
-        sectionList.appendChild(card);
-
-    });
-
-}
-/*==================================================
-    PREVIEW
-==================================================*/
-
-function renderPreview(){
-
-    renderHomepagePreview(
-
-        preview,
-
-        homepageSections
-
+    sectionsEmpty.classList.add(
+        "hidden"
     );
 
-}
 
-/*==================================================
-    SETTINGS
-==================================================*/
+    homepageSections.forEach(
+        (section,index)=>{
 
-function renderSettings(){
+            const card =
+                createSectionCard(
+                    section,
+                    index
+                );
 
-    renderSectionEditor({
+            sectionList.appendChild(card);
 
-        container:settingsPanel,
-
-        section:selectedSection,
-
-        onUpdate:updateSection,
-
-        onDuplicate:duplicateSelectedSection,
-
-        onDelete:deleteSelectedSection,
-
-        onRefresh:refresh
-
-    });
-
-}
-
-/*==================================================
-    SELECT SECTION
-==================================================*/
-
-function selectSection(id){
-
-    selectedSection=
-
-    homepageSections.find(
-
-        section=>section.id===id
-
+        }
     );
 
-    refreshUI();
+
+    updateSectionCount();
 
 }
+
 
 /*==================================================
-    ADD SECTION
+    CREATE SECTION CARD
 ==================================================*/
 
-const availableSections = [
+function createSectionCard(
+    section,
+    index
+){
 
-{
-    category:"Basic",
-    items:[
-        {
-            type:"banner",
-            title:"Hero Banner",
-            icon:"fa-image"
-        },
-        {
-            type:"heading",
-            title:"Heading",
-            icon:"fa-heading"
-        },
-        {
-            type:"spacer",
-            title:"Spacer",
-            icon:"fa-arrows-up-down"
-        }
-    ]
-},
+    const info =
+        sectionInfo[section.type] || {
 
-{
-    category:"Products",
-    items:[
-        {
-            type:"productCarousel",
-            title:"Product Carousel",
-            icon:"fa-box"
-        }
-    ]
-},
+            label:section.type,
 
-{
-    category:"Media",
-    items:[
-        {
-            type:"imageCarousel",
-            title:"Image Carousel",
-            icon:"fa-images"
-        },
-        {
-            type:"youtubeCarousel",
-            title:"YouTube Carousel",
-            icon:"fa-circle-play"
-        }
-    ]
-},
+            icon:"fa-layer-group"
 
-{
-    category:"Social Proof",
-    items:[
-        {
-            type:"reviewCarousel",
-            title:"Review Carousel",
-            icon:"fa-star"
-        }
-    ]
-}
+        };
 
-];
 
-function openSectionDrawer(){
+    const card =
+        document.createElement("div");
 
-    drawer.classList.add("open");
+    card.className =
+        "builder-section";
 
-    drawerSearch.value="";
 
-    renderDrawerItems();
+    card.dataset.id =
+        section.id;
 
-}
 
-function closeSectionDrawer(){
+    if(
+        expandedSectionId ===
+        section.id
+    ){
 
-    drawer.classList.remove("open");
-
-}
-
-function renderDrawerItems(){
-
-    const keyword = drawerSearch.value
-        .toLowerCase()
-        .trim();
-
-    drawerList.innerHTML = "";
-
-    availableSections.forEach(group=>{
-
-        const items = group.items.filter(item=>
-
-            item.title
-            .toLowerCase()
-            .includes(keyword)
-
+        card.classList.add(
+            "active"
         );
 
-        if(items.length===0) return;
+    }
 
-        const heading=document.createElement("h3");
 
-        heading.className="drawer-category";
+    /*================================================
+        HEADER
+    =================================================*/
 
-        heading.textContent=group.category;
+    const header =
+        document.createElement("div");
 
-        drawerList.appendChild(heading);
+    header.className =
+        "section-card-header";
 
-        items.forEach(item=>{
 
-            const div=document.createElement("div");
+    /* Drag */
 
-            div.className="drawer-item";
+    const drag =
+        document.createElement("div");
 
-            div.innerHTML=`
+    drag.className =
+        "section-drag";
 
-<i class="fa-solid ${item.icon}"></i>
+    drag.innerHTML = `
+        <i class="fa-solid fa-grip-vertical"></i>
+    `;
 
-<div>
+    drag.draggable = true;
 
-<h4>${item.title}</h4>
 
-<p>${item.type}</p>
+    /* Icon */
 
-</div>
+    const icon =
+        document.createElement("div");
 
-`;
+    icon.className =
+        "section-icon";
 
-            div.onclick=async()=>{
+    icon.innerHTML = `
+        <i class="fa-solid ${info.icon}"></i>
+    `;
 
-                closeSectionDrawer();
 
-                await createSection(item.type);
+    /* Info */
 
-            };
+    const infoBox =
+        document.createElement("div");
 
-            drawerList.appendChild(div);
+    infoBox.className =
+        "section-info";
+
+
+    const title =
+        document.createElement("div");
+
+    title.className =
+        "section-title";
+
+    title.textContent =
+        section.title ||
+        info.label;
+
+
+    const type =
+        document.createElement("div");
+
+    type.className =
+        "section-type";
+
+    type.textContent =
+        info.label;
+
+
+    infoBox.appendChild(title);
+
+    infoBox.appendChild(type);
+
+
+    /* Actions */
+
+    const actions =
+        document.createElement("div");
+
+    actions.className =
+        "section-actions";
+
+
+    /* Preview */
+
+    const previewBtn =
+        document.createElement("button");
+
+    previewBtn.type =
+        "button";
+
+    previewBtn.className =
+        "section-action preview";
+
+    previewBtn.title =
+        "Preview";
+
+    previewBtn.innerHTML = `
+        <i class="fa-solid fa-eye"></i>
+    `;
+
+    previewBtn.addEventListener(
+        "click",
+        event=>{
+
+            event.stopPropagation();
+
+            openSectionPreview(
+                section
+            );
+
+        }
+    );
+
+
+    /* Edit */
+
+    const editBtn =
+        document.createElement("button");
+
+    editBtn.type =
+        "button";
+
+    editBtn.className =
+        "section-action edit";
+
+    editBtn.title =
+        "Edit";
+
+    editBtn.innerHTML = `
+        <i class="fa-solid ${
+            expandedSectionId === section.id
+            ? "fa-chevron-up"
+            : "fa-chevron-down"
+        }"></i>
+    `;
+
+    editBtn.addEventListener(
+        "click",
+        event=>{
+
+            event.stopPropagation();
+
+            toggleSectionEditor(
+                section.id
+            );
+
+        }
+    );
+
+
+    /* Delete */
+
+    const deleteBtn =
+        document.createElement("button");
+
+    deleteBtn.type =
+        "button";
+
+    deleteBtn.className =
+        "section-action delete";
+
+    deleteBtn.title =
+        "Delete";
+
+    deleteBtn.innerHTML = `
+        <i class="fa-regular fa-trash-can"></i>
+    `;
+
+    deleteBtn.addEventListener(
+        "click",
+        async event=>{
+
+            event.stopPropagation();
+
+            await deleteSection(
+                section
+            );
+
+        }
+    );
+
+
+    actions.appendChild(
+        previewBtn
+    );
+
+    actions.appendChild(
+        editBtn
+    );
+
+    actions.appendChild(
+        deleteBtn
+    );
+
+
+    header.appendChild(
+        drag
+    );
+
+    header.appendChild(
+        icon
+    );
+
+    header.appendChild(
+        infoBox
+    );
+
+    header.appendChild(
+        actions
+    );
+
+
+    card.appendChild(
+        header
+    );
+
+
+    /*================================================
+        EDITOR
+    =================================================*/
+
+    if(
+        expandedSectionId ===
+        section.id
+    ){
+
+        const editorContainer =
+            document.createElement("div");
+
+        editorContainer.className =
+            "section-editor-container";
+
+
+        renderSectionEditor({
+
+            container:
+                editorContainer,
+
+            section:
+                section,
+
+            onUpdate:
+                updatedSection=>{
+
+                    handleSectionUpdate(
+                        updatedSection
+                    );
+
+                },
+
+            onDuplicate:
+                async()=>{
+
+                    await duplicateSection(
+                        section
+                    );
+
+                },
+
+            onDelete:
+                async()=>{
+
+                    await deleteSection(
+                        section
+                    );
+
+                },
+
+            onRefresh:
+                async()=>{
+
+                }
 
         });
 
-    });
 
-}
+        card.appendChild(
+            editorContainer
+        );
 
-/*==================================================
-    CREATE SECTION
-==================================================*/
+    }
 
-async function createSection(type){
 
-    const data = getDefaultSection(type);
+    /*================================================
+        DRAG EVENTS
+    =================================================*/
 
-    data.order = homepageSections.length + 1;
+    card.addEventListener(
+        "dragstart",
+        event=>{
 
-    data.createdAt = Date.now();
+            draggedSectionId =
+                section.id;
 
-    data.updatedAt = Date.now();
+            card.classList.add(
+                "dragging"
+            );
 
-    data.published = true;
+            event.dataTransfer.effectAllowed =
+                "move";
 
-    const ref = await addDoc(
-
-        collection(
-            db,
-            "homepageSections"
-        ),
-
-        data
-
-    );
-
-    data.id = ref.id;
-
-    await refresh();
-
-    selectedSection = homepageSections.find(
-
-        section => section.id === ref.id
-
-    );
-
-    refreshUI();
-
-}
-
-/*==================================================
-    UPDATE SECTION
-==================================================*/
-
-async function updateSection(data){
-
-    if(!selectedSection) return;
-
-    Object.assign(
-
-        selectedSection,
-
-        data,
-
-        {
-
-            updatedAt:Date.now()
+            event.dataTransfer.setData(
+                "text/plain",
+                section.id
+            );
 
         }
-
     );
 
-    await updateDoc(
 
-        doc(
+    card.addEventListener(
+        "dragend",
+        ()=>{
 
-            db,
+            card.classList.remove(
+                "dragging"
+            );
 
-            "homepageSections",
+            draggedSectionId =
+                null;
 
-            selectedSection.id
+            document
+                .querySelectorAll(
+                    ".drag-over"
+                )
+                .forEach(item=>{
 
-        ),
+                    item.classList.remove(
+                        "drag-over"
+                    );
 
-        selectedSection
+                });
 
+        }
     );
+
+
+    card.addEventListener(
+        "dragover",
+        event=>{
+
+            event.preventDefault();
+
+            if(
+                draggedSectionId ===
+                section.id
+            ){
+
+                return;
+
+            }
+
+            card.classList.add(
+                "drag-over"
+            );
+
+        }
+    );
+
+
+    card.addEventListener(
+        "dragleave",
+        ()=>{
+
+            card.classList.remove(
+                "drag-over"
+            );
+
+        }
+    );
+
+
+    card.addEventListener(
+        "drop",
+        async event=>{
+
+            event.preventDefault();
+
+            card.classList.remove(
+                "drag-over"
+            );
+
+            const draggedId =
+                event.dataTransfer.getData(
+                    "text/plain"
+                );
+
+            if(
+                !draggedId ||
+                draggedId === section.id
+            ){
+
+                return;
+
+            }
+
+            await moveSection(
+                draggedId,
+                section.id
+            );
+
+        }
+    );
+
+
+    return card;
+
+}
+
+
+/*==================================================
+    TOGGLE EDITOR
+==================================================*/
+
+function toggleSectionEditor(
+    id
+){
+
+    if(
+        expandedSectionId === id
+    ){
+
+        expandedSectionId =
+            null;
+
+    }
+
+    else{
+
+        expandedSectionId =
+            id;
+
+    }
 
     renderSectionList();
 
-    renderPreview();
+
+    /* Scroll selected section */
+
+    if(
+        expandedSectionId === id
+    ){
+
+        requestAnimationFrame(()=>{
+
+            const card =
+                sectionList.querySelector(
+                    `[data-id="${id}"]`
+                );
+
+            card?.scrollIntoView({
+
+                behavior:"smooth",
+
+                block:"nearest"
+
+            });
+
+        });
+
+    }
 
 }
+
+
+/*==================================================
+    CREATE NEW SECTION
+==================================================*/
+
+async function createNewSection(){
+
+    const name =
+        sectionNameInput.value.trim();
+
+    const type =
+        sectionTypeSelect.value;
+
+
+    if(!name){
+
+        showToast(
+            "Please enter a section name",
+            "error"
+        );
+
+        sectionNameInput.focus();
+
+        return;
+
+    }
+
+
+    if(!type){
+
+        showToast(
+            "Please select a section type",
+            "error"
+        );
+
+        sectionTypeSelect.focus();
+
+        return;
+
+    }
+
+
+    showLoader(true);
+
+
+    try{
+
+        const data =
+            getDefaultSection(
+                type
+            );
+
+
+        data.title =
+            name;
+
+
+        data.order =
+            homepageSections.length + 1;
+
+
+        data.createdAt =
+            Date.now();
+
+
+        data.updatedAt =
+            Date.now();
+
+
+        data.published =
+            true;
+
+
+        const ref =
+            await addDoc(
+
+                collection(
+                    db,
+                    "homepageSections"
+                ),
+
+                data
+
+            );
+
+
+        const newSection = {
+
+            id:ref.id,
+
+            ...data
+
+        };
+
+
+        homepageSections.push(
+            newSection
+        );
+
+
+        /* Clear form */
+
+        sectionNameInput.value =
+            "";
+
+        sectionTypeSelect.value =
+            "";
+
+
+        /* Open new section */
+
+        expandedSectionId =
+            ref.id;
+
+
+        renderSectionList();
+
+
+        showToast(
+            "Section added successfully"
+        );
+
+
+        /* Scroll */
+
+        requestAnimationFrame(()=>{
+
+            const card =
+                sectionList.querySelector(
+                    `[data-id="${ref.id}"]`
+                );
+
+            card?.scrollIntoView({
+
+                behavior:"smooth",
+
+                block:"center"
+
+            });
+
+        });
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Create section error:",
+            error
+        );
+
+        showToast(
+            "Failed to create section",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        showLoader(false);
+
+    }
+
+}
+
 
 /*==================================================
     DEFAULT SECTION
@@ -680,15 +1096,64 @@ async function updateSection(data){
 
 function getDefaultSection(type){
 
+    const design = {
+
+        backgroundColor:"#ffffff",
+
+        padding:20,
+
+        margin:0,
+
+        borderRadius:0,
+
+        width:"boxed",
+
+        customWidth:1200
+
+    };
+
+
     switch(type){
 
-        case "banner":
+        case "heading":
 
-            return{
+            return {
 
                 type,
 
-                title:"",
+                title:"Heading",
+
+                subtitle:"",
+
+                badge:"",
+
+                ...design
+
+            };
+
+
+        case "spacer":
+
+            return {
+
+                type,
+
+                height:40,
+
+                background:"transparent",
+
+                ...design
+
+            };
+
+
+        case "banner":
+
+            return {
+
+                type,
+
+                title:"Banner",
 
                 subtitle:"",
 
@@ -696,55 +1161,16 @@ function getDefaultSection(type){
 
                 autoPlay:true,
 
-                interval:5000
-
-            };
-
-        case "heading":
-
-            return{
-
-                type,
-
-                badge:"",
-
-                title:"Heading",
-
-                subtitle:""
-
-            };
-
-        case "productCarousel":
-
-            return{
-
-                type,
-
-                title:"Products",
-
-                subtitle:"",
-
-                filterType:"latest",
-
-                categoryId:"",
-
-                categoryType:"all",
-
-                tag:"",
-
-                limit:10,
-
-                autoPlay:false,
-
                 interval:5000,
 
-                viewAllLink:""
+                ...design
 
             };
+
 
         case "imageCarousel":
 
-            return{
+            return {
 
                 type,
 
@@ -756,13 +1182,47 @@ function getDefaultSection(type){
 
                 autoPlay:false,
 
-                interval:5000
+                interval:5000,
+
+                ...design
 
             };
 
+
+        case "productCarousel":
+
+            return {
+
+                type,
+
+                title:"Products",
+
+                subtitle:"",
+
+                filterType:"latest",
+
+                categoryId:"",
+
+                categoryType:"",
+
+                tags:[],
+
+                limit:10,
+
+                autoPlay:false,
+
+                interval:5000,
+
+                viewAllLink:"",
+
+                ...design
+
+            };
+
+
         case "youtubeCarousel":
 
-            return{
+            return {
 
                 type,
 
@@ -774,13 +1234,16 @@ function getDefaultSection(type){
 
                 autoPlay:false,
 
-                interval:5000
+                interval:5000,
+
+                ...design
 
             };
 
+
         case "reviewCarousel":
 
-            return{
+            return {
 
                 type,
 
@@ -794,27 +1257,22 @@ function getDefaultSection(type){
 
                 interval:5000,
 
-                limit:10
+                limit:10,
+
+                ...design
 
             };
 
-        case "spacer":
-
-            return{
-
-                type,
-
-                height:40,
-
-                background:"transparent"
-
-            };
 
         default:
 
-            return{
+            return {
 
-                type
+                type,
+
+                title:"Section",
+
+                ...design
 
             };
 
@@ -823,346 +1281,880 @@ function getDefaultSection(type){
 }
 
 
-
 /*==================================================
-    DUPLICATE SECTION
+    UPDATE SECTION
 ==================================================*/
 
-async function duplicateSelectedSection(){
+async function handleSectionUpdate(
+    updatedSection
+){
 
-    if(!selectedSection) return;
+    if(!updatedSection?.id){
 
-    const clone = structuredClone(selectedSection);
+        return;
 
-    delete clone.id;
+    }
 
-    clone.order = homepageSections.length + 1;
 
-    clone.createdAt = Date.now();
+    const index =
+        homepageSections.findIndex(
+            item =>
+                item.id ===
+                updatedSection.id
+        );
 
-    clone.updatedAt = Date.now();
 
-    const ref = await addDoc(
+    if(index === -1){
 
-        collection(
-            db,
-            "homepageSections"
-        ),
+        return;
 
-        clone
+    }
 
-    );
 
-    await refresh();
+    const cleanData = {
+        ...updatedSection
+    };
 
-    selectedSection = homepageSections.find(
-        section => section.id === ref.id
-    );
 
-    refreshUI();
+    delete cleanData.id;
+
+
+    cleanData.updatedAt =
+        Date.now();
+
+
+    homepageSections[index] = {
+
+        id:updatedSection.id,
+
+        ...cleanData
+
+    };
+
+
+    try{
+
+        await updateDoc(
+
+            doc(
+                db,
+                "homepageSections",
+                updatedSection.id
+            ),
+
+            cleanData
+
+        );
+
+
+        /*
+            Do NOT rerender the entire section
+            on every keystroke.
+
+            This keeps typing smooth.
+        */
+
+        updateSectionCardTitle(
+            updatedSection
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Update section error:",
+            error
+        );
+
+        showToast(
+            "Failed to save changes",
+            "error"
+        );
+
+    }
 
 }
+
+
+/*==================================================
+    UPDATE CARD TITLE
+==================================================*/
+
+function updateSectionCardTitle(
+    section
+){
+
+    const card =
+        sectionList.querySelector(
+            `[data-id="${section.id}"]`
+        );
+
+    if(!card) return;
+
+
+    const title =
+        card.querySelector(
+            ".section-title"
+        );
+
+    if(!title) return;
+
+
+    const info =
+        sectionInfo[section.type];
+
+
+    title.textContent =
+        section.title ||
+        info?.label ||
+        section.type;
+
+}
+
 
 /*==================================================
     DELETE SECTION
 ==================================================*/
 
-async function deleteSelectedSection(){
+async function deleteSection(
+    section
+){
 
-    if(!selectedSection) return;
+    if(!section) return;
 
-    const ok = confirm(
-        "Delete this section?"
-    );
 
-    if(!ok) return;
-
-    await deleteDoc(
-
-        doc(
-            db,
-            "homepageSections",
-            selectedSection.id
-        )
-
-    );
-
-    homepageSections = homepageSections.filter(
-
-        section => section.id !== selectedSection.id
-
-    );
-
-    homepageSections.forEach((section,index)=>{
-
-        section.order = index + 1;
-
-    });
-
-    await saveOrder();
-
-    selectedSection = null;
-
-    refreshUI();
-
-}
-
-/*==================================================
-    DRAG DROP
-==================================================*/
-
-function initializeDragDrop(){
-
-    enableDragDrop({
-
-        container:sectionList,
-
-        items:".builder-section",
-
-        onChange:newOrder=>{
-
-            reorderSections(newOrder);
-
-        }
-
-    });
-
-}
-
-/*==================================================
-    REORDER
-==================================================*/
-
-function reorderSections(order){
-
-    const reordered=[];
-
-    order.forEach(id=>{
-
-        const section = homepageSections.find(
-
-            item=>item.id===id
-
+    const confirmed =
+        confirm(
+            `Delete "${section.title || "this section"}"?`
         );
 
-        if(section){
 
-            reordered.push(section);
+    if(!confirmed){
 
-        }
+        return;
 
-    });
+    }
 
-    reordered.forEach((section,index)=>{
 
-        section.order=index+1;
+    showLoader(true);
 
-    });
 
-    homepageSections=reordered;
+    try{
 
-    renderPreview();
+        await deleteDoc(
 
-    saveOrder();
-
-}
-
-/*==================================================
-    SAVE ORDER
-==================================================*/
-
-async function saveOrder(){
-
-    const promises=[];
-
-    homepageSections.forEach(section=>{
-
-        promises.push(
-
-            updateDoc(
-
-                doc(
-
-                    db,
-
-                    "homepageSections",
-
-                    section.id
-
-                ),
-
-                {
-
-                    order:section.order,
-
-                    updatedAt:Date.now()
-
-                }
-
+            doc(
+                db,
+                "homepageSections",
+                section.id
             )
 
         );
 
-    });
 
-    await Promise.all(promises);
+        homepageSections =
+            homepageSections.filter(
+                item =>
+                    item.id !==
+                    section.id
+            );
 
-    renderSectionList();
 
-}
+        await normalizeOrders();
 
-/*==================================================
-    MOVE UP
-==================================================*/
 
-async function moveUp(){
+        if(
+            expandedSectionId ===
+            section.id
+        ){
 
-    if(!selectedSection) return;
-
-    const index = homepageSections.findIndex(
-
-        s=>s.id===selectedSection.id
-
-    );
-
-    if(index<=0) return;
-
-    [
-
-        homepageSections[index-1],
-
-        homepageSections[index]
-
-    ]=[
-
-        homepageSections[index],
-
-        homepageSections[index-1]
-
-    ];
-
-    homepageSections.forEach((s,i)=>{
-
-        s.order=i+1;
-
-    });
-
-    await saveOrder();
-
-    refreshUI();
-
-}
-
-/*==================================================
-    MOVE DOWN
-==================================================*/
-
-async function moveDown(){
-
-    if(!selectedSection) return;
-
-    const index = homepageSections.findIndex(
-
-        s=>s.id===selectedSection.id
-
-    );
-
-    if(index===homepageSections.length-1) return;
-
-    [
-
-        homepageSections[index+1],
-
-        homepageSections[index]
-
-    ]=[
-
-        homepageSections[index],
-
-        homepageSections[index+1]
-
-    ];
-
-    homepageSections.forEach((s,i)=>{
-
-        s.order=i+1;
-
-    });
-
-    await saveOrder();
-
-    refreshUI();
-
-}
-
-/*==================================================
-    TOGGLE PUBLISH
-==================================================*/
-
-async function togglePublish(){
-
-    if(!selectedSection) return;
-
-    selectedSection.published = !selectedSection.published;
-
-    await updateDoc(
-
-        doc(
-
-            db,
-
-            "homepageSections",
-
-            selectedSection.id
-
-        ),
-
-        {
-
-            published:selectedSection.published,
-
-            updatedAt:Date.now()
+            expandedSectionId =
+                null;
 
         }
 
+
+        renderSectionList();
+
+
+        showToast(
+            "Section deleted"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Delete section error:",
+            error
+        );
+
+        showToast(
+            "Failed to delete section",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        showLoader(false);
+
+    }
+
+}
+
+
+/*==================================================
+    DUPLICATE SECTION
+==================================================*/
+
+async function duplicateSection(
+    section
+){
+
+    if(!section) return;
+
+
+    showLoader(true);
+
+
+    try{
+
+        const clone =
+            structuredClone(
+                section
+            );
+
+
+        delete clone.id;
+
+
+        clone.title =
+            `${section.title || "Section"} Copy`;
+
+
+        clone.order =
+            homepageSections.length + 1;
+
+
+        clone.createdAt =
+            Date.now();
+
+
+        clone.updatedAt =
+            Date.now();
+
+
+        const ref =
+            await addDoc(
+
+                collection(
+                    db,
+                    "homepageSections"
+                ),
+
+                clone
+
+            );
+
+
+        const newSection = {
+
+            id:ref.id,
+
+            ...clone
+
+        };
+
+
+        homepageSections.push(
+            newSection
+        );
+
+
+        expandedSectionId =
+            ref.id;
+
+
+        renderSectionList();
+
+
+        showToast(
+            "Section duplicated"
+        );
+
+
+        requestAnimationFrame(()=>{
+
+            sectionList
+                .querySelector(
+                    `[data-id="${ref.id}"]`
+                )
+                ?.scrollIntoView({
+
+                    behavior:"smooth",
+
+                    block:"center"
+
+                });
+
+        });
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Duplicate section error:",
+            error
+        );
+
+        showToast(
+            "Failed to duplicate section",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        showLoader(false);
+
+    }
+
+}
+
+
+/*==================================================
+    MOVE SECTION
+==================================================*/
+
+async function moveSection(
+    draggedId,
+    targetId
+){
+
+    const fromIndex =
+        homepageSections.findIndex(
+            section =>
+                section.id ===
+                draggedId
+        );
+
+
+    const targetIndex =
+        homepageSections.findIndex(
+            section =>
+                section.id ===
+                targetId
+        );
+
+
+    if(
+        fromIndex === -1 ||
+        targetIndex === -1
+    ){
+
+        return;
+
+    }
+
+
+    const moved =
+        homepageSections.splice(
+            fromIndex,
+            1
+        )[0];
+
+
+    homepageSections.splice(
+        targetIndex,
+        0,
+        moved
     );
+
+
+    await normalizeOrders();
+
+}
+
+
+/*==================================================
+    NORMALIZE ORDERS
+==================================================*/
+
+async function normalizeOrders(){
+
+    const updates = [];
+
+
+    homepageSections.forEach(
+        (section,index)=>{
+
+            const newOrder =
+                index + 1;
+
+
+            section.order =
+                newOrder;
+
+
+            updates.push(
+
+                updateDoc(
+
+                    doc(
+                        db,
+                        "homepageSections",
+                        section.id
+                    ),
+
+                    {
+
+                        order:newOrder,
+
+                        updatedAt:Date.now()
+
+                    }
+
+                )
+
+            );
+
+        }
+    );
+
+
+    await Promise.all(
+        updates
+    );
+
 
     renderSectionList();
 
-    renderPreview();
-
 }
+
 
 /*==================================================
-    HELPERS
+    UPDATE SECTION COUNT
 ==================================================*/
 
-function getSection(id){
+function updateSectionCount(){
 
-    return homepageSections.find(
+    const count =
+        homepageSections.length;
 
-        section=>section.id===id
 
+    if(!sectionCount) return;
+
+
+    sectionCount.textContent =
+        `${count} ${
+            count === 1
+            ? "Section"
+            : "Sections"
+        }`;
+
+}
+
+
+/*==================================================
+    INDIVIDUAL SECTION PREVIEW
+==================================================*/
+
+async function openSectionPreview(
+    section
+){
+
+    if(!section) return;
+
+
+    previewModalTitle.textContent =
+        section.title ||
+        sectionInfo[
+            section.type
+        ]?.label ||
+        "Section Preview";
+
+
+    sectionPreviewContent.innerHTML = "";
+
+
+    sectionPreviewModal.classList.remove(
+        "hidden"
     );
 
+
+    try{
+
+        await renderHomepagePreview(
+
+            sectionPreviewContent,
+
+            [section]
+
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Section preview error:",
+            error
+        );
+
+
+        sectionPreviewContent.innerHTML = `
+
+            <div style="
+                padding:40px;
+                text-align:center;
+                color:#555;
+            ">
+
+                <h3>
+                    Preview could not be loaded
+                </h3>
+
+                <p style="margin-top:8px;">
+                    ${error.message || "Unknown error"}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
 }
 
-function getSelectedSection(){
 
-    return selectedSection;
+/*==================================================
+    CLOSE SECTION PREVIEW
+==================================================*/
+
+function closeSectionPreview(){
+
+    sectionPreviewModal?.classList.add(
+        "hidden"
+    );
+
+    if(sectionPreviewContent){
+
+        sectionPreviewContent.innerHTML =
+            "";
+
+    }
 
 }
 
-export{
 
-    refresh,
+/*==================================================
+    FULL HOMEPAGE PREVIEW
+==================================================*/
 
-    refreshUI,
+async function openHomepagePreview(){
 
-    getSection,
+    homepagePreviewContent.innerHTML =
+        "";
 
-    getSelectedSection,
 
-    updateSection
+    homepagePreviewModal.classList.remove(
+        "hidden"
+    );
+
+
+    try{
+
+        const publishedSections =
+            homepageSections.filter(
+                section =>
+                    section.published !== false
+            );
+
+
+        await renderHomepagePreview(
+
+            homepagePreviewContent,
+
+            publishedSections
+
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Homepage preview error:",
+            error
+        );
+
+
+        homepagePreviewContent.innerHTML = `
+
+            <div style="
+                padding:40px;
+                text-align:center;
+                color:#555;
+            ">
+
+                <h3>
+                    Homepage preview could not be loaded
+                </h3>
+
+                <p style="margin-top:8px;">
+                    ${error.message || "Unknown error"}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*==================================================
+    CLOSE HOMEPAGE PREVIEW
+==================================================*/
+
+function closeHomepagePreview(){
+
+    homepagePreviewModal?.classList.add(
+        "hidden"
+    );
+
+    if(homepagePreviewContent){
+
+        homepagePreviewContent.innerHTML =
+            "";
+
+    }
+
+}
+
+
+/*==================================================
+    PUBLISH
+==================================================*/
+
+async function publishHomepage(){
+
+    if(
+        homepageSections.length === 0
+    ){
+
+        showToast(
+            "Add at least one section first",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    showLoader(true);
+
+
+    try{
+
+        const updates =
+            homepageSections.map(
+                section=>{
+
+                    return updateDoc(
+
+                        doc(
+                            db,
+                            "homepageSections",
+                            section.id
+                        ),
+
+                        {
+
+                            published:
+                                true,
+
+                            updatedAt:
+                                Date.now()
+
+                        }
+
+                    );
+
+                }
+            );
+
+
+        await Promise.all(
+            updates
+        );
+
+
+        homepageSections.forEach(
+            section=>{
+
+                section.published =
+                    true;
+
+            }
+        );
+
+
+        showToast(
+            "Homepage published successfully"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Publish error:",
+            error
+        );
+
+        showToast(
+            "Failed to publish homepage",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        showLoader(false);
+
+    }
+
+}
+
+
+/*==================================================
+    TOAST
+==================================================*/
+
+function showToast(
+    message,
+    type="success"
+){
+
+    if(!toast) return;
+
+
+    toastMessage.textContent =
+        message;
+
+
+    const icon =
+        toast.querySelector("i");
+
+
+    if(icon){
+
+        icon.className =
+            type === "error"
+            ? "fa-solid fa-circle-exclamation"
+            : "fa-solid fa-circle-check";
+
+    }
+
+
+    toast.classList.remove(
+        "hidden"
+    );
+
+
+    requestAnimationFrame(()=>{
+
+        toast.classList.add(
+            "show"
+        );
+
+    });
+
+
+    clearTimeout(
+        showToast.timeout
+    );
+
+
+    showToast.timeout =
+        setTimeout(()=>{
+
+            toast.classList.remove(
+                "show"
+            );
+
+
+            setTimeout(()=>{
+
+                toast.classList.add(
+                    "hidden"
+                );
+
+            },250);
+
+        },2500);
+
+}
+
+
+/*==================================================
+    LOADER
+==================================================*/
+
+function showLoader(
+    show
+){
+
+    if(!loader) return;
+
+
+    if(show){
+
+        loader.classList.remove(
+            "hidden"
+        );
+
+    }
+
+    else{
+
+        loader.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/*==================================================
+    PUBLIC HELPERS
+==================================================*/
+
+export {
+
+    loadSections,
+
+    renderSectionList,
+
+    createNewSection,
+
+    openSectionPreview,
+
+    openHomepagePreview,
+
+    closeSectionPreview,
+
+    closeHomepagePreview
 
 };
