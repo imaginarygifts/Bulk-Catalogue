@@ -4,7 +4,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "login.html";
+    window.location.href = "/admin/login.html";
     return;
   }
 
@@ -14,6 +14,6 @@ onAuthStateChanged(auth, async (user) => {
   if (!snap.exists()) {
     alert("Not authorized");
     await auth.signOut();
-    window.location.href = "login.html";
+    window.location.href = "/admin/login.html";
   }
 });
