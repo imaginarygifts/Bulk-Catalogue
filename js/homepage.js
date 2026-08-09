@@ -1054,15 +1054,9 @@ async function renderProductCarousel(
     PRODUCT CARD
 ==================================================*/
 
-function createProductCard(
-    product
-){
+function createProductCard(product){
 
-    const image =
-        getProductImage(
-            product
-        );
-
+    const image = getProductImage(product);
 
     const name =
         product.name ||
@@ -1070,25 +1064,65 @@ function createProductCard(
         "Product";
 
 
-    const price =
-        getProductPrice(
-            product
-        );
+    /* ==============================
+       PRICE
+    ============================== */
+
+    const salePrice =
+        product.salePrice ??
+        product.price ??
+        product.pricing?.salePrice ??
+        product.pricing?.price ??
+        "";
 
 
-    const oldPrice =
-        getProductOldPrice(
-            product
-        );
+    const basePrice =
+        product.basePrice ??
+        product.originalPrice ??
+        product.mrp ??
+        product.pricing?.basePrice ??
+        product.pricing?.mrp ??
+        "";
+
+
+    /* ==============================
+       DISCOUNT
+    ============================== */
+
+    let discount = "";
+
+    if(
+        basePrice !== "" &&
+        salePrice !== "" &&
+        Number(basePrice) > Number(salePrice)
+    ){
+
+        discount =
+            Math.round(
+                (
+                    (Number(basePrice) - Number(salePrice))
+                    / Number(basePrice)
+                ) * 100
+            );
+
+    }
+
+
+    /* ==============================
+       BESTSELLER
+    ============================== */
+
+    const bestseller =
+        product.bestseller === true ||
+        product.isBestseller === true ||
+        product.bestSeller === true;
 
 
     return `
 
         <a
             class="product-card"
-            href="${getProductLink(
-                product
-            )}"
+            href="${getProductLink(product)}"
         >
 
             <div class="product-image">
@@ -1098,12 +1132,8 @@ function createProductCard(
                     ?
                     `
                     <img
-                        src="${escapeAttribute(
-                            image
-                        )}"
-                        alt="${escapeAttribute(
-                            name
-                        )}"
+                        src="${escapeAttribute(image)}"
+                        alt="${escapeAttribute(name)}"
                         loading="lazy"
                     >
                     `
@@ -1116,15 +1146,36 @@ function createProductCard(
                 }
 
 
+                ${
+                    discount
+                    ?
+                    `
+                    <div class="product-discount">
+                        -${discount}%
+                    </div>
+                    `
+                    :
+                    ""
+                }
+
+
+                ${
+                    bestseller
+                    ?
+                    `
+                    <div class="product-bestseller">
+                        🔥 Bestseller
+                    </div>
+                    `
+                    :
+                    ""
+                }
+
+
                 <button
                     class="product-wishlist"
                     type="button"
-                    aria-label="Wishlist"
-                    onclick="
-                        event.preventDefault();
-                        event.stopPropagation();
-                        this.classList.toggle('active');
-                    "
+                    onclick="event.preventDefault(); event.stopPropagation();"
                 >
                     ♡
                 </button>
@@ -1135,37 +1186,41 @@ function createProductCard(
             <div class="product-info">
 
                 <h3>
-                    ${escapeHtml(
-                        name
-                    )}
+                    ${escapeHtml(name)}
                 </h3>
 
 
                 ${
-                    price !== ""
+                    salePrice !== "" || basePrice !== ""
                     ?
                     `
                     <div class="product-prices">
 
                         ${
-                            oldPrice !== ""
+                            salePrice !== ""
                             ?
                             `
-                            <span class="product-old-price">
-                                ₹${escapeHtml(
-                                    String(oldPrice)
-                                )}
+                            <span class="product-sale-price">
+                                ₹${escapeHtml(String(salePrice))}
                             </span>
                             `
                             :
                             ""
                         }
 
-                        <strong>
-                            ₹${escapeHtml(
-                                String(price)
-                            )}
-                        </strong>
+
+                        ${
+                            basePrice !== "" &&
+                            Number(basePrice) > Number(salePrice)
+                            ?
+                            `
+                            <span class="product-old-price">
+                                ₹${escapeHtml(String(basePrice))}
+                            </span>
+                            `
+                            :
+                            ""
+                        }
 
                     </div>
                     `
@@ -1174,18 +1229,19 @@ function createProductCard(
                 }
 
 
-                <span class="product-button">
+                <div class="product-button">
 
                     ${
-                        product.variants ||
-                        product.options
+                        product.customOptions ||
+                        product.options ||
+                        product.variants
                         ?
                         "SELECT OPTIONS"
                         :
                         "ADD TO CART"
                     }
 
-                </span>
+                </div>
 
             </div>
 
@@ -1194,7 +1250,6 @@ function createProductCard(
     `;
 
 }
-
 
 /*==================================================
     PRODUCT HELPERS
