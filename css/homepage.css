@@ -1,30 +1,39 @@
 /*==================================================
-    IMAGINARY GIFTS HOMEPAGE
-    DARK MOBILE-FIRST UI
+    HOMEPAGE
+    DARK PREMIUM / MOBILE FIRST
 ==================================================*/
 
 :root{
 
-    --bg:#000000;
-    --bg-soft:#101014;
-    --surface:#17171d;
-    --surface-2:#1d1d24;
-    --surface-3:#24242c;
+    --bg:#08080b;
+    --bg-soft:#0d0d11;
 
-    --white:#ffffff;
-    --text:#f7f7f8;
-    --muted:#a3a3ad;
+    --card:#17171d;
+    --card-2:#1d1d24;
+
+    --text:#ffffff;
+    --muted:#a5a5ae;
 
     --border:#2b2b34;
 
-    --orange:#ff9f1c;
-    --orange-2:#ff7a00;
-    --pink:#e91e9a;
+    --white:#ffffff;
+
+    /* Instagram gradient */
+    --ig-gradient:
+        linear-gradient(
+            135deg,
+            #feda75 0%,
+            #fa7e1e 25%,
+            #d62976 55%,
+            #962fbf 78%,
+            #4f5bd5 100%
+        );
+
+    --ig-pink:#d62976;
 
     --green:#00f59b;
-    --red:#ff4d67;
 
-    --radius:20px;
+    --section-gap:30px;
 
 }
 
@@ -39,17 +48,20 @@
 
 html{
     scroll-behavior:smooth;
-    background:var(--bg);
 }
 
+html,
 body{
 
     margin:0;
     padding:0;
 
-    background:#08080b !important;
+    width:100%;
+    min-height:100%;
 
-    color:#fff;
+    background:var(--bg) !important;
+
+    color:var(--text);
 
     font-family:
         Arial,
@@ -60,24 +72,22 @@ body{
 
 }
 
-img{
+body{
+    -webkit-font-smoothing:antialiased;
+}
 
+img{
     max-width:100%;
     display:block;
-
 }
 
 a{
-
     color:inherit;
     text-decoration:none;
-
 }
 
 button{
-
     font-family:inherit;
-
 }
 
 
@@ -95,7 +105,7 @@ button{
 
     width:100%;
 
-    height:64px;
+    height:62px;
 
     display:flex;
 
@@ -103,30 +113,31 @@ button{
 
     justify-content:space-between;
 
-    padding:0 15px;
+    padding:0 16px;
 
     background:#050507;
 
-    border-bottom:1px solid #202027;
+    border-bottom:1px solid #1b1b21;
+
+    box-shadow:
+        0 4px 18px rgba(0,0,0,.35);
 
 }
 
 
-/*==================================================
-    MENU BUTTON
-==================================================*/
+/* MENU */
 
 .menu-btn{
 
     width:42px;
+
     height:42px;
 
     display:flex;
 
     align-items:center;
-    justify-content:center;
 
-    padding:0;
+    justify-content:center;
 
     border:0;
 
@@ -134,33 +145,32 @@ button{
 
     color:#fff;
 
-    font-size:27px;
+    font-size:30px;
+
+    line-height:1;
 
     cursor:pointer;
 
 }
 
 
-/*==================================================
-    LOGO
-==================================================*/
+/* LOGO */
 
 .logo{
 
     position:absolute;
 
     left:50%;
+
     top:50%;
 
-    transform:
-        translate(-50%,-50%);
+    transform:translate(-50%,-50%);
 
     display:flex;
 
     align-items:center;
-    justify-content:center;
 
-    height:55px;
+    justify-content:center;
 
 }
 
@@ -168,38 +178,32 @@ button{
 
     width:auto;
 
-    height:46px;
+    height:50px;
 
-    max-width:180px;
+    max-width:175px;
 
     object-fit:contain;
 
 }
 
 
-/*==================================================
-    SEARCH BUTTON
-==================================================*/
+/* SEARCH */
 
 .search-icon{
 
     width:42px;
+
     height:42px;
 
     display:flex;
 
     align-items:center;
+
     justify-content:center;
-
-    padding:0;
-
-    border:0;
-
-    background:transparent;
 
     color:#fff;
 
-    font-size:23px;
+    font-size:25px;
 
     cursor:pointer;
 
@@ -214,12 +218,13 @@ button{
 
     position:fixed;
 
-    top:64px;
+    top:62px;
 
     left:0;
+
     right:0;
 
-    z-index:1100;
+    z-index:1999;
 
     display:none;
 
@@ -230,14 +235,12 @@ button{
     border-bottom:1px solid var(--border);
 
     box-shadow:
-        0 10px 30px rgba(0,0,0,.5);
+        0 8px 25px rgba(0,0,0,.4);
 
 }
 
 .search-overlay.open{
-
     display:block;
-
 }
 
 .search-box{
@@ -256,17 +259,17 @@ button{
 
     width:100%;
 
-    height:46px;
+    height:45px;
 
-    padding:0 15px;
+    padding:0 14px;
 
     border:1px solid #34343d;
 
-    border-radius:13px;
+    border-radius:12px;
 
     outline:none;
 
-    background:#1b1b22;
+    background:#1a1a21;
 
     color:#fff;
 
@@ -275,31 +278,26 @@ button{
 }
 
 .search-box input::placeholder{
-
-    color:#888894;
-
+    color:#858590;
 }
 
 .search-box input:focus{
-
-    border-color:var(--orange);
-
+    border-color:#d62976;
 }
 
 .search-box button{
 
-    width:46px;
-    height:46px;
+    width:45px;
 
-    border:1px solid #33333c;
+    height:45px;
 
-    border-radius:13px;
+    border:0;
 
-    background:#24242b;
+    border-radius:12px;
+
+    background:var(--ig-gradient);
 
     color:#fff;
-
-    cursor:pointer;
 
 }
 
@@ -314,72 +312,31 @@ button{
 
     top:0;
 
-    left:-300px;
+    left:-290px;
 
     z-index:3000;
 
-    width:285px;
+    width:280px;
 
     height:100vh;
 
     overflow-y:auto;
 
-    padding:18px 0;
+    padding:20px 0;
 
     background:#111116;
 
     border-right:1px solid #292930;
 
     box-shadow:
-        10px 0 35px rgba(0,0,0,.55);
+        8px 0 30px rgba(0,0,0,.5);
 
     transition:left .25s ease;
 
 }
 
 .sidebar.open{
-
     left:0;
-
-}
-
-.sidebar-header{
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    padding:10px 18px 20px;
-
-    border-bottom:1px solid #292930;
-
-}
-
-.sidebar-header strong{
-
-    color:#fff;
-
-    font-size:18px;
-
-}
-
-.sidebar-header button{
-
-    width:38px;
-    height:38px;
-
-    border:1px solid #33333b;
-
-    border-radius:50%;
-
-    background:#202027;
-
-    color:#fff;
-
-    cursor:pointer;
-
 }
 
 .sidebar > a{
@@ -388,39 +345,25 @@ button{
 
     align-items:center;
 
-    gap:14px;
-
     min-height:54px;
 
-    padding:0 20px;
+    padding:0 22px;
 
-    border-bottom:1px solid #202027;
+    border-bottom:1px solid #25252c;
 
-    color:#dddde4;
+    color:#eee;
 
     font-size:14px;
 
-    transition:
-        background .2s ease,
-        color .2s ease;
-
-}
-
-.sidebar > a i{
-
-    width:20px;
-
-    text-align:center;
-
-    color:#ff9225;
+    transition:.2s ease;
 
 }
 
 .sidebar > a:hover{
 
-    background:#1e1e25;
+    background:#1d1d24;
 
-    color:#ff9d2e;
+    color:#fff;
 
 }
 
@@ -439,16 +382,14 @@ button{
 
     display:none;
 
-    background:rgba(0,0,0,.72);
+    background:rgba(0,0,0,.7);
 
     backdrop-filter:blur(2px);
 
 }
 
 .overlay.show{
-
     display:block;
-
 }
 
 
@@ -462,9 +403,15 @@ button{
 
     min-height:100vh;
 
-    background:var(--bg);
+    background:var(--bg) !important;
 
 }
+
+
+/* IMPORTANT:
+   Section background can still be
+   controlled by Section Editor.
+*/
 
 .home-section{
 
@@ -472,14 +419,11 @@ button{
 
     width:100%;
 
-    background:var(--bg);
+    background:transparent;
+
+    color:#fff;
 
 }
-
-
-/*==================================================
-    COMMON CONTAINER
-==================================================*/
 
 .home-container{
 
@@ -489,9 +433,11 @@ button{
 
     margin:0 auto;
 
-    padding-left:10px;
+    padding-left:12px;
 
-    padding-right:10px;
+    padding-right:12px;
+
+    background:transparent;
 
 }
 
@@ -502,9 +448,9 @@ button{
 
 .home-section-heading{
 
-    padding-top:28px;
+    padding-top:32px;
 
-    padding-bottom:20px;
+    padding-bottom:28px;
 
 }
 
@@ -518,19 +464,19 @@ button{
 
     display:inline-block;
 
-    margin-bottom:8px;
+    margin-bottom:9px;
 
     padding:6px 13px;
 
-    border-radius:20px;
+    border-radius:30px;
 
-    background:#30241d;
+    background:#1d1d24;
 
-    color:#ff9b2d;
+    color:#ff5fa2;
 
     font-size:11px;
 
-    font-weight:800;
+    font-weight:700;
 
 }
 
@@ -545,7 +491,7 @@ button{
         "Times New Roman",
         serif;
 
-    font-size:28px;
+    font-size:30px;
 
     line-height:1.15;
 
@@ -559,7 +505,7 @@ button{
 
     margin:9px auto 0;
 
-    max-width:600px;
+    max-width:650px;
 
     color:var(--muted);
 
@@ -576,9 +522,9 @@ button{
 
 .home-section-banner{
 
-    padding-top:8px;
+    padding-top:18px;
 
-    padding-bottom:25px;
+    padding-bottom:30px;
 
 }
 
@@ -590,11 +536,11 @@ button{
 
     overflow:hidden;
 
-    border-radius:24px;
+    border-radius:22px;
 
-    background:#17171c;
+    background:#15151a;
 
-    border:1px solid #292930;
+    border:1px solid #303038;
 
 }
 
@@ -621,40 +567,18 @@ button{
 }
 
 .banner-slide.active{
-
     display:block;
-
 }
 
 .banner-slide > img{
 
     width:100%;
+
     height:100%;
 
     object-fit:cover;
 
 }
-
-.banner-no-image{
-
-    width:100%;
-    height:100%;
-
-    display:flex;
-
-    align-items:center;
-    justify-content:center;
-
-    background:#202027;
-
-    color:#888;
-
-}
-
-
-/*==================================================
-    BANNER CONTENT
-==================================================*/
 
 .banner-content{
 
@@ -677,8 +601,8 @@ button{
     background:
         linear-gradient(
             to top,
-            rgba(0,0,0,.65),
-            rgba(0,0,0,.05) 70%
+            rgba(0,0,0,.55),
+            transparent 65%
         );
 
 }
@@ -713,8 +637,6 @@ button{
 
     max-width:85%;
 
-    color:#fff;
-
     font-size:25px;
 
     line-height:1.15;
@@ -733,8 +655,6 @@ button{
 
     font-size:12px;
 
-    line-height:1.45;
-
 }
 
 .banner-button{
@@ -749,20 +669,20 @@ button{
 
     padding:10px 18px;
 
-    border-radius:10px;
+    border:0;
 
-    background:
-        linear-gradient(
-            135deg,
-            var(--orange),
-            var(--orange-2)
-        );
+    border-radius:12px;
 
-    color:#111;
+    background:var(--ig-gradient);
+
+    color:#fff;
 
     font-size:12px;
 
-    font-weight:900;
+    font-weight:800;
+
+    box-shadow:
+        0 5px 18px rgba(214,41,118,.25);
 
 }
 
@@ -780,40 +700,36 @@ button{
 
     z-index:10;
 
-    width:34px;
-    height:34px;
+    width:38px;
 
-    padding:0;
+    height:38px;
 
-    border:1px solid rgba(255,255,255,.15);
+    border:0;
 
     border-radius:50%;
 
     transform:translateY(-50%);
 
-    background:rgba(0,0,0,.55);
+    background:rgba(0,0,0,.5);
 
     color:#fff;
 
     display:flex;
 
     align-items:center;
+
     justify-content:center;
 
-    font-size:24px;
+    font-size:25px;
 
 }
 
 .banner-prev{
-
-    left:9px;
-
+    left:10px;
 }
 
 .banner-next{
-
-    right:9px;
-
+    right:10px;
 }
 
 
@@ -826,13 +742,14 @@ button{
     position:absolute;
 
     left:50%;
-    bottom:9px;
+
+    bottom:10px;
 
     z-index:10;
 
     display:flex;
 
-    gap:5px;
+    gap:6px;
 
     transform:translateX(-50%);
 
@@ -841,6 +758,7 @@ button{
 .banner-dot{
 
     width:7px;
+
     height:7px;
 
     padding:0;
@@ -849,7 +767,7 @@ button{
 
     border-radius:50%;
 
-    background:rgba(255,255,255,.45);
+    background:rgba(255,255,255,.6);
 
 }
 
@@ -865,7 +783,7 @@ button{
 
 
 /*==================================================
-    CAROUSEL HEADINGS
+    CAROUSEL HEADING
 ==================================================*/
 
 .carousel-heading{
@@ -876,9 +794,9 @@ button{
 
     justify-content:space-between;
 
-    margin-bottom:15px;
+    margin-bottom:16px;
 
-    padding:0 6px;
+    padding:0 5px;
 
 }
 
@@ -893,7 +811,7 @@ button{
         "Times New Roman",
         serif;
 
-    font-size:26px;
+    font-size:27px;
 
     line-height:1.2;
 
@@ -917,9 +835,15 @@ button{
 
     margin-left:10px;
 
-    color:#ff9c2b;
+    padding:7px 11px;
 
-    font-size:12px;
+    border-radius:9px;
+
+    background:var(--ig-gradient);
+
+    color:#fff;
+
+    font-size:11px;
 
     font-weight:800;
 
@@ -932,9 +856,9 @@ button{
 
 .home-section-imageCarousel{
 
-    padding-top:25px;
+    padding-top:30px;
 
-    padding-bottom:28px;
+    padding-bottom:35px;
 
 }
 
@@ -942,7 +866,7 @@ button{
 
     display:flex;
 
-    gap:12px;
+    gap:14px;
 
     width:100%;
 
@@ -957,14 +881,12 @@ button{
 }
 
 .image-carousel::-webkit-scrollbar{
-
     display:none;
-
 }
 
 .image-carousel-item{
 
-    flex:0 0 calc(25% - 9px);
+    flex:0 0 calc(25% - 11px);
 
     min-width:0;
 
@@ -984,15 +906,14 @@ button{
 
     border-radius:18px;
 
-    background:#1a1a20;
-
-    border:1px solid #292930;
+    background:#18181e;
 
 }
 
 .image-box img{
 
     width:100%;
+
     height:100%;
 
     object-fit:cover;
@@ -1001,55 +922,17 @@ button{
 
 .image-carousel-title{
 
-    margin-top:8px;
+    margin-top:9px;
 
     min-height:34px;
 
-    color:#eee;
+    color:#fff;
 
     font-size:12px;
 
-    line-height:1.25;
+    line-height:1.3;
 
     font-weight:600;
-
-}
-
-
-/*==================================================
-    CAROUSEL DOTS
-==================================================*/
-
-.carousel-dots{
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    gap:8px;
-
-    margin-top:15px;
-
-}
-
-.carousel-dots span{
-
-    width:7px;
-    height:7px;
-
-    border-radius:50%;
-
-    background:#55555e;
-
-}
-
-.carousel-dots span.active{
-
-    background:#fff;
-
-    transform:scale(1.15);
 
 }
 
@@ -1060,39 +943,34 @@ button{
 
 .home-section-productCarousel{
 
-    padding-top:25px;
+    padding-top:30px;
 
-    padding-bottom:35px;
+    padding-bottom:38px;
 
 }
 
 
-/* PRODUCT TITLE BAR */
+/* PRODUCT SECTION TITLE */
 
 .home-section-productCarousel
 .carousel-heading{
 
     margin:0;
 
-    padding:19px 12px;
+    padding:20px 14px;
 
     border-radius:20px 20px 0 0;
 
     justify-content:center;
 
-    background:
-        linear-gradient(
-            135deg,
-            #ff9f1c,
-            #ff7915
-        );
+    background:var(--ig-gradient);
 
 }
 
 .home-section-productCarousel
 .carousel-heading h2{
 
-    color:#111;
+    color:#fff;
 
     font-family:
         Arial,
@@ -1101,7 +979,7 @@ button{
 
     font-size:25px;
 
-    font-weight:950;
+    font-weight:900;
 
     letter-spacing:1px;
 
@@ -1112,12 +990,7 @@ button{
 }
 
 .home-section-productCarousel
-.carousel-heading p{
-
-    display:none;
-
-}
-
+.carousel-heading p,
 .home-section-productCarousel
 .view-all{
 
@@ -1132,27 +1005,24 @@ button{
 
 .product-carousel{
 
-    display:flex;
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:10px;
 
     width:100%;
 
-    overflow-x:auto;
+    overflow-x:visible;
 
-    scrollbar-width:none;
+    padding:10px;
 
-    scroll-snap-type:x mandatory;
+    background:#0d0d11;
 
-    background:#101014;
-
-    border:1px solid #2c2c34;
+    border:1px solid #26262d;
 
     border-top:0;
-
-}
-
-.product-carousel::-webkit-scrollbar{
-
-    display:none;
 
 }
 
@@ -1165,20 +1035,26 @@ button{
 
     position:relative;
 
-    flex:0 0 72%;
+    display:block;
 
     min-width:0;
 
     overflow:hidden;
 
-    scroll-snap-align:start;
+    background:var(--card);
 
-    background:#17171d;
+    border:1px solid #28282f;
 
-    border-right:1px solid #303038;
+    border-radius:22px;
+
+    color:#fff;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.22);
 
     transition:
-        transform .2s ease;
+        transform .2s ease,
+        border-color .2s ease;
 
 }
 
@@ -1187,6 +1063,11 @@ button{
     transform:scale(.985);
 
 }
+
+
+/*==================================================
+    PRODUCT IMAGE
+==================================================*/
 
 .product-image{
 
@@ -1205,42 +1086,101 @@ button{
 .product-image img{
 
     width:100%;
+
     height:100%;
 
     object-fit:cover;
 
 }
 
-.product-image-empty{
 
-    width:100%;
-    height:100%;
+/*==================================================
+    DISCOUNT BADGE
+==================================================*/
+
+.product-discount{
+
+    position:absolute;
+
+    top:14px;
+
+    left:12px;
+
+    z-index:5;
+
+    min-width:48px;
+
+    height:48px;
+
+    padding:0 8px;
 
     display:flex;
 
     align-items:center;
+
     justify-content:center;
 
-    color:#888;
+    border-radius:50%;
+
+    background:#00f59b;
+
+    color:#001b12;
 
     font-size:13px;
+
+    font-weight:900;
 
 }
 
 
 /*==================================================
-    PRODUCT WISHLIST
+    BESTSELLER BADGE
+==================================================*/
+
+.product-bestseller{
+
+    position:absolute;
+
+    top:14px;
+
+    right:12px;
+
+    z-index:5;
+
+    padding:9px 12px;
+
+    border-radius:10px;
+
+    background:#ffc400;
+
+    color:#111;
+
+    font-size:12px;
+
+    font-weight:900;
+
+    white-space:nowrap;
+
+}
+
+
+/*==================================================
+    WISHLIST
 ==================================================*/
 
 .product-wishlist{
 
     position:absolute;
 
-    top:10px;
-    right:10px;
+    top:12px;
 
-    width:42px;
-    height:42px;
+    right:12px;
+
+    z-index:6;
+
+    width:46px;
+
+    height:46px;
 
     padding:0;
 
@@ -1248,25 +1188,28 @@ button{
 
     border-radius:50%;
 
-    background:#fff;
+    background:rgba(255,255,255,.96);
 
-    color:#222;
+    color:#333;
 
-    font-size:24px;
+    font-size:25px;
+
+    line-height:1;
 
     display:flex;
 
     align-items:center;
+
     justify-content:center;
 
     box-shadow:
-        0 4px 15px rgba(0,0,0,.3);
+        0 4px 14px rgba(0,0,0,.18);
 
 }
 
 .product-wishlist.active{
 
-    color:#ff315d;
+    color:#e91e63;
 
 }
 
@@ -1277,7 +1220,9 @@ button{
 
 .product-info{
 
-    padding:13px;
+    padding:13px 12px 14px;
+
+    background:var(--card);
 
 }
 
@@ -1287,28 +1232,33 @@ button{
 
     -webkit-box-orient:vertical;
 
-    -webkit-line-clamp:2;
+    -webkit-line-clamp:3;
 
     overflow:hidden;
 
-    min-height:48px;
+    min-height:68px;
 
     margin:0;
 
-    color:#f4f4f5;
+    color:#fff;
 
     font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
+        Arial,
+        Helvetica,
+        sans-serif;
 
     font-size:17px;
 
-    line-height:1.4;
+    line-height:1.32;
 
-    font-weight:500;
+    font-weight:700;
 
 }
+
+
+/*==================================================
+    PRICES
+==================================================*/
 
 .product-prices{
 
@@ -1318,9 +1268,19 @@ button{
 
     flex-wrap:wrap;
 
-    gap:7px;
+    gap:8px;
 
     margin-top:10px;
+
+}
+
+.product-sale-price{
+
+    color:#fff;
+
+    font-size:19px;
+
+    font-weight:900;
 
 }
 
@@ -1328,17 +1288,22 @@ button{
 
     color:#777780;
 
-    font-size:13px;
+    font-size:14px;
 
     text-decoration:line-through;
 
 }
+
+
+/* compatibility with older class */
 
 .product-prices strong{
 
     color:#fff;
 
     font-size:19px;
+
+    font-weight:900;
 
 }
 
@@ -1357,112 +1322,78 @@ button{
 
     width:100%;
 
-    min-height:43px;
+    min-height:44px;
 
     margin-top:12px;
 
-    border-radius:9px;
+    border:0;
 
-    background:
-        linear-gradient(
-            135deg,
-            #ffb300,
-            #ff8d00
-        );
+    border-radius:12px;
 
-    color:#111;
+    background:var(--ig-gradient);
+
+    color:#fff;
 
     font-size:12px;
 
     font-weight:900;
 
-    letter-spacing:.3px;
+    letter-spacing:.5px;
+
+    box-shadow:
+        0 5px 15px rgba(214,41,118,.22);
 
 }
 
 
 /*==================================================
-    OPTIONAL DISCOUNT BADGE
+    IMAGE CAROUSEL DOTS
 ==================================================*/
 
-.discount-badge{
-
-    position:absolute;
-
-    top:10px;
-
-    left:10px;
-
-    z-index:5;
+.carousel-dots{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
 
-    min-width:48px;
+    align-items:center;
 
-    height:48px;
+    gap:8px;
 
-    padding:0 7px;
+    margin-top:16px;
+
+}
+
+.carousel-dots span{
+
+    width:8px;
+
+    height:8px;
 
     border-radius:50%;
 
-    background:var(--green);
+    background:#55555e;
 
-    color:#07130e;
+}
 
-    font-size:13px;
+.carousel-dots span.active{
 
-    font-weight:900;
+    background:#fff;
+
+    transform:scale(1.15);
 
 }
 
 
 /*==================================================
-    OPTIONAL BESTSELLER BADGE
-==================================================*/
-
-.bestseller-badge{
-
-    position:absolute;
-
-    top:10px;
-
-    right:10px;
-
-    z-index:5;
-
-    padding:8px 12px;
-
-    border-radius:10px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ffd400,
-            #ffb400
-        );
-
-    color:#111;
-
-    font-size:12px;
-
-    font-weight:900;
-
-}
-
-
-/*==================================================
-    YOUTUBE SHORTS
+    YOUTUBE
 ==================================================*/
 
 .home-section-youtubeCarousel{
 
     padding-top:35px;
 
-    padding-bottom:38px;
+    padding-bottom:42px;
 
 }
 
@@ -1483,9 +1414,7 @@ button{
 }
 
 .youtube-carousel::-webkit-scrollbar{
-
     display:none;
-
 }
 
 .youtube-item{
@@ -1498,11 +1427,11 @@ button{
 
     scroll-snap-align:start;
 
-    border-radius:19px;
+    border-radius:20px;
 
-    background:#16161c;
+    background:#15151b;
 
-    border:1px solid #292930;
+    border:1px solid #2b2b32;
 
 }
 
@@ -1511,6 +1440,7 @@ button{
     display:block;
 
     width:100%;
+
     height:100%;
 
     border:0;
@@ -1526,7 +1456,7 @@ button{
 
     padding-top:35px;
 
-    padding-bottom:40px;
+    padding-bottom:42px;
 
 }
 
@@ -1547,9 +1477,7 @@ button{
 }
 
 .review-carousel::-webkit-scrollbar{
-
     display:none;
-
 }
 
 .review-card{
@@ -1562,20 +1490,23 @@ button{
 
     padding:20px;
 
-    border:1px solid #303039;
+    border:1px solid #2b2b34;
 
     border-radius:20px;
 
     background:#17171d;
 
+    color:#fff;
+
     box-shadow:
-        0 8px 25px rgba(0,0,0,.25);
+        0 5px 20px rgba(0,0,0,.2);
 
 }
 
 .review-avatar{
 
     width:55px;
+
     height:55px;
 
     border-radius:50%;
@@ -1584,26 +1515,11 @@ button{
 
 }
 
-.review-avatar-empty{
-
-    display:flex;
-
-    align-items:center;
-    justify-content:center;
-
-    background:#24242c;
-
-    color:#aaa;
-
-    font-weight:700;
-
-}
-
 .review-stars{
 
     margin-top:12px;
 
-    color:#ffb300;
+    color:#ffc400;
 
     font-size:18px;
 
@@ -1615,7 +1531,7 @@ button{
 
     margin:12px 0 0;
 
-    color:#d6d6dc;
+    color:#ddd;
 
     font-family:
         Georgia,
@@ -1642,6 +1558,19 @@ button{
 
 
 /*==================================================
+    SPACER
+==================================================*/
+
+.home-section-spacer{
+
+    width:100%;
+
+    background:transparent;
+
+}
+
+
+/*==================================================
     EMPTY / ERROR
 ==================================================*/
 
@@ -1651,7 +1580,7 @@ button{
 
     text-align:center;
 
-    color:#888892;
+    color:#888;
 
     font-size:14px;
 
@@ -1674,6 +1603,8 @@ button{
 
     text-align:center;
 
+    background:var(--bg);
+
 }
 
 .homepage-empty h2,
@@ -1692,20 +1623,9 @@ button{
 
     margin:0;
 
-    color:#888892;
+    color:#888;
 
     font-size:14px;
-
-}
-
-
-/*==================================================
-    SPACER
-==================================================*/
-
-.home-section-spacer{
-
-    width:100%;
 
 }
 
@@ -1728,127 +1648,73 @@ button{
 
     justify-content:center;
 
-    background:rgba(11,11,15,.97);
-
-}
-
-#homepageLoader.hidden{
-
-    display:none;
-
-}
-
-.homepage-loader-box{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-    justify-content:center;
+    background:#08080b;
 
     color:#fff;
 
 }
 
-.homepage-loader-box p{
-
-    margin-top:12px;
-
-    color:#999;
-
-    font-size:13px;
-
-}
-
-.homepage-spinner{
-
-    width:38px;
-    height:38px;
-
-    border:3px solid #303039;
-
-    border-top-color:#ff9b25;
-
-    border-right-color:#e91e9a;
-
-    border-radius:50%;
-
-    animation:
-        homepageSpin .8s linear infinite;
-
-}
-
-@keyframes homepageSpin{
-
-    to{
-
-        transform:rotate(360deg);
-
-    }
-
+#homepageLoader.hidden{
+    display:none;
 }
 
 
 /*==================================================
-    MOBILE OPTIMIZATION
+    MOBILE
 ==================================================*/
 
 @media(max-width:599px){
 
     .topbar{
-
         height:62px;
-
-        background:#050507;
-
     }
 
     .logo img{
-
-        height:42px;
-
-        max-width:175px;
-
+        height:48px;
+        max-width:170px;
     }
 
     .search-overlay{
-
         top:62px;
-
     }
 
     .home-container{
-
-        padding-left:10px;
-
-        padding-right:10px;
-
+        padding-left:12px;
+        padding-right:12px;
     }
 
-    .home-section-banner{
-
-        padding-top:7px;
-
+    .product-carousel{
+        gap:10px;
+        padding:10px;
     }
 
-    .home-banner{
-
-        border-radius:22px;
-
+    .product-card{
+        border-radius:21px;
     }
 
-    .carousel-heading h2{
-
-        font-size:24px;
-
+    .product-info{
+        padding:12px 10px 13px;
     }
 
-    .youtube-item{
+    .product-info h3{
+        font-size:16px;
+        min-height:64px;
+    }
 
-        flex-basis:48%;
+    .product-discount{
+        width:46px;
+        height:46px;
+        min-width:46px;
+        top:13px;
+        left:11px;
+        font-size:12px;
+    }
 
+    .product-bestseller{
+        top:13px;
+        right:10px;
+        padding:8px 10px;
+        font-size:11px;
     }
 
 }
@@ -1861,29 +1727,21 @@ button{
 @media(min-width:600px){
 
     .home-container{
-
         padding-left:18px;
-
         padding-right:18px;
-
     }
 
-    .product-card{
-
-        flex-basis:40%;
-
+    .product-carousel{
+        grid-template-columns:
+            repeat(3,minmax(0,1fr));
     }
 
     .youtube-item{
-
         flex-basis:30%;
-
     }
 
     .review-card{
-
         flex-basis:55%;
-
     }
 
 }
@@ -1896,70 +1754,52 @@ button{
 @media(min-width:900px){
 
     .topbar{
-
         height:70px;
-
         padding-left:25px;
         padding-right:25px;
-
     }
 
     .logo img{
-
-        height:50px;
-
-        max-width:200px;
-
+        height:52px;
+        max-width:190px;
     }
 
     .search-overlay{
-
         top:70px;
-
     }
 
     .home-container{
-
         padding-left:25px;
-
         padding-right:25px;
-
     }
 
     .banner-slide{
-
         aspect-ratio:16 / 6;
-
     }
 
     .banner-content h2{
-
         font-size:40px;
-
     }
 
     .image-carousel-item{
-
         flex-basis:180px;
-
     }
 
-    .product-card{
+    .product-carousel{
+        grid-template-columns:
+            repeat(4,minmax(0,1fr));
+    }
 
-        flex-basis:280px;
-
+    .product-info h3{
+        font-size:18px;
     }
 
     .youtube-item{
-
         flex-basis:250px;
-
     }
 
     .review-card{
-
         flex-basis:360px;
-
     }
 
 }
