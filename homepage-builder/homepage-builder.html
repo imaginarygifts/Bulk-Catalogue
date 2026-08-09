@@ -5,14 +5,19 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
 
 <title>Homepage Builder</title>
 
-<link rel="stylesheet" href="../css/homepage-builder.css">
+<link
+    rel="stylesheet"
+    href="../css/homepage-builder.css">
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
 </head>
 
@@ -20,7 +25,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 <div class="builder">
 
-    <!-- HEADER -->
+    <!--==================================================
+        HEADER
+    ==================================================-->
 
     <header class="builder-header">
 
@@ -34,41 +41,55 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
             </h2>
 
-            <p>Build your homepage visually</p>
+            <p>
+                Build your homepage visually
+            </p>
 
         </div>
 
-        <div class="header-right">
+        <div class="header-actions">
 
-            <button class="btn secondary">
+            <button
+                type="button"
+                id="undoBtn"
+                class="header-btn">
 
                 <i class="fa-solid fa-arrow-rotate-left"></i>
 
-                Undo
+                <span>Undo</span>
 
             </button>
 
-            <button class="btn secondary">
+            <button
+                type="button"
+                id="redoBtn"
+                class="header-btn">
 
                 <i class="fa-solid fa-arrow-rotate-right"></i>
 
-                Redo
+                <span>Redo</span>
 
             </button>
 
-            <button class="btn secondary">
+            <button
+                type="button"
+                id="fullPreviewBtn"
+                class="header-btn">
 
                 <i class="fa-solid fa-eye"></i>
 
-                Preview
+                <span>Preview</span>
 
             </button>
 
-            <button class="btn success">
+            <button
+                type="button"
+                id="publishBtn"
+                class="header-btn publish">
 
-                <i class="fa-solid fa-floppy-disk"></i>
+                <i class="fa-solid fa-cloud-arrow-up"></i>
 
-                Publish
+                <span>Publish</span>
 
             </button>
 
@@ -76,30 +97,118 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
     </header>
 
-    <!-- MAIN -->
 
-    <div class="builder-content">
+    <!--==================================================
+        MAIN BUILDER
+    ==================================================-->
 
-        <!-- LEFT SIDEBAR -->
+    <main class="builder-main">
 
-        <aside class="sidebar">
 
-            <div class="sidebar-top">
+        <!--==================================================
+            CREATE SECTION
+        ==================================================-->
 
-                <h3 class="sidebar-title">
+        <section class="create-section-column">
 
-                    Sections
+            <div class="column-header">
 
-                </h3>
+                <div>
 
-                <input
-                    type="text"
-                    id="sectionSearch"
-                    placeholder="Search sections...">
+                    <span class="column-label">
+                        CREATE
+                    </span>
+
+                    <h2>
+                        Add New Section
+                    </h2>
+
+                    <p>
+                        Choose a section type and add it to your homepage.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="create-section-form">
+
+
+                <!-- SECTION NAME -->
+
+                <div class="form-field">
+
+                    <label for="sectionName">
+
+                        Section Name
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="sectionName"
+                        placeholder="Example: Featured Products"
+                        autocomplete="off">
+
+                </div>
+
+
+                <!-- SECTION TYPE -->
+
+                <div class="form-field">
+
+                    <label for="sectionType">
+
+                        Section Type
+
+                    </label>
+
+                    <select id="sectionType">
+
+                        <option value="">
+                            Select Section
+                        </option>
+
+                        <option value="heading">
+                            Heading
+                        </option>
+
+                        <option value="spacer">
+                            Spacer
+                        </option>
+
+                        <option value="banner">
+                            Banner
+                        </option>
+
+                        <option value="imageCarousel">
+                            Image Carousel
+                        </option>
+
+                        <option value="productCarousel">
+                            Product Carousel
+                        </option>
+
+                        <option value="youtubeCarousel">
+                            YouTube Carousel
+                        </option>
+
+                        <option value="reviewCarousel">
+                            Reviews Carousel
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- ADD BUTTON -->
 
                 <button
-                    id="addSection"
-                    class="add-section">
+                    type="button"
+                    id="addSectionBtn"
+                    class="add-section-btn">
 
                     <i class="fa-solid fa-plus"></i>
 
@@ -109,136 +218,110 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
             </div>
 
+        </section>
+
+
+
+        <!--==================================================
+            EDIT SECTIONS
+        ==================================================-->
+
+        <section class="edit-sections-column">
+
+
+            <div class="column-header edit-header">
+
+                <div>
+
+                    <span class="column-label">
+                        EDIT
+                    </span>
+
+                    <h2>
+                        Homepage Sections
+                    </h2>
+
+                    <p>
+                        Edit, reorder or preview your homepage sections.
+                    </p>
+
+                </div>
+
+                <div
+                    id="sectionCount"
+                    class="section-count">
+
+                    0 Sections
+
+                </div>
+
+            </div>
+
+
+            <!-- SECTION LIST -->
+
             <div
                 id="sectionList"
                 class="section-list">
 
-            </div>
-
-        </aside>
-
-        <!-- PREVIEW -->
-
-        <main class="preview">
-
-            <div class="preview-header">
-
-                <div class="preview-title">
-
-                    Live Preview
-
-                </div>
-
-                <div class="preview-device">
-
-                    <button class="icon-btn">
-
-                        <i class="fa-solid fa-desktop"></i>
-
-                    </button>
-
-                    <button class="icon-btn">
-
-                        <i class="fa-solid fa-tablet-screen-button"></i>
-
-                    </button>
-
-                    <button class="icon-btn">
-
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div class="preview-inner">
-
-    <div
-        id="homepagePreview"
-        class="homepage-preview">
-
-    </div>
-
-</div>
-
-        </main>
-
-        <!-- PROPERTIES -->
-
-        <aside class="settings">
-
-            <div class="property-tabs">
-
-                <button
-class="property-tab active"
-data-tab="content">
-
-Content
-
-</button>
-
-<button
-class="property-tab"
-data-tab="design">
-
-Design
-
-</button>
-
-<button
-class="property-tab"
-data-tab="advanced">
-
-Advanced
-
-</button>
-
-            </div>
-
-            <div id="settingsPanel">
-
-                <div class="settings-empty">
+                <div
+                    id="sectionsEmpty"
+                    class="sections-empty">
 
                     <div class="empty-icon">
 
-                        <i class="fa-solid fa-sliders"></i>
+                        <i class="fa-solid fa-layer-group"></i>
 
                     </div>
 
-                    <h2>
-
-                        No Section Selected
-
-                    </h2>
+                    <h3>
+                        No Sections Added
+                    </h3>
 
                     <p>
-
-                        Select a section from the left panel to edit its settings.
-
+                        Create your first homepage section above.
                     </p>
 
                 </div>
 
             </div>
 
-        </aside>
+        </section>
 
-    </div>
+
+    </main>
 
 </div>
-<!--========================================
-ADD SECTION DRAWER
-=========================================-->
 
-<div id="sectionDrawer" class="drawer">
 
-    <div class="drawer-header">
 
-        <h2>Add Section</h2>
+<!--==================================================
+    SECTION PREVIEW MODAL
+==================================================-->
 
-        <button id="closeDrawer">
+<div
+    id="sectionPreviewModal"
+    class="preview-modal hidden">
+
+
+    <div class="preview-modal-header">
+
+        <div class="preview-modal-title">
+
+            <i class="fa-solid fa-eye"></i>
+
+            <span id="previewModalTitle">
+                Section Preview
+            </span>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="closePreviewBtn"
+            class="preview-close-btn"
+            aria-label="Close Preview">
 
             <i class="fa-solid fa-xmark"></i>
 
@@ -246,54 +329,115 @@ ADD SECTION DRAWER
 
     </div>
 
-    <div class="drawer-search">
 
-        <input
-            type="text"
-            id="drawerSearch"
-            placeholder="Search section...">
+    <div class="preview-modal-body">
 
-    </div>
+        <div
+            id="sectionPreviewContent"
+            class="section-preview-content">
 
-    <div
-        id="drawerList"
-        class="drawer-list">
+        </div>
 
     </div>
 
 </div>
 
 
+
+<!--==================================================
+    FULL HOMEPAGE PREVIEW MODAL
+==================================================-->
+
 <div
-id="toast"
-class="toast hidden">
+    id="homepagePreviewModal"
+    class="preview-modal hidden">
+
+
+    <div class="preview-modal-header">
+
+        <div class="preview-modal-title">
+
+            <i class="fa-solid fa-eye"></i>
+
+            <span>
+                Homepage Preview
+            </span>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="closeHomepagePreviewBtn"
+            class="preview-close-btn"
+            aria-label="Close Preview">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+
+    <div class="preview-modal-body">
+
+        <div
+            id="homepagePreviewContent"
+            class="homepage-preview-content">
+
+        </div>
+
+    </div>
 
 </div>
+
+
+
+<!--==================================================
+    TOAST
+==================================================-->
 
 <div
-id="loader"
-class="loader hidden">
+    id="toast"
+    class="toast hidden">
 
-<div class="loader-box">
+    <i class="fa-solid fa-circle-check"></i>
 
-<div class="spinner">
-
-</div>
-
-<p>
-
-Loading...
-
-</p>
+    <span id="toastMessage"></span>
 
 </div>
 
+
+
+<!--==================================================
+    LOADER
+==================================================-->
+
+<div
+    id="loader"
+    class="loader hidden">
+
+    <div class="loader-box">
+
+        <div class="spinner"></div>
+
+        <p>
+            Loading...
+        </p>
+
+    </div>
+
 </div>
+
+
+
+<!--==================================================
+    JAVASCRIPT
+==================================================-->
 
 <script
-type="module"
-src="homepage-builder.js">
-
+    type="module"
+    src="homepage-builder.js">
 </script>
 
 
