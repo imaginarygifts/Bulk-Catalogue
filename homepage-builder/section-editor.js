@@ -33,20 +33,17 @@ export function renderSectionEditor({
 
     container.innerHTML = "";
 
-
     if(!section){
 
         container.innerHTML = `
 
-            <div class="editor-empty">
+        <div class="editor-empty">
 
-                <h3>No Section Selected</h3>
+            <h3>No Section Selected</h3>
 
-                <p>
-                    Select a section from the left panel.
-                </p>
+            <p>Select a section from the left panel.</p>
 
-            </div>
+        </div>
 
         `;
 
@@ -54,25 +51,17 @@ export function renderSectionEditor({
 
     }
 
+    const wrapper = document.createElement("div");
 
-    const wrapper =
-        document.createElement("div");
-
-
-    wrapper.className =
-        "section-editor";
-
+    wrapper.className = "section-editor";
 
     wrapper.innerHTML = `
 
         <div class="editor-header">
 
-            <h2>
-                ${capitalize(section.type)}
-            </h2>
+            <h2>${capitalize(section.type)}</h2>
 
         </div>
-
 
         <div class="editor-body">
 
@@ -82,19 +71,13 @@ export function renderSectionEditor({
 
         </div>
 
-
         <div class="editor-footer">
 
-            <button
-                id="duplicateBtn"
-            >
+            <button id="duplicateBtn">
                 Duplicate
             </button>
 
-
-            <button
-                id="deleteBtn"
-            >
+            <button id="deleteBtn">
                 Delete
             </button>
 
@@ -102,33 +85,27 @@ export function renderSectionEditor({
 
     `;
 
-
-    container.appendChild(
-        wrapper
-    );
+    container.appendChild(wrapper);
 
 
     /*==================================================
         COMMON SETTINGS
+        These apply to ALL section types
     ==================================================*/
 
     renderCommonFields(
-        wrapper.querySelector(
-            "#commonFields"
-        ),
+        wrapper.querySelector("#commonFields"),
         section,
         onUpdate
     );
 
 
     /*==================================================
-        TYPE SETTINGS
+        TYPE SPECIFIC SETTINGS
     ==================================================*/
 
     renderTypeEditor(
-        wrapper.querySelector(
-            "#typeFields"
-        ),
+        wrapper.querySelector("#typeFields"),
         section,
         onUpdate
     );
@@ -138,22 +115,18 @@ export function renderSectionEditor({
         BUTTONS
     ==================================================*/
 
-    wrapper.querySelector(
-        "#duplicateBtn"
-    ).onclick =
-        onDuplicate;
+    wrapper.querySelector("#duplicateBtn")
+        .onclick = onDuplicate;
 
-
-    wrapper.querySelector(
-        "#deleteBtn"
-    ).onclick =
-        onDelete;
+    wrapper.querySelector("#deleteBtn")
+        .onclick = onDelete;
 
 }
 
 
 /*==================================================
     COMMON FIELDS
+    These fields work for EVERY section
 ==================================================*/
 
 function renderCommonFields(
@@ -175,12 +148,9 @@ function renderCommonFields(
         section.title || "",
         value => {
 
-            section.title =
-                value;
+            section.title = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -188,21 +158,18 @@ function renderCommonFields(
 
     /*==================================================
         TITLE COLOR
+        NEW - ALL SECTIONS
     ==================================================*/
 
     addColorField(
         container,
         "Title Color",
-        section.titleColor ||
-            "#ffffff",
+        section.titleColor || "#ffffff",
         value => {
 
-            section.titleColor =
-                value;
+            section.titleColor = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -218,12 +185,9 @@ function renderCommonFields(
         section.subtitle || "",
         value => {
 
-            section.subtitle =
-                value;
+            section.subtitle = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -231,21 +195,18 @@ function renderCommonFields(
 
     /*==================================================
         SUBTITLE COLOR
+        NEW - ALL SECTIONS
     ==================================================*/
 
     addColorField(
         container,
         "Subtitle Color",
-        section.subtitleColor ||
-            "#b8b8b8",
+        section.subtitleColor || "#aaaaaa",
         value => {
 
-            section.subtitleColor =
-                value;
+            section.subtitleColor = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -258,16 +219,12 @@ function renderCommonFields(
     addColorField(
         container,
         "Background Color",
-        section.backgroundColor ||
-            "#000000",
+        section.backgroundColor || "#000000",
         value => {
 
-            section.backgroundColor =
-                value;
+            section.backgroundColor = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -286,7 +243,6 @@ function renderTypeEditor(
 ){
 
     container.innerHTML = "";
-
 
     switch(section.type){
 
@@ -366,11 +322,6 @@ function renderTypeEditor(
 
             break;
 
-
-        default:
-
-            break;
-
     }
 
 }
@@ -387,54 +338,29 @@ function addTextField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
-
-    div.className =
-        "editor-field";
-
+    div.className = "editor-field";
 
     div.innerHTML = `
 
-        <label>
-            ${label}
-        </label>
+        <label>${label}</label>
 
         <input
             type="text"
+            value="${escapeAttribute(value)}"
         >
 
     `;
 
+    div.querySelector("input")
+        .addEventListener("input", e => {
 
-    const input =
-        div.querySelector(
-            "input"
-        );
+            callback(e.target.value);
 
+        });
 
-    input.value =
-        value ?? "";
-
-
-    input.addEventListener(
-        "input",
-        e => {
-
-            callback(
-                e.target.value
-            );
-
-        }
-    );
-
-
-    parent.appendChild(
-        div
-    );
+    parent.appendChild(div);
 
 }
 
@@ -450,54 +376,26 @@ function addTextareaField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
-
-    div.className =
-        "editor-field";
-
+    div.className = "editor-field";
 
     div.innerHTML = `
 
-        <label>
-            ${label}
-        </label>
+        <label>${label}</label>
 
-        <textarea
-            rows="3"
-        ></textarea>
+        <textarea rows="3">${escapeHtml(value)}</textarea>
 
     `;
 
+    div.querySelector("textarea")
+        .addEventListener("input", e => {
 
-    const textarea =
-        div.querySelector(
-            "textarea"
-        );
+            callback(e.target.value);
 
+        });
 
-    textarea.value =
-        value ?? "";
-
-
-    textarea.addEventListener(
-        "input",
-        e => {
-
-            callback(
-                e.target.value
-            );
-
-        }
-    );
-
-
-    parent.appendChild(
-        div
-    );
+    parent.appendChild(div);
 
 }
 
@@ -513,56 +411,29 @@ function addNumberField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
-
-    div.className =
-        "editor-field";
-
+    div.className = "editor-field";
 
     div.innerHTML = `
 
-        <label>
-            ${label}
-        </label>
+        <label>${label}</label>
 
         <input
             type="number"
+            value="${value}"
         >
 
     `;
 
+    div.querySelector("input")
+        .addEventListener("input", e => {
 
-    const input =
-        div.querySelector(
-            "input"
-        );
+            callback(Number(e.target.value));
 
+        });
 
-    input.value =
-        value ?? "";
-
-
-    input.addEventListener(
-        "input",
-        e => {
-
-            callback(
-                Number(
-                    e.target.value
-                )
-            );
-
-        }
-    );
-
-
-    parent.appendChild(
-        div
-    );
+    parent.appendChild(div);
 
 }
 
@@ -578,15 +449,9 @@ function addCheckboxField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
-
-    div.className =
-        "editor-field";
-
+    div.className = "editor-field";
 
     div.innerHTML = `
 
@@ -594,6 +459,7 @@ function addCheckboxField(
 
             <input
                 type="checkbox"
+                ${checked ? "checked" : ""}
             >
 
             ${label}
@@ -602,32 +468,14 @@ function addCheckboxField(
 
     `;
 
+    div.querySelector("input")
+        .addEventListener("change", e => {
 
-    const input =
-        div.querySelector(
-            "input"
-        );
+            callback(e.target.checked);
 
+        });
 
-    input.checked =
-        !!checked;
-
-
-    input.addEventListener(
-        "change",
-        e => {
-
-            callback(
-                e.target.checked
-            );
-
-        }
-    );
-
-
-    parent.appendChild(
-        div
-    );
+    parent.appendChild(div);
 
 }
 
@@ -644,86 +492,42 @@ function addSelectField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
+    div.className = "editor-field";
 
-    div.className =
-        "editor-field";
+    const title = document.createElement("label");
 
+    title.textContent = label;
 
-    const title =
-        document.createElement(
-            "label"
-        );
+    div.appendChild(title);
 
+    const select = document.createElement("select");
 
-    title.textContent =
-        label;
+    options.forEach(option => {
 
+        const item = document.createElement("option");
 
-    div.appendChild(
-        title
-    );
+        item.value = option.value;
 
+        item.textContent = option.label;
 
-    const select =
-        document.createElement(
-            "select"
-        );
+        item.selected =
+            option.value === value;
 
+        select.appendChild(item);
 
-    options.forEach(
-        option => {
+    });
 
-            const item =
-                document.createElement(
-                    "option"
-                );
+    select.addEventListener("change", e => {
 
+        callback(e.target.value);
 
-            item.value =
-                option.value;
+    });
 
+    div.appendChild(select);
 
-            item.textContent =
-                option.label;
-
-
-            item.selected =
-                option.value === value;
-
-
-            select.appendChild(
-                item
-            );
-
-        }
-    );
-
-
-    select.addEventListener(
-        "change",
-        e => {
-
-            callback(
-                e.target.value
-            );
-
-        }
-    );
-
-
-    div.appendChild(
-        select
-    );
-
-
-    parent.appendChild(
-        div
-    );
+    parent.appendChild(div);
 
 }
 
@@ -739,56 +543,83 @@ function addColorField(
     callback
 ){
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    const div = document.createElement("div");
 
-
-    div.className =
-        "editor-field";
-
+    div.className = "editor-field";
 
     div.innerHTML = `
 
-        <label>
-            ${label}
-        </label>
+        <label>${label}</label>
 
         <input
             type="color"
+            value="${
+                isValidColor(value)
+                ? value
+                : "#ffffff"
+            }"
         >
 
     `;
 
+    div.querySelector("input")
+        .addEventListener("input", e => {
 
-    const input =
-        div.querySelector(
-            "input"
-        );
+            callback(e.target.value);
 
+        });
 
-    input.value =
-        isValidColor(value)
-        ? value
-        : "#ffffff";
+    parent.appendChild(div);
 
-
-    input.addEventListener(
-        "input",
-        e => {
-
-            callback(
-                e.target.value
-            );
-
-        }
-    );
+}
 
 
-    parent.appendChild(
-        div
-    );
+/*==================================================
+    HELPERS
+==================================================*/
+
+function capitalize(text){
+
+    if(!text) return "";
+
+    return text.charAt(0).toUpperCase()
+        + text.slice(1);
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value){
+
+    return escapeHtml(value);
+
+}
+
+
+function isValidColor(value){
+
+    if(!value) return false;
+
+    const color =
+        document.createElement("input");
+
+    color.type = "color";
+
+    color.value = value;
+
+    return color.value.toLowerCase() ===
+        String(value).toLowerCase();
 
 }
 
@@ -809,12 +640,9 @@ function renderHeadingEditor(
         section.badge || "",
         value => {
 
-            section.badge =
-                value;
+            section.badge = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -838,12 +666,9 @@ function renderSpacerEditor(
         section.height || 40,
         value => {
 
-            section.height =
-                value;
+            section.height = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -852,16 +677,12 @@ function renderSpacerEditor(
     addTextField(
         container,
         "Background",
-        section.background ||
-            "transparent",
+        section.background || "transparent",
         value => {
 
-            section.background =
-                value;
+            section.background = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -879,41 +700,39 @@ function renderBannerEditor(
     onUpdate
 ){
 
+    /* AUTO PLAY */
+
     addCheckboxField(
         container,
         "Auto Play",
-        section.autoPlay ??
-            true,
+        section.autoPlay ?? true,
         value => {
 
-            section.autoPlay =
-                value;
+            section.autoPlay = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
 
+
+    /* INTERVAL */
 
     addNumberField(
         container,
         "Interval (ms)",
-        section.interval ||
-            5000,
+        section.interval || 5000,
         value => {
 
-            section.interval =
-                value;
+            section.interval = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
 
+
+    /* SLIDES */
 
     renderSlides(
         container,
@@ -922,15 +741,13 @@ function renderBannerEditor(
     );
 
 
-    const addButton =
-        document.createElement(
-            "button"
-        );
+    /* ADD SLIDE */
 
+    const addButton =
+        document.createElement("button");
 
     addButton.className =
         "editor-button";
-
 
     addButton.textContent =
         "Add Slide";
@@ -951,29 +768,18 @@ function renderBannerEditor(
 
             subtitle: "",
 
-            titleColor:
-                "#ffffff",
-
-            subtitleColor:
-                "#ffffff",
-
             image: "",
 
-            link: "",
+            bannerLink: "",
 
             buttonText: "",
 
-            buttonLink: "",
-
-            buttonPosition:
-                "center"
+            buttonLink: ""
 
         });
 
 
-        onUpdate(
-            section
-        );
+        onUpdate(section);
 
 
         renderBannerEditor(
@@ -993,7 +799,7 @@ function renderBannerEditor(
 
 
 /*==================================================
-    BANNER SLIDES
+    SLIDES
 ==================================================*/
 
 function renderSlides(
@@ -1013,10 +819,7 @@ function renderSlides(
         (slide, index) => {
 
             const card =
-                document.createElement(
-                    "div"
-                );
-
+                document.createElement("div");
 
             card.className =
                 "editor-card";
@@ -1031,14 +834,10 @@ function renderSlides(
             `;
 
 
-            container.appendChild(
-                card
-            );
+            container.appendChild(card);
 
 
-            /*==================================================
-                TITLE
-            ==================================================*/
+            /* TITLE */
 
             addTextField(
                 card,
@@ -1046,42 +845,15 @@ function renderSlides(
                 slide.title || "",
                 value => {
 
-                    slide.title =
-                        value;
+                    slide.title = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                TITLE COLOR
-            ==================================================*/
-
-            addColorField(
-                card,
-                "Title Color",
-                slide.titleColor ||
-                    "#ffffff",
-                value => {
-
-                    slide.titleColor =
-                        value;
-
-                    onUpdate(
-                        section
-                    );
-
-                }
-            );
-
-
-            /*==================================================
-                SUBTITLE
-            ==================================================*/
+            /* SUBTITLE */
 
             addTextareaField(
                 card,
@@ -1089,85 +861,48 @@ function renderSlides(
                 slide.subtitle || "",
                 value => {
 
-                    slide.subtitle =
-                        value;
+                    slide.subtitle = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                SUBTITLE COLOR
-            ==================================================*/
-
-            addColorField(
-                card,
-                "Subtitle Color",
-                slide.subtitleColor ||
-                    "#ffffff",
-                value => {
-
-                    slide.subtitleColor =
-                        value;
-
-                    onUpdate(
-                        section
-                    );
-
-                }
-            );
-
-
-            /*==================================================
-                IMAGE
-            ==================================================*/
+            /* BANNER IMAGE */
 
             addImageUploadField(
                 card,
                 "Banner Image",
-                slide.image,
+                slide.image || "",
                 "homepage/banners",
                 url => {
 
-                    slide.image =
-                        url;
+                    slide.image = url;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                BANNER LINK
-            ==================================================*/
+            /* BANNER LINK */
 
             addTextField(
                 card,
                 "Banner Link",
-                slide.link || "",
+                slide.bannerLink || "",
                 value => {
 
-                    slide.link =
-                        value;
+                    slide.bannerLink = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                BUTTON TEXT
-            ==================================================*/
+            /* BUTTON TEXT */
 
             addTextField(
                 card,
@@ -1175,20 +910,15 @@ function renderSlides(
                 slide.buttonText || "",
                 value => {
 
-                    slide.buttonText =
-                        value;
+                    slide.buttonText = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                BUTTON LINK
-            ==================================================*/
+            /* BUTTON LINK */
 
             addTextField(
                 card,
@@ -1196,72 +926,21 @@ function renderSlides(
                 slide.buttonLink || "",
                 value => {
 
-                    slide.buttonLink =
-                        value;
+                    slide.buttonLink = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
 
 
-            /*==================================================
-                BUTTON POSITION
-            ==================================================*/
-
-            addSelectField(
-                card,
-                "Button / Text Position",
-                slide.buttonPosition ||
-                    "center",
-                [
-                    {
-                        value:
-                            "left",
-                        label:
-                            "Left"
-                    },
-                    {
-                        value:
-                            "center",
-                        label:
-                            "Center"
-                    },
-                    {
-                        value:
-                            "right",
-                        label:
-                            "Right"
-                    }
-                ],
-                value => {
-
-                    slide.buttonPosition =
-                        value;
-
-                    onUpdate(
-                        section
-                    );
-
-                }
-            );
-
-
-            /*==================================================
-                REMOVE SLIDE
-            ==================================================*/
+            /* REMOVE SLIDE */
 
             const remove =
-                document.createElement(
-                    "button"
-                );
-
+                document.createElement("button");
 
             remove.className =
                 "editor-danger";
-
 
             remove.textContent =
                 "Remove Slide";
@@ -1275,9 +954,7 @@ function renderSlides(
                 );
 
 
-                onUpdate(
-                    section
-                );
+                onUpdate(section);
 
 
                 renderBannerEditor(
@@ -1310,9 +987,11 @@ async function renderProductCarouselEditor(
 ){
 
     /*
-        View All Link removed
+        View All Link intentionally removed.
     */
 
+
+    /* CATEGORY */
 
     await renderCategoryDropdown(
         container,
@@ -1321,6 +1000,8 @@ async function renderProductCarouselEditor(
     );
 
 
+    /* TAGS */
+
     await renderTagDropdown(
         container,
         section,
@@ -1328,55 +1009,49 @@ async function renderProductCarouselEditor(
     );
 
 
+    /* LIMIT */
+
     addNumberField(
         container,
         "Products Limit",
-        section.limit ||
-            10,
+        section.limit || 10,
         value => {
 
-            section.limit =
-                value;
+            section.limit = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
 
+
+    /* AUTO PLAY */
 
     addCheckboxField(
         container,
         "Auto Play",
-        section.autoPlay ||
-            false,
+        section.autoPlay || false,
         value => {
 
-            section.autoPlay =
-                value;
+            section.autoPlay = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
 
 
+    /* INTERVAL */
+
     addNumberField(
         container,
         "Auto Play Interval",
-        section.interval ||
-            5000,
+        section.interval || 5000,
         value => {
 
-            section.interval =
-                value;
+            section.interval = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -1405,10 +1080,7 @@ function renderImageCarouselEditor(
         (image, index) => {
 
             const card =
-                document.createElement(
-                    "div"
-                );
-
+                document.createElement("div");
 
             card.className =
                 "editor-card";
@@ -1423,9 +1095,7 @@ function renderImageCarouselEditor(
             `;
 
 
-            container.appendChild(
-                card
-            );
+            container.appendChild(card);
 
 
             /* IMAGE */
@@ -1437,12 +1107,9 @@ function renderImageCarouselEditor(
                 "homepage/images",
                 url => {
 
-                    image.src =
-                        url;
+                    image.src = url;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
@@ -1456,12 +1123,9 @@ function renderImageCarouselEditor(
                 image.title || "",
                 value => {
 
-                    image.title =
-                        value;
+                    image.title = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
@@ -1475,12 +1139,9 @@ function renderImageCarouselEditor(
                 image.link || "",
                 value => {
 
-                    image.link =
-                        value;
+                    image.link = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
@@ -1489,14 +1150,10 @@ function renderImageCarouselEditor(
             /* REMOVE */
 
             const remove =
-                document.createElement(
-                    "button"
-                );
-
+                document.createElement("button");
 
             remove.className =
                 "editor-danger";
-
 
             remove.textContent =
                 "Remove";
@@ -1510,9 +1167,7 @@ function renderImageCarouselEditor(
                 );
 
 
-                onUpdate(
-                    section
-                );
+                onUpdate(section);
 
 
                 renderImageCarouselEditor(
@@ -1532,19 +1187,13 @@ function renderImageCarouselEditor(
     );
 
 
-    /*==================================================
-        ADD IMAGE
-    ==================================================*/
+    /* ADD IMAGE */
 
     const add =
-        document.createElement(
-            "button"
-        );
-
+        document.createElement("button");
 
     add.className =
         "editor-button";
-
 
     add.textContent =
         "Add Image";
@@ -1563,9 +1212,7 @@ function renderImageCarouselEditor(
         });
 
 
-        onUpdate(
-            section
-        );
+        onUpdate(section);
 
 
         renderImageCarouselEditor(
@@ -1605,10 +1252,7 @@ function renderYoutubeEditor(
         (video, index) => {
 
             const card =
-                document.createElement(
-                    "div"
-                );
-
+                document.createElement("div");
 
             card.className =
                 "editor-card";
@@ -1636,12 +1280,9 @@ function renderYoutubeEditor(
                 video.url || "",
                 value => {
 
-                    video.url =
-                        value;
+                    video.url = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
@@ -1655,12 +1296,9 @@ function renderYoutubeEditor(
                 video.title || "",
                 value => {
 
-                    video.title =
-                        value;
+                    video.title = value;
 
-                    onUpdate(
-                        section
-                    );
+                    onUpdate(section);
 
                 }
             );
@@ -1669,14 +1307,10 @@ function renderYoutubeEditor(
             /* REMOVE */
 
             const remove =
-                document.createElement(
-                    "button"
-                );
-
+                document.createElement("button");
 
             remove.className =
                 "editor-danger";
-
 
             remove.textContent =
                 "Remove";
@@ -1690,9 +1324,7 @@ function renderYoutubeEditor(
                 );
 
 
-                onUpdate(
-                    section
-                );
+                onUpdate(section);
 
 
                 renderYoutubeEditor(
@@ -1712,19 +1344,13 @@ function renderYoutubeEditor(
     );
 
 
-    /*==================================================
-        ADD VIDEO
-    ==================================================*/
+    /* ADD VIDEO */
 
     const add =
-        document.createElement(
-            "button"
-        );
-
+        document.createElement("button");
 
     add.className =
         "editor-button";
-
 
     add.textContent =
         "Add Video";
@@ -1741,9 +1367,7 @@ function renderYoutubeEditor(
         });
 
 
-        onUpdate(
-            section
-        );
+        onUpdate(section);
 
 
         renderYoutubeEditor(
@@ -1775,16 +1399,12 @@ function renderReviewEditor(
     addNumberField(
         container,
         "Reviews Limit",
-        section.limit ||
-            10,
+        section.limit || 10,
         value => {
 
-            section.limit =
-                value;
+            section.limit = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -1793,16 +1413,12 @@ function renderReviewEditor(
     addCheckboxField(
         container,
         "Auto Play",
-        section.autoPlay ??
-            true,
+        section.autoPlay ?? true,
         value => {
 
-            section.autoPlay =
-                value;
+            section.autoPlay = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -1811,16 +1427,12 @@ function renderReviewEditor(
     addNumberField(
         container,
         "Interval (ms)",
-        section.interval ||
-            5000,
+        section.interval || 5000,
         value => {
 
-            section.interval =
-                value;
+            section.interval = value;
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         }
     );
@@ -1838,18 +1450,13 @@ function createImagePreview(
 ){
 
     const preview =
-        document.createElement(
-            "img"
-        );
-
+        document.createElement("img");
 
     preview.className =
         "editor-image-preview";
 
-
     preview.src =
         image || "";
-
 
     preview.onerror = () => {
 
@@ -1858,11 +1465,9 @@ function createImagePreview(
 
     };
 
-
     parent.appendChild(
         preview
     );
-
 
     return preview;
 
@@ -1877,9 +1482,7 @@ function isValidUrl(url){
 
     try{
 
-        new URL(
-            url
-        );
+        new URL(url);
 
         return true;
 
@@ -1893,29 +1496,11 @@ function isValidUrl(url){
 }
 
 
-function isValidColor(color){
-
-    if(!color){
-
-        return false;
-
-    }
-
-
-    return /^#[0-9A-F]{6}$/i.test(
-        color
-    );
-
-}
-
-
 function isEmpty(value){
 
-    return (
-        value === undefined ||
-        value === null ||
-        value === ""
-    );
+    return value === undefined ||
+           value === null ||
+           value === "";
 
 }
 
@@ -1929,20 +1514,12 @@ function saveSection(
     onUpdate
 ){
 
-    if(!section){
-
-        return;
-
-    }
-
+    if(!section) return;
 
     section.updatedAt =
         Date.now();
 
-
-    onUpdate(
-        section
-    );
+    onUpdate(section);
 
 }
 
@@ -1959,7 +1536,6 @@ function rerender(
 ){
 
     container.innerHTML = "";
-
 
     renderer(
         container,
@@ -1979,12 +1555,7 @@ async function uploadImage(
     folder
 ){
 
-    if(!file){
-
-        return "";
-
-    }
-
+    if(!file) return "";
 
     const extension =
         file.name
@@ -1994,9 +1565,8 @@ async function uploadImage(
 
     const fileName =
         `${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(2,8)}
-            .${extension}`;
+        .toString(36)
+        .substring(2,8)}.${extension}`;
 
 
     const storageRef =
@@ -2032,22 +1602,14 @@ function addImageUploadField(
 ){
 
     const div =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     div.className =
         "editor-field";
 
 
-    /* LABEL */
-
     const title =
-        document.createElement(
-            "label"
-        );
-
+        document.createElement("label");
 
     title.textContent =
         label;
@@ -2061,10 +1623,7 @@ function addImageUploadField(
     /* IMAGE PREVIEW */
 
     const preview =
-        document.createElement(
-            "img"
-        );
-
+        document.createElement("img");
 
     preview.className =
         "editor-image-preview";
@@ -2096,14 +1655,10 @@ function addImageUploadField(
     /* FILE INPUT */
 
     const input =
-        document.createElement(
-            "input"
-        );
-
+        document.createElement("input");
 
     input.type =
         "file";
-
 
     input.accept =
         "image/*";
@@ -2116,11 +1671,7 @@ function addImageUploadField(
                 e.target.files[0];
 
 
-            if(!file){
-
-                return;
-
-            }
+            if(!file) return;
 
 
             input.disabled =
@@ -2148,9 +1699,7 @@ function addImageUploadField(
                     "block";
 
 
-                callback(
-                    url
-                );
+                callback(url);
 
             }
             catch(error){
@@ -2196,25 +1745,24 @@ async function renderCategoryDropdown(
     onUpdate
 ){
 
-    const snap =
-        await getDocs(
-            query(
-                collection(
-                    db,
-                    "categories"
-                ),
-                orderBy(
-                    "order"
+    try{
+
+        const snap =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "categories"
+                    ),
+                    orderBy("order")
                 )
-            )
-        );
+            );
 
 
-    const categories = [];
+        const categories = [];
 
 
-    snap.forEach(
-        doc => {
+        snap.forEach(doc => {
 
             categories.push({
 
@@ -2224,63 +1772,51 @@ async function renderCategoryDropdown(
 
             });
 
-        }
-    );
+        });
 
 
-    const div =
-        document.createElement(
-            "div"
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "editor-field";
+
+
+        const label =
+            document.createElement("label");
+
+        label.textContent =
+            "Category";
+
+
+        div.appendChild(
+            label
         );
 
 
-    div.className =
-        "editor-field";
+        const select =
+            document.createElement("select");
 
 
-    const label =
-        document.createElement(
-            "label"
-        );
+        select.innerHTML = `
+
+            <option value="">
+                All Products
+            </option>
+
+        `;
 
 
-    label.textContent =
-        "Category";
+        const mains =
+            categories.filter(
+                c => !c.parentId
+            );
 
 
-    div.appendChild(
-        label
-    );
-
-
-    const select =
-        document.createElement(
-            "select"
-        );
-
-
-    select.innerHTML = `
-
-        <option value="">
-            All Products
-        </option>
-
-    `;
-
-
-    const mains =
-        categories.filter(
-            c => !c.parentId
-        );
-
-
-    mains.forEach(
-        main => {
+        mains.forEach(main => {
 
             const option =
-                document.createElement(
-                    "option"
-                );
+                document.createElement("option");
 
 
             option.value =
@@ -2306,50 +1842,43 @@ async function renderCategoryDropdown(
                         c.parentId ===
                         main.id
                 )
-                .forEach(
-                    sub => {
+                .forEach(sub => {
 
-                        const subOption =
-                            document.createElement(
-                                "option"
-                            );
-
-
-                        subOption.value =
-                            sub.id;
-
-
-                        subOption.textContent =
-                            "— " +
-                            sub.name;
-
-
-                        subOption.dataset.type =
-                            "sub";
-
-
-                        select.appendChild(
-                            subOption
+                    const subOption =
+                        document.createElement(
+                            "option"
                         );
 
-                    }
-                );
 
-        }
-    );
+                    subOption.value =
+                        sub.id;
 
 
-    select.value =
-        section.categoryId ||
-        "";
+                    subOption.textContent =
+                        "— " + sub.name;
 
 
-    select.onchange =
-        () => {
+                    subOption.dataset.type =
+                        "sub";
+
+
+                    select.appendChild(
+                        subOption
+                    );
+
+                });
+
+        });
+
+
+        select.value =
+            section.categoryId || "";
+
+
+        select.onchange = () => {
 
             const selected =
-                select
-                    .selectedOptions[0];
+                select.selectedOptions[0];
 
 
             section.categoryId =
@@ -2357,25 +1886,32 @@ async function renderCategoryDropdown(
 
 
             section.categoryType =
-                selected.dataset.type ||
-                "";
+                selected.dataset.type || "";
 
 
-            onUpdate(
-                section
-            );
+            onUpdate(section);
 
         };
 
 
-    div.appendChild(
-        select
-    );
+        div.appendChild(
+            select
+        );
 
 
-    parent.appendChild(
-        div
-    );
+        parent.appendChild(
+            div
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "Category loading error:",
+            error
+        );
+
+    }
 
 }
 
@@ -2390,43 +1926,40 @@ async function renderTagDropdown(
     onUpdate
 ){
 
-    const snap =
-        await getDocs(
-            collection(
-                db,
-                "tags"
-            )
-        );
+    try{
+
+        const snap =
+            await getDocs(
+                collection(
+                    db,
+                    "tags"
+                )
+            );
 
 
-    const div =
-        document.createElement(
-            "div"
-        );
+        const div =
+            document.createElement("div");
 
 
-    div.className =
-        "editor-field";
+        div.className =
+            "editor-field";
 
 
-    div.innerHTML =
-        "<label>Tags</label>";
+        div.innerHTML =
+            "<label>Tags</label>";
 
 
-    section.tags ??= [];
+        section.tags ??= [];
 
 
-    snap.forEach(
-        doc => {
+        snap.forEach(doc => {
 
             const tag =
                 doc.data();
 
 
             const label =
-                document.createElement(
-                    "label"
-                );
+                document.createElement("label");
 
 
             label.style.display =
@@ -2434,9 +1967,7 @@ async function renderTagDropdown(
 
 
             const checkbox =
-                document.createElement(
-                    "input"
-                );
+                document.createElement("input");
 
 
             checkbox.type =
@@ -2449,43 +1980,37 @@ async function renderTagDropdown(
                 );
 
 
-            checkbox.onchange =
-                () => {
+            checkbox.onchange = () => {
+
+                if(checkbox.checked){
 
                     if(
-                        checkbox.checked
+                        !section.tags.includes(
+                            tag.slug
+                        )
                     ){
 
-                        if(
-                            !section.tags.includes(
-                                tag.slug
-                            )
-                        ){
-
-                            section.tags.push(
-                                tag.slug
-                            );
-
-                        }
-
-                    }
-                    else{
-
-                        section.tags =
-                            section.tags.filter(
-                                t =>
-                                    t !==
-                                    tag.slug
-                            );
+                        section.tags.push(
+                            tag.slug
+                        );
 
                     }
 
+                }
+                else{
 
-                    onUpdate(
-                        section
-                    );
+                    section.tags =
+                        section.tags.filter(
+                            t =>
+                                t !== tag.slug
+                        );
 
-                };
+                }
+
+
+                onUpdate(section);
+
+            };
 
 
             label.appendChild(
@@ -2494,8 +2019,7 @@ async function renderTagDropdown(
 
 
             label.append(
-                " " +
-                tag.name
+                " " + tag.name
             );
 
 
@@ -2503,13 +2027,22 @@ async function renderTagDropdown(
                 label
             );
 
-        }
-    );
+        });
 
 
-    parent.appendChild(
-        div
-    );
+        parent.appendChild(
+            div
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "Tags loading error:",
+            error
+        );
+
+    }
 
 }
 
