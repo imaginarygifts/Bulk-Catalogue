@@ -1,0 +1,396 @@
+/*==================================================
+    SETTINGS
+==================================================*/
+
+*{
+    box-sizing:border-box;
+}
+
+
+body{
+
+    margin:0;
+
+    background:#0f0f14;
+
+    color:#ffffff;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+}
+
+
+.settings-page{
+
+    width:100%;
+
+    max-width:1000px;
+
+    margin:auto;
+
+    padding:25px 16px 60px;
+
+}
+
+
+/*==================================================
+    HEADER
+==================================================*/
+
+.settings-header{
+
+    margin-bottom:25px;
+
+}
+
+
+.settings-header h1{
+
+    margin:0 0 6px;
+
+    font-size:28px;
+
+}
+
+
+.settings-header p{
+
+    margin:0;
+
+    color:#999;
+
+}
+
+
+/*==================================================
+    CARD
+==================================================*/
+
+.settings-card{
+
+    background:#17171d;
+
+    border:1px solid #292930;
+
+    border-radius:14px;
+
+    padding:20px;
+
+    margin-bottom:20px;
+
+}
+
+
+.settings-card-header{
+
+    margin-bottom:25px;
+
+}
+
+
+.settings-card-header h2{
+
+    margin:0 0 6px;
+
+    font-size:20px;
+
+}
+
+
+.settings-card-header p{
+
+    margin:0;
+
+    color:#888;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+    FORM
+==================================================*/
+
+.form-group{
+
+    margin-bottom:22px;
+
+}
+
+
+.form-group:last-child{
+
+    margin-bottom:0;
+
+}
+
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+    font-size:14px;
+
+}
+
+
+.form-group input,
+.form-group textarea{
+
+    width:100%;
+
+    border:1px solid #34343d;
+
+    background:#101015;
+
+    color:#ffffff;
+
+    border-radius:9px;
+
+    padding:13px 14px;
+
+    font-size:15px;
+
+    outline:none;
+
+    font-family:inherit;
+
+}
+
+
+.form-group textarea{
+
+    resize:vertical;
+
+    min-height:120px;
+
+    line-height:1.6;
+
+}
+
+
+.form-group input:focus,
+.form-group textarea:focus{
+
+    border-color:#777;
+
+}
+
+
+.form-group small{
+
+    display:block;
+
+    margin-top:6px;
+
+    color:#777;
+
+    font-size:12px;
+
+}
+
+
+/*==================================================
+    LOGO
+==================================================*/
+
+.logo-upload-area{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    flex-wrap:wrap;
+
+}
+
+
+.logo-preview{
+
+    width:110px;
+
+    height:110px;
+
+    border-radius:12px;
+
+    border:1px dashed #444;
+
+    background:#101015;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    overflow:hidden;
+
+    color:#666;
+
+    font-size:12px;
+
+}
+
+
+.logo-preview img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:contain;
+
+}
+
+
+/*==================================================
+    FILE INPUT
+==================================================*/
+
+.logo-upload-content input{
+
+    border:0;
+
+    background:transparent;
+
+    padding:0;
+
+}
+
+
+/*==================================================
+    ACTION
+==================================================*/
+
+.settings-actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+}
+
+
+#saveSettings{
+
+    border:0;
+
+    border-radius:9px;
+
+    padding:14px 28px;
+
+    background:#ff9f00;
+
+    color:#111;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+}
+
+
+#saveSettings:hover{
+
+    opacity:.9;
+
+}
+
+
+#saveSettings:disabled{
+
+    opacity:.5;
+
+    cursor:not-allowed;
+
+}
+
+
+/*==================================================
+    MESSAGE
+==================================================*/
+
+.settings-message{
+
+    min-height:20px;
+
+    margin-top:15px;
+
+    text-align:right;
+
+    font-size:14px;
+
+}
+
+
+.settings-message.success{
+
+    color:#50d890;
+
+}
+
+
+.settings-message.error{
+
+    color:#ff6464;
+
+}
+
+
+/*==================================================
+    MOBILE
+==================================================*/
+
+@media(
+    max-width:600px
+){
+
+    .settings-page{
+
+        padding:
+            20px
+            12px
+            50px;
+
+    }
+
+
+    .settings-card{
+
+        padding:16px;
+
+    }
+
+
+    .settings-header h1{
+
+        font-size:24px;
+
+    }
+
+
+    .settings-actions{
+
+        justify-content:stretch;
+
+    }
+
+
+    #saveSettings{
+
+        width:100%;
+
+    }
+
+}
