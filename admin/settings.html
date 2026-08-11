@@ -48,63 +48,163 @@
 
 
         <!-- =========================================
-             GENERAL SETTINGS
+             SETTINGS FORM
         ========================================== -->
 
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <h2>
-                    General Information
-                </h2>
-
-                <p>
-                    This information will be used across
-                    your website.
-                </p>
-
-            </div>
+        <form id="settingsForm">
 
 
+            <!-- =========================================
+                 GENERAL SETTINGS
+            ========================================== -->
 
-            <!-- LOGO -->
+            <div class="settings-card">
 
-            <div class="form-group">
+                <div class="settings-card-header">
 
-                <label>
-                    Company Logo
-                </label>
+                    <h2>
+                        General Information
+                    </h2>
+
+                    <p>
+                        This information will be used
+                        across your website.
+                    </p>
+
+                </div>
 
 
-                <div class="logo-upload-area">
 
-                    <div
-                        id="logoPreview"
-                        class="logo-preview"
+                <!-- =====================================
+                     LOGO
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label>
+                        Company Logo
+                    </label>
+
+
+                    <div class="logo-upload-area">
+
+
+                        <!-- LOGO PREVIEW -->
+
+                        <div class="logo-preview">
+
+                            <img
+                                id="logoPreview"
+                                src=""
+                                alt="Company Logo"
+                                style="display:none;"
+                            >
+
+                            <span
+                                id="logoPlaceholder"
+                            >
+                                No Logo
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- UPLOAD -->
+
+                        <div class="logo-upload-content">
+
+                            <input
+                                type="file"
+                                id="logo"
+                                accept="image/png,image/jpeg,image/webp"
+                            >
+
+
+                            <small>
+                                Recommended: PNG, JPG or WEBP
+                            </small>
+
+
+                            <small>
+                                Maximum size: 5 MB
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     COMPANY NAME
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="companyName">
+                        Company Name
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="companyName"
+                        placeholder="Imaginary Gifts"
+                        autocomplete="organization"
                     >
 
-                        <span>
-                            No Logo
-                        </span>
-
-                    </div>
+                </div>
 
 
-                    <div class="logo-upload-content">
 
-                        <input
-                            type="file"
-                            id="logoInput"
-                            accept="image/*"
-                        >
+                <!-- =====================================
+                     WHATSAPP
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="whatsapp">
+                        WhatsApp Number
+                    </label>
 
 
-                        <small>
-                            Recommended: PNG or JPG
-                        </small>
+                    <input
+                        type="tel"
+                        id="whatsapp"
+                        placeholder="919876543210"
+                        autocomplete="tel"
+                    >
 
-                    </div>
+
+                    <small>
+                        Include country code,
+                        e.g. 919876543210
+                    </small>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     EMAIL
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="hello@example.com"
+                        autocomplete="email"
+                    >
 
                 </div>
 
@@ -112,225 +212,207 @@
 
 
 
-            <!-- COMPANY NAME -->
+            <!-- =========================================
+                 WEBSITE CONTENT
+            ========================================== -->
 
-            <div class="form-group">
+            <div class="settings-card">
 
-                <label for="companyName">
-                    Company Name
-                </label>
+                <div class="settings-card-header">
 
-                <input
-                    type="text"
-                    id="companyName"
-                    placeholder="Imaginary Gifts"
+                    <h2>
+                        Website Content
+                    </h2>
+
+                    <p>
+                        Manage your website information
+                        pages.
+                    </p>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     ABOUT US
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="aboutUs">
+                        About Us
+                    </label>
+
+
+                    <textarea
+                        id="aboutUs"
+                        rows="8"
+                        placeholder="Write your About Us content..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     CONTACT US
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="contactUs">
+                        Contact Us
+                    </label>
+
+
+                    <textarea
+                        id="contactUs"
+                        rows="8"
+                        placeholder="Write your Contact Us content..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     TERMS & CONDITIONS
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="terms">
+                        Terms &amp; Conditions
+                    </label>
+
+
+                    <textarea
+                        id="terms"
+                        rows="10"
+                        placeholder="Write your Terms & Conditions..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     PRIVACY POLICY
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="privacyPolicy">
+                        Privacy Policy
+                    </label>
+
+
+                    <textarea
+                        id="privacyPolicy"
+                        rows="10"
+                        placeholder="Write your Privacy Policy..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     REFUND POLICY
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="refundPolicy">
+                        Refund Policy
+                    </label>
+
+
+                    <textarea
+                        id="refundPolicy"
+                        rows="10"
+                        placeholder="Write your Refund Policy..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     SHIPPING POLICY
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="shippingPolicy">
+                        Shipping Policy
+                    </label>
+
+
+                    <textarea
+                        id="shippingPolicy"
+                        rows="10"
+                        placeholder="Write your Shipping Policy..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 SAVE
+            ========================================== -->
+
+            <div class="settings-actions">
+
+                <button
+                    type="submit"
+                    id="saveSettings"
                 >
+                    Save Settings
+                </button>
 
             </div>
 
 
+            <!-- =========================================
+                 MESSAGE
+            ========================================== -->
 
-            <!-- WHATSAPP -->
+            <div
+                id="settingsMessage"
+                class="settings-message"
+            ></div>
 
-            <div class="form-group">
 
-                <label for="whatsappNumber">
-                    WhatsApp Number
-                </label>
-
-                <input
-                    type="tel"
-                    id="whatsappNumber"
-                    placeholder="919876543210"
-                >
-
-                <small>
-                    Include country code, e.g. 919876543210
-                </small>
-
-            </div>
-
-
-
-            <!-- EMAIL -->
-
-            <div class="form-group">
-
-                <label for="email">
-                    Email
-                </label>
-
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="hello@example.com"
-                >
-
-            </div>
-
-        </div>
-
-
-
-        <!-- =========================================
-             WEBSITE CONTENT
-        ========================================== -->
-
-        <div class="settings-card">
-
-            <div class="settings-card-header">
-
-                <h2>
-                    Website Content
-                </h2>
-
-                <p>
-                    Manage your website information pages.
-                </p>
-
-            </div>
-
-
-
-            <!-- ABOUT US -->
-
-            <div class="form-group">
-
-                <label for="aboutUs">
-                    About Us
-                </label>
-
-                <textarea
-                    id="aboutUs"
-                    rows="8"
-                    placeholder="Write your About Us content..."
-                ></textarea>
-
-            </div>
-
-
-
-            <!-- CONTACT US -->
-
-            <div class="form-group">
-
-                <label for="contactUs">
-                    Contact Us
-                </label>
-
-                <textarea
-                    id="contactUs"
-                    rows="8"
-                    placeholder="Write your Contact Us content..."
-                ></textarea>
-
-            </div>
-
-
-
-            <!-- TERMS -->
-
-            <div class="form-group">
-
-                <label for="termsAndConditions">
-                    Terms & Conditions
-                </label>
-
-                <textarea
-                    id="termsAndConditions"
-                    rows="10"
-                    placeholder="Write your Terms & Conditions..."
-                ></textarea>
-
-            </div>
-
-
-
-            <!-- PRIVACY -->
-
-            <div class="form-group">
-
-                <label for="privacyPolicy">
-                    Privacy Policy
-                </label>
-
-                <textarea
-                    id="privacyPolicy"
-                    rows="10"
-                    placeholder="Write your Privacy Policy..."
-                ></textarea>
-
-            </div>
-
-
-
-            <!-- REFUND -->
-
-            <div class="form-group">
-
-                <label for="refundPolicy">
-                    Refund Policy
-                </label>
-
-                <textarea
-                    id="refundPolicy"
-                    rows="10"
-                    placeholder="Write your Refund Policy..."
-                ></textarea>
-
-            </div>
-
-
-
-            <!-- SHIPPING -->
-
-            <div class="form-group">
-
-                <label for="shippingPolicy">
-                    Shipping Policy
-                </label>
-
-                <textarea
-                    id="shippingPolicy"
-                    rows="10"
-                    placeholder="Write your Shipping Policy..."
-                ></textarea>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- =========================================
-             SAVE
-        ========================================== -->
-
-        <div class="settings-actions">
-
-            <button
-                type="button"
-                id="saveSettings"
-            >
-                Save Settings
-            </button>
-
-        </div>
-
-
-        <div
-            id="settingsMessage"
-            class="settings-message"
-        ></div>
-
+        </form>
 
     </div>
 
+
+
+    <!-- =========================================
+         ADMIN AUTH GUARD
+    ========================================== -->
+
+    <script
+        type="module"
+        src="../js/guard.js"
+    ></script>
+
+
+
+    <!-- =========================================
+         SETTINGS JS
+    ========================================== -->
 
     <script
         type="module"
         src="../js/settings.js"
     ></script>
+
 
 </body>
 
