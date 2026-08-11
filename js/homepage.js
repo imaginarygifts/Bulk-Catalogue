@@ -52,16 +52,20 @@ async function loadHomepage(){
 
 
         let sections =
-            snapshot.docs.map(docSnap => ({
+            snapshot.docs.map(
+                docSnap => ({
 
-                id: docSnap.id,
+                    id: docSnap.id,
 
-                ...docSnap.data()
+                    ...docSnap.data()
 
-            }));
+                })
+            );
 
 
-        /* ONLY PUBLISHED */
+        /*==================================================
+            ONLY PUBLISHED
+        ==================================================*/
 
         sections =
             sections.filter(
@@ -70,7 +74,9 @@ async function loadHomepage(){
             );
 
 
-        /* SORT */
+        /*==================================================
+            SORT
+        ==================================================*/
 
         sections.sort(
             (a,b) =>
@@ -82,13 +88,19 @@ async function loadHomepage(){
         homepage.innerHTML = "";
 
 
+        /*==================================================
+            EMPTY
+        ==================================================*/
+
         if(!sections.length){
 
             homepage.innerHTML = `
 
                 <div class="homepage-empty">
 
-                    <h2>Homepage</h2>
+                    <h2>
+                        Homepage
+                    </h2>
 
                     <p>
                         No sections have been published yet.
@@ -104,6 +116,10 @@ async function loadHomepage(){
 
         }
 
+
+        /*==================================================
+            RENDER
+        ==================================================*/
 
         for(const section of sections){
 
@@ -126,6 +142,7 @@ async function loadHomepage(){
             error
         );
 
+
         homepage.innerHTML = `
 
             <div class="homepage-error">
@@ -141,6 +158,7 @@ async function loadHomepage(){
             </div>
 
         `;
+
 
         hideLoader();
 
@@ -175,7 +193,9 @@ async function renderSection(
         section.id;
 
 
-    /* BACKGROUND */
+    /*==================================================
+        BACKGROUND COLOR
+    ==================================================*/
 
     if(section.backgroundColor){
 
@@ -184,6 +204,10 @@ async function renderSection(
 
     }
 
+
+    /*==================================================
+        SECTION TYPE
+    ==================================================*/
 
     switch(section.type){
 
@@ -269,7 +293,99 @@ async function renderSection(
     }
 
 
-    parent.appendChild(wrapper);
+    parent.appendChild(
+        wrapper
+    );
+
+}
+
+
+/*==================================================
+    REUSABLE SECTION HEADING
+==================================================*/
+
+function renderSectionHeading(
+    section,
+    className = "carousel-heading"
+){
+
+    const hasTitle =
+        Boolean(section.title);
+
+
+    const hasSubtitle =
+        Boolean(section.subtitle);
+
+
+    if(!hasTitle && !hasSubtitle){
+
+        return "";
+
+    }
+
+
+    const titleColor =
+        section.titleColor ||
+        "#ffffff";
+
+
+    const subtitleColor =
+        section.subtitleColor ||
+        "#aaaaaa";
+
+
+    return `
+
+        <div class="${className}">
+
+            <div>
+
+                ${
+                    hasTitle
+                    ?
+                    `
+                    <h2
+                        style="
+                            color:${escapeAttribute(
+                                titleColor
+                            )};
+                        "
+                    >
+                        ${escapeHtml(
+                            section.title
+                        )}
+                    </h2>
+                    `
+                    :
+                    ""
+                }
+
+
+                ${
+                    hasSubtitle
+                    ?
+                    `
+                    <p
+                        style="
+                            color:${escapeAttribute(
+                                subtitleColor
+                            )};
+                        "
+                    >
+                        ${escapeHtml(
+                            section.subtitle
+                        )}
+                    </p>
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+        </div>
+
+    `;
 
 }
 
@@ -310,7 +426,14 @@ function renderHeading(
                     section.title
                     ?
                     `
-                    <h2>
+                    <h2
+                        style="
+                            color:${escapeAttribute(
+                                section.titleColor ||
+                                "#ffffff"
+                            )};
+                        "
+                    >
 
                         ${escapeHtml(
                             section.title
@@ -327,7 +450,14 @@ function renderHeading(
                     section.subtitle
                     ?
                     `
-                    <p>
+                    <p
+                        style="
+                            color:${escapeAttribute(
+                                section.subtitleColor ||
+                                "#aaaaaa"
+                            )};
+                        "
+                    >
 
                         ${escapeHtml(
                             section.subtitle
@@ -382,17 +512,27 @@ function renderBanner(
 
                     ${
                         slides.map(
-                            (slide,index) => `
+                            (slide,index) => {
 
-                            <div
-                                class="
-                                    banner-slide
-                                    ${index === 0 ? "active" : ""}
-                                "
-                                data-index="${index}"
-                            >
+                                const titleColor =
+                                    section.titleColor ||
+                                    slide.titleColor ||
+                                    "#ffffff";
 
-                                ${
+
+                                const subtitleColor =
+                                    section.subtitleColor ||
+                                    slide.subtitleColor ||
+                                    "#ffffff";
+
+
+                                const slideContent =
+                                    slide.title ||
+                                    slide.subtitle ||
+                                    slide.buttonText;
+
+
+                                const bannerImage =
                                     slide.image
                                     ?
                                     `
@@ -401,7 +541,8 @@ function renderBanner(
                                             slide.image
                                         )}"
                                         alt="${escapeAttribute(
-                                            slide.title || "Banner"
+                                            slide.title ||
+                                            "Banner"
                                         )}"
                                     >
                                     `
@@ -410,14 +551,11 @@ function renderBanner(
                                     <div class="banner-no-image">
                                         Banner
                                     </div>
-                                    `
-                                }
+                                    `;
 
 
-                                ${
-                                    slide.title ||
-                                    slide.subtitle ||
-                                    slide.buttonText
+                                const content =
+                                    slideContent
                                     ?
                                     `
                                     <div
@@ -434,7 +572,13 @@ function renderBanner(
                                             slide.title
                                             ?
                                             `
-                                            <h2>
+                                            <h2
+                                                style="
+                                                    color:${escapeAttribute(
+                                                        titleColor
+                                                    )};
+                                                "
+                                            >
                                                 ${escapeHtml(
                                                     slide.title
                                                 )}
@@ -449,7 +593,13 @@ function renderBanner(
                                             slide.subtitle
                                             ?
                                             `
-                                            <p>
+                                            <p
+                                                style="
+                                                    color:${escapeAttribute(
+                                                        subtitleColor
+                                                    )};
+                                                "
+                                            >
                                                 ${escapeHtml(
                                                     slide.subtitle
                                                 )}
@@ -467,7 +617,8 @@ function renderBanner(
                                             <a
                                                 class="banner-button"
                                                 href="${escapeAttribute(
-                                                    slide.buttonLink || "#"
+                                                    slide.buttonLink ||
+                                                    "#"
                                                 )}"
                                             >
                                                 ${escapeHtml(
@@ -482,12 +633,78 @@ function renderBanner(
                                     </div>
                                     `
                                     :
-                                    ""
+                                    "";
+
+
+                                /*
+                                    Banner Link
+
+                                    If bannerLink exists,
+                                    the complete banner image/content
+                                    becomes clickable.
+
+                                    Button remains clickable separately.
+                                */
+
+                                if(slide.bannerLink){
+
+                                    return `
+
+                                        <div
+                                            class="
+                                                banner-slide
+                                                ${
+                                                    index === 0
+                                                    ? "active"
+                                                    : ""
+                                                }
+                                            "
+                                            data-index="${index}"
+                                        >
+
+                                            <a
+                                                class="banner-main-link"
+                                                href="${escapeAttribute(
+                                                    slide.bannerLink
+                                                )}"
+                                            >
+
+                                                ${bannerImage}
+
+                                                ${content}
+
+                                            </a>
+
+                                        </div>
+
+                                    `;
+
                                 }
 
-                            </div>
 
-                        `
+                                return `
+
+                                    <div
+                                        class="
+                                            banner-slide
+                                            ${
+                                                index === 0
+                                                ? "active"
+                                                : ""
+                                            }
+                                        "
+                                        data-index="${index}"
+                                    >
+
+                                        ${bannerImage}
+
+                                        ${content}
+
+                                    </div>
+
+                                `;
+
+                            }
                         ).join("")
                     }
 
@@ -507,6 +724,7 @@ function renderBanner(
                         ‹
                     </button>
 
+
                     <button
                         class="banner-next"
                         type="button"
@@ -514,6 +732,7 @@ function renderBanner(
                     >
                         ›
                     </button>
+
 
                     <div class="banner-dots">
 
@@ -628,7 +847,9 @@ function initBannerSlider(
 
     function start(){
 
-        if(section.autoPlay === false){
+        if(
+            section.autoPlay === false
+        ){
 
             return;
 
@@ -637,7 +858,8 @@ function initBannerSlider(
 
         const interval =
             Number(
-                section.interval || 5000
+                section.interval ||
+                5000
             );
 
 
@@ -660,7 +882,9 @@ function initBannerSlider(
 
         if(timer){
 
-            clearInterval(timer);
+            clearInterval(
+                timer
+            );
 
             timer = null;
 
@@ -764,7 +988,9 @@ async function renderProductCarousel(
         );
 
 
-    /* CATEGORY */
+    /*==================================================
+        CATEGORY
+    ==================================================*/
 
     if(section.categoryId){
 
@@ -836,7 +1062,9 @@ async function renderProductCarousel(
     }
 
 
-    /* TAG */
+    /*==================================================
+        TAG
+    ==================================================*/
 
     if(
         Array.isArray(section.tags) &&
@@ -868,7 +1096,9 @@ async function renderProductCarousel(
     }
 
 
-    /* SPECIFIC PRODUCTS */
+    /*==================================================
+        SPECIFIC PRODUCTS
+    ==================================================*/
 
     if(
         Array.isArray(section.productIds) &&
@@ -884,13 +1114,17 @@ async function renderProductCarousel(
         products =
             products.filter(
                 product =>
-                    ids.has(product.id)
+                    ids.has(
+                        product.id
+                    )
             );
 
     }
 
 
-    /* FILTER TYPE */
+    /*==================================================
+        FILTER TYPE
+    ==================================================*/
 
     if(
         section.filterType ===
@@ -923,9 +1157,14 @@ async function renderProductCarousel(
     }
 
 
+    /*==================================================
+        LIMIT
+    ==================================================*/
+
     const limit =
         Number(
-            section.limit || 10
+            section.limit ||
+            10
         );
 
 
@@ -936,72 +1175,17 @@ async function renderProductCarousel(
         );
 
 
+    /*==================================================
+        HTML
+    ==================================================*/
+
     container.innerHTML = `
 
         <div class="home-container">
 
-            ${
-                section.title ||
-                section.subtitle
-                ?
-                `
-                <div class="carousel-heading">
-
-                    <div>
-
-                        ${
-                            section.title
-                            ?
-                            `
-                            <h2>
-                                ${escapeHtml(
-                                    section.title
-                                )}
-                            </h2>
-                            `
-                            :
-                            ""
-                        }
-
-                        ${
-                            section.subtitle
-                            ?
-                            `
-                            <p>
-                                ${escapeHtml(
-                                    section.subtitle
-                                )}
-                            </p>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-
-                    ${
-                        section.viewAllLink
-                        ?
-                        `
-                        <a
-                            class="view-all"
-                            href="${escapeAttribute(
-                                section.viewAllLink
-                            )}"
-                        >
-                            View All
-                        </a>
-                        `
-                        :
-                        ""
-                    }
-
-                </div>
-                `
-                :
-                ""
-            }
+            ${renderSectionHeading(
+                section
+            )}
 
 
             ${
@@ -1021,6 +1205,7 @@ async function renderProductCarousel(
 
                 </div>
 
+
                 <div class="carousel-dots product-dots">
 
                     <span class="active"></span>
@@ -1032,7 +1217,9 @@ async function renderProductCarousel(
                 :
                 `
                 <div class="carousel-empty">
+
                     No products found.
+
                 </div>
                 `
             }
@@ -1054,9 +1241,15 @@ async function renderProductCarousel(
     PRODUCT CARD
 ==================================================*/
 
-function createProductCard(product){
+function createProductCard(
+    product
+){
 
-    const image = getProductImage(product);
+    const image =
+        getProductImage(
+            product
+        );
+
 
     const name =
         product.name ||
@@ -1064,9 +1257,9 @@ function createProductCard(product){
         "Product";
 
 
-    /* ==============================
-       PRICE
-    ============================== */
+    /*==================================================
+        SALE PRICE
+    ==================================================*/
 
     const salePrice =
         product.salePrice ??
@@ -1075,6 +1268,10 @@ function createProductCard(product){
         product.pricing?.price ??
         "";
 
+
+    /*==================================================
+        BASE PRICE
+    ==================================================*/
 
     const basePrice =
         product.basePrice ??
@@ -1085,32 +1282,38 @@ function createProductCard(product){
         "";
 
 
-    /* ==============================
-       DISCOUNT
-    ============================== */
+    /*==================================================
+        DISCOUNT
+    ==================================================*/
 
     let discount = "";
+
 
     if(
         basePrice !== "" &&
         salePrice !== "" &&
-        Number(basePrice) > Number(salePrice)
+        Number(basePrice) >
+        Number(salePrice)
     ){
 
         discount =
             Math.round(
                 (
-                    (Number(basePrice) - Number(salePrice))
-                    / Number(basePrice)
+                    (
+                        Number(basePrice) -
+                        Number(salePrice)
+                    )
+                    /
+                    Number(basePrice)
                 ) * 100
             );
 
     }
 
 
-    /* ==============================
-       BESTSELLER
-    ============================== */
+    /*==================================================
+        BESTSELLER
+    ==================================================*/
 
     const bestseller =
         product.bestseller === true ||
@@ -1132,8 +1335,12 @@ function createProductCard(product){
                     ?
                     `
                     <img
-                        src="${escapeAttribute(image)}"
-                        alt="${escapeAttribute(name)}"
+                        src="${escapeAttribute(
+                            image
+                        )}"
+                        alt="${escapeAttribute(
+                            name
+                        )}"
                         loading="lazy"
                     >
                     `
@@ -1151,7 +1358,9 @@ function createProductCard(product){
                     ?
                     `
                     <div class="product-discount">
+
                         -${discount}%
+
                     </div>
                     `
                     :
@@ -1164,7 +1373,9 @@ function createProductCard(product){
                     ?
                     `
                     <div class="product-bestseller">
+
                         🔥 Bestseller
+
                     </div>
                     `
                     :
@@ -1175,7 +1386,10 @@ function createProductCard(product){
                 <button
                     class="product-wishlist"
                     type="button"
-                    onclick="event.preventDefault(); event.stopPropagation();"
+                    onclick="
+                        event.preventDefault();
+                        event.stopPropagation();
+                    "
                 >
                     ♡
                 </button>
@@ -1186,12 +1400,17 @@ function createProductCard(product){
             <div class="product-info">
 
                 <h3>
-                    ${escapeHtml(name)}
+
+                    ${escapeHtml(
+                        name
+                    )}
+
                 </h3>
 
 
                 ${
-                    salePrice !== "" || basePrice !== ""
+                    salePrice !== "" ||
+                    basePrice !== ""
                     ?
                     `
                     <div class="product-prices">
@@ -1200,8 +1419,14 @@ function createProductCard(product){
                             salePrice !== ""
                             ?
                             `
-                            <span class="product-sale-price">
-                                ₹${escapeHtml(String(salePrice))}
+                            <span
+                                class="product-sale-price"
+                            >
+                                ₹${escapeHtml(
+                                    String(
+                                        salePrice
+                                    )
+                                )}
                             </span>
                             `
                             :
@@ -1211,11 +1436,18 @@ function createProductCard(product){
 
                         ${
                             basePrice !== "" &&
-                            Number(basePrice) > Number(salePrice)
+                            Number(basePrice) >
+                            Number(salePrice)
                             ?
                             `
-                            <span class="product-old-price">
-                                ₹${escapeHtml(String(basePrice))}
+                            <span
+                                class="product-old-price"
+                            >
+                                ₹${escapeHtml(
+                                    String(
+                                        basePrice
+                                    )
+                                )}
                             </span>
                             `
                             :
@@ -1251,14 +1483,19 @@ function createProductCard(product){
 
 }
 
+
 /*==================================================
     PRODUCT HELPERS
 ==================================================*/
 
-function getProductImage(product){
+function getProductImage(
+    product
+){
 
     if(
-        Array.isArray(product.images) &&
+        Array.isArray(
+            product.images
+        ) &&
         product.images.length
     ){
 
@@ -1295,7 +1532,9 @@ function getProductImage(product){
 }
 
 
-function getProductPrice(product){
+function getProductPrice(
+    product
+){
 
     if(
         product.price !== undefined &&
@@ -1331,7 +1570,9 @@ function getProductPrice(product){
 }
 
 
-function getProductOldPrice(product){
+function getProductOldPrice(
+    product
+){
 
     return (
         product.comparePrice ??
@@ -1343,7 +1584,9 @@ function getProductOldPrice(product){
 }
 
 
-function getProductLink(product){
+function getProductLink(
+    product
+){
 
     if(product.link){
 
@@ -1359,12 +1602,18 @@ function getProductLink(product){
 }
 
 
-function getProductTags(product){
+function getProductTags(
+    product
+){
 
-    let tags=[];
+    let tags = [];
 
 
-    if(Array.isArray(product.tags)){
+    if(
+        Array.isArray(
+            product.tags
+        )
+    ){
 
         tags.push(
             ...product.tags
@@ -1375,7 +1624,11 @@ function getProductTags(product){
 
     if(product.tag){
 
-        if(Array.isArray(product.tag)){
+        if(
+            Array.isArray(
+                product.tag
+            )
+        ){
 
             tags.push(
                 ...product.tag
@@ -1394,9 +1647,12 @@ function getProductTags(product){
 
 
     return tags.map(
-        tag=>{
+        tag => {
 
-            if(typeof tag === "object"){
+            if(
+                typeof tag ===
+                "object"
+            ){
 
                 return String(
                     tag.slug ||
@@ -1427,9 +1683,11 @@ function renderImageCarousel(
 ){
 
     const images =
-        Array.isArray(section.images)
-            ? section.images
-            : [];
+        Array.isArray(
+            section.images
+        )
+        ? section.images
+        : [];
 
 
     if(!images.length){
@@ -1445,57 +1703,16 @@ function renderImageCarousel(
 
         <div class="home-container">
 
-            ${
-                section.title ||
-                section.subtitle
-                ?
-                `
-                <div class="carousel-heading">
-
-                    <div>
-
-                        ${
-                            section.title
-                            ?
-                            `
-                            <h2>
-                                ${escapeHtml(
-                                    section.title
-                                )}
-                            </h2>
-                            `
-                            :
-                            ""
-                        }
-
-                        ${
-                            section.subtitle
-                            ?
-                            `
-                            <p>
-                                ${escapeHtml(
-                                    section.subtitle
-                                )}
-                            </p>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-                </div>
-                `
-                :
-                ""
-            }
+            ${renderSectionHeading(
+                section
+            )}
 
 
             <div class="image-carousel">
 
                 ${
                     images.map(
-                        image=>{
+                        image => {
 
                             const html = `
 
@@ -1518,7 +1735,11 @@ function renderImageCarousel(
                                     image.title
                                     ?
                                     `
-                                    <div class="image-carousel-title">
+                                    <div
+                                        class="
+                                            image-carousel-title
+                                        "
+                                    >
 
                                         ${escapeHtml(
                                             image.title
@@ -1607,9 +1828,11 @@ function renderYoutubeCarousel(
 ){
 
     const videos =
-        Array.isArray(section.videos)
-            ? section.videos
-            : [];
+        Array.isArray(
+            section.videos
+        )
+        ? section.videos
+        : [];
 
 
     if(!videos.length){
@@ -1625,57 +1848,16 @@ function renderYoutubeCarousel(
 
         <div class="home-container">
 
-            ${
-                section.title ||
-                section.subtitle
-                ?
-                `
-                <div class="carousel-heading">
-
-                    <div>
-
-                        ${
-                            section.title
-                            ?
-                            `
-                            <h2>
-                                ${escapeHtml(
-                                    section.title
-                                )}
-                            </h2>
-                            `
-                            :
-                            ""
-                        }
-
-                        ${
-                            section.subtitle
-                            ?
-                            `
-                            <p>
-                                ${escapeHtml(
-                                    section.subtitle
-                                )}
-                            </p>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-                </div>
-                `
-                :
-                ""
-            }
+            ${renderSectionHeading(
+                section
+            )}
 
 
             <div class="youtube-carousel">
 
                 ${
                     videos.map(
-                        video=>{
+                        video => {
 
                             const embed =
                                 getYoutubeEmbedUrl(
@@ -1692,7 +1874,9 @@ function renderYoutubeCarousel(
 
                             return `
 
-                                <div class="youtube-item">
+                                <div
+                                    class="youtube-item"
+                                >
 
                                     <iframe
                                         src="${escapeAttribute(
@@ -1751,7 +1935,9 @@ function renderYoutubeCarousel(
     YOUTUBE URL
 ==================================================*/
 
-function getYoutubeEmbedUrl(url){
+function getYoutubeEmbedUrl(
+    url
+){
 
     if(!url){
 
@@ -1766,6 +1952,8 @@ function getYoutubeEmbedUrl(url){
             new URL(url);
 
 
+        /* SHORTS */
+
         if(
             parsed.pathname.startsWith(
                 "/shorts/"
@@ -1774,19 +1962,27 @@ function getYoutubeEmbedUrl(url){
 
             const id =
                 parsed.pathname
-                    .split("/shorts/")[1]
+                    .split(
+                        "/shorts/"
+                    )[1]
                     .split("/")[0];
 
 
             return id
-                ? `https://www.youtube.com/embed/${id}`
-                : "";
+                ?
+                `https://www.youtube.com/embed/${id}`
+                :
+                "";
 
         }
 
 
+        /* WATCH */
+
         if(
-            parsed.searchParams.get("v")
+            parsed.searchParams.get(
+                "v"
+            )
         ){
 
             return `https://www.youtube.com/embed/${
@@ -1796,8 +1992,11 @@ function getYoutubeEmbedUrl(url){
         }
 
 
+        /* YOUTU.BE */
+
         if(
-            parsed.hostname === "youtu.be"
+            parsed.hostname ===
+            "youtu.be"
         ){
 
             const id =
@@ -1808,8 +2007,10 @@ function getYoutubeEmbedUrl(url){
 
 
             return id
-                ? `https://www.youtube.com/embed/${id}`
-                : "";
+                ?
+                `https://www.youtube.com/embed/${id}`
+                :
+                "";
 
         }
 
@@ -1840,9 +2041,11 @@ function renderReviewCarousel(
 ){
 
     const reviews =
-        Array.isArray(section.reviews)
-            ? section.reviews
-            : [];
+        Array.isArray(
+            section.reviews
+        )
+        ? section.reviews
+        : [];
 
 
     if(!reviews.length){
@@ -1856,7 +2059,8 @@ function renderReviewCarousel(
 
     const limit =
         Number(
-            section.limit || 10
+            section.limit ||
+            10
         );
 
 
@@ -1871,59 +2075,20 @@ function renderReviewCarousel(
 
         <div class="home-container">
 
-            ${
-                section.title ||
-                section.subtitle
-                ?
-                `
-                <div class="carousel-heading">
-
-                    <div>
-
-                        ${
-                            section.title
-                            ?
-                            `
-                            <h2>
-                                ${escapeHtml(
-                                    section.title
-                                )}
-                            </h2>
-                            `
-                            :
-                            ""
-                        }
-
-                        ${
-                            section.subtitle
-                            ?
-                            `
-                            <p>
-                                ${escapeHtml(
-                                    section.subtitle
-                                )}
-                            </p>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-                </div>
-                `
-                :
-                ""
-            }
+            ${renderSectionHeading(
+                section
+            )}
 
 
             <div class="review-carousel">
 
                 ${
                     visible.map(
-                        review=>`
+                        review => `
 
-                        <article class="review-card">
+                        <article
+                            class="review-card"
+                        >
 
                             ${
                                 review.image
@@ -1935,34 +2100,48 @@ function renderReviewCarousel(
                                         review.image
                                     )}"
                                     alt="${escapeAttribute(
-                                        review.name || "Customer"
+                                        review.name ||
+                                        "Customer"
                                     )}"
                                     loading="lazy"
                                 >
                                 `
                                 :
                                 `
-                                <div class="review-avatar review-avatar-empty">
+                                <div
+                                    class="
+                                        review-avatar
+                                        review-avatar-empty
+                                    "
+                                >
                                     ${escapeHtml(
-                                        (review.name || "C")
-                                            .charAt(0)
-                                            .toUpperCase()
+                                        (
+                                            review.name ||
+                                            "C"
+                                        )
+                                        .charAt(0)
+                                        .toUpperCase()
                                     )}
                                 </div>
                                 `
                             }
 
 
-                            <div class="review-stars">
+                            <div
+                                class="review-stars"
+                            >
 
                                 ${renderStars(
-                                    review.stars || 5
+                                    review.stars ||
+                                    5
                                 )}
 
                             </div>
 
 
-                            <p class="review-text">
+                            <p
+                                class="review-text"
+                            >
 
                                 ${escapeHtml(
                                     review.review ||
@@ -1977,7 +2156,9 @@ function renderReviewCarousel(
                                 review.name
                                 ?
                                 `
-                                <h3 class="review-name">
+                                <h3
+                                    class="review-name"
+                                >
 
                                     ${escapeHtml(
                                         review.name
@@ -2023,7 +2204,9 @@ function renderReviewCarousel(
     STARS
 ==================================================*/
 
-function renderStars(stars){
+function renderStars(
+    stars
+){
 
     const rating =
         Math.max(
@@ -2036,8 +2219,12 @@ function renderStars(stars){
 
 
     return (
-        "★".repeat(rating) +
-        "☆".repeat(5-rating)
+        "★".repeat(
+            rating
+        ) +
+        "☆".repeat(
+            5 - rating
+        )
     );
 
 }
@@ -2054,7 +2241,8 @@ function renderSpacer(
 
     container.style.height =
         `${Number(
-            section.height || 40
+            section.height ||
+            40
         )}px`;
 
 
@@ -2180,7 +2368,9 @@ function updateCarouselDots(
     TIMESTAMP
 ==================================================*/
 
-function getTimestamp(value){
+function getTimestamp(
+    value
+){
 
     if(!value){
 
@@ -2200,7 +2390,8 @@ function getTimestamp(value){
 
 
     if(
-        typeof value === "number"
+        typeof value ===
+        "number"
     ){
 
         return value;
@@ -2247,7 +2438,9 @@ function hideLoader(){
     ESCAPE
 ==================================================*/
 
-function escapeHtml(value){
+function escapeHtml(
+    value
+){
 
     return String(
         value ?? ""
@@ -2276,7 +2469,9 @@ function escapeHtml(value){
 }
 
 
-function escapeAttribute(value){
+function escapeAttribute(
+    value
+){
 
     return escapeHtml(
         value
@@ -2289,23 +2484,39 @@ function escapeAttribute(value){
     SIDEBAR
 ==================================================*/
 
-window.toggleSidebar = function(){
+window.toggleSidebar =
+function(){
 
     const sidebar =
-        document.getElementById("sidebar");
+        document.getElementById(
+            "sidebar"
+        );
+
 
     const overlay =
-        document.getElementById("overlay");
+        document.getElementById(
+            "overlay"
+        );
 
-    if(!sidebar || !overlay){
+
+    if(
+        !sidebar ||
+        !overlay
+    ){
 
         return;
 
     }
 
-    sidebar.classList.toggle("open");
 
-    overlay.classList.toggle("show");
+    sidebar.classList.toggle(
+        "open"
+    );
+
+
+    overlay.classList.toggle(
+        "show"
+    );
 
 };
 
@@ -2314,13 +2525,20 @@ window.toggleSidebar = function(){
     SEARCH
 ==================================================*/
 
-window.openSearch = function(){
+window.openSearch =
+function(){
 
     const search =
-        document.getElementById("searchOverlay");
+        document.getElementById(
+            "searchOverlay"
+        );
+
 
     const input =
-        document.getElementById("searchInput");
+        document.getElementById(
+            "searchInput"
+        );
+
 
     if(!search){
 
@@ -2328,7 +2546,11 @@ window.openSearch = function(){
 
     }
 
-    search.classList.add("open");
+
+    search.classList.add(
+        "open"
+    );
+
 
     setTimeout(
         ()=>{
@@ -2340,10 +2562,14 @@ window.openSearch = function(){
 };
 
 
-window.closeSearch = function(){
+window.closeSearch =
+function(){
 
     const search =
-        document.getElementById("searchOverlay");
+        document.getElementById(
+            "searchOverlay"
+        );
+
 
     if(!search){
 
@@ -2351,10 +2577,12 @@ window.closeSearch = function(){
 
     }
 
-    search.classList.remove("open");
+
+    search.classList.remove(
+        "open"
+    );
 
 };
-
 
 
 /*==================================================
