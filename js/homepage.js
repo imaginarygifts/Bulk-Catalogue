@@ -2124,13 +2124,33 @@ async function initYoutubeCarousel(
     }
 
 
-    let players = [];
+    /*==================================================
+        PLAYER STORAGE
+    ==================================================*/
 
-    let apiReady = false;
+    const players =
+        new Array(
+            slides.length
+        ).fill(null);
+
+
+    const playerReady =
+        new Array(
+            slides.length
+        ).fill(false);
+
+
+    const pendingPlay =
+        new Array(
+            slides.length
+        ).fill(false);
+
 
     let activeIndex = -1;
 
     let scrollTimer = null;
+
+    let userInteracted = false;
 
 
     /*==================================================
@@ -2140,8 +2160,6 @@ async function initYoutubeCarousel(
     try{
 
         await loadYouTubeAPI();
-
-        apiReady = true;
 
     }
 
@@ -2158,7 +2176,7 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        CREATE PLAYERS
+        CREATE YOUTUBE PLAYERS
     ==================================================*/
 
     slides.forEach(
@@ -2181,10 +2199,23 @@ async function initYoutubeCarousel(
                 );
 
 
+            /*
+                IMPORTANT:
+
+                Keep iframe hidden initially.
+
+                Thumbnail stays visible until
+                the player is actually ready.
+            */
+
+            iframe.style.display =
+                "none";
+
+
             iframe.src =
                 `https://www.youtube.com/embed/${encodeURIComponent(
                     videoId
-                )}?enablejsapi=1&playsinline=1&controls=0&rel=0&autoplay=0&fs=0&iv_load_policy=3&disablekb=1`;
+                )}?enablejsapi=1&playsinline=1&controls=0&rel=0&autoplay=0&fs=0&iv_load_policy=3&disablekb=1&modestbranding=1`;
 
 
             iframe.title =
@@ -2218,6 +2249,10 @@ async function initYoutubeCarousel(
             );
 
 
+            /*==================================================
+                CREATE PLAYER
+            ==================================================*/
+
             const player =
                 new YT.Player(
                     iframe,
@@ -2225,20 +2260,54 @@ async function initYoutubeCarousel(
 
                         events: {
 
+                            /*======================================
+                                PLAYER READY
+                            ======================================*/
+
                             onReady:
                                 event => {
 
                                     players[index] =
                                         event.target;
 
+
+                                    playerReady[index] =
+                                        true;
+
+
+                                    /*
+                                        If user already clicked/swiped
+                                        before player was ready,
+                                        start it now.
+                                    */
+
+                                    if(
+                                        pendingPlay[index]
+                                    ){
+
+                                        pendingPlay[index] =
+                                            false;
+
+
+                                        activateVideo(
+                                            index,
+                                            userInteracted
+                                        );
+
+                                    }
+
                                 },
 
+
+                            /*======================================
+                                STATE CHANGE
+                            ======================================*/
 
                             onStateChange:
                                 event => {
 
                                     /*
-                                        Video ended
+                                        ENDED
                                     */
 
                                     if(
@@ -2246,7 +2315,7 @@ async function initYoutubeCarousel(
                                         YT.PlayerState.ENDED
                                     ){
 
-                                        resetSlide(
+                                        resetVideo(
                                             index
                                         );
 
@@ -2254,12 +2323,21 @@ async function initYoutubeCarousel(
 
                                 },
 
+
+                            /*======================================
+                                ERROR
+                            ======================================*/
+
                             onError:
                                 event => {
 
                                     console.warn(
                                         "YouTube player error:",
                                         event.data
+                                    );
+
+                                    resetVideo(
+                                        index
                                     );
 
                                 }
@@ -2275,7 +2353,7 @@ async function initYoutubeCarousel(
 
 
             /*==================================================
-                CLICK / TAP
+                THUMBNAIL CLICK
             ==================================================*/
 
             const thumbnail =
@@ -2293,29 +2371,42 @@ async function initYoutubeCarousel(
                     event.stopPropagation();
 
 
-                    playSlide(
-                        index
+                    userInteracted =
+                        true;
+
+
+                    playVideo(
+                        index,
+                        true
                     );
 
                 }
             );
 
 
+            /*==================================================
+                KEYBOARD
+            ==================================================*/
+
             thumbnail?.addEventListener(
                 "keydown",
                 event => {
 
                     if(
-                        event.key ===
-                        "Enter" ||
-                        event.key ===
-                        " "
+                        event.key === "Enter" ||
+                        event.key === " "
                     ){
 
                         event.preventDefault();
 
-                        playSlide(
-                            index
+
+                        userInteracted =
+                            true;
+
+
+                        playVideo(
+                            index,
+                            true
                         );
 
                     }
@@ -2328,91 +2419,156 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        PLAY SLIDE
+        PLAY VIDEO
     ==================================================*/
 
-    function playSlide(
-        index
+    function playVideo(
+        index,
+        withSound = false
     ){
 
-        if(!apiReady){
+        if(index < 0){
 
             return;
 
         }
+
+
+        /*
+            Stop every other video first.
+        */
+
+        slides.forEach(
+            (_,i) => {
+
+                if(i !== index){
+
+                    resetVideo(
+                        i
+                    );
+
+                }
+
+            }
+        );
+
+
+        /*
+            Player is not ready yet.
+
+            Remember the request and play
+            immediately when onReady fires.
+        */
+
+        if(
+            !playerReady[index] ||
+            !players[index]
+        ){
+
+            pendingPlay[index] =
+                true;
+
+
+            activeIndex =
+                index;
+
+
+            return;
+
+        }
+
+
+        activateVideo(
+            index,
+            withSound
+        );
+
+    }
+
+
+    /*==================================================
+        ACTIVATE VIDEO
+    ==================================================*/
+
+    function activateVideo(
+        index,
+        withSound = false
+    ){
+
+        const player =
+            players[index];
 
 
         const slide =
             slides[index];
 
 
-        const player =
-            players[index];
+        if(
+            !player ||
+            !slide
+        ){
 
-
-        if(!slide || !player){
+            pendingPlay[index] =
+                true;
 
             return;
 
         }
 
 
-        /* STOP EVERY OTHER VIDEO */
+        /*
+            Stop all other players.
+        */
 
-        players.forEach(
-            (otherPlayer,i) => {
+        slides.forEach(
+            (_,i) => {
 
-                if(
-                    i === index
-                ){
+                if(i === index){
 
                     return;
 
                 }
 
 
+                const other =
+                    players[i];
+
+
                 if(
-                    otherPlayer &&
-                    typeof otherPlayer.pauseVideo ===
-                    "function"
+                    other &&
+                    playerReady[i]
                 ){
 
                     try{
 
-                        otherPlayer.pauseVideo();
+                        other.pauseVideo();
 
                     }
-                    catch(error){
-
-                        console.warn(
-                            "Unable to pause YouTube video:",
-                            error
-                        );
-
-                    }
+                    catch(error){}
 
                 }
 
 
-                resetSlide(
-                    i
-                );
+                slides[i]
+                    ?.classList
+                    .remove(
+                        "is-playing"
+                    );
 
-            }
-        );
+
+                const otherIframe =
+                    slides[i]
+                        ?.querySelector(
+                            "iframe"
+                        );
 
 
-        /*==================================================
-            ACTIVE SLIDE
-        ==================================================*/
+                if(otherIframe){
 
-        slides.forEach(
-            (item,i) => {
+                    otherIframe.style.display =
+                        "none";
 
-                item.classList.toggle(
-                    "is-playing",
-                    i === index
-                );
+                }
 
             }
         );
@@ -2422,27 +2578,98 @@ async function initYoutubeCarousel(
             index;
 
 
+        slide.classList.add(
+            "is-playing"
+        );
+
+
+        const iframe =
+            slide.querySelector(
+                "iframe"
+            );
+
+
+        /*
+            Show iframe ONLY when player
+            is actually ready.
+        */
+
+        if(iframe){
+
+            iframe.style.display =
+                "block";
+
+        }
+
+
         updateYoutubeDots(
             carousel,
             index
         );
 
 
-        /*==================================================
-            PLAY
-        ==================================================*/
-
         try{
 
+            /*
+                If this was a direct user click,
+                try with sound.
+
+                If it was automatic activation,
+                start normally.
+            */
+
+            if(
+                withSound
+            ){
+
+                player.unMute();
+
+                player.setVolume(
+                    100
+                );
+
+            }
+
+
             player.playVideo();
+
 
         }
         catch(error){
 
             console.warn(
-                "YouTube playback blocked:",
+                "YouTube play error:",
                 error
             );
+
+
+            /*
+                If autoplay is blocked,
+                retry muted.
+
+                This is important for mobile
+                browsers.
+            */
+
+            try{
+
+                player.mute();
+
+                player.playVideo();
+
+            }
+            catch(secondError){
+
+                console.warn(
+                    "Muted YouTube play error:",
+                    secondError
+                );
+
+                resetVideo(
+                    index
+                );
+
+            }
 
         }
 
@@ -2450,12 +2677,23 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        RESET SLIDE
+        RESET VIDEO
     ==================================================*/
 
-    function resetSlide(
+    function resetVideo(
         index
     ){
+
+        if(index < 0){
+
+            return;
+
+        }
+
+
+        pendingPlay[index] =
+            false;
+
 
         const player =
             players[index];
@@ -2463,8 +2701,7 @@ async function initYoutubeCarousel(
 
         if(
             player &&
-            typeof player.pauseVideo ===
-            "function"
+            playerReady[index]
         ){
 
             try{
@@ -2472,14 +2709,7 @@ async function initYoutubeCarousel(
                 player.pauseVideo();
 
             }
-            catch(error){
-
-                console.warn(
-                    "YouTube pause error:",
-                    error
-                );
-
-            }
+            catch(error){}
 
         }
 
@@ -2497,9 +2727,28 @@ async function initYoutubeCarousel(
         }
 
 
+        const iframe =
+            slide?.querySelector(
+                "iframe"
+            );
+
+
+        /*
+            Hide iframe.
+
+            This brings back the clean thumbnail.
+        */
+
+        if(iframe){
+
+            iframe.style.display =
+                "none";
+
+        }
+
+
         if(
-            activeIndex ===
-            index
+            activeIndex === index
         ){
 
             activeIndex =
@@ -2511,51 +2760,20 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        STOP ALL
+        STOP EVERYTHING
     ==================================================*/
 
     function stopAll(){
 
-        players.forEach(
-            (player,index) => {
+        slides.forEach(
+            (_,index) => {
 
-                if(
-                    player &&
-                    typeof player.pauseVideo ===
-                    "function"
-                ){
-
-                    try{
-
-                        player.pauseVideo();
-
-                    }
-                    catch(error){
-
-                        console.warn(
-                            "YouTube stop error:",
-                            error
-                        );
-
-                    }
-
-                }
-
-
-                const slide =
-                    slides[index];
-
-
-                slide?.classList.remove(
-                    "is-playing"
+                resetVideo(
+                    index
                 );
 
             }
         );
-
-
-        activeIndex =
-            -1;
 
     }
 
@@ -2570,9 +2788,12 @@ async function initYoutubeCarousel(
             carousel.getBoundingClientRect();
 
 
-        let bestIndex = -1;
+        let bestIndex =
+            -1;
 
-        let bestVisible = 0;
+
+        let bestVisible =
+            0;
 
 
         slides.forEach(
@@ -2634,20 +2855,12 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        HORIZONTAL CAROUSEL SCROLL
+        HORIZONTAL SWIPE
     ==================================================*/
 
     carousel.addEventListener(
         "scroll",
         () => {
-
-            /*
-                Don't instantly switch videos on every
-                tiny scroll movement.
-
-                Wait until the user has mostly finished
-                swiping.
-            */
 
             clearTimeout(
                 scrollTimer
@@ -2663,46 +2876,32 @@ async function initYoutubeCarousel(
 
 
                         if(
-                            mostVisible.index >= 0 &&
-                            mostVisible.visible > 20
+                            mostVisible.index < 0
                         ){
 
-                            /*
-                                Only autoplay the new slide
-                                if a video was already active.
-
-                                This prevents unwanted
-                                autoplay on initial page load.
-                            */
-
-                            if(
-                                activeIndex !== -1
-                            ){
-
-                                playSlide(
-                                    mostVisible.index
-                                );
-
-                            }
-                            else{
-
-                                /*
-                                    Keep thumbnails until
-                                    user interacts with the
-                                    carousel.
-                                */
-
-                                updateYoutubeDots(
-                                    carousel,
-                                    mostVisible.index
-                                );
-
-                            }
+                            return;
 
                         }
 
+
+                        /*
+                            ALWAYS activate the most
+                            visible video after swipe.
+
+                            This is the important change.
+                        */
+
+                        userInteracted =
+                            true;
+
+
+                        playVideo(
+                            mostVisible.index,
+                            true
+                        );
+
                     },
-                    120
+                    100
                 );
 
         },
@@ -2713,7 +2912,7 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        CLICK CAROUSEL
+        CLICK ACTIVE VIDEO
     ==================================================*/
 
     carousel.addEventListener(
@@ -2746,29 +2945,38 @@ async function initYoutubeCarousel(
             }
 
 
+            userInteracted =
+                true;
+
+
             /*
-                Clicking anywhere on thumbnail
-                starts that video.
+                If already playing,
+                don't restart it.
             */
 
             if(
-                !slide.classList.contains(
+                activeIndex === index &&
+                slide.classList.contains(
                     "is-playing"
                 )
             ){
 
-                playSlide(
-                    index
-                );
+                return;
 
             }
+
+
+            playVideo(
+                index,
+                true
+            );
 
         }
     );
 
 
     /*==================================================
-        VISIBILITY OBSERVER
+        INTERSECTION OBSERVER
     ==================================================*/
 
     const observer =
@@ -2792,8 +3000,8 @@ async function initYoutubeCarousel(
 
 
                         /*
-                            If active video leaves
-                            the visible area, stop it.
+                            Video disappeared from
+                            the viewport.
                         */
 
                         if(
@@ -2801,7 +3009,7 @@ async function initYoutubeCarousel(
                             activeIndex === index
                         ){
 
-                            resetSlide(
+                            resetVideo(
                                 index
                             );
 
@@ -2810,42 +3018,12 @@ async function initYoutubeCarousel(
                     }
                 );
 
-
-                /*
-                    Check entire carousel visibility.
-                */
-
-                const carouselRect =
-                    carousel.getBoundingClientRect();
-
-
-                const visibleHeight =
-                    Math.min(
-                        carouselRect.bottom,
-                        window.innerHeight
-                    )
-                    -
-                    Math.max(
-                        carouselRect.top,
-                        0
-                    );
-
-
-                if(
-                    visibleHeight <= 0
-                ){
-
-                    stopAll();
-
-                }
-
             },
             {
                 threshold:[
                     0,
                     0.15,
-                    0.5,
-                    0.75
+                    0.5
                 ]
             }
         );
@@ -2870,29 +3048,24 @@ async function initYoutubeCarousel(
         "scroll",
         () => {
 
-            const rect =
+            const carouselRect =
                 carousel.getBoundingClientRect();
 
 
-            const visible =
+            const visibleHeight =
                 Math.min(
-                    rect.bottom,
+                    carouselRect.bottom,
                     window.innerHeight
                 )
                 -
                 Math.max(
-                    rect.top,
+                    carouselRect.top,
                     0
                 );
 
 
-            /*
-                Carousel completely outside
-                viewport.
-            */
-
             if(
-                visible <= 0
+                visibleHeight <= 0
             ){
 
                 stopAll();
@@ -2902,59 +3075,64 @@ async function initYoutubeCarousel(
             }
 
 
-            /*
-                Active video itself must remain
-                sufficiently visible.
-            */
-
             if(
                 activeIndex >= 0
             ){
 
                 const activeSlide =
-                    slides[activeIndex];
+                    slides[
+                        activeIndex
+                    ];
 
 
-                if(activeSlide){
+                if(!activeSlide){
 
-                    const slideRect =
-                        activeSlide.getBoundingClientRect();
+                    return;
 
-
-                    const visibleWidth =
-                        Math.min(
-                            slideRect.right,
-                            window.innerWidth
-                        )
-                        -
-                        Math.max(
-                            slideRect.left,
-                            0
-                        );
+                }
 
 
-                    const visibleSlideHeight =
-                        Math.min(
-                            slideRect.bottom,
-                            window.innerHeight
-                        )
-                        -
-                        Math.max(
-                            slideRect.top,
-                            0
-                        );
+                const rect =
+                    activeSlide.getBoundingClientRect();
 
 
-                    if(
-                        visibleWidth <= 0 ||
-                        visibleSlideHeight <= 0
-                    ){
+                const visibleWidth =
+                    Math.min(
+                        rect.right,
+                        window.innerWidth
+                    )
+                    -
+                    Math.max(
+                        rect.left,
+                        0
+                    );
 
-                        resetSlide(
-                            activeIndex
-                        );
 
-                    }
+                const visibleSlideHeight =
+                    Math.min(
+                        rect.bottom,
+                        window.innerHeight
+                    )
+                    -
+                    Math.max(
+                        rect.top,
+                        0
+                    );
+
+
+                /*
+                    Active video has completely
+                    disappeared.
+                */
+
+                if(
+                    visibleWidth <= 0 ||
+                    visibleSlideHeight <= 0
+                ){
+
+                    resetVideo(
+                        activeIndex
+                    );
 
                 }
 
@@ -2984,6 +3162,43 @@ async function initYoutubeCarousel(
             }
 
         }
+    );
+
+
+    /*==================================================
+        AUTO START FIRST VISIBLE VIDEO
+    ==================================================*/
+
+    /*
+        Wait for YouTube players to initialize.
+
+        Then automatically start the first visible
+        video.
+
+        If browser blocks unmuted autoplay,
+        activateVideo() falls back to muted playback.
+    */
+
+    setTimeout(
+        () => {
+
+            const mostVisible =
+                getMostVisibleSlide();
+
+
+            if(
+                mostVisible.index >= 0
+            ){
+
+                playVideo(
+                    mostVisible.index,
+                    false
+                );
+
+            }
+
+        },
+        800
     );
 
 }
