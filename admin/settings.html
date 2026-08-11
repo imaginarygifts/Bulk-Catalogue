@@ -1,25 +1,337 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Settings</title>
-  <link rel="stylesheet" href="../css/admin.css">
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Settings</title>
+
+    <link
+        rel="stylesheet"
+        href="settings.css"
+    >
+
 </head>
+
+
 <body>
-<div class="topbar">
-  <span class="back-btn" onclick="goBack()">←</span>
-  <span class="title">Store Settings</span>
-</div>
 
-<input id="store" placeholder="Store Name">
-<input id="whatsapp" placeholder="WhatsApp Number">
-<button onclick="save()">Save</button>
+    <div class="settings-page">
 
-<script type="module" src="../js/guard.js"></script>
-<script type="module" src="../js/settings.js"></script>
-<script>
-  function goBack() {
-    location.href = "dashboard.html";
-  }
-</script>
+
+        <!-- =========================================
+             HEADER
+        ========================================== -->
+
+        <div class="settings-header">
+
+            <div>
+
+                <h1>
+                    Settings
+                </h1>
+
+                <p>
+                    Manage your store information
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================
+             GENERAL SETTINGS
+        ========================================== -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <h2>
+                    General Information
+                </h2>
+
+                <p>
+                    This information will be used across
+                    your website.
+                </p>
+
+            </div>
+
+
+
+            <!-- LOGO -->
+
+            <div class="form-group">
+
+                <label>
+                    Company Logo
+                </label>
+
+
+                <div class="logo-upload-area">
+
+                    <div
+                        id="logoPreview"
+                        class="logo-preview"
+                    >
+
+                        <span>
+                            No Logo
+                        </span>
+
+                    </div>
+
+
+                    <div class="logo-upload-content">
+
+                        <input
+                            type="file"
+                            id="logoInput"
+                            accept="image/*"
+                        >
+
+
+                        <small>
+                            Recommended: PNG or JPG
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- COMPANY NAME -->
+
+            <div class="form-group">
+
+                <label for="companyName">
+                    Company Name
+                </label>
+
+                <input
+                    type="text"
+                    id="companyName"
+                    placeholder="Imaginary Gifts"
+                >
+
+            </div>
+
+
+
+            <!-- WHATSAPP -->
+
+            <div class="form-group">
+
+                <label for="whatsappNumber">
+                    WhatsApp Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="whatsappNumber"
+                    placeholder="919876543210"
+                >
+
+                <small>
+                    Include country code, e.g. 919876543210
+                </small>
+
+            </div>
+
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="hello@example.com"
+                >
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================
+             WEBSITE CONTENT
+        ========================================== -->
+
+        <div class="settings-card">
+
+            <div class="settings-card-header">
+
+                <h2>
+                    Website Content
+                </h2>
+
+                <p>
+                    Manage your website information pages.
+                </p>
+
+            </div>
+
+
+
+            <!-- ABOUT US -->
+
+            <div class="form-group">
+
+                <label for="aboutUs">
+                    About Us
+                </label>
+
+                <textarea
+                    id="aboutUs"
+                    rows="8"
+                    placeholder="Write your About Us content..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- CONTACT US -->
+
+            <div class="form-group">
+
+                <label for="contactUs">
+                    Contact Us
+                </label>
+
+                <textarea
+                    id="contactUs"
+                    rows="8"
+                    placeholder="Write your Contact Us content..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- TERMS -->
+
+            <div class="form-group">
+
+                <label for="termsAndConditions">
+                    Terms & Conditions
+                </label>
+
+                <textarea
+                    id="termsAndConditions"
+                    rows="10"
+                    placeholder="Write your Terms & Conditions..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- PRIVACY -->
+
+            <div class="form-group">
+
+                <label for="privacyPolicy">
+                    Privacy Policy
+                </label>
+
+                <textarea
+                    id="privacyPolicy"
+                    rows="10"
+                    placeholder="Write your Privacy Policy..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- REFUND -->
+
+            <div class="form-group">
+
+                <label for="refundPolicy">
+                    Refund Policy
+                </label>
+
+                <textarea
+                    id="refundPolicy"
+                    rows="10"
+                    placeholder="Write your Refund Policy..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- SHIPPING -->
+
+            <div class="form-group">
+
+                <label for="shippingPolicy">
+                    Shipping Policy
+                </label>
+
+                <textarea
+                    id="shippingPolicy"
+                    rows="10"
+                    placeholder="Write your Shipping Policy..."
+                ></textarea>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================
+             SAVE
+        ========================================== -->
+
+        <div class="settings-actions">
+
+            <button
+                type="button"
+                id="saveSettings"
+            >
+                Save Settings
+            </button>
+
+        </div>
+
+
+        <div
+            id="settingsMessage"
+            class="settings-message"
+        ></div>
+
+
+    </div>
+
+
+    <script
+        type="module"
+        src="settings.js"
+    ></script>
+
 </body>
+
 </html>
