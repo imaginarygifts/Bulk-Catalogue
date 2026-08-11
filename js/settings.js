@@ -8,15 +8,18 @@ import {
     storage
 } from "./firebase.js";
 
+
 import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 
 import {
     doc,
     getDoc,
     setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 import {
     ref,
@@ -30,26 +33,46 @@ import {
 ==================================================*/
 
 const form =
-    document.getElementById("settingsForm");
+    document.getElementById(
+        "settingsForm"
+    );
+
 
 const logoInput =
-    document.getElementById("logo");
+    document.getElementById(
+        "logo"
+    );
+
 
 const logoPreview =
-    document.getElementById("logoPreview");
+    document.getElementById(
+        "logoPreview"
+    );
+
+
+const logoPlaceholder =
+    document.getElementById(
+        "logoPlaceholder"
+    );
+
 
 const saveButton =
-    document.getElementById("saveSettings");
+    document.getElementById(
+        "saveSettings"
+    );
+
 
 const message =
-    document.getElementById("settingsMessage");
+    document.getElementById(
+        "settingsMessage"
+    );
 
 
 /*==================================================
     SETTINGS DOCUMENT
 ==================================================*/
 
-const SETTINGS_DOC =
+const settingsRef =
     doc(
         db,
         "settings",
@@ -58,106 +81,137 @@ const SETTINGS_DOC =
 
 
 /*==================================================
-    CURRENT USER
+    ADMIN STATE
 ==================================================*/
 
-let currentUser = null;
+let currentUser =
+    null;
 
-let isAdmin = false;
+
+let adminVerified =
+    false;
 
 
 /*==================================================
-    AUTH CHECK
+    INIT
 ==================================================*/
 
-onAuthStateChanged(
-    auth,
-    async user => {
-
-        if(!user){
-
-            window.location.href =
-                "/admin/login.html";
-
-            return;
-
-        }
+initSettings();
 
 
-        try{
+/*==================================================
+    INITIALIZE
+==================================================*/
 
-            /*
-                Check admin document using
-                Firebase Auth UID.
-            */
+function initSettings(){
 
-            const adminRef =
-                doc(
-                    db,
-                    "admins",
-                    user.uid
-                );
+    onAuthStateChanged(
+        auth,
+        async user => {
 
+            /*==========================================
+                NOT LOGGED IN
+            ==========================================*/
 
-            const adminSnap =
-                await getDoc(
-                    adminRef
-                );
-
-
-            if(!adminSnap.exists()){
-
-                alert(
-                    "You are not authorized to access admin settings."
-                );
-
-
-                await auth.signOut();
-
+            if(!user){
 
                 window.location.href =
                     "/admin/login.html";
-
 
                 return;
 
             }
 
 
-            currentUser =
-                user;
+            try{
+
+                /*======================================
+                    CHECK ADMIN DOCUMENT
+                ======================================*/
+
+                const adminRef =
+                    doc(
+                        db,
+                        "admins",
+                        user.uid
+                    );
 
 
-            isAdmin =
-                true;
+                const adminSnapshot =
+                    await getDoc(
+                        adminRef
+                    );
 
 
-            /*
-                Load existing settings
-            */
+                /*======================================
+                    NOT ADMIN
+                ======================================*/
 
-            await loadSettings();
+                if(
+                    !adminSnapshot.exists()
+                ){
 
+                    console.warn(
+                        "User is not an admin."
+                    );
+
+
+                    alert(
+                        "Not authorized"
+                    );
+
+
+                    await auth.signOut();
+
+
+                    window.location.href =
+                        "/admin/login.html";
+
+
+                    return;
+
+                }
+
+
+                /*======================================
+                    ADMIN VERIFIED
+                ======================================*/
+
+                currentUser =
+                    user;
+
+
+                adminVerified =
+                    true;
+
+
+                /*======================================
+                    LOAD SETTINGS
+                ======================================*/
+
+                await loadSettings();
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Admin verification error:",
+                    error
+                );
+
+
+                showMessage(
+                    "Unable to verify admin access.",
+                    "error"
+                );
+
+            }
 
         }
+    );
 
-        catch(error){
-
-            console.error(
-                "Admin verification error:",
-                error
-            );
-
-
-            showMessage(
-                "Unable to verify admin access.",
-                "error"
-            );
-
-        }
-
-    }
-);
+}
 
 
 /*==================================================
@@ -170,16 +224,22 @@ async function loadSettings(){
 
         const snapshot =
             await getDoc(
-                SETTINGS_DOC
+                settingsRef
             );
 
 
-        if(!snapshot.exists()){
+        /*==============================================
+            NO SETTINGS YET
+        ==============================================*/
 
-            /*
-                No settings saved yet.
-                Keep form empty.
-            */
+        if(
+            !snapshot.exists()
+        ){
+
+            console.log(
+                "No settings document found yet."
+            );
+
 
             return;
 
@@ -191,7 +251,7 @@ async function loadSettings(){
 
 
         /*==============================================
-            COMPANY
+            COMPANY NAME
         ==============================================*/
 
         setValue(
@@ -200,11 +260,19 @@ async function loadSettings(){
         );
 
 
+        /*==============================================
+            WHATSAPP
+        ==============================================*/
+
         setValue(
             "whatsapp",
             settings.whatsapp
         );
 
+
+        /*==============================================
+            EMAIL
+        ==============================================*/
 
         setValue(
             "email",
@@ -213,7 +281,7 @@ async function loadSettings(){
 
 
         /*==============================================
-            PAGES
+            ABOUT US
         ==============================================*/
 
         setValue(
@@ -222,11 +290,19 @@ async function loadSettings(){
         );
 
 
+        /*==============================================
+            CONTACT US
+        ==============================================*/
+
         setValue(
             "contactUs",
             settings.contactUs
         );
 
+
+        /*==============================================
+            TERMS
+        ==============================================*/
 
         setValue(
             "terms",
@@ -234,17 +310,29 @@ async function loadSettings(){
         );
 
 
+        /*==============================================
+            PRIVACY
+        ==============================================*/
+
         setValue(
             "privacyPolicy",
             settings.privacyPolicy
         );
 
 
+        /*==============================================
+            REFUND
+        ==============================================*/
+
         setValue(
             "refundPolicy",
             settings.refundPolicy
         );
 
+
+        /*==============================================
+            SHIPPING
+        ==============================================*/
 
         setValue(
             "shippingPolicy",
@@ -257,15 +345,12 @@ async function loadSettings(){
         ==============================================*/
 
         if(
-            settings.logoUrl &&
-            logoPreview
+            settings.logoUrl
         ){
 
-            logoPreview.src =
-                settings.logoUrl;
-
-            logoPreview.style.display =
-                "block";
+            showLogo(
+                settings.logoUrl
+            );
 
         }
 
@@ -290,131 +375,265 @@ async function loadSettings(){
 
 
 /*==================================================
-    LOGO PREVIEW
+    LOGO INPUT
 ==================================================*/
 
-logoInput?.addEventListener(
-    "change",
-    event => {
+if(logoInput){
 
-        const file =
-            event.target.files?.[0];
+    logoInput.addEventListener(
+        "change",
+        handleLogoChange
+    );
 
-
-        if(!file){
-
-            return;
-
-        }
+}
 
 
-        /*
-            Only images
-        */
+/*==================================================
+    HANDLE LOGO CHANGE
+==================================================*/
 
-        if(
-            !file.type.startsWith(
-                "image/"
-            )
-        ){
+function handleLogoChange(
+    event
+){
 
-            showMessage(
-                "Please select an image file.",
-                "error"
-            );
+    const file =
+        event.target.files?.[0];
 
 
-            logoInput.value =
-                "";
+    if(!file){
 
-
-            return;
-
-        }
-
-
-        /*
-            5 MB limit
-        */
-
-        if(
-            file.size >
-            5 * 1024 * 1024
-        ){
-
-            showMessage(
-                "Logo must be smaller than 5 MB.",
-                "error"
-            );
-
-
-            logoInput.value =
-                "";
-
-
-            return;
-
-        }
-
-
-        const reader =
-            new FileReader();
-
-
-        reader.onload =
-            event => {
-
-                if(!logoPreview){
-
-                    return;
-
-                }
-
-
-                logoPreview.src =
-                    event.target.result;
-
-
-                logoPreview.style.display =
-                    "block";
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
+        return;
 
     }
-);
+
+
+    /*==============================================
+        IMAGE VALIDATION
+    ==============================================*/
+
+    if(
+        !file.type.startsWith(
+            "image/"
+        )
+    ){
+
+        showMessage(
+            "Please select a valid image file.",
+            "error"
+        );
+
+
+        logoInput.value =
+            "";
+
+
+        return;
+
+    }
+
+
+    /*==============================================
+        SIZE VALIDATION
+    ==============================================*/
+
+    const maxSize =
+        5 * 1024 * 1024;
+
+
+    if(
+        file.size > maxSize
+    ){
+
+        showMessage(
+            "Logo must be smaller than 5 MB.",
+            "error"
+        );
+
+
+        logoInput.value =
+            "";
+
+
+        return;
+
+    }
+
+
+    /*==============================================
+        PREVIEW
+    ==============================================*/
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        event => {
+
+            showLogo(
+                event.target.result
+            );
+
+        };
+
+
+    reader.onerror =
+        () => {
+
+            showMessage(
+                "Unable to preview logo.",
+                "error"
+            );
+
+        };
+
+
+    reader.readAsDataURL(
+        file
+    );
+
+}
+
+
+/*==================================================
+    SHOW LOGO
+==================================================*/
+
+function showLogo(
+    url
+){
+
+    if(
+        !logoPreview
+    ){
+
+        return;
+
+    }
+
+
+    logoPreview.src =
+        url;
+
+
+    logoPreview.style.display =
+        "block";
+
+
+    if(
+        logoPlaceholder
+    ){
+
+        logoPlaceholder.style.display =
+            "none";
+
+    }
+
+}
 
 
 /*==================================================
     SAVE SETTINGS
 ==================================================*/
 
-form?.addEventListener(
-    "submit",
-    async event => {
+if(form){
 
-        event.preventDefault();
+    form.addEventListener(
+        "submit",
+        handleSave
+    );
+
+}
 
 
-        /*
-            Double protection.
-            Don't save unless Firebase Auth
-            and admin verification succeeded.
-        */
+/*==================================================
+    SAVE
+==================================================*/
+
+async function handleSave(
+    event
+){
+
+    event.preventDefault();
+
+
+    /*==============================================
+        ADMIN CHECK
+    ==============================================*/
+
+    if(
+        !currentUser ||
+        !adminVerified
+    ){
+
+        showMessage(
+            "Admin authentication is required.",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    try{
+
+        setSaving(
+            true
+        );
+
+
+        showMessage(
+            "Saving settings...",
+            "info"
+        );
+
+
+        /*==============================================
+            VERIFY CURRENT AUTH USER
+        ==============================================*/
+
+        const user =
+            auth.currentUser;
+
+
+        if(!user){
+
+            throw new Error(
+                "Authentication session expired."
+            );
+
+        }
+
+
+        /*==============================================
+            VERIFY ADMIN AGAIN
+        ==============================================*/
+
+        const adminRef =
+            doc(
+                db,
+                "admins",
+                user.uid
+            );
+
+
+        const adminSnapshot =
+            await getDoc(
+                adminRef
+            );
+
 
         if(
-            !currentUser ||
-            !isAdmin
+            !adminSnapshot.exists()
         ){
 
-            showMessage(
-                "Admin authentication is required.",
-                "error"
-            );
+            await auth.signOut();
+
+
+            window.location.href =
+                "/admin/login.html";
 
 
             return;
@@ -422,307 +641,407 @@ form?.addEventListener(
         }
 
 
-        try{
+        /*==============================================
+            GET EXISTING SETTINGS
+        ==============================================*/
 
-            setSaving(
-                true
+        const existingSnapshot =
+            await getDoc(
+                settingsRef
             );
 
 
+        const existingSettings =
+            existingSnapshot.exists()
+            ?
+            existingSnapshot.data()
+            :
+            {};
+
+
+        /*==============================================
+            EXISTING LOGO
+        ==============================================*/
+
+        let logoUrl =
+            existingSettings.logoUrl ||
+            "";
+
+
+        /*==============================================
+            NEW LOGO
+        ==============================================*/
+
+        const logoFile =
+            logoInput?.files?.[0];
+
+
+        if(logoFile){
+
             showMessage(
-                "Saving settings...",
+                "Uploading logo...",
                 "info"
             );
 
 
-            /*==============================================
-                VERIFY ADMIN AGAIN
-            ==============================================*/
+            /*==========================================
+                FILE EXTENSION
+            ==========================================*/
 
-            const adminRef =
-                doc(
-                    db,
-                    "admins",
-                    currentUser.uid
+            const extension =
+                getFileExtension(
+                    logoFile.name
                 );
 
 
-            const adminSnap =
-                await getDoc(
-                    adminRef
+            /*==========================================
+                UNIQUE FILE NAME
+            ==========================================*/
+
+            const fileName =
+                `${user.uid}_${Date.now()}.${extension}`;
+
+
+            /*==========================================
+                STORAGE PATH
+            ==========================================*/
+
+            const logoRef =
+                ref(
+                    storage,
+                    `settings/logos/${fileName}`
                 );
 
 
-            if(!adminSnap.exists()){
+            /*==========================================
+                UPLOAD
+            ==========================================*/
 
-                throw new Error(
-                    "Admin account is not authorized."
-                );
+            await uploadBytes(
+                logoRef,
+                logoFile,
+                {
+                    contentType:
+                        logoFile.type,
 
-            }
-
-
-            /*==============================================
-                GET EXISTING SETTINGS
-            ==============================================*/
-
-            const existingSnapshot =
-                await getDoc(
-                    SETTINGS_DOC
-                );
-
-
-            const existingSettings =
-                existingSnapshot.exists()
-                ?
-                existingSnapshot.data()
-                :
-                {};
-
-
-            /*==============================================
-                LOGO
-            ==============================================*/
-
-            let logoUrl =
-                existingSettings.logoUrl ||
-                "";
-
-
-            const logoFile =
-                logoInput?.files?.[0];
-
-
-            if(logoFile){
-
-                /*
-                    Create unique filename.
-
-                    Example:
-                    logos/uid_timestamp.png
-                */
-
-                const extension =
-                    getFileExtension(
-                        logoFile.name
-                    );
-
-
-                const fileName =
-                    `${currentUser.uid}_${Date.now()}.${extension}`;
-
-
-                const storageRef =
-                    ref(
-                        storage,
-                        `settings/logos/${fileName}`
-                    );
-
-
-                /*
-                    Upload
-                */
-
-                await uploadBytes(
-                    storageRef,
-                    logoFile,
-                    {
-                        contentType:
-                            logoFile.type,
-
-                        customMetadata:{
-                            uploadedBy:
-                                currentUser.uid
-                        }
+                    customMetadata:{
+                        uploadedBy:
+                            user.uid
                     }
+                }
+            );
+
+
+            /*==========================================
+                DOWNLOAD URL
+            ==========================================*/
+
+            logoUrl =
+                await getDownloadURL(
+                    logoRef
                 );
 
-
-                /*
-                    Get public download URL
-                */
-
-                logoUrl =
-                    await getDownloadURL(
-                        storageRef
-                    );
-
-            }
-
-
-            /*==============================================
-                COLLECT FORM DATA
-            ==============================================*/
-
-            const settings = {
-
-                companyName:
-                    getValue(
-                        "companyName"
-                    ),
-
-                whatsapp:
-                    getValue(
-                        "whatsapp"
-                    ),
-
-                email:
-                    getValue(
-                        "email"
-                    ),
-
-                aboutUs:
-                    getValue(
-                        "aboutUs"
-                    ),
-
-                contactUs:
-                    getValue(
-                        "contactUs"
-                    ),
-
-                terms:
-                    getValue(
-                        "terms"
-                    ),
-
-                privacyPolicy:
-                    getValue(
-                        "privacyPolicy"
-                    ),
-
-                refundPolicy:
-                    getValue(
-                        "refundPolicy"
-                    ),
-
-                shippingPolicy:
-                    getValue(
-                        "shippingPolicy"
-                    ),
-
-                logoUrl:
-                    logoUrl,
-
-                updatedAt:
-                    new Date().toISOString(),
-
-                updatedBy:
-                    currentUser.uid
-
-            };
-
-
-            /*==============================================
-                SAVE FIRESTORE
-            ==============================================*/
-
-            await setDoc(
-                SETTINGS_DOC,
-                settings
-            );
-
-
-            /*==============================================
-                SUCCESS
-            ==============================================*/
-
-            showMessage(
-                "Settings saved successfully.",
-                "success"
-            );
-
-
-            /*
-                Keep preview after save
-            */
-
-            if(
-                logoUrl &&
-                logoPreview
-            ){
-
-                logoPreview.src =
-                    logoUrl;
-
-                logoPreview.style.display =
-                    "block";
-
-            }
-
         }
 
-        catch(error){
 
-            console.error(
-                "SETTINGS SAVE ERROR:",
-                error
-            );
+        /*==============================================
+            COLLECT SETTINGS
+        ==============================================*/
 
+        const settings = {
 
-            /*
-                Show actual Firebase error
-                instead of only "Unable to save"
-            */
+            /*------------------------------------------
+                GENERAL
+            ------------------------------------------*/
 
-            let errorMessage =
-                "Unable to save settings.";
-
-
-            if(
-                error?.code ===
-                "permission-denied"
-            ){
-
-                errorMessage =
-                    "Permission denied. Check Firestore/Storage security rules.";
-
-            }
+            companyName:
+                getValue(
+                    "companyName"
+                ),
 
 
-            if(
-                error?.code ===
-                "storage/unauthorized"
-            ){
-
-                errorMessage =
-                    "Logo upload permission denied. Check Firebase Storage rules.";
-
-            }
+            whatsapp:
+                getValue(
+                    "whatsapp"
+                ),
 
 
-            if(
-                error?.code ===
-                "storage/unauthenticated"
-            ){
-
-                errorMessage =
-                    "You are not authenticated for logo upload.";
-
-            }
+            email:
+                getValue(
+                    "email"
+                ),
 
 
-            showMessage(
-                errorMessage,
-                "error"
+            /*------------------------------------------
+                WEBSITE CONTENT
+            ------------------------------------------*/
+
+            aboutUs:
+                getValue(
+                    "aboutUs"
+                ),
+
+
+            contactUs:
+                getValue(
+                    "contactUs"
+                ),
+
+
+            terms:
+                getValue(
+                    "terms"
+                ),
+
+
+            privacyPolicy:
+                getValue(
+                    "privacyPolicy"
+                ),
+
+
+            refundPolicy:
+                getValue(
+                    "refundPolicy"
+                ),
+
+
+            shippingPolicy:
+                getValue(
+                    "shippingPolicy"
+                ),
+
+
+            /*------------------------------------------
+                LOGO
+            ------------------------------------------*/
+
+            logoUrl:
+                logoUrl,
+
+
+            /*------------------------------------------
+                META
+            ------------------------------------------*/
+
+            updatedAt:
+                new Date().toISOString(),
+
+
+            updatedBy:
+                user.uid
+
+        };
+
+
+        /*==============================================
+            SAVE FIRESTORE
+        ==============================================*/
+
+        showMessage(
+            "Saving to Firebase...",
+            "info"
+        );
+
+
+        await setDoc(
+            settingsRef,
+            settings
+        );
+
+
+        /*==============================================
+            SUCCESS
+        ==============================================*/
+
+        showMessage(
+            "Settings saved successfully.",
+            "success"
+        );
+
+
+        /*==============================================
+            UPDATE PREVIEW
+        ==============================================*/
+
+        if(
+            logoUrl
+        ){
+
+            showLogo(
+                logoUrl
             );
 
         }
 
-        finally{
 
-            setSaving(
-                false
-            );
+        /*==============================================
+            RESET FILE INPUT
+        ==============================================*/
+
+        if(
+            logoInput
+        ){
+
+            logoInput.value =
+                "";
 
         }
 
     }
-);
+
+    catch(error){
+
+        console.error(
+            "===================================="
+        );
+
+        console.error(
+            "SETTINGS SAVE ERROR"
+        );
+
+        console.error(
+            error
+        );
+
+        console.error(
+            "Error code:",
+            error?.code
+        );
+
+        console.error(
+            "Error message:",
+            error?.message
+        );
+
+        console.error(
+            "===================================="
+        );
+
+
+        /*==============================================
+            FIRESTORE PERMISSION
+        ==============================================*/
+
+        if(
+            error?.code ===
+            "permission-denied"
+        ){
+
+            showMessage(
+                "Permission denied. Check your Firestore security rules.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*==============================================
+            STORAGE UNAUTHORIZED
+        ==============================================*/
+
+        if(
+            error?.code ===
+            "storage/unauthorized"
+        ){
+
+            showMessage(
+                "Logo upload permission denied. Check your Firebase Storage rules.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*==============================================
+            STORAGE UNAUTHENTICATED
+        ==============================================*/
+
+        if(
+            error?.code ===
+            "storage/unauthenticated"
+        ){
+
+            showMessage(
+                "Firebase authentication is required for logo upload.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*==============================================
+            STORAGE QUOTA
+        ==============================================*/
+
+        if(
+            error?.code ===
+            "storage/quota-exceeded"
+        ){
+
+            showMessage(
+                "Firebase Storage quota exceeded.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*==============================================
+            NETWORK
+        ==============================================*/
+
+        if(
+            error?.code ===
+            "unavailable"
+        ){
+
+            showMessage(
+                "Network unavailable. Please try again.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        /*==============================================
+            GENERIC ERROR
+        ==============================================*/
+
+        showMessage(
+            error?.message
+            ?
+            `Unable to save settings: ${error.message}`
+            :
+            "Unable to save settings.",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        setSaving(
+            false
+        );
+
+    }
+
+}
 
 
 /*==================================================
-    GET FORM VALUE
+    GET VALUE
 ==================================================*/
 
 function getValue(
@@ -735,7 +1054,9 @@ function getValue(
         );
 
 
-    if(!element){
+    if(
+        !element
+    ){
 
         return "";
 
@@ -743,14 +1064,15 @@ function getValue(
 
 
     return String(
-        element.value || ""
+        element.value ||
+        ""
     ).trim();
 
 }
 
 
 /*==================================================
-    SET FORM VALUE
+    SET VALUE
 ==================================================*/
 
 function setValue(
@@ -764,7 +1086,9 @@ function setValue(
         );
 
 
-    if(!element){
+    if(
+        !element
+    ){
 
         return;
 
@@ -788,7 +1112,8 @@ function getFileExtension(
     const parts =
         String(
             filename
-        ).split(".");
+        )
+        .split(".");
 
 
     if(
@@ -800,26 +1125,33 @@ function getFileExtension(
     }
 
 
-    return parts
-        .pop()
-        .toLowerCase()
-        .replace(
-            /[^a-z0-9]/g,
-            ""
-        ) || "jpg";
+    const extension =
+        parts
+            .pop()
+            .toLowerCase()
+            .replace(
+                /[^a-z0-9]/g,
+                ""
+            );
+
+
+    return extension ||
+        "jpg";
 
 }
 
 
 /*==================================================
-    SAVE BUTTON
+    SAVING STATE
 ==================================================*/
 
 function setSaving(
     saving
 ){
 
-    if(!saveButton){
+    if(
+        !saveButton
+    ){
 
         return;
 
@@ -849,7 +1181,9 @@ function showMessage(
     type = "info"
 ){
 
-    if(!message){
+    if(
+        !message
+    ){
 
         return;
 
@@ -871,5 +1205,7 @@ function showMessage(
 ==================================================*/
 
 export {
+
     loadSettings
+
 };
