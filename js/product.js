@@ -1,849 +1,2425 @@
 import { db, storage } from './firebase.js';
-import { doc, getDoc, setDoc, getDocs, collection, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-// ===== CONFIG =====
-const WHATSAPP_NUMBER = "917385235738";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  getDocs,
+  collection,
+  updateDoc,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ===== GLOBALS =====
-const id = new URLSearchParams(window.location.search).get("id");
-let product = null;
-let finalPrice = 0;
-let relatedProducts = [];
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-let selected = {
-  color: null,
-  size: null,
-  options: {},        // stores prices
-  optionValues: {},   // stores actual user values (text, dropdown, etc)
-  imageLinks: {}
+
+// ==================================================
+// SITE SETTINGS
+// ==================================================
+
+let siteSettings = {
+
+  companyName:
+    "Imaginary Gifts",
+
+  whatsappNumber:
+    ""
+
 };
 
+
+// ==================================================
+// LOAD SITE SETTINGS
+// ==================================================
+
+async function loadSiteSettings() {
+
+  try {
+
+    const settingsRef =
+      doc(
+        db,
+        "settings",
+        "general"
+      );
+
+
+    const settingsSnap =
+      await getDoc(
+        settingsRef
+      );
+
+
+    if (
+      settingsSnap.exists()
+    ) {
+
+      const data =
+        settingsSnap.data();
+
+
+      siteSettings = {
+
+        companyName:
+          data.companyName ||
+          "Imaginary Gifts",
+
+        whatsappNumber:
+          String(
+            data.whatsappNumber ||
+            ""
+          ).replace(
+            /\D/g,
+            ""
+          )
+
+      };
+
+    }
+
+
+    console.log(
+      "Site settings loaded:",
+      siteSettings
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Unable to load site settings:",
+      error
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// GLOBALS
+// ==================================================
+
+const id =
+  new URLSearchParams(
+    window.location.search
+  ).get("id");
+
+
+let product = null;
+
+let finalPrice = 0;
+
+let relatedProducts = [];
+
+
+let selected = {
+
+  color: null,
+
+  size: null,
+
+  options: {},
+
+  optionValues: {},
+
+  imageLinks: {}
+
+};
 
 
 let searchQuery = "";
 
-/* ================= SIDEBAR ================= */
+
+// ==================================================
+// SIDEBAR
+// ==================================================
 
 window.toggleSidebar = function () {
-  document.getElementById("sidebar")?.classList.toggle("active");
-  document.getElementById("overlay")?.classList.toggle("active");
+
+  document
+    .getElementById("sidebar")
+    ?.classList.toggle("active");
+
+
+  document
+    .getElementById("overlay")
+    ?.classList.toggle("active");
+
 };
 
 
-
-
+// ==================================================
+// VALIDATE REQUIRED SELECTIONS
+// ==================================================
 
 function validateRequiredSelections() {
+
   const errors = [];
 
-document.querySelectorAll(".custom-input, .custom-select").forEach(el => {
-  el.classList.remove("error");
-});
 
-  // ===== REQUIRED COLOR =====
-  if (product?.variants?.colors?.some(c => c.required)) {
+  document
+    .querySelectorAll(
+      ".custom-input, .custom-select"
+    )
+    .forEach(
+      el => {
+
+        el.classList.remove(
+          "error"
+        );
+
+      }
+    );
+
+
+  // REQUIRED COLOR
+
+  if (
+    product?.variants?.colors?.some(
+      c => c.required
+    )
+  ) {
+
     if (!selected.color) {
-      errors.push("Please select a color");
+
+      errors.push(
+        "Please select a color"
+      );
+
     }
+
   }
 
-  // ===== REQUIRED SIZE =====
-  if (product?.variants?.sizes?.some(s => s.required)) {
+
+  // REQUIRED SIZE
+
+  if (
+    product?.variants?.sizes?.some(
+      s => s.required
+    )
+  ) {
+
     if (!selected.size) {
-      errors.push("Please select a size");
+
+      errors.push(
+        "Please select a size"
+      );
+
     }
+
   }
 
-  // ===== REQUIRED CUSTOM OPTIONS =====
-  if (product?.customOptions?.length) {
-    product.customOptions.forEach((o, i) => {
-      if (!o.required) return;
 
-      // TEXT / DROPDOWN
-      if (o.type === "text" || o.type === "dropdown") {
-        if (!selected.optionValues[i]) {
-          errors.push(`Please fill ${o.label}`);
-        }
-      }
+  // REQUIRED CUSTOM OPTIONS
 
-      // CHECKBOX
-      if (o.type === "checkbox") {
-        if (!selected.optionValues[i]) {
-          errors.push(`Please select ${o.label}`);
-        }
-      }
+  if (
+    product?.customOptions?.length
+  ) {
 
-      // IMAGE UPLOAD
-      if (o.type === "image") {
-        if (!selected.imageLinks[i]) {
-          errors.push(`Please upload ${o.label}`);
+    product.customOptions.forEach(
+      (o, i) => {
+
+        if (!o.required) {
+
+          return;
+
         }
+
+
+        // TEXT / DROPDOWN
+
+        if (
+          o.type === "text" ||
+          o.type === "dropdown"
+        ) {
+
+          if (
+            !selected.optionValues[i]
+          ) {
+
+            errors.push(
+              `Please fill ${o.label}`
+            );
+
+          }
+
+        }
+
+
+        // CHECKBOX
+
+        if (
+          o.type === "checkbox"
+        ) {
+
+          if (
+            !selected.optionValues[i]
+          ) {
+
+            errors.push(
+              `Please select ${o.label}`
+            );
+
+          }
+
+        }
+
+
+        // IMAGE
+
+        if (
+          o.type === "image"
+        ) {
+
+          if (
+            !selected.imageLinks[i]
+          ) {
+
+            errors.push(
+              `Please upload ${o.label}`
+            );
+
+          }
+
+        }
+
       }
-    });
+    );
+
   }
+
 
   return errors;
+
 }
 
 
+// ==================================================
+// PAGE META
+// ==================================================
+
+function updatePageMeta(
+  product
+) {
+
+  const title =
+    product.name ||
+    "Imaginary Gifts";
 
 
-function updatePageMeta(product) {
-
-  const title = product.name || "Imaginary Gifts";
   const description =
-    product.description || "Check out this customized gift product";
-  const image = product.images?.[0] || "";
-  const url = window.location.href;
+    product.description ||
+    "Check out this customized gift product";
 
-  // Title
-  document.title = title;
 
-  // Meta description
-  let metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.setAttribute("content", description);
+  const image =
+    product.images?.[0] ||
+    "";
 
-  // Open Graph
+
+  const url =
+    window.location.href;
+
+
+  document.title =
+    title;
+
+
+  let metaDesc =
+    document.querySelector(
+      'meta[name="description"]'
+    );
+
+
+  if (metaDesc) {
+
+    metaDesc.setAttribute(
+      "content",
+      description
+    );
+
+  }
+
+
   document
-    .querySelector('meta[property="og:title"]')
-    ?.setAttribute("content", title);
+    .querySelector(
+      'meta[property="og:title"]'
+    )
+    ?.setAttribute(
+      "content",
+      title
+    );
+
 
   document
-    .querySelector('meta[property="og:description"]')
-    ?.setAttribute("content", description);
+    .querySelector(
+      'meta[property="og:description"]'
+    )
+    ?.setAttribute(
+      "content",
+      description
+    );
+
 
   document
-    .querySelector('meta[property="og:image"]')
-    ?.setAttribute("content", image);
+    .querySelector(
+      'meta[property="og:image"]'
+    )
+    ?.setAttribute(
+      "content",
+      image
+    );
+
 
   document
-    .querySelector('meta[property="og:url"]')
-    ?.setAttribute("content", url);
+    .querySelector(
+      'meta[property="og:url"]'
+    )
+    ?.setAttribute(
+      "content",
+      url
+    );
+
 }
 
 
+// ==================================================
+// LOAD PRODUCT
+// ==================================================
 
-
-// ===== LOAD PRODUCT =====
 async function loadProduct() {
-  const snap = await getDoc(doc(db, "products", id));
-  if (!snap.exists()) return;
 
-  product = snap.data();
-  finalPrice =
-  product.salePrice && product.salePrice < product.basePrice
-    ? product.salePrice
-    : product.basePrice;
+  try {
 
-  updatePageMeta({
-    name: product.name,
-    description: product.description,
-    image: product.images?.[0] || ""
-  });
+    // Load company settings first
+    await loadSiteSettings();
 
-  renderSlider(product.images);
-  await loadRelatedDesigns();
-  render();
+
+    if (!id) {
+
+      console.error(
+        "Product ID missing"
+      );
+
+      return;
+
+    }
+
+
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "products",
+          id
+        )
+      );
+
+
+    if (!snap.exists()) {
+
+      console.error(
+        "Product not found"
+      );
+
+      return;
+
+    }
+
+
+    product =
+      snap.data();
+
+
+    finalPrice =
+      product.salePrice &&
+      product.salePrice <
+      product.basePrice
+
+        ? product.salePrice
+
+        : product.basePrice;
+
+
+    updatePageMeta({
+
+      name:
+        product.name,
+
+      description:
+        product.description,
+
+      image:
+        product.images?.[0] ||
+        ""
+
+    });
+
+
+    renderSlider(
+      product.images || []
+    );
+
+
+    await loadRelatedDesigns();
+
+
+    render();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Product loading error:",
+      error
+    );
+
+  }
+
 }
+
 
 loadProduct();
 
-// ===== LOAD RELATED DESIGNS =====
+
+// ==================================================
+// LOAD RELATED DESIGNS
+// ==================================================
+
 async function loadRelatedDesigns() {
+
   relatedProducts = [];
 
-  if (!product.relatedDesigns || !product.relatedDesigns.length) return;
 
-  const snap = await getDocs(collection(db, "products"));
+  if (
+    !product.relatedDesigns ||
+    !product.relatedDesigns.length
+  ) {
 
-  snap.forEach(d => {
-    if (product.relatedDesigns.includes(d.id) || d.id === id) {
-      relatedProducts.push({ id: d.id, ...d.data() });
+    return;
+
+  }
+
+
+  const snap =
+    await getDocs(
+      collection(
+        db,
+        "products"
+      )
+    );
+
+
+  snap.forEach(
+    d => {
+
+      if (
+        product.relatedDesigns.includes(
+          d.id
+        ) ||
+        d.id === id
+      ) {
+
+        relatedProducts.push({
+
+          id:
+            d.id,
+
+          ...d.data()
+
+        });
+
+      }
+
     }
-  });
+  );
+
 }
 
-// ===== RENDER UI =====
+
+// ==================================================
+// RENDER UI
+// ==================================================
+
 function render() {
-  const details = document.getElementById("productDetails");
+
+  const details =
+    document.getElementById(
+      "productDetails"
+    );
+
+
+  if (!details) {
+
+    return;
+
+  }
+
 
   let discount = 0;
 
-if (product.salePrice && product.salePrice < product.basePrice) {
-  discount = Math.round(
-    ((product.basePrice - product.salePrice) / product.basePrice) * 100
-  );
-}
 
-let priceHTML = `
-<div class="price-wrap">
-  ${
-    product.salePrice && product.salePrice < product.basePrice
-      ? `
-        <span class="sale">₹<span id="price">${product.salePrice}</span></span>
-        <span class="old">₹${product.basePrice}</span>
-      `
-      : `
-        <span class="sale">₹<span id="price">${product.basePrice}</span></span>
-      `
-  }
-</div>
-`;
+  if (
+    product.salePrice &&
+    product.salePrice <
+    product.basePrice
+  ) {
 
-let badgeHTML = "";
+    discount =
+      Math.round(
+        (
+          (
+            product.basePrice -
+            product.salePrice
+          )
+          /
+          product.basePrice
+        ) * 100
+      );
 
-if (discount > 0) {
-  badgeHTML += `<span class="badge discount">-${discount}%</span>`;
-}
-
-if (product.inStock === false) {
-  badgeHTML += `<span class="badge stock">Out of Stock</span>`;
-}
-
-let html = `
-<div class="product-header">
-  ${badgeHTML}
-  <h2>${product.name}</h2>
-
-  <p>${product.description}</p>
-
-  ${priceHTML}
-</div>
-`;
-  
-  
-
-  // COLORS
-  if (product.variants?.colors?.length) {
-    html += `<h4>Colors</h4><div class="variant-row">`;
-    product.variants.colors.forEach((c, i) => {
-      html += `<button class="btn-outline color-btn" onclick="selectColor(${i})">${c.name}</button>`;
-    });
-    html += `</div>`;
-  }
-
-  // SIZES
-  if (product.variants?.sizes?.length) {
-    html += `<h4>Quantity</h4><div class="variant-row">`;
-    product.variants.sizes.forEach((s, i) => {
-      html += `<button class="btn-outline size-btn" onclick="selectSize(${i})">${s.name}</button>`;
-    });
-    html += `</div>`;
   }
 
 
+  let priceHTML = `
 
-// Custom options will now open inside popup
+    <div class="price-wrap">
 
+      ${
+        product.salePrice &&
+        product.salePrice <
+        product.basePrice
 
+        ?
 
+        `
+        <span class="sale">
+          ₹
+          <span id="price">
+            ${product.salePrice}
+          </span>
+        </span>
 
-// ===== RELATED DESIGNS =====
+        <span class="old">
+          ₹${product.basePrice}
+        </span>
+        `
 
-if (relatedProducts.length > 1) {
-  html += `
-    <div class="design-wrap">
-      <h3>You may also like</h3>
-      <div class="design-row">
-  `;
+        :
 
-  relatedProducts.forEach(p => {
-    const active = p.name === product.name ? "active" : "";
-    html += `
-      <div class="design-card ${active}" onclick="goToDesign('${p.id}')">
-        <img src="${p.images?.[0] || ""}">
-        <small>${p.name}</small>
-        <div class="price">
-₹${(p.salePrice && p.salePrice < p.basePrice) ? p.salePrice : p.basePrice}
-</div>
-      </div>
-    `;
-  });
+        `
+        <span class="sale">
+          ₹
+          <span id="price">
+            ${product.basePrice}
+          </span>
+        </span>
+        `
+      }
 
-  html += `</div></div>`;
-}
-
-  details.innerHTML = html;
-}
-
-// ===== DESIGN NAVIGATION =====
-window.goToDesign = function(pid) {
-  location.href = `product?id=${pid}`;
-};
-
-// ===== SLIDER =====
-function renderSlider(images) {
-  const slider = document.getElementById("slider");
-  const dotsBox = document.getElementById("sliderDots");
-
-  slider.innerHTML = "";
-  dotsBox.innerHTML = "";
-
-  images.forEach((img, index) => {
-    const image = document.createElement("img");
-    image.src = img;
-    slider.appendChild(image);
-
-    const dot = document.createElement("span");
-    if (index === 0) dot.classList.add("active");
-    dotsBox.appendChild(dot);
-  });
-
-  slider.addEventListener("scroll", () => {
-    const i = Math.round(slider.scrollLeft / slider.clientWidth);
-    [...dotsBox.children].forEach((d, idx) => {
-      d.classList.toggle("active", idx === i);
-    });
-  });
-}
-
-// ===== VARIANTS =====
-window.selectColor = function(i) {
-  document.querySelectorAll(".color-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".color-btn")[i].classList.add("active");
-
-  selected.color = product.variants.colors[i];
-  recalcPrice();
-};
-
-window.selectSize = function(i) {
-  document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".size-btn")[i].classList.add("active");
-
-  selected.size = product.variants.sizes[i];
-  recalcPrice();
-};
-
-// ===== OPTIONS =====
-window.addTextOption = function(i, val) {
-  if (!val) return;
-  selected.options[i] = product.customOptions[i].price;
-  selected.optionValues[i] = val;
-  recalcPrice();
-};
-
-window.toggleCheckbox = function(i, checked) {
-  if (checked) {
-    selected.options[i] = product.customOptions[i].price;
-    selected.optionValues[i] = "Yes";
-  } else {
-    delete selected.options[i];
-    delete selected.optionValues[i];
-  }
-  recalcPrice();
-};
-
-window.addDropdownOption = function(i, val) {
-  if (!val) return;
-  selected.options[i] = product.customOptions[i].price;
-  selected.optionValues[i] = val;
-  recalcPrice();
-};
-
-// ===== IMAGE UPLOAD OPTION =====
-window.uploadCustomImage = async function(i, file) {
-
-  if (!file) return;
-
-  const status = document.getElementById(`uploadStatus${i}`);
-
-  // Show uploading message
-  status.innerHTML = `
-    <div class="uploading">
-      ⏳ Uploading <b>${file.name}</b>...
     </div>
+
   `;
 
-  try {
 
-    const storageRef = ref(storage, `custom-images/${Date.now()}-${file.name}`);
+  let badgeHTML = "";
 
-    await uploadBytes(storageRef, file);
 
-    const url = await getDownloadURL(storageRef);
+  if (
+    discount > 0
+  ) {
 
-    selected.options[i] = product.customOptions[i].price;
-    selected.optionValues[i] = file.name;
-    selected.imageLinks[i] = url;
+    badgeHTML += `
 
-    // Success message
-    status.innerHTML = `
-      <div class="upload-success">
-        ✅ Uploaded Successfully
-        <br>
-        <small>${file.name}</small>
-      </div>
+      <span class="badge discount">
+        -${discount}%
+      </span>
+
     `;
 
-    recalcPrice();
-
-  } catch (err) {
-
-    console.error(err);
-
-    status.innerHTML = `
-      <div class="upload-error">
-        ❌ Upload Failed
-      </div>
-    `;
-
-    alert(err.message);
   }
+
+
+  if (
+    product.inStock === false
+  ) {
+
+    badgeHTML += `
+
+      <span class="badge stock">
+        Out of Stock
+      </span>
+
+    `;
+
+  }
+
+
+  let html = `
+
+    <div class="product-header">
+
+      ${badgeHTML}
+
+      <h2>
+        ${product.name}
+      </h2>
+
+      <p>
+        ${product.description}
+      </p>
+
+      ${priceHTML}
+
+    </div>
+
+  `;
+
+
+  // ==================================================
+  // COLORS
+  // ==================================================
+
+  if (
+    product.variants?.colors?.length
+  ) {
+
+    html += `
+
+      <h4>
+        Colors
+      </h4>
+
+      <div class="variant-row">
+
+    `;
+
+
+    product.variants.colors.forEach(
+      (c, i) => {
+
+        html += `
+
+          <button
+            class="btn-outline color-btn"
+            onclick="selectColor(${i})"
+          >
+
+            ${c.name}
+
+          </button>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+      </div>
+
+    `;
+
+  }
+
+
+  // ==================================================
+  // SIZES
+  // ==================================================
+
+  if (
+    product.variants?.sizes?.length
+  ) {
+
+    html += `
+
+      <h4>
+        Quantity
+      </h4>
+
+      <div class="variant-row">
+
+    `;
+
+
+    product.variants.sizes.forEach(
+      (s, i) => {
+
+        html += `
+
+          <button
+            class="btn-outline size-btn"
+            onclick="selectSize(${i})"
+          >
+
+            ${s.name}
+
+          </button>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+      </div>
+
+    `;
+
+  }
+
+
+  // ==================================================
+  // RELATED DESIGNS
+  // ==================================================
+
+  if (
+    relatedProducts.length > 1
+  ) {
+
+    html += `
+
+      <div class="design-wrap">
+
+        <h3>
+          You may also like
+        </h3>
+
+        <div class="design-row">
+
+    `;
+
+
+    relatedProducts.forEach(
+      p => {
+
+        const active =
+          p.name === product.name
+            ? "active"
+            : "";
+
+
+        html += `
+
+          <div
+            class="design-card ${active}"
+            onclick="goToDesign('${p.id}')"
+          >
+
+            <img
+              src="${p.images?.[0] || ""}"
+            >
+
+            <small>
+              ${p.name}
+            </small>
+
+            <div class="price">
+
+              ₹${
+                (
+                  p.salePrice &&
+                  p.salePrice <
+                  p.basePrice
+                )
+
+                ? p.salePrice
+
+                : p.basePrice
+              }
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  details.innerHTML =
+    html;
+
+}
+
+
+// ==================================================
+// DESIGN NAVIGATION
+// ==================================================
+
+window.goToDesign =
+function(pid) {
+
+  location.href =
+    `product?id=${pid}`;
 
 };
 
 
-// ===== PRICE =====
-function recalcPrice() {
+// ==================================================
+// SLIDER
+// ==================================================
 
-  const base =
-    product.salePrice && product.salePrice < product.basePrice
-      ? product.salePrice
-      : product.basePrice;
+function renderSlider(
+  images
+) {
 
-  finalPrice = base;
-
-  // Color price
-  if (selected.color) {
-    finalPrice += Number(selected.color.price || 0);
-  }
-
-  // Size price
-  if (selected.size) {
-    finalPrice += Number(selected.size.price || 0);
-  }
-
-  // Custom options price
-  Object.values(selected.options).forEach(price => {
-    finalPrice += Number(price || 0);
-  });
-
-  // Update product page price
-  const pagePrice = document.getElementById("price");
-  if (pagePrice) {
-    pagePrice.innerText = finalPrice;
-  }
-
-  // Update popup price
-  const popupPrice = document.getElementById("popupPrice");
-  if (popupPrice) {
-    popupPrice.innerText = "₹" + finalPrice;
-  }
-}
+  const slider =
+    document.getElementById(
+      "slider"
+    );
 
 
+  const dotsBox =
+    document.getElementById(
+      "sliderDots"
+    );
 
 
-
-
-window.nextToAddress = function () {
-
-  const errors = validateRequiredSelections();
-
-  if (errors.length) {
-
-    showErrorModal(errors);
+  if (!slider || !dotsBox) {
 
     return;
 
   }
 
-  closeCustomizePopup();
+
+  slider.innerHTML =
+    "";
+
+
+  dotsBox.innerHTML =
+    "";
+
+
+  images.forEach(
+    (img, index) => {
+
+      const image =
+        document.createElement(
+          "img"
+        );
+
+
+      image.src =
+        img;
+
+
+      slider.appendChild(
+        image
+      );
+
+
+      const dot =
+        document.createElement(
+          "span"
+        );
+
+
+      if (
+        index === 0
+      ) {
+
+        dot.classList.add(
+          "active"
+        );
+
+      }
+
+
+      dotsBox.appendChild(
+        dot
+      );
+
+    }
+  );
+
+
+  slider.addEventListener(
+    "scroll",
+    () => {
+
+      const i =
+        Math.round(
+          slider.scrollLeft /
+          slider.clientWidth
+        );
+
+
+      [
+        ...dotsBox.children
+      ].forEach(
+        (d, idx) => {
+
+          d.classList.toggle(
+            "active",
+            idx === i
+          );
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// VARIANTS
+// ==================================================
+
+window.selectColor =
+function(i) {
 
   document
-    .getElementById("waFormOverlay")
-    .classList.remove("hidden");
+    .querySelectorAll(
+      ".color-btn"
+    )
+    .forEach(
+      b =>
+        b.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .querySelectorAll(
+      ".color-btn"
+    )[i]
+    ?.classList.add(
+      "active"
+    );
+
+
+  selected.color =
+    product.variants.colors[i];
+
+
+  recalcPrice();
 
 };
 
-window.backToCustomize = function(){
+
+window.selectSize =
+function(i) {
 
   document
-    .getElementById("waFormOverlay")
-    .classList.add("hidden");
+    .querySelectorAll(
+      ".size-btn"
+    )
+    .forEach(
+      b =>
+        b.classList.remove(
+          "active"
+        )
+    );
+
 
   document
-    .getElementById("customizeOverlay")
-    .classList.remove("hidden");
+    .querySelectorAll(
+      ".size-btn"
+    )[i]
+    ?.classList.add(
+      "active"
+    );
+
+
+  selected.size =
+    product.variants.sizes[i];
+
+
+  recalcPrice();
 
 };
 
 
+// ==================================================
+// CUSTOM OPTIONS
+// ==================================================
+
+window.addTextOption =
+function(
+  i,
+  val
+) {
+
+  if (!val) {
+
+    return;
+
+  }
 
 
-/* ================= CUSTOMIZE POPUP ================= */
+  selected.options[i] =
+    product.customOptions[i].price;
 
-function renderCustomizePopup() {
 
-  const container = document.getElementById("customOptionsContainer");
+  selected.optionValues[i] =
+    val;
 
-  if (!container) return;
 
-  container.innerHTML = "";
+  recalcPrice();
 
-  // Update popup price
-  const popupPrice = document.getElementById("popupPrice");
-  if (popupPrice) popupPrice.innerText = "₹" + finalPrice;
+};
 
-  if (!product.customOptions?.length) return;
 
-  product.customOptions.forEach((o, i) => {
+window.toggleCheckbox =
+function(
+  i,
+  checked
+) {
 
-    const wrap = document.createElement("div");
+  if (checked) {
 
-    wrap.style.marginBottom = "16px";
+    selected.options[i] =
+      product.customOptions[i].price;
 
-    // ---------- LABEL ----------
 
-    const label = document.createElement("label");
+    selected.optionValues[i] =
+      "Yes";
 
-    label.innerHTML =
-      o.label +
-      (o.required
-        ? ' <span style="color:red">*</span>'
-        : "");
+  }
 
-    wrap.appendChild(label);
+  else {
 
-    // ---------- TEXT ----------
+    delete selected.options[i];
 
-    if (o.type === "text") {
+    delete selected.optionValues[i];
 
-      wrap.innerHTML += `
-        <input
-          class="custom-input"
-          placeholder="${o.label}"
-          value="${selected.optionValues[i] || ""}"
-          oninput="addTextOption(${i},this.value);
-                   document.getElementById('popupPrice').innerText='₹'+finalPrice;">
-      `;
+  }
 
-    }
 
-    // ---------- CHECKBOX ----------
+  recalcPrice();
 
-    else if (o.type === "checkbox") {
+};
 
-      wrap.innerHTML += `
-        <div class="option-row">
 
-          <input
-  type="checkbox"
-  ${selected.optionValues[i] ? "checked" : ""}
-  onchange="toggleCheckbox(${i},this.checked)">
+window.addDropdownOption =
+function(
+  i,
+  val
+) {
 
-          <span>
-            ${o.label}
-            (+₹${o.price})
-          </span>
+  if (!val) {
 
-        </div>
-      `;
+    return;
 
-    }
+  }
 
-    // ---------- DROPDOWN ----------
 
-    else if (o.type === "dropdown") {
+  selected.options[i] =
+    product.customOptions[i].price;
 
-      let options =
-        `<option value="">Select ${o.label}</option>`;
 
-      o.choices.forEach(choice => {
+  selected.optionValues[i] =
+    val;
 
-        options += `
-          <option
 
-            value="${choice}"
+  recalcPrice();
 
-            ${
-              selected.optionValues[i] === choice
-                ? "selected"
-                : ""
-            }
+};
 
-          >
-            ${choice}
-          </option>
-        `;
 
-      });
+// ==================================================
+// IMAGE UPLOAD OPTION
+// ==================================================
 
-      wrap.innerHTML += `
-        <select
+window.uploadCustomImage =
+async function(
+  i,
+  file
+) {
 
-          class="custom-select"
+  if (!file) {
 
-          onchange="
-            addDropdownOption(${i},this.value);
-            document.getElementById('popupPrice').innerText='₹'+finalPrice;
-          "
+    return;
 
-        >
+  }
 
-          ${options}
 
-        </select>
-      `;
+  const status =
+    document.getElementById(
+      `uploadStatus${i}`
+    );
 
-    }
-    // ---------- IMAGE ----------
 
-    else if (o.type === "image") {
+  if (status) {
 
-      wrap.innerHTML += `
-        <div class="upload-box">
+    status.innerHTML = `
 
-          <input
-            type="file"
-            accept="image/*"
-            onchange="uploadCustomImage(${i}, this.files[0])">
+      <div class="uploading">
 
-          <small id="uploadStatus${i}">
-            ${
-              selected.imageLinks[i]
-                ? `✅ ${selected.optionValues[i]}`
-                : ""
-            }
+        ⏳ Uploading
+        <b>${file.name}</b>...
+
+      </div>
+
+    `;
+
+  }
+
+
+  try {
+
+    const storageRef =
+      ref(
+        storage,
+        `custom-images/${Date.now()}-${file.name}`
+      );
+
+
+    await uploadBytes(
+      storageRef,
+      file
+    );
+
+
+    const url =
+      await getDownloadURL(
+        storageRef
+      );
+
+
+    selected.options[i] =
+      product.customOptions[i].price;
+
+
+    selected.optionValues[i] =
+      file.name;
+
+
+    selected.imageLinks[i] =
+      url;
+
+
+    if (status) {
+
+      status.innerHTML = `
+
+        <div class="upload-success">
+
+          ✅ Uploaded Successfully
+
+          <br>
+
+          <small>
+            ${file.name}
           </small>
 
         </div>
+
       `;
 
     }
 
-    container.appendChild(wrap);
 
-  });
+    recalcPrice();
+
+  }
+
+  catch (err) {
+
+    console.error(
+      err
+    );
+
+
+    if (status) {
+
+      status.innerHTML = `
+
+        <div class="upload-error">
+
+          ❌ Upload Failed
+
+        </div>
+
+      `;
+
+    }
+
+
+    alert(
+      err.message
+    );
+
+  }
+
+};
+
+
+// ==================================================
+// PRICE
+// ==================================================
+
+function recalcPrice() {
+
+  const base =
+    product.salePrice &&
+    product.salePrice <
+    product.basePrice
+
+      ? product.salePrice
+
+      : product.basePrice;
+
+
+  finalPrice =
+    base;
+
+
+  // COLOR
+
+  if (selected.color) {
+
+    finalPrice +=
+      Number(
+        selected.color.price ||
+        0
+      );
+
+  }
+
+
+  // SIZE
+
+  if (selected.size) {
+
+    finalPrice +=
+      Number(
+        selected.size.price ||
+        0
+      );
+
+  }
+
+
+  // CUSTOM OPTIONS
+
+  Object
+    .values(
+      selected.options
+    )
+    .forEach(
+      price => {
+
+        finalPrice +=
+          Number(
+            price ||
+            0
+          );
+
+      }
+    );
+
+
+  const pagePrice =
+    document.getElementById(
+      "price"
+    );
+
+
+  if (pagePrice) {
+
+    pagePrice.innerText =
+      finalPrice;
+
+  }
+
+
+  const popupPrice =
+    document.getElementById(
+      "popupPrice"
+    );
+
+
+  if (popupPrice) {
+
+    popupPrice.innerText =
+      "₹" +
+      finalPrice;
+
+  }
 
 }
 
 
+// ==================================================
+// NEXT TO ADDRESS
+// ==================================================
+
+window.nextToAddress =
+function() {
+
+  const errors =
+    validateRequiredSelections();
 
 
+  if (
+    errors.length
+  ) {
 
-window.openCustomizePopup = function () {
+    showErrorModal(
+      errors
+    );
 
-  renderCustomizePopup();
-
-  document.getElementById("customizeOverlay")
-    .classList.remove("hidden");
-
-};
-
-window.closeCustomizePopup = function () {
-
-  document.getElementById("customizeOverlay")
-    .classList.add("hidden");
-
-};
-
-
-window.continueAfterCustomize = function () {
-
-  const errors = validateRequiredSelections();
-
-  if (errors.length) {
-    alert(errors.join("\n"));
     return;
+
   }
+
 
   closeCustomizePopup();
 
+
   document
-    .getElementById("waFormOverlay")
-    .classList.remove("hidden");
+    .getElementById(
+      "waFormOverlay"
+    )
+    ?.classList.remove(
+      "hidden"
+    );
 
 };
 
-// ===== WHATSAPP ORDER =====
 
-window.orderNow = function () {
+// ==================================================
+// BACK TO CUSTOMIZE
+// ==================================================
+
+window.backToCustomize =
+function() {
+
+  document
+    .getElementById(
+      "waFormOverlay"
+    )
+    ?.classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById(
+      "customizeOverlay"
+    )
+    ?.classList.remove(
+      "hidden"
+    );
+
+};
+
+
+// ==================================================
+// CUSTOMIZE POPUP
+// ==================================================
+
+function renderCustomizePopup() {
+
+  const container =
+    document.getElementById(
+      "customOptionsContainer"
+    );
+
+
+  if (!container) {
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "";
+
+
+  const popupPrice =
+    document.getElementById(
+      "popupPrice"
+    );
+
+
+  if (popupPrice) {
+
+    popupPrice.innerText =
+      "₹" +
+      finalPrice;
+
+  }
+
+
+  if (
+    !product.customOptions?.length
+  ) {
+
+    return;
+
+  }
+
+
+  product.customOptions.forEach(
+    (o, i) => {
+
+      const wrap =
+        document.createElement(
+          "div"
+        );
+
+
+      wrap.style.marginBottom =
+        "16px";
+
+
+      // LABEL
+
+      const label =
+        document.createElement(
+          "label"
+        );
+
+
+      label.innerHTML =
+        o.label +
+        (
+          o.required
+            ? ' <span style="color:red">*</span>'
+            : ""
+        );
+
+
+      wrap.appendChild(
+        label
+      );
+
+
+      // TEXT
+
+      if (
+        o.type === "text"
+      ) {
+
+        wrap.innerHTML += `
+
+          <input
+            class="custom-input"
+            placeholder="${o.label}"
+            value="${
+              selected.optionValues[i] ||
+              ""
+            }"
+            oninput="
+              addTextOption(
+                ${i},
+                this.value
+              );
+
+              document
+                .getElementById(
+                  'popupPrice'
+                )
+                .innerText =
+                  '₹' + finalPrice;
+            "
+          >
+
+        `;
+
+      }
+
+
+      // CHECKBOX
+
+      else if (
+        o.type === "checkbox"
+      ) {
+
+        wrap.innerHTML += `
+
+          <div class="option-row">
+
+            <input
+              type="checkbox"
+              ${
+                selected.optionValues[i]
+                  ? "checked"
+                  : ""
+              }
+              onchange="
+                toggleCheckbox(
+                  ${i},
+                  this.checked
+                )
+              "
+            >
+
+            <span>
+
+              ${o.label}
+              (+₹${o.price})
+
+            </span>
+
+          </div>
+
+        `;
+
+      }
+
+
+      // DROPDOWN
+
+      else if (
+        o.type === "dropdown"
+      ) {
+
+        let options =
+          `<option value="">
+             Select ${o.label}
+           </option>`;
+
+
+        o.choices.forEach(
+          choice => {
+
+            options += `
+
+              <option
+                value="${choice}"
+                ${
+                  selected.optionValues[i] ===
+                  choice
+                    ? "selected"
+                    : ""
+                }
+              >
+
+                ${choice}
+
+              </option>
+
+            `;
+
+          }
+        );
+
+
+        wrap.innerHTML += `
+
+          <select
+            class="custom-select"
+            onchange="
+              addDropdownOption(
+                ${i},
+                this.value
+              );
+
+              document
+                .getElementById(
+                  'popupPrice'
+                )
+                .innerText =
+                  '₹' + finalPrice;
+            "
+          >
+
+            ${options}
+
+          </select>
+
+        `;
+
+      }
+
+
+      // IMAGE
+
+      else if (
+        o.type === "image"
+      ) {
+
+        wrap.innerHTML += `
+
+          <div class="upload-box">
+
+            <input
+              type="file"
+              accept="image/*"
+              onchange="
+                uploadCustomImage(
+                  ${i},
+                  this.files[0]
+                )
+              "
+            >
+
+            <small
+              id="uploadStatus${i}"
+            >
+
+              ${
+                selected.imageLinks[i]
+
+                  ? `✅ ${selected.optionValues[i]}`
+
+                  : ""
+
+              }
+
+            </small>
+
+          </div>
+
+        `;
+
+      }
+
+
+      container.appendChild(
+        wrap
+      );
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// OPEN CUSTOMIZE POPUP
+// ==================================================
+
+window.openCustomizePopup =
+function() {
 
   renderCustomizePopup();
 
+
   document
-    .getElementById("customizeOverlay")
-    .classList.remove("hidden");
+    .getElementById(
+      "customizeOverlay"
+    )
+    ?.classList.remove(
+      "hidden"
+    );
 
 };
 
 
-window.submitWaOrder = async function () {
-  const name = document.getElementById("custName").value.trim();
-  const phone = document.getElementById("custPhone").value.trim();
-  const address = document.getElementById("custAddress").value.trim();
-  const pincode = document.getElementById("custPincode").value.trim();
+// ==================================================
+// CLOSE CUSTOMIZE POPUP
+// ==================================================
 
-  // ================= VALIDATION =================
-  if (!name || !phone || !address || !pincode) {
-    alert("⚠ Please fill all customer details");
+window.closeCustomizePopup =
+function() {
+
+  document
+    .getElementById(
+      "customizeOverlay"
+    )
+    ?.classList.add(
+      "hidden"
+    );
+
+};
+
+
+// ==================================================
+// CONTINUE AFTER CUSTOMIZE
+// ==================================================
+
+window.continueAfterCustomize =
+function() {
+
+  const errors =
+    validateRequiredSelections();
+
+
+  if (
+    errors.length
+  ) {
+
+    alert(
+      errors.join("\n")
+    );
+
     return;
+
   }
 
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    alert("⚠ Enter valid 10-digit mobile number");
+
+  closeCustomizePopup();
+
+
+  document
+    .getElementById(
+      "waFormOverlay"
+    )
+    ?.classList.remove(
+      "hidden"
+    );
+
+};
+
+
+// ==================================================
+// WHATSAPP ORDER
+// ==================================================
+
+window.orderNow =
+function() {
+
+  renderCustomizePopup();
+
+
+  document
+    .getElementById(
+      "customizeOverlay"
+    )
+    ?.classList.remove(
+      "hidden"
+    );
+
+};
+
+
+// ==================================================
+// SUBMIT WHATSAPP ORDER
+// ==================================================
+
+window.submitWaOrder =
+async function() {
+
+  const name =
+    document
+      .getElementById(
+        "custName"
+      )
+      ?.value
+      .trim();
+
+
+  const phone =
+    document
+      .getElementById(
+        "custPhone"
+      )
+      ?.value
+      .trim();
+
+
+  const address =
+    document
+      .getElementById(
+        "custAddress"
+      )
+      ?.value
+      .trim();
+
+
+  const pincode =
+    document
+      .getElementById(
+        "custPincode"
+      )
+      ?.value
+      .trim();
+
+
+  // ==================================================
+  // VALIDATION
+  // ==================================================
+
+  if (
+    !name ||
+    !phone ||
+    !address ||
+    !pincode
+  ) {
+
+    alert(
+      "⚠ Please fill all customer details"
+    );
+
     return;
+
   }
 
-  if (!/^\d{6}$/.test(pincode)) {
-    alert("⚠ Enter valid 6-digit pincode");
+
+  if (
+    !/^[6-9]\d{9}$/.test(
+      phone
+    )
+  ) {
+
+    alert(
+      "⚠ Enter valid 10-digit mobile number"
+    );
+
     return;
+
   }
+
+
+  if (
+    !/^\d{6}$/.test(
+      pincode
+    )
+  ) {
+
+    alert(
+      "⚠ Enter valid 6-digit pincode"
+    );
+
+    return;
+
+  }
+
+
+  // ==================================================
+  // CHECK WHATSAPP SETTINGS
+  // ==================================================
+
+  if (
+    !siteSettings.whatsappNumber
+  ) {
+
+    alert(
+      "⚠ WhatsApp number is not configured in Settings."
+    );
+
+    return;
+
+  }
+
 
   try {
-    // ================= ORDER NUMBER =================
-    const counterRef = doc(db, "counters", "orders");
-    const counterSnap = await getDoc(counterRef);
 
-    let nextNumber = 1001;
+    // ==================================================
+    // ORDER NUMBER
+    // ==================================================
 
-    if (counterSnap.exists()) {
-      nextNumber = (counterSnap.data().current || 1000) + 1;
-      await updateDoc(counterRef, { current: nextNumber });
-    } else {
-      await setDoc(counterRef, { current: nextNumber });
+    const counterRef =
+      doc(
+        db,
+        "counters",
+        "orders"
+      );
+
+
+    const counterSnap =
+      await getDoc(
+        counterRef
+      );
+
+
+    let nextNumber =
+      1001;
+
+
+    if (
+      counterSnap.exists()
+    ) {
+
+      nextNumber =
+        (
+          counterSnap.data().current ||
+          1000
+        ) + 1;
+
+
+      await updateDoc(
+        counterRef,
+        {
+          current:
+            nextNumber
+        }
+      );
+
     }
 
-    const orderNumber = `IG-${nextNumber}`;
+    else {
 
-    // ================= SAVE ORDER =================
+      await setDoc(
+        counterRef,
+        {
+          current:
+            nextNumber
+        }
+      );
+
+    }
+
+
+    const orderNumber =
+      `IG-${nextNumber}`;
+
+
+    // ==================================================
+    // SAVE ORDER
+    // ==================================================
+
     const orderData = {
+
       orderNumber,
 
+
       customer: {
+
         name,
+
         phone,
+
         address,
+
         pincode
+
       },
 
-      productId: id,
-      productName: product.name,
-      productImage: product.images?.[0] || "",
-      categoryId: product.categoryId || null,
-      tags: product.tags || [],
+
+      productId:
+        id,
+
+
+      productName:
+        product.name,
+
+
+      productImage:
+        product.images?.[0] ||
+        "",
+
+
+      categoryId:
+        product.categoryId ||
+        null,
+
+
+      tags:
+        product.tags ||
+        [],
+
 
       variants: {
-        color: selected.color || null,
-        size: selected.size || null
+
+        color:
+          selected.color ||
+          null,
+
+        size:
+          selected.size ||
+          null
+
       },
 
-      customOptions: Object.keys(selected.options || {}).map(i => ({
-        label: product.customOptions?.[i]?.label || "",
-        value: selected.optionValues?.[i] || "",
-        image: selected.imageLinks?.[i] || null
-      })),
+
+      customOptions:
+        Object
+          .keys(
+            selected.options ||
+            {}
+          )
+          .map(
+            i => ({
+
+              label:
+                product
+                  .customOptions?.[i]
+                  ?.label ||
+                "",
+
+
+              value:
+                selected
+                  .optionValues?.[i] ||
+                "",
+
+
+              image:
+                selected
+                  .imageLinks?.[i] ||
+                null
+
+            })
+          ),
+
 
       pricing: {
-        finalAmount: Number(finalPrice)
+
+        finalAmount:
+          Number(
+            finalPrice
+          )
+
       },
+
 
       payment: {
-        mode: "whatsapp",
-        status: "pending",
-        paidAmount: 0
+
+        mode:
+          "whatsapp",
+
+        status:
+          "pending",
+
+        paidAmount:
+          0
+
       },
 
-      orderStatus: "pending",
-      source: "product-whatsapp",
-      productLink: location.href,
-      createdAt: Date.now()
+
+      orderStatus:
+        "pending",
+
+
+      source:
+        "product-whatsapp",
+
+
+      productLink:
+        location.href,
+
+
+      createdAt:
+        Date.now()
+
     };
 
-    await addDoc(collection(db, "orders"), orderData);
 
-    // ================= WHATSAPP MESSAGE =================
-    let msg = `🛍 *New Order — Imaginary Gifts*\n\n`;
-    msg += `🧾 *Order No:* ${orderNumber}\n\n`;
+    await addDoc(
+      collection(
+        db,
+        "orders"
+      ),
+      orderData
+    );
 
-    msg += `👤 *Name:* ${name}\n`;
-    msg += `📞 *Mobile:* ${phone}\n`;
-    msg += `🏠 *Address:* ${address}\n`;
-    msg += `📮 *Pincode:* ${pincode}\n\n`;
 
-    msg += `📦 *Product:* ${product.name}\n`;
+    // ==================================================
+    // WHATSAPP MESSAGE
+    // ==================================================
 
-    if (selected.color)
-      msg += `🎨 Color: ${selected.color.name}\n`;
+    let msg =
+      `🛍 *New Order — ${siteSettings.companyName}*\n\n`;
 
-    if (selected.size)
-      msg += `📏 Size: ${selected.size.name}\n`;
 
-    if (Object.keys(selected.optionValues).length) {
-      msg += `\n⚙ Options:\n`;
-      Object.keys(selected.optionValues).forEach(i => {
-        msg += `- ${product.customOptions[i].label}: ${selected.optionValues[i]}\n`;
-        if (selected.imageLinks[i]) {
-          msg += `  Image: ${selected.imageLinks[i]}\n`;
-        }
-      });
+    msg +=
+      `🧾 *Order No:* ${orderNumber}\n\n`;
+
+
+    msg +=
+      `👤 *Name:* ${name}\n`;
+
+
+    msg +=
+      `📞 *Mobile:* ${phone}\n`;
+
+
+    msg +=
+      `🏠 *Address:* ${address}\n`;
+
+
+    msg +=
+      `📮 *Pincode:* ${pincode}\n\n`;
+
+
+    msg +=
+      `📦 *Product:* ${product.name}\n`;
+
+
+    if (
+      selected.color
+    ) {
+
+      msg +=
+        `🎨 Color: ${selected.color.name}\n`;
+
     }
 
-    msg += `\n💰 *Total:* ₹${finalPrice}\n`;
-    msg += `🔗 Product Link:\n${location.href}`;
 
-    // ================= OPEN WHATSAPP =================
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    if (
+      selected.size
+    ) {
+
+      msg +=
+        `📏 Size: ${selected.size.name}\n`;
+
+    }
+
+
+    if (
+      Object.keys(
+        selected.optionValues
+      ).length
+    ) {
+
+      msg +=
+        `\n⚙ Options:\n`;
+
+
+      Object.keys(
+        selected.optionValues
+      ).forEach(
+        i => {
+
+          msg +=
+            `- ${
+              product.customOptions[i].label
+            }: ${
+              selected.optionValues[i]
+            }\n`;
+
+
+          if (
+            selected.imageLinks[i]
+          ) {
+
+            msg +=
+              `  Image: ${
+                selected.imageLinks[i]
+              }\n`;
+
+          }
+
+        }
+      );
+
+    }
+
+
+    msg +=
+      `\n💰 *Total:* ₹${finalPrice}\n`;
+
+
+    msg +=
+      `🔗 Product Link:\n${location.href}`;
+
+
+    // ==================================================
+    // OPEN WHATSAPP
+    // ==================================================
+
+    const whatsappUrl =
+      `https://wa.me/${
+        siteSettings.whatsappNumber
+      }?text=${
+        encodeURIComponent(
+          msg
+        )
+      }`;
+
+
+    window.open(
+      whatsappUrl,
+      "_blank"
+    );
+
 
     // Close form
-    document.getElementById("waFormOverlay").classList.add("hidden");
 
-  } catch (err) {
-    console.error(err);
-    alert("Order failed: " + err.message);
+    document
+      .getElementById(
+        "waFormOverlay"
+      )
+      ?.classList.add(
+        "hidden"
+      );
+
   }
+
+  catch (err) {
+
+    console.error(
+      err
+    );
+
+
+    alert(
+      "Order failed: " +
+      err.message
+    );
+
+  }
+
 };
-window.closeWaForm = function () {
-  document.getElementById("waFormOverlay").classList.add("hidden");
+
+
+// ==================================================
+// CLOSE WHATSAPP FORM
+// ==================================================
+
+window.closeWaForm =
+function() {
+
+  document
+    .getElementById(
+      "waFormOverlay"
+    )
+    ?.classList.add(
+      "hidden"
+    );
+
 };
 
 
+// ==================================================
+// BUY NOW
+// ==================================================
+
+window.buyNow =
+function() {
+
+  const errors =
+    validateRequiredSelections();
 
 
-//===== buy now =====
+  if (
+    errors.length
+  ) {
 
-window.buyNow = function () {
+    showErrorModal(
+      errors
+    );
 
-  const errors = validateRequiredSelections();
-  if (errors.length) {
-    showErrorModal(errors);
     return;
+
   }
+
+
   const data = {
+
     product,
+
     finalPrice,
-    color: selected.color,
-    size: selected.size,
-    options: selected.options,
-    optionValues: selected.optionValues,
-    imageLinks: selected.imageLinks
+
+    color:
+      selected.color,
+
+    size:
+      selected.size,
+
+    options:
+      selected.options,
+
+    optionValues:
+      selected.optionValues,
+
+    imageLinks:
+      selected.imageLinks
+
   };
 
-  localStorage.setItem("checkoutData", JSON.stringify(data));
 
-  location.href = "order";
+  localStorage.setItem(
+    "checkoutData",
+    JSON.stringify(
+      data
+    )
+  );
+
+
+  location.href =
+    "order";
+
 };
 
 
+// ==================================================
+// ERROR MODAL
+// ==================================================
 
-function showErrorModal(errors) {
-  const modal = document.getElementById("errorModal");
-  const list = document.getElementById("errorList");
+function showErrorModal(
+  errors
+) {
 
-  list.innerHTML = "";
+  const modal =
+    document.getElementById(
+      "errorModal"
+    );
 
-  errors.forEach(err => {
-    const li = document.createElement("li");
-    li.innerText = err;
-    list.appendChild(li);
-  });
 
-  modal.classList.remove("hidden");
+  const list =
+    document.getElementById(
+      "errorList"
+    );
+
+
+  if (!modal || !list) {
+
+    alert(
+      errors.join("\n")
+    );
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    "";
+
+
+  errors.forEach(
+    err => {
+
+      const li =
+        document.createElement(
+          "li"
+        );
+
+
+      li.innerText =
+        err;
+
+
+      list.appendChild(
+        li
+      );
+
+    }
+  );
+
+
+  modal.classList.remove(
+    "hidden"
+  );
+
 }
 
-window.closeErrorModal = function () {
-  document.getElementById("errorModal").classList.add("hidden");
+
+// ==================================================
+// CLOSE ERROR MODAL
+// ==================================================
+
+window.closeErrorModal =
+function() {
+
+  document
+    .getElementById(
+      "errorModal"
+    )
+    ?.classList.add(
+      "hidden"
+    );
+
 };
