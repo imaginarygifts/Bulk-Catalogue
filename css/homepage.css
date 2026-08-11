@@ -308,6 +308,12 @@ button{
     SIDEBAR
 ==================================================*/
 
+
+
+
+
+
+
 .sidebar{
 
     position:fixed;
@@ -394,6 +400,358 @@ button{
     display:block;
 }
 
+
+/*==================================================
+    SIDEBAR CATEGORY / TAG FILTERS
+==================================================*/
+
+.sidebar-expandable{
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+
+/*==================================================
+    EXPAND BUTTON
+==================================================*/
+
+.sidebar-expand-button{
+
+    width:100%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:12px;
+
+    padding:18px 20px;
+
+    border:0;
+
+    background:transparent;
+
+    color:#f5f5f5;
+
+    font-size:18px;
+
+    font-weight:500;
+
+    text-align:left;
+
+    cursor:pointer;
+
+}
+
+
+.sidebar-expand-button span{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+
+.sidebar-expand-button > span > i{
+
+    width:22px;
+
+    text-align:center;
+
+}
+
+
+.sidebar-chevron{
+
+    font-size:13px;
+
+    transition:
+        transform .25s ease;
+
+}
+
+
+.sidebar-expand-button.active
+.sidebar-chevron{
+
+    transform:
+        rotate(180deg);
+
+}
+
+
+/*==================================================
+    SUBMENU
+==================================================*/
+
+.sidebar-submenu{
+
+    max-height:0;
+
+    overflow:hidden;
+
+    opacity:0;
+
+    transition:
+        max-height .3s ease,
+        opacity .2s ease;
+
+}
+
+
+.sidebar-submenu.open{
+
+    max-height:1000px;
+
+    opacity:1;
+
+}
+
+
+/*==================================================
+    LOADING / EMPTY
+==================================================*/
+
+.sidebar-loading,
+.sidebar-empty,
+.sidebar-error{
+
+    padding:
+        12px 20px 16px 50px;
+
+    color:#999;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+    CATEGORY ROW
+==================================================*/
+
+.sidebar-category-row{
+
+    display:flex;
+
+    align-items:center;
+
+    border-top:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.04
+        );
+
+}
+
+
+.sidebar-category-row > a{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:
+        14px 10px 14px 50px;
+
+    color:#e8e8e8;
+
+    text-decoration:none;
+
+    font-size:16px;
+
+}
+
+
+.sidebar-category-row > a i{
+
+    width:18px;
+
+    text-align:center;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+    CATEGORY TOGGLE
+==================================================*/
+
+.sidebar-category-toggle{
+
+    width:48px;
+
+    height:45px;
+
+    border:0;
+
+    background:transparent;
+
+    color:#aaa;
+
+    cursor:pointer;
+
+}
+
+
+.sidebar-category-toggle i{
+
+    transition:
+        transform .25s ease;
+
+}
+
+
+.sidebar-category-toggle.active i{
+
+    transform:
+        rotate(180deg);
+
+}
+
+
+/*==================================================
+    SUBCATEGORIES
+==================================================*/
+
+.sidebar-category-children{
+
+    max-height:0;
+
+    overflow:hidden;
+
+    transition:
+        max-height .3s ease;
+
+}
+
+
+.sidebar-category-children.open{
+
+    max-height:500px;
+
+}
+
+
+.sidebar-category-children a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:9px;
+
+    padding:
+        11px 15px 11px 72px;
+
+    color:#bdbdbd;
+
+    text-decoration:none;
+
+    font-size:15px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.015
+        );
+
+}
+
+
+.sidebar-category-children a:hover{
+
+    color:#ffffff;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.05
+        );
+
+}
+
+
+.sidebar-category-children i{
+
+    font-size:10px;
+
+    color:#777;
+
+}
+
+
+/*==================================================
+    TAG LINKS
+==================================================*/
+
+.sidebar-tag-link{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:
+        13px 20px 13px 50px;
+
+    color:#e8e8e8;
+
+    text-decoration:none;
+
+    font-size:16px;
+
+    border-top:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.04
+        );
+
+}
+
+
+.sidebar-tag-link i{
+
+    width:20px;
+
+    text-align:center;
+
+    font-size:14px;
+
+}
+
+
+.sidebar-tag-link:hover{
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.05
+        );
+
+    color:#ffffff;
+
+}
 
 /*==================================================
     HOMEPAGE
