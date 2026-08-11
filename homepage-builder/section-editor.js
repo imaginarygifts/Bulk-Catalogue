@@ -87,6 +87,7 @@ export function renderSectionEditor({
 
     container.appendChild(wrapper);
 
+
     /* COMMON SETTINGS */
 
     renderCommonFields(
@@ -95,6 +96,7 @@ export function renderSectionEditor({
         onUpdate
     );
 
+
     /* TYPE SPECIFIC SETTINGS */
 
     renderTypeEditor(
@@ -102,6 +104,7 @@ export function renderSectionEditor({
         section,
         onUpdate
     );
+
 
     /* BUTTONS */
 
@@ -126,6 +129,7 @@ function renderCommonFields(
 
     container.innerHTML = "";
 
+
     /* TITLE */
 
     addTextField(
@@ -139,8 +143,8 @@ function renderCommonFields(
             onUpdate(section);
 
         }
-
     );
+
 
     /* SUBTITLE */
 
@@ -155,8 +159,8 @@ function renderCommonFields(
             onUpdate(section);
 
         }
-
     );
+
 
     /* BACKGROUND COLOR */
 
@@ -292,7 +296,7 @@ function addTextField(
 
         <input
             type="text"
-            value="${value}"
+            value="${escapeAttribute(value)}"
         >
 
     `;
@@ -328,7 +332,7 @@ function addTextareaField(
 
         <label>${label}</label>
 
-        <textarea rows="3">${value}</textarea>
+        <textarea rows="3">${escapeHtml(value)}</textarea>
 
     `;
 
@@ -497,7 +501,7 @@ function addColorField(
 
         <input
             type="color"
-            value="${value || "#ffffff"}"
+            value="${isValidColor(value) ? value : "#ffffff"}"
         >
 
     `;
@@ -524,6 +528,42 @@ function capitalize(text){
 
     return text.charAt(0).toUpperCase()
         + text.slice(1);
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value){
+
+    return escapeHtml(value);
+
+}
+
+
+function isValidColor(value){
+
+    if(!value) return false;
+
+    const color =
+        document.createElement("input");
+
+    color.type = "color";
+
+    color.value = value;
+
+    return color.value.toLowerCase() ===
+        String(value).toLowerCase();
 
 }
 
@@ -577,6 +617,7 @@ function renderSpacerEditor(
         }
     );
 
+
     addTextField(
         container,
         "Background",
@@ -603,6 +644,8 @@ function renderBannerEditor(
     onUpdate
 ){
 
+    /* AUTO PLAY */
+
     addCheckboxField(
         container,
         "Auto Play",
@@ -615,6 +658,9 @@ function renderBannerEditor(
 
         }
     );
+
+
+    /* INTERVAL */
 
     addNumberField(
         container,
@@ -629,17 +675,27 @@ function renderBannerEditor(
         }
     );
 
+
+    /* SLIDES */
+
     renderSlides(
         container,
         section,
         onUpdate
     );
 
-    const addButton = document.createElement("button");
 
-    addButton.className = "editor-button";
+    /* ADD SLIDE */
 
-    addButton.textContent = "Add Slide";
+    const addButton =
+        document.createElement("button");
+
+    addButton.className =
+        "editor-button";
+
+    addButton.textContent =
+        "Add Slide";
+
 
     addButton.onclick = () => {
 
@@ -649,13 +705,20 @@ function renderBannerEditor(
 
         }
 
+
         section.slides.push({
 
             title: "",
 
             subtitle: "",
 
+            titleColor: "#ffffff",
+
+            subtitleColor: "#ffffff",
+
             image: "",
+
+            bannerLink: "",
 
             buttonText: "",
 
@@ -663,7 +726,9 @@ function renderBannerEditor(
 
         });
 
+
         onUpdate(section);
+
 
         renderBannerEditor(
             container,
@@ -673,7 +738,10 @@ function renderBannerEditor(
 
     };
 
-    container.appendChild(addButton);
+
+    container.appendChild(
+        addButton
+    );
 
 }
 
@@ -694,13 +762,16 @@ function renderSlides(
 
     }
 
+
     section.slides.forEach(
         (slide, index) => {
 
             const card =
                 document.createElement("div");
 
-            card.className = "editor-card";
+            card.className =
+                "editor-card";
+
 
             card.innerHTML = `
 
@@ -710,10 +781,13 @@ function renderSlides(
 
             `;
 
+
             container.appendChild(card);
 
 
-            /* TITLE */
+            /*======================================
+                TITLE
+            ======================================*/
 
             addTextField(
                 card,
@@ -729,7 +803,9 @@ function renderSlides(
             );
 
 
-            /* SUBTITLE */
+            /*======================================
+                SUBTITLE
+            ======================================*/
 
             addTextareaField(
                 card,
@@ -745,12 +821,50 @@ function renderSlides(
             );
 
 
-            /* IMAGE */
+            /*======================================
+                TITLE COLOR
+            ======================================*/
+
+            addColorField(
+                card,
+                "Title Color",
+                slide.titleColor || "#ffffff",
+                value => {
+
+                    slide.titleColor = value;
+
+                    onUpdate(section);
+
+                }
+            );
+
+
+            /*======================================
+                SUBTITLE COLOR
+            ======================================*/
+
+            addColorField(
+                card,
+                "Subtitle Color",
+                slide.subtitleColor || "#ffffff",
+                value => {
+
+                    slide.subtitleColor = value;
+
+                    onUpdate(section);
+
+                }
+            );
+
+
+            /*======================================
+                BANNER IMAGE
+            ======================================*/
 
             addImageUploadField(
                 card,
                 "Banner Image",
-                slide.image,
+                slide.image || "",
                 "homepage/banners",
                 url => {
 
@@ -762,7 +876,27 @@ function renderSlides(
             );
 
 
-            /* BUTTON TEXT */
+            /*======================================
+                BANNER LINK
+            ======================================*/
+
+            addTextField(
+                card,
+                "Banner Link",
+                slide.bannerLink || "",
+                value => {
+
+                    slide.bannerLink = value;
+
+                    onUpdate(section);
+
+                }
+            );
+
+
+            /*======================================
+                BUTTON TEXT
+            ======================================*/
 
             addTextField(
                 card,
@@ -778,7 +912,9 @@ function renderSlides(
             );
 
 
-            /* BUTTON LINK */
+            /*======================================
+                BUTTON LINK
+            ======================================*/
 
             addTextField(
                 card,
@@ -794,14 +930,19 @@ function renderSlides(
             );
 
 
-            /* REMOVE */
+            /*======================================
+                REMOVE SLIDE
+            ======================================*/
 
             const remove =
                 document.createElement("button");
 
-            remove.className = "editor-danger";
+            remove.className =
+                "editor-danger";
 
-            remove.textContent = "Remove Slide";
+            remove.textContent =
+                "Remove Slide";
+
 
             remove.onclick = () => {
 
@@ -810,7 +951,9 @@ function renderSlides(
                     1
                 );
 
+
                 onUpdate(section);
+
 
                 renderBannerEditor(
                     container,
@@ -820,7 +963,10 @@ function renderSlides(
 
             };
 
-            card.appendChild(remove);
+
+            card.appendChild(
+                remove
+            );
 
         }
     );
@@ -838,6 +984,8 @@ async function renderProductCarouselEditor(
     onUpdate
 ){
 
+    /* VIEW ALL LINK */
+
     addTextField(
         container,
         "View All Link",
@@ -852,6 +1000,8 @@ async function renderProductCarouselEditor(
     );
 
 
+    /* CATEGORY */
+
     await renderCategoryDropdown(
         container,
         section,
@@ -859,12 +1009,16 @@ async function renderProductCarouselEditor(
     );
 
 
+    /* TAGS */
+
     await renderTagDropdown(
         container,
         section,
         onUpdate
     );
 
+
+    /* LIMIT */
 
     addNumberField(
         container,
@@ -880,6 +1034,8 @@ async function renderProductCarouselEditor(
     );
 
 
+    /* AUTO PLAY */
+
     addCheckboxField(
         container,
         "Auto Play",
@@ -893,6 +1049,8 @@ async function renderProductCarouselEditor(
         }
     );
 
+
+    /* INTERVAL */
 
     addNumberField(
         container,
@@ -926,13 +1084,16 @@ function renderImageCarouselEditor(
 
     }
 
+
     section.images.forEach(
         (image, index) => {
 
             const card =
                 document.createElement("div");
 
-            card.className = "editor-card";
+            card.className =
+                "editor-card";
+
 
             card.innerHTML = `
 
@@ -941,6 +1102,7 @@ function renderImageCarouselEditor(
                 </h3>
 
             `;
+
 
             container.appendChild(card);
 
@@ -999,9 +1161,12 @@ function renderImageCarouselEditor(
             const remove =
                 document.createElement("button");
 
-            remove.className = "editor-danger";
+            remove.className =
+                "editor-danger";
 
-            remove.textContent = "Remove";
+            remove.textContent =
+                "Remove";
+
 
             remove.onclick = () => {
 
@@ -1010,7 +1175,9 @@ function renderImageCarouselEditor(
                     1
                 );
 
+
                 onUpdate(section);
+
 
                 renderImageCarouselEditor(
                     container,
@@ -1020,7 +1187,10 @@ function renderImageCarouselEditor(
 
             };
 
-            card.appendChild(remove);
+
+            card.appendChild(
+                remove
+            );
 
         }
     );
@@ -1031,9 +1201,12 @@ function renderImageCarouselEditor(
     const add =
         document.createElement("button");
 
-    add.className = "editor-button";
+    add.className =
+        "editor-button";
 
-    add.textContent = "Add Image";
+    add.textContent =
+        "Add Image";
+
 
     add.onclick = () => {
 
@@ -1047,7 +1220,9 @@ function renderImageCarouselEditor(
 
         });
 
+
         onUpdate(section);
+
 
         renderImageCarouselEditor(
             container,
@@ -1057,7 +1232,10 @@ function renderImageCarouselEditor(
 
     };
 
-    container.appendChild(add);
+
+    container.appendChild(
+        add
+    );
 
 }
 
@@ -1078,13 +1256,16 @@ function renderYoutubeEditor(
 
     }
 
+
     section.videos.forEach(
         (video, index) => {
 
             const card =
                 document.createElement("div");
 
-            card.className = "editor-card";
+            card.className =
+                "editor-card";
+
 
             card.innerHTML = `
 
@@ -1094,7 +1275,10 @@ function renderYoutubeEditor(
 
             `;
 
-            container.appendChild(card);
+
+            container.appendChild(
+                card
+            );
 
 
             /* YOUTUBE URL */
@@ -1134,9 +1318,12 @@ function renderYoutubeEditor(
             const remove =
                 document.createElement("button");
 
-            remove.className = "editor-danger";
+            remove.className =
+                "editor-danger";
 
-            remove.textContent = "Remove";
+            remove.textContent =
+                "Remove";
+
 
             remove.onclick = () => {
 
@@ -1145,7 +1332,9 @@ function renderYoutubeEditor(
                     1
                 );
 
+
                 onUpdate(section);
+
 
                 renderYoutubeEditor(
                     container,
@@ -1155,7 +1344,10 @@ function renderYoutubeEditor(
 
             };
 
-            card.appendChild(remove);
+
+            card.appendChild(
+                remove
+            );
 
         }
     );
@@ -1166,9 +1358,12 @@ function renderYoutubeEditor(
     const add =
         document.createElement("button");
 
-    add.className = "editor-button";
+    add.className =
+        "editor-button";
 
-    add.textContent = "Add Video";
+    add.textContent =
+        "Add Video";
+
 
     add.onclick = () => {
 
@@ -1180,7 +1375,9 @@ function renderYoutubeEditor(
 
         });
 
+
         onUpdate(section);
+
 
         renderYoutubeEditor(
             container,
@@ -1190,7 +1387,10 @@ function renderYoutubeEditor(
 
     };
 
-    container.appendChild(add);
+
+    container.appendChild(
+        add
+    );
 
 }
 
@@ -1264,15 +1464,19 @@ function createImagePreview(
     preview.className =
         "editor-image-preview";
 
-    preview.src = image || "";
+    preview.src =
+        image || "";
 
     preview.onerror = () => {
 
-        preview.style.display = "none";
+        preview.style.display =
+            "none";
 
     };
 
-    parent.appendChild(preview);
+    parent.appendChild(
+        preview
+    );
 
     return preview;
 
@@ -1321,7 +1525,8 @@ function saveSection(
 
     if(!section) return;
 
-    section.updatedAt = Date.now();
+    section.updatedAt =
+        Date.now();
 
     onUpdate(section);
 
@@ -1362,12 +1567,16 @@ async function uploadImage(
     if(!file) return "";
 
     const extension =
-        file.name.split(".").pop();
+        file.name
+            .split(".")
+            .pop();
+
 
     const fileName =
         `${Date.now()}-${Math.random()
         .toString(36)
         .substring(2,8)}.${extension}`;
+
 
     const storageRef =
         ref(
@@ -1375,10 +1584,12 @@ async function uploadImage(
             `${folder}/${fileName}`
         );
 
+
     await uploadBytes(
         storageRef,
         file
     );
+
 
     return await getDownloadURL(
         storageRef
@@ -1409,9 +1620,13 @@ function addImageUploadField(
     const title =
         document.createElement("label");
 
-    title.textContent = label;
+    title.textContent =
+        label;
 
-    div.appendChild(title);
+
+    div.appendChild(
+        title
+    );
 
 
     /* IMAGE PREVIEW */
@@ -1422,19 +1637,28 @@ function addImageUploadField(
     preview.className =
         "editor-image-preview";
 
+
     preview.src =
         image || "";
+
 
     preview.style.maxWidth =
         "180px";
 
+
     preview.style.marginBottom =
         "10px";
 
-    preview.style.display =
-        image ? "block" : "none";
 
-    div.appendChild(preview);
+    preview.style.display =
+        image
+        ? "block"
+        : "none";
+
+
+    div.appendChild(
+        preview
+    );
 
 
     /* FILE INPUT */
@@ -1442,60 +1666,80 @@ function addImageUploadField(
     const input =
         document.createElement("input");
 
-    input.type = "file";
+    input.type =
+        "file";
 
-    input.accept = "image/*";
-
-
-    input.onchange = async e => {
-
-        const file =
-            e.target.files[0];
-
-        if(!file) return;
-
-        input.disabled = true;
-
-        input.value = "";
+    input.accept =
+        "image/*";
 
 
-        try{
+    input.onchange =
+        async e => {
 
-            const url =
-                await uploadImage(
-                    file,
-                    folder
+            const file =
+                e.target.files[0];
+
+
+            if(!file) return;
+
+
+            input.disabled =
+                true;
+
+
+            input.value =
+                "";
+
+
+            try{
+
+                const url =
+                    await uploadImage(
+                        file,
+                        folder
+                    );
+
+
+                preview.src =
+                    url;
+
+
+                preview.style.display =
+                    "block";
+
+
+                callback(url);
+
+            }
+            catch(error){
+
+                console.error(
+                    "Image upload error:",
+                    error
                 );
 
-            preview.src = url;
 
-            preview.style.display =
-                "block";
+                alert(
+                    "Image upload failed"
+                );
 
-            callback(url);
-
-        }
-        catch(error){
-
-            console.error(
-                "Image upload error:",
-                error
-            );
-
-            alert(
-                "Image upload failed"
-            );
-
-        }
-
-        input.disabled = false;
-
-    };
+            }
 
 
-    div.appendChild(input);
+            input.disabled =
+                false;
 
-    parent.appendChild(div);
+        };
+
+
+    div.appendChild(
+        input
+    );
+
+
+    parent.appendChild(
+        div
+    );
 
 }
 
@@ -1551,7 +1795,10 @@ async function renderCategoryDropdown(
     label.textContent =
         "Category";
 
-    div.appendChild(label);
+
+    div.appendChild(
+        label
+    );
 
 
     const select =
@@ -1578,35 +1825,47 @@ async function renderCategoryDropdown(
         const option =
             document.createElement("option");
 
+
         option.value =
             main.id;
+
 
         option.textContent =
             main.name;
 
+
         option.dataset.type =
             "main";
 
-        select.appendChild(option);
+
+        select.appendChild(
+            option
+        );
 
 
         categories
             .filter(
-                c => c.parentId === main.id
+                c =>
+                    c.parentId ===
+                    main.id
             )
             .forEach(sub => {
 
                 const subOption =
                     document.createElement("option");
 
+
                 subOption.value =
                     sub.id;
+
 
                 subOption.textContent =
                     "— " + sub.name;
 
+
                 subOption.dataset.type =
                     "sub";
+
 
                 select.appendChild(
                     subOption
@@ -1626,20 +1885,28 @@ async function renderCategoryDropdown(
         const selected =
             select.selectedOptions[0];
 
+
         section.categoryId =
             selected.value;
 
+
         section.categoryType =
             selected.dataset.type || "";
+
 
         onUpdate(section);
 
     };
 
 
-    div.appendChild(select);
+    div.appendChild(
+        select
+    );
 
-    parent.appendChild(div);
+
+    parent.appendChild(
+        div
+    );
 
 }
 
@@ -1666,8 +1933,10 @@ async function renderTagDropdown(
     const div =
         document.createElement("div");
 
+
     div.className =
         "editor-field";
+
 
     div.innerHTML =
         "<label>Tags</label>";
@@ -1685,12 +1954,14 @@ async function renderTagDropdown(
         const label =
             document.createElement("label");
 
+
         label.style.display =
             "block";
 
 
         const checkbox =
             document.createElement("input");
+
 
         checkbox.type =
             "checkbox";
@@ -1723,10 +1994,12 @@ async function renderTagDropdown(
 
                 section.tags =
                     section.tags.filter(
-                        t => t !== tag.slug
+                        t =>
+                            t !== tag.slug
                     );
 
             }
+
 
             onUpdate(section);
 
@@ -1736,6 +2009,7 @@ async function renderTagDropdown(
         label.appendChild(
             checkbox
         );
+
 
         label.append(
             " " + tag.name
@@ -1749,7 +2023,9 @@ async function renderTagDropdown(
     });
 
 
-    parent.appendChild(div);
+    parent.appendChild(
+        div
+    );
 
 }
 
