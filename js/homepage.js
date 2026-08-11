@@ -1822,6 +1822,10 @@ function renderImageCarousel(
     YOUTUBE CAROUSEL
 ==================================================*/
 
+/*==================================================
+    YOUTUBE CAROUSEL
+==================================================*/
+
 function renderYoutubeCarousel(
     container,
     section
@@ -1831,8 +1835,10 @@ function renderYoutubeCarousel(
         Array.isArray(
             section.videos
         )
-        ? section.videos
-        : [];
+        ?
+        section.videos
+        :
+        [];
 
 
     if(!videos.length){
@@ -1857,7 +1863,7 @@ function renderYoutubeCarousel(
 
                 ${
                     videos.map(
-                        video => {
+                        (video,index) => {
 
                             const embed =
                                 getYoutubeEmbedUrl(
@@ -1875,29 +1881,44 @@ function renderYoutubeCarousel(
                             return `
 
                                 <div
-                                    class="youtube-item"
+                                    class="
+                                        youtube-item
+                                    "
+                                    data-video-index="${index}"
                                 >
 
-                                    <iframe
-                                        src="${escapeAttribute(
-                                            embed
-                                        )}"
-                                        title="${escapeAttribute(
-                                            video.title ||
-                                            "YouTube Shorts"
-                                        )}"
-                                        loading="lazy"
-                                        allow="
-                                            accelerometer;
-                                            autoplay;
-                                            clipboard-write;
-                                            encrypted-media;
-                                            gyroscope;
-                                            picture-in-picture;
-                                            web-share
+                                    <div
+                                        class="
+                                            youtube-video-wrapper
                                         "
-                                        allowfullscreen
-                                    ></iframe>
+                                    >
+
+                                        <iframe
+                                            class="
+                                                youtube-video
+                                            "
+                                            src="${escapeAttribute(
+                                                embed
+                                            )}"
+                                            title="${escapeAttribute(
+                                                video.title ||
+                                                "Product Video"
+                                            )}"
+                                            loading="lazy"
+                                            frameborder="0"
+                                            allow="
+                                                accelerometer;
+                                                autoplay;
+                                                clipboard-write;
+                                                encrypted-media;
+                                                gyroscope;
+                                                picture-in-picture;
+                                                web-share
+                                            "
+                                            allowfullscreen
+                                        ></iframe>
+
+                                    </div>
 
                                 </div>
 
@@ -1910,10 +1931,17 @@ function renderYoutubeCarousel(
             </div>
 
 
-            <div class="carousel-dots">
+            <div
+                class="
+                    carousel-dots
+                    youtube-dots
+                "
+            >
 
                 <span class="active"></span>
+
                 <span></span>
+
                 <span></span>
 
             </div>
@@ -1923,13 +1951,17 @@ function renderYoutubeCarousel(
     `;
 
 
-    initHorizontalCarousel(
+    initYoutubeCarousel(
         container,
-        ".youtube-carousel"
+        section
     );
 
 }
 
+
+/*==================================================
+    YOUTUBE URL
+==================================================*/
 
 /*==================================================
     YOUTUBE URL
@@ -1949,10 +1981,17 @@ function getYoutubeEmbedUrl(
     try{
 
         const parsed =
-            new URL(url);
+            new URL(
+                url
+            );
 
 
-        /* SHORTS */
+        let videoId = "";
+
+
+        /*==================================================
+            YOUTUBE SHORTS
+        ==================================================*/
 
         if(
             parsed.pathname.startsWith(
@@ -1960,59 +1999,81 @@ function getYoutubeEmbedUrl(
             )
         ){
 
-            const id =
+            videoId =
                 parsed.pathname
                     .split(
                         "/shorts/"
                     )[1]
-                    .split("/")[0];
-
-
-            return id
-                ?
-                `https://www.youtube.com/embed/${id}`
-                :
-                "";
+                    .split(
+                        "/"
+                    )[0];
 
         }
 
 
-        /* WATCH */
+        /*==================================================
+            NORMAL WATCH URL
+        ==================================================*/
 
-        if(
+        else if(
             parsed.searchParams.get(
                 "v"
             )
         ){
 
-            return `https://www.youtube.com/embed/${
-                parsed.searchParams.get("v")
-            }`;
+            videoId =
+                parsed.searchParams.get(
+                    "v"
+                );
 
         }
 
 
-        /* YOUTU.BE */
+        /*==================================================
+            YOUTU.BE
+        ==================================================*/
 
-        if(
+        else if(
             parsed.hostname ===
             "youtu.be"
         ){
 
-            const id =
-                parsed.pathname.replace(
-                    "/",
-                    ""
-                );
-
-
-            return id
-                ?
-                `https://www.youtube.com/embed/${id}`
-                :
-                "";
+            videoId =
+                parsed.pathname
+                    .replace(
+                        "/",
+                        ""
+                    );
 
         }
+
+
+        if(!videoId){
+
+            return "";
+
+        }
+
+
+        /*
+            IMPORTANT:
+
+            We use /embed/ instead of /shorts/
+
+            This prevents the Shorts feed interface
+            from being displayed.
+        */
+
+        return (
+            `https://www.youtube.com/embed/${encodeURIComponent(
+                videoId
+            )}` +
+            `?enablejsapi=1` +
+            `&playsinline=1` +
+            `&controls=1` +
+            `&rel=0` +
+            `&modestbranding=1`
+        );
 
     }
 
@@ -2027,6 +2088,292 @@ function getYoutubeEmbedUrl(
 
 
     return "";
+
+}
+
+
+
+/*==================================================
+    YOUTUBE CAROUSEL CONTROLLER
+==================================================*/
+
+function initYoutubeCarousel(
+    container,
+    section
+){
+
+    const carousel =
+        container.querySelector(
+            ".youtube-carousel"
+        );
+
+
+    if(!carousel){
+
+        return;
+
+    }
+
+
+    const items =
+        carousel.querySelectorAll(
+            ".youtube-item"
+        );
+
+
+    const iframes =
+        carousel.querySelectorAll(
+            ".youtube-video"
+        );
+
+
+    if(!iframes.length){
+
+        return;
+
+    }
+
+
+    /*==================================================
+        PAUSE ALL VIDEOS
+    ==================================================*/
+
+    function pauseAllVideos(){
+
+        iframes.forEach(
+            iframe => {
+
+                iframe.contentWindow?.postMessage(
+                    JSON.stringify({
+
+                        event:
+                            "command",
+
+                        func:
+                            "pauseVideo",
+
+                        args:
+                            []
+
+                    }),
+                    "*"
+                );
+
+            }
+        );
+
+    }
+
+
+    /*==================================================
+        PLAY ONE VIDEO
+    ==================================================*/
+
+    function playVideo(
+        iframe
+    ){
+
+        /*
+            First stop every other video.
+        */
+
+        pauseAllVideos();
+
+
+        /*
+            Then play selected video.
+        */
+
+        iframe.contentWindow?.postMessage(
+            JSON.stringify({
+
+                event:
+                    "command",
+
+                func:
+                    "playVideo",
+
+                args:
+                    []
+
+            }),
+            "*"
+        );
+
+    }
+
+
+    /*==================================================
+        CLICK / TAP VIDEO
+    ==================================================*/
+
+    items.forEach(
+        item => {
+
+            const iframe =
+                item.querySelector(
+                    ".youtube-video"
+                );
+
+
+            if(!iframe){
+
+                return;
+
+            }
+
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    playVideo(
+                        iframe
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /*==================================================
+        HORIZONTAL SLIDE
+    ==================================================*/
+
+    let scrollTimer = null;
+
+
+    carousel.addEventListener(
+        "scroll",
+        () => {
+
+            /*
+                Stop video immediately when
+                carousel starts moving.
+            */
+
+            pauseAllVideos();
+
+
+            /*
+                Existing carousel dots.
+            */
+
+            updateCarouselDots(
+                carousel,
+                container
+            );
+
+
+            clearTimeout(
+                scrollTimer
+            );
+
+
+            scrollTimer =
+                setTimeout(
+                    () => {
+
+                        /*
+                            Nothing autoplayed here.
+
+                            User must tap a video
+                            to play it.
+                        */
+
+                    },
+                    150
+                );
+
+        },
+        {
+            passive:true
+        }
+    );
+
+
+    /*==================================================
+        VERTICAL PAGE SCROLL
+    ==================================================*/
+
+    let verticalScrollTimer = null;
+
+
+    window.addEventListener(
+        "scroll",
+        () => {
+
+            pauseAllVideos();
+
+
+            clearTimeout(
+                verticalScrollTimer
+            );
+
+
+            verticalScrollTimer =
+                setTimeout(
+                    () => {
+
+                        /*
+                            Do not autoplay again.
+                        */
+
+                    },
+                    100
+                );
+
+        },
+        {
+            passive:true
+        }
+    );
+
+
+    /*==================================================
+        TOUCH START
+    ==================================================*/
+
+    carousel.addEventListener(
+        "touchstart",
+        () => {
+
+            pauseAllVideos();
+
+        },
+        {
+            passive:true
+        }
+    );
+
+
+    /*==================================================
+        POINTER DOWN
+    ==================================================*/
+
+    carousel.addEventListener(
+        "pointerdown",
+        () => {
+
+            pauseAllVideos();
+
+        },
+        {
+            passive:true
+        }
+    );
+
+
+    /*==================================================
+        INITIAL DOTS
+    ==================================================*/
+
+    updateCarouselDots(
+        carousel,
+        container
+    );
 
 }
 
