@@ -6,104 +6,14 @@
 import { db } from "./firebase.js";
 
 import {
+    renderYoutubeCarousel
+} from "./youtube-carousel.js";
+
+import {
     collection,
     getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-/*==================================================
-    YOUTUBE IFRAME API
-==================================================*/
-
-let youtubeApiPromise = null;
-
-
-function loadYouTubeAPI(){
-
-    if(
-        window.YT &&
-        window.YT.Player
-    ){
-
-        return Promise.resolve(
-            window.YT
-        );
-
-    }
-
-
-    if(youtubeApiPromise){
-
-        return youtubeApiPromise;
-
-    }
-
-
-    youtubeApiPromise =
-        new Promise(
-            resolve => {
-
-                const previousCallback =
-                    window.onYouTubeIframeAPIReady;
-
-
-                window.onYouTubeIframeAPIReady =
-                    () => {
-
-                        if(
-                            typeof previousCallback ===
-                            "function"
-                        ){
-
-                            previousCallback();
-
-                        }
-
-
-                        resolve(
-                            window.YT
-                        );
-
-                    };
-
-
-                const existing =
-                    document.querySelector(
-                        'script[src="https://www.youtube.com/iframe_api"]'
-                    );
-
-
-                if(existing){
-
-                    return;
-
-                }
-
-
-                const script =
-                    document.createElement(
-                        "script"
-                    );
-
-
-                script.src =
-                    "https://www.youtube.com/iframe_api";
-
-
-                script.async = true;
-
-
-                document.head.appendChild(
-                    script
-                );
-
-            }
-        );
-
-
-    return youtubeApiPromise;
-
-}
 
 /*==================================================
     DOM
@@ -111,6 +21,7 @@ function loadYouTubeAPI(){
 
 const homepage =
     document.getElementById("homepage");
+
 
 const loader =
     document.getElementById("homepageLoader");
@@ -135,6 +46,7 @@ async function loadHomepage(){
     try{
 
         showLoader();
+
 
         const snapshot =
             await getDocs(
@@ -179,11 +91,15 @@ async function loadHomepage(){
         );
 
 
+        /*==================================================
+            CLEAR HOMEPAGE
+        ==================================================*/
+
         homepage.innerHTML = "";
 
 
         /*==================================================
-            EMPTY
+            EMPTY HOMEPAGE
         ==================================================*/
 
         if(!sections.length){
@@ -204,6 +120,7 @@ async function loadHomepage(){
 
             `;
 
+
             hideLoader();
 
             return;
@@ -212,10 +129,12 @@ async function loadHomepage(){
 
 
         /*==================================================
-            RENDER
+            RENDER SECTIONS
         ==================================================*/
 
-        for(const section of sections){
+        for(
+            const section of sections
+        ){
 
             await renderSection(
                 homepage,
@@ -271,7 +190,9 @@ async function renderSection(
 ){
 
     const wrapper =
-        document.createElement("section");
+        document.createElement(
+            "section"
+        );
 
 
     wrapper.className =
@@ -291,7 +212,9 @@ async function renderSection(
         BACKGROUND COLOR
     ==================================================*/
 
-    if(section.backgroundColor){
+    if(
+        section.backgroundColor
+    ){
 
         wrapper.style.backgroundColor =
             section.backgroundColor;
@@ -303,7 +226,13 @@ async function renderSection(
         SECTION TYPE
     ==================================================*/
 
-    switch(section.type){
+    switch(
+        section.type
+    ){
+
+        /*==============================================
+            HEADING
+        ==============================================*/
 
         case "heading":
 
@@ -315,6 +244,10 @@ async function renderSection(
             break;
 
 
+        /*==============================================
+            BANNER
+        ==============================================*/
+
         case "banner":
 
             renderBanner(
@@ -324,6 +257,10 @@ async function renderSection(
 
             break;
 
+
+        /*==============================================
+            PRODUCT CAROUSEL
+        ==============================================*/
 
         case "productCarousel":
 
@@ -335,6 +272,10 @@ async function renderSection(
             break;
 
 
+        /*==============================================
+            IMAGE CAROUSEL
+        ==============================================*/
+
         case "imageCarousel":
 
             renderImageCarousel(
@@ -344,6 +285,13 @@ async function renderSection(
 
             break;
 
+
+        /*==============================================
+            YOUTUBE CAROUSEL
+
+            This component is now loaded
+            from youtube-carousel.js
+        ==============================================*/
 
         case "youtubeCarousel":
 
@@ -355,6 +303,10 @@ async function renderSection(
             break;
 
 
+        /*==============================================
+            REVIEW CAROUSEL
+        ==============================================*/
+
         case "reviewCarousel":
 
             renderReviewCarousel(
@@ -365,6 +317,10 @@ async function renderSection(
             break;
 
 
+        /*==============================================
+            SPACER
+        ==============================================*/
+
         case "spacer":
 
             renderSpacer(
@@ -374,6 +330,10 @@ async function renderSection(
 
             break;
 
+
+        /*==============================================
+            UNKNOWN
+        ==============================================*/
 
         default:
 
@@ -404,14 +364,21 @@ function renderSectionHeading(
 ){
 
     const hasTitle =
-        Boolean(section.title);
+        Boolean(
+            section.title
+        );
 
 
     const hasSubtitle =
-        Boolean(section.subtitle);
+        Boolean(
+            section.subtitle
+        );
 
 
-    if(!hasTitle && !hasSubtitle){
+    if(
+        !hasTitle &&
+        !hasSubtitle
+    ){
 
         return "";
 
@@ -445,9 +412,11 @@ function renderSectionHeading(
                             )};
                         "
                     >
+
                         ${escapeHtml(
                             section.title
                         )}
+
                     </h2>
                     `
                     :
@@ -466,9 +435,11 @@ function renderSectionHeading(
                             )};
                         "
                     >
+
                         ${escapeHtml(
                             section.subtitle
                         )}
+
                     </p>
                     `
                     :
@@ -582,12 +553,16 @@ function renderBanner(
 ){
 
     const slides =
-        Array.isArray(section.slides)
+        Array.isArray(
+            section.slides
+        )
             ? section.slides
             : [];
 
 
-    if(!slides.length){
+    if(
+        !slides.length
+    ){
 
         container.remove();
 
@@ -606,7 +581,10 @@ function renderBanner(
 
                     ${
                         slides.map(
-                            (slide,index) => {
+                            (
+                                slide,
+                                index
+                            ) => {
 
                                 const titleColor =
                                     section.titleColor ||
@@ -643,7 +621,9 @@ function renderBanner(
                                     :
                                     `
                                     <div class="banner-no-image">
+
                                         Banner
+
                                     </div>
                                     `;
 
@@ -673,9 +653,11 @@ function renderBanner(
                                                     )};
                                                 "
                                             >
+
                                                 ${escapeHtml(
                                                     slide.title
                                                 )}
+
                                             </h2>
                                             `
                                             :
@@ -694,9 +676,11 @@ function renderBanner(
                                                     )};
                                                 "
                                             >
+
                                                 ${escapeHtml(
                                                     slide.subtitle
                                                 )}
+
                                             </p>
                                             `
                                             :
@@ -715,9 +699,11 @@ function renderBanner(
                                                     "#"
                                                 )}"
                                             >
+
                                                 ${escapeHtml(
                                                     slide.buttonText
                                                 )}
+
                                             </a>
                                             `
                                             :
@@ -730,17 +716,13 @@ function renderBanner(
                                     "";
 
 
-                                /*
-                                    Banner Link
+                                /*==================================
+                                    COMPLETE BANNER LINK
+                                ==================================*/
 
-                                    If bannerLink exists,
-                                    the complete banner image/content
-                                    becomes clickable.
-
-                                    Button remains clickable separately.
-                                */
-
-                                if(slide.bannerLink){
+                                if(
+                                    slide.bannerLink
+                                ){
 
                                     return `
 
@@ -775,6 +757,10 @@ function renderBanner(
 
                                 }
 
+
+                                /*==================================
+                                    NORMAL BANNER
+                                ==================================*/
 
                                 return `
 
@@ -815,7 +801,9 @@ function renderBanner(
                         type="button"
                         aria-label="Previous banner"
                     >
+
                         ‹
+
                     </button>
 
 
@@ -824,7 +812,9 @@ function renderBanner(
                         type="button"
                         aria-label="Next banner"
                     >
+
                         ›
+
                     </button>
 
 
@@ -832,7 +822,10 @@ function renderBanner(
 
                         ${
                             slides.map(
-                                (_,index) => `
+                                (
+                                    _,
+                                    index
+                                ) => `
 
                                 <button
                                     class="
@@ -888,7 +881,9 @@ function initBannerSlider(
         );
 
 
-    if(slides.length <= 1){
+    if(
+        slides.length <= 1
+    ){
 
         return;
 
@@ -901,20 +896,36 @@ function initBannerSlider(
         );
 
 
-    let current = 0;
+    let current =
+        0;
 
-    let timer = null;
+
+    let timer =
+        null;
 
 
-    function showSlide(index){
+    /*==================================================
+        SHOW SLIDE
+    ==================================================*/
+
+    function showSlide(
+        index
+    ){
 
         current =
-            (index + slides.length) %
+            (
+                index +
+                slides.length
+            )
+            %
             slides.length;
 
 
         slides.forEach(
-            (slide,i)=>{
+            (
+                slide,
+                i
+            ) => {
 
                 slide.classList.toggle(
                     "active",
@@ -926,7 +937,10 @@ function initBannerSlider(
 
 
         dots.forEach(
-            (dot,i)=>{
+            (
+                dot,
+                i
+            ) => {
 
                 dot.classList.toggle(
                     "active",
@@ -938,6 +952,10 @@ function initBannerSlider(
 
     }
 
+
+    /*==================================================
+        START
+    ==================================================*/
 
     function start(){
 
@@ -972,71 +990,101 @@ function initBannerSlider(
     }
 
 
+    /*==================================================
+        STOP
+    ==================================================*/
+
     function stop(){
 
-        if(timer){
+        if(
+            timer
+        ){
 
             clearInterval(
                 timer
             );
 
-            timer = null;
+
+            timer =
+                null;
 
         }
 
     }
 
 
+    /*==================================================
+        NEXT
+    ==================================================*/
+
     container
-        .querySelector(".banner-next")
+        .querySelector(
+            ".banner-next"
+        )
         ?.addEventListener(
             "click",
-            ()=>{
+            () => {
 
                 stop();
+
 
                 showSlide(
                     current + 1
                 );
 
+
                 start();
 
             }
         );
 
 
+    /*==================================================
+        PREVIOUS
+    ==================================================*/
+
     container
-        .querySelector(".banner-prev")
+        .querySelector(
+            ".banner-prev"
+        )
         ?.addEventListener(
             "click",
-            ()=>{
+            () => {
 
                 stop();
+
 
                 showSlide(
                     current - 1
                 );
 
+
                 start();
 
             }
         );
 
 
+    /*==================================================
+        DOTS
+    ==================================================*/
+
     dots.forEach(
-        dot=>{
+        dot => {
 
             dot.addEventListener(
                 "click",
-                ()=>{
+                () => {
 
                     stop();
+
 
                     showSlide(
                         Number(
                             dot.dataset.index
                         )
                     );
+
 
                     start();
 
@@ -1074,7 +1122,8 @@ async function renderProductCarousel(
         snapshot.docs.map(
             docSnap => ({
 
-                id:docSnap.id,
+                id:
+                    docSnap.id,
 
                 ...docSnap.data()
 
@@ -1083,10 +1132,12 @@ async function renderProductCarousel(
 
 
     /*==================================================
-        CATEGORY
+        CATEGORY FILTER
     ==================================================*/
 
-    if(section.categoryId){
+    if(
+        section.categoryId
+    ){
 
         products =
             products.filter(
@@ -1102,8 +1153,8 @@ async function renderProductCarousel(
                             product.categoryId ===
                             section.categoryId
 
-                        ) ||
-
+                        )
+                        ||
                         (
 
                             product.category?.id ===
@@ -1124,15 +1175,15 @@ async function renderProductCarousel(
                             product.subCategoryId ===
                             section.categoryId
 
-                        ) ||
-
+                        )
+                        ||
                         (
 
                             product.subcategoryId ===
                             section.categoryId
 
-                        ) ||
-
+                        )
+                        ||
                         (
 
                             product.subCategory?.id ===
@@ -1157,11 +1208,14 @@ async function renderProductCarousel(
 
 
     /*==================================================
-        TAG
+        TAG FILTER
     ==================================================*/
 
     if(
-        Array.isArray(section.tags) &&
+        Array.isArray(
+            section.tags
+        )
+        &&
         section.tags.length
     ){
 
@@ -1195,7 +1249,10 @@ async function renderProductCarousel(
     ==================================================*/
 
     if(
-        Array.isArray(section.productIds) &&
+        Array.isArray(
+            section.productIds
+        )
+        &&
         section.productIds.length
     ){
 
@@ -1217,7 +1274,7 @@ async function renderProductCarousel(
 
 
     /*==================================================
-        FILTER TYPE
+        LATEST
     ==================================================*/
 
     if(
@@ -1226,7 +1283,10 @@ async function renderProductCarousel(
     ){
 
         products.sort(
-            (a,b)=>
+            (
+                a,
+                b
+            ) =>
                 getTimestamp(
                     b.createdAt
                 )
@@ -1239,13 +1299,19 @@ async function renderProductCarousel(
     }
 
 
+    /*==================================================
+        RANDOM
+    ==================================================*/
+
     if(
         section.filterType ===
         "random"
     ){
 
         products.sort(
-            ()=>Math.random() - 0.5
+            () =>
+                Math.random() -
+                0.5
         );
 
     }
@@ -1286,6 +1352,7 @@ async function renderProductCarousel(
                 products.length
                 ?
                 `
+
                 <div class="product-carousel">
 
                     ${
@@ -1303,18 +1370,23 @@ async function renderProductCarousel(
                 <div class="carousel-dots product-dots">
 
                     <span class="active"></span>
+
                     <span></span>
+
                     <span></span>
 
                 </div>
+
                 `
                 :
                 `
+
                 <div class="carousel-empty">
 
                     No products found.
 
                 </div>
+
                 `
             }
 
@@ -1380,7 +1452,8 @@ function createProductCard(
         DISCOUNT
     ==================================================*/
 
-    let discount = "";
+    let discount =
+        "";
 
 
     if(
@@ -1399,7 +1472,9 @@ function createProductCard(
                     )
                     /
                     Number(basePrice)
-                ) * 100
+                )
+                *
+                100
             );
 
     }
@@ -1419,7 +1494,9 @@ function createProductCard(
 
         <a
             class="product-card"
-            href="${getProductLink(product)}"
+            href="${getProductLink(
+                product
+            )}"
         >
 
             <div class="product-image">
@@ -1428,6 +1505,7 @@ function createProductCard(
                     image
                     ?
                     `
+
                     <img
                         src="${escapeAttribute(
                             image
@@ -1437,12 +1515,17 @@ function createProductCard(
                         )}"
                         loading="lazy"
                     >
+
                     `
                     :
                     `
+
                     <div class="product-image-empty">
+
                         No Image
+
                     </div>
+
                     `
                 }
 
@@ -1451,11 +1534,13 @@ function createProductCard(
                     discount
                     ?
                     `
+
                     <div class="product-discount">
 
                         -${discount}%
 
                     </div>
+
                     `
                     :
                     ""
@@ -1466,11 +1551,13 @@ function createProductCard(
                     bestseller
                     ?
                     `
+
                     <div class="product-bestseller">
 
                         🔥 Bestseller
 
                     </div>
+
                     `
                     :
                     ""
@@ -1485,7 +1572,9 @@ function createProductCard(
                         event.stopPropagation();
                     "
                 >
+
                     ♡
+
                 </button>
 
             </div>
@@ -1507,21 +1596,28 @@ function createProductCard(
                     basePrice !== ""
                     ?
                     `
+
                     <div class="product-prices">
 
                         ${
                             salePrice !== ""
                             ?
                             `
+
                             <span
-                                class="product-sale-price"
+                                class="
+                                    product-sale-price
+                                "
                             >
+
                                 ₹${escapeHtml(
                                     String(
                                         salePrice
                                     )
                                 )}
+
                             </span>
+
                             `
                             :
                             ""
@@ -1534,21 +1630,28 @@ function createProductCard(
                             Number(salePrice)
                             ?
                             `
+
                             <span
-                                class="product-old-price"
+                                class="
+                                    product-old-price
+                                "
                             >
+
                                 ₹${escapeHtml(
                                     String(
                                         basePrice
                                     )
                                 )}
+
                             </span>
+
                             `
                             :
                             ""
                         }
 
                     </div>
+
                     `
                     :
                     ""
@@ -1579,7 +1682,7 @@ function createProductCard(
 
 
 /*==================================================
-    PRODUCT HELPERS
+    PRODUCT IMAGE
 ==================================================*/
 
 function getProductImage(
@@ -1589,7 +1692,8 @@ function getProductImage(
     if(
         Array.isArray(
             product.images
-        ) &&
+        )
+        &&
         product.images.length
     ){
 
@@ -1625,6 +1729,10 @@ function getProductImage(
 
 }
 
+
+/*==================================================
+    PRODUCT PRICE
+==================================================*/
 
 function getProductPrice(
     product
@@ -1664,6 +1772,10 @@ function getProductPrice(
 }
 
 
+/*==================================================
+    PRODUCT OLD PRICE
+==================================================*/
+
 function getProductOldPrice(
     product
 ){
@@ -1678,11 +1790,17 @@ function getProductOldPrice(
 }
 
 
+/*==================================================
+    PRODUCT LINK
+==================================================*/
+
 function getProductLink(
     product
 ){
 
-    if(product.link){
+    if(
+        product.link
+    ){
 
         return product.link;
 
@@ -1696,11 +1814,16 @@ function getProductLink(
 }
 
 
+/*==================================================
+    PRODUCT TAGS
+==================================================*/
+
 function getProductTags(
     product
 ){
 
-    let tags = [];
+    let tags =
+        [];
 
 
     if(
@@ -1716,7 +1839,9 @@ function getProductTags(
     }
 
 
-    if(product.tag){
+    if(
+        product.tag
+    ){
 
         if(
             Array.isArray(
@@ -1780,11 +1905,15 @@ function renderImageCarousel(
         Array.isArray(
             section.images
         )
-        ? section.images
-        : [];
+        ?
+        section.images
+        :
+        [];
 
 
-    if(!images.length){
+    if(
+        !images.length
+    ){
 
         container.remove();
 
@@ -1814,10 +1943,12 @@ function renderImageCarousel(
 
                                     <img
                                         src="${escapeAttribute(
-                                            image.src || ""
+                                            image.src ||
+                                            ""
                                         )}"
                                         alt="${escapeAttribute(
-                                            image.title || ""
+                                            image.title ||
+                                            ""
                                         )}"
                                         loading="lazy"
                                     >
@@ -1829,6 +1960,7 @@ function renderImageCarousel(
                                     image.title
                                     ?
                                     `
+
                                     <div
                                         class="
                                             image-carousel-title
@@ -1840,6 +1972,7 @@ function renderImageCarousel(
                                         )}
 
                                     </div>
+
                                     `
                                     :
                                     ""
@@ -1848,7 +1981,9 @@ function renderImageCarousel(
                             `;
 
 
-                            if(image.link){
+                            if(
+                                image.link
+                            ){
 
                                 return `
 
@@ -1894,7 +2029,9 @@ function renderImageCarousel(
             <div class="carousel-dots">
 
                 <span class="active"></span>
+
                 <span></span>
+
                 <span></span>
 
             </div>
@@ -1913,1466 +2050,7 @@ function renderImageCarousel(
 
 
 /*==================================================
-    YOUTUBE CAROUSEL
-==================================================*/
-
-function renderYoutubeCarousel(
-    container,
-    section
-){
-
-    const videos =
-        Array.isArray(section.videos)
-            ? section.videos
-            : [];
-
-
-    /*==================================================
-        REMOVE EMPTY SECTION
-    ==================================================*/
-
-    if(!videos.length){
-
-        container.remove();
-
-        return;
-
-    }
-
-
-    /*==================================================
-        VALID VIDEOS
-    ==================================================*/
-
-    const validVideos =
-        videos
-            .map(video => {
-
-                const videoId =
-                    getYoutubeVideoId(
-                        video.url
-                    );
-
-
-                if(!videoId){
-
-                    return null;
-
-                }
-
-
-                return {
-
-                    ...video,
-
-                    videoId
-
-                };
-
-            })
-            .filter(Boolean);
-
-
-    if(!validVideos.length){
-
-        container.remove();
-
-        return;
-
-    }
-
-
-    /*==================================================
-        HTML
-    ==================================================*/
-
-    container.innerHTML = `
-
-        <div class="home-container">
-
-            ${renderSectionHeading(
-                section
-            )}
-
-
-            <div
-                class="youtube-carousel"
-                data-youtube-carousel
-            >
-
-                ${
-                    validVideos.map(
-                        video => {
-
-                            const thumbnail =
-                                getYoutubeThumbnail(
-                                    video.videoId
-                                );
-
-
-                            return `
-
-                                <div
-                                    class="youtube-item"
-                                    data-video-id="${escapeAttribute(
-                                        video.videoId
-                                    )}"
-                                >
-
-                                    <!-- THUMBNAIL -->
-
-                                    <div
-                                        class="youtube-thumbnail"
-                                        style="
-                                            background-image:url(
-                                                '${escapeAttribute(
-                                                    thumbnail
-                                                )}'
-                                            );
-                                        "
-                                        aria-label="Play video"
-                                        role="button"
-                                        tabindex="0"
-                                    ></div>
-
-
-                                    <!-- CUSTOM PLAY ICON -->
-
-                                    <div
-                                        class="youtube-play-indicator"
-                                        aria-hidden="true"
-                                    ></div>
-
-
-                                </div>
-
-                            `;
-
-                        }
-                    ).join("")
-                }
-
-            </div>
-
-
-            <div class="carousel-dots">
-
-                ${
-                    validVideos.map(
-                        (_,index) => `
-
-                        <span
-                            class="${
-                                index === 0
-                                ? "active"
-                                : ""
-                            }"
-                        ></span>
-
-                    `
-                    ).join("")
-                }
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    initYoutubeCarousel(
-        container,
-        section
-    );
-
-}
-
-/*==================================================
-    YOUTUBE CAROUSEL CONTROLLER
-==================================================*/
-
-async function initYoutubeCarousel(
-    container,
-    section
-){
-
-    const carousel =
-        container.querySelector(
-            "[data-youtube-carousel]"
-        );
-
-
-    if(!carousel){
-
-        return;
-
-    }
-
-
-    const slides =
-        Array.from(
-            carousel.querySelectorAll(
-                ".youtube-item"
-            )
-        );
-
-
-    if(!slides.length){
-
-        return;
-
-    }
-
-
-    /*==================================================
-        PLAYER STORAGE
-    ==================================================*/
-
-    const players =
-        new Array(
-            slides.length
-        ).fill(null);
-
-
-    const playerReady =
-        new Array(
-            slides.length
-        ).fill(false);
-
-
-    const pendingAutoPlay =
-        new Array(
-            slides.length
-        ).fill(false);
-
-
-    let activeIndex = -1;
-
-    let scrollTimer = null;
-
-    let readyCount = 0;
-
-    let initialStarted = false;
-
-
-    /*==================================================
-        LOAD YOUTUBE API
-    ==================================================*/
-
-    try{
-
-        await loadYouTubeAPI();
-
-    }
-
-    catch(error){
-
-        console.error(
-            "YouTube API failed:",
-            error
-        );
-
-        return;
-
-    }
-
-
-    /*==================================================
-        CREATE PLAYERS
-    ==================================================*/
-
-    slides.forEach(
-        (slide,index) => {
-
-            const videoId =
-                slide.dataset.videoId;
-
-
-            if(!videoId){
-
-                return;
-
-            }
-
-
-            const iframe =
-                document.createElement(
-                    "iframe"
-                );
-
-
-            /*
-                Keep iframe hidden until
-                the video is actually activated.
-            */
-
-            iframe.style.display =
-                "none";
-
-
-            iframe.src =
-                `https://www.youtube.com/embed/${encodeURIComponent(
-                    videoId
-                )}?enablejsapi=1&playsinline=1&controls=0&rel=0&autoplay=0&fs=0&iv_load_policy=3&disablekb=1&modestbranding=1`;
-
-
-            iframe.title =
-                "Product Video";
-
-
-            iframe.setAttribute(
-                "frameborder",
-                "0"
-            );
-
-
-            iframe.setAttribute(
-                "allow",
-                "autoplay; encrypted-media; picture-in-picture"
-            );
-
-
-            iframe.setAttribute(
-                "allowfullscreen",
-                ""
-            );
-
-
-            slide.appendChild(
-                iframe
-            );
-
-
-            /*==================================================
-                CREATE PLAYER
-            ==================================================*/
-
-            const player =
-                new YT.Player(
-                    iframe,
-                    {
-
-                        events: {
-
-                            /*======================================
-                                READY
-                            ======================================*/
-
-                            onReady:
-                                event => {
-
-                                    players[index] =
-                                        event.target;
-
-
-                                    playerReady[index] =
-                                        true;
-
-
-                                    readyCount++;
-
-
-                                    /*
-                                        Keep every player muted
-                                        initially.
-
-                                        This allows autoplay on
-                                        mobile browsers.
-                                    */
-
-                                    try{
-
-                                        event.target.mute();
-
-                                    }
-                                    catch(error){}
-
-
-                                    /*==================================
-                                        START CENTER VIDEO
-                                    ==================================*/
-
-                                    if(
-                                        !initialStarted &&
-                                        readyCount ===
-                                        slides.length
-                                    ){
-
-                                        initialStarted =
-                                            true;
-
-
-                                        const centerIndex =
-                                            getCenterSlide();
-
-
-                                        if(
-                                            centerIndex >= 0
-                                        ){
-
-                                            playVideo(
-                                                centerIndex,
-                                                false
-                                            );
-
-                                        }
-
-                                    }
-
-
-                                    /*==================================
-                                        PENDING CENTER AUTOPLAY
-                                    ==================================*/
-
-                                    if(
-                                        pendingAutoPlay[index]
-                                    ){
-
-                                        pendingAutoPlay[index] =
-                                            false;
-
-
-                                        playVideo(
-                                            index,
-                                            false
-                                        );
-
-                                    }
-
-                                },
-
-
-                            /*======================================
-                                STATE CHANGE
-                            ======================================*/
-
-                            onStateChange:
-                                event => {
-
-                                    if(
-                                        event.data ===
-                                        YT.PlayerState.ENDED
-                                    ){
-
-                                        resetVideo(
-                                            index
-                                        );
-
-                                    }
-
-                                },
-
-
-                            /*======================================
-                                ERROR
-                            ======================================*/
-
-                            onError:
-                                event => {
-
-                                    console.warn(
-                                        "YouTube error:",
-                                        event.data
-                                    );
-
-
-                                    resetVideo(
-                                        index
-                                    );
-
-                                }
-
-                        }
-
-                    }
-                );
-
-
-            players[index] =
-                player;
-
-        }
-    );
-
-
-    /*==================================================
-        PLAY VIDEO
-    ==================================================*/
-
-    function playVideo(
-        index,
-        userClick = false
-    ){
-
-        if(
-            index < 0 ||
-            index >= slides.length
-        ){
-
-            return;
-
-        }
-
-
-        /*
-            Stop every other video.
-        */
-
-        slides.forEach(
-            (_,i) => {
-
-                if(i !== index){
-
-                    resetVideo(
-                        i
-                    );
-
-                }
-
-            }
-        );
-
-
-        /*==================================================
-            PLAYER NOT READY
-        ==================================================*/
-
-        if(
-            !playerReady[index] ||
-            !players[index]
-        ){
-
-            /*
-                Remember that this video should
-                start once YouTube is ready.
-            */
-
-            pendingAutoPlay[index] =
-                true;
-
-
-            activeIndex =
-                index;
-
-
-            return;
-
-        }
-
-
-        activateVideo(
-            index,
-            userClick
-        );
-
-    }
-
-
-    /*==================================================
-        ACTIVATE VIDEO
-    ==================================================*/
-
-    function activateVideo(
-        index,
-        userClick = false
-    ){
-
-        const player =
-            players[index];
-
-
-        const slide =
-            slides[index];
-
-
-        if(
-            !player ||
-            !slide
-        ){
-
-            pendingAutoPlay[index] =
-                true;
-
-            return;
-
-        }
-
-
-        /*==================================================
-            STOP ALL OTHER PLAYERS
-        ==================================================*/
-
-        slides.forEach(
-            (_,i) => {
-
-                if(i === index){
-
-                    return;
-
-                }
-
-
-                const otherPlayer =
-                    players[i];
-
-
-                if(
-                    otherPlayer &&
-                    playerReady[i]
-                ){
-
-                    try{
-
-                        otherPlayer.pauseVideo();
-
-                    }
-                    catch(error){}
-
-                }
-
-
-                slides[i]
-                    .classList
-                    .remove(
-                        "is-playing"
-                    );
-
-
-                const otherIframe =
-                    slides[i]
-                        .querySelector(
-                            "iframe"
-                        );
-
-
-                if(otherIframe){
-
-                    otherIframe.style.display =
-                        "none";
-
-                }
-
-            }
-        );
-
-
-        activeIndex =
-            index;
-
-
-        slide.classList.add(
-            "is-playing"
-        );
-
-
-        const iframe =
-            slide.querySelector(
-                "iframe"
-            );
-
-
-        if(iframe){
-
-            iframe.style.display =
-                "block";
-
-        }
-
-
-        updateYoutubeDots(
-            carousel,
-            index
-        );
-
-
-        /*==================================================
-            CLICK
-            USER CLICK = SOUND ON
-        ==================================================*/
-
-        if(userClick){
-
-            try{
-
-                player.unMute();
-
-                player.setVolume(
-                    100
-                );
-
-            }
-            catch(error){
-
-                console.warn(
-                    "Unable to unmute:",
-                    error
-                );
-
-            }
-
-        }
-
-        else{
-
-            /*
-                SWIPE / AUTO PLAY
-
-                Must remain muted for mobile
-                autoplay permission.
-            */
-
-            try{
-
-                player.mute();
-
-            }
-            catch(error){}
-
-        }
-
-
-        /*==================================================
-            PLAY
-        ==================================================*/
-
-        try{
-
-            player.playVideo();
-
-        }
-
-        catch(error){
-
-            console.warn(
-                "Unable to play YouTube video:",
-                error
-            );
-
-        }
-
-    }
-
-
-    /*==================================================
-        RESET VIDEO
-    ==================================================*/
-
-    function resetVideo(
-        index
-    ){
-
-        if(
-            index < 0 ||
-            index >= slides.length
-        ){
-
-            return;
-
-        }
-
-
-        pendingAutoPlay[index] =
-            false;
-
-
-        const player =
-            players[index];
-
-
-        if(
-            player &&
-            playerReady[index]
-        ){
-
-            try{
-
-                player.pauseVideo();
-
-            }
-            catch(error){}
-
-        }
-
-
-        const slide =
-            slides[index];
-
-
-        slide.classList.remove(
-            "is-playing"
-        );
-
-
-        const iframe =
-            slide.querySelector(
-                "iframe"
-            );
-
-
-        if(iframe){
-
-            iframe.style.display =
-                "none";
-
-        }
-
-
-        if(
-            activeIndex === index
-        ){
-
-            activeIndex =
-                -1;
-
-        }
-
-    }
-
-
-    /*==================================================
-        STOP ALL
-    ==================================================*/
-
-    function stopAll(){
-
-        slides.forEach(
-            (_,index) => {
-
-                resetVideo(
-                    index
-                );
-
-            }
-        );
-
-    }
-
-
-    /*==================================================
-        FIND VIDEO CLOSEST TO CAROUSEL CENTER
-    ==================================================*/
-
-    function getCenterSlide(){
-
-        const carouselRect =
-            carousel.getBoundingClientRect();
-
-
-        const carouselCenter =
-            carouselRect.left +
-            (
-                carouselRect.width /
-                2
-            );
-
-
-        let closestIndex =
-            -1;
-
-
-        let closestDistance =
-            Infinity;
-
-
-        slides.forEach(
-            (slide,index) => {
-
-                const rect =
-                    slide.getBoundingClientRect();
-
-
-                const slideCenter =
-                    rect.left +
-                    (
-                        rect.width /
-                        2
-                    );
-
-
-                const distance =
-                    Math.abs(
-                        carouselCenter -
-                        slideCenter
-                    );
-
-
-                if(
-                    distance <
-                    closestDistance
-                ){
-
-                    closestDistance =
-                        distance;
-
-
-                    closestIndex =
-                        index;
-
-                }
-
-            }
-        );
-
-
-        return closestIndex;
-
-    }
-
-
-    /*==================================================
-        HORIZONTAL SWIPE
-    ==================================================*/
-
-    carousel.addEventListener(
-        "scroll",
-        () => {
-
-            /*
-                Wait until the user's finger
-                has finished moving.
-            */
-
-            clearTimeout(
-                scrollTimer
-            );
-
-
-            /*
-                Stop currently playing video
-                immediately when carousel moves.
-            */
-
-            if(
-                activeIndex >= 0
-            ){
-
-                const currentSlide =
-                    slides[
-                        activeIndex
-                    ];
-
-
-                if(currentSlide){
-
-                    const rect =
-                        currentSlide.getBoundingClientRect();
-
-
-                    const carouselRect =
-                        carousel.getBoundingClientRect();
-
-
-                    const carouselCenter =
-                        carouselRect.left +
-                        (
-                            carouselRect.width /
-                            2
-                        );
-
-
-                    const currentCenter =
-                        rect.left +
-                        (
-                            rect.width /
-                            2
-                        );
-
-
-                    /*
-                        If current video is moving
-                        away from center, stop it.
-                    */
-
-                    if(
-                        Math.abs(
-                            currentCenter -
-                            carouselCenter
-                        ) >
-                        rect.width * 0.35
-                    ){
-
-                        resetVideo(
-                            activeIndex
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-            scrollTimer =
-                setTimeout(
-                    () => {
-
-                        const centerIndex =
-                            getCenterSlide();
-
-
-                        if(
-                            centerIndex < 0
-                        ){
-
-                            return;
-
-                        }
-
-
-                        /*
-                            CENTER VIDEO AUTOPLAY
-
-                            FALSE = keep muted
-                            so mobile autoplay works.
-                        */
-
-                        playVideo(
-                            centerIndex,
-                            false
-                        );
-
-                    },
-                    180
-                );
-
-        },
-        {
-            passive:true
-        }
-    );
-
-
-    /*==================================================
-        CLICK ANY VIDEO
-    ==================================================*/
-
-    carousel.addEventListener(
-        "click",
-        event => {
-
-            const slide =
-                event.target.closest(
-                    ".youtube-item"
-                );
-
-
-            if(!slide){
-
-                return;
-
-            }
-
-
-            const index =
-                slides.indexOf(
-                    slide
-                );
-
-
-            if(index < 0){
-
-                return;
-
-            }
-
-
-            /*
-                CLICK = USER GESTURE
-
-                Therefore sound can be enabled.
-            */
-
-            playVideo(
-                index,
-                true
-            );
-
-        }
-    );
-
-
-    /*==================================================
-        KEYBOARD
-    ==================================================*/
-
-    carousel.addEventListener(
-        "keydown",
-        event => {
-
-            const thumbnail =
-                event.target.closest(
-                    ".youtube-thumbnail"
-                );
-
-
-            if(!thumbnail){
-
-                return;
-
-            }
-
-
-            if(
-                event.key !== "Enter" &&
-                event.key !== " "
-            ){
-
-                return;
-
-            }
-
-
-            event.preventDefault();
-
-
-            const slide =
-                thumbnail.closest(
-                    ".youtube-item"
-                );
-
-
-            if(!slide){
-
-                return;
-
-            }
-
-
-            const index =
-                slides.indexOf(
-                    slide
-                );
-
-
-            if(index < 0){
-
-                return;
-
-            }
-
-
-            playVideo(
-                index,
-                true
-            );
-
-        }
-    );
-
-
-    /*==================================================
-        STOP WHEN CAROUSEL LEAVES SCREEN
-    ==================================================*/
-
-    const visibilityObserver =
-        new IntersectionObserver(
-            entries => {
-
-                entries.forEach(
-                    entry => {
-
-                        if(
-                            entry.target !==
-                            carousel
-                        ){
-
-                            return;
-
-                        }
-
-
-                        if(
-                            !entry.isIntersecting
-                        ){
-
-                            stopAll();
-
-                        }
-
-                    }
-                );
-
-            },
-            {
-                threshold:0.05
-            }
-        );
-
-
-    visibilityObserver.observe(
-        carousel
-    );
-
-
-    /*==================================================
-        PAGE VISIBILITY
-    ==================================================*/
-
-    document.addEventListener(
-        "visibilitychange",
-        () => {
-
-            if(
-                document.hidden
-            ){
-
-                stopAll();
-
-            }
-
-        }
-    );
-
-
-    /*==================================================
-        INITIAL CENTER VIDEO
-    ==================================================*/
-
-    /*
-        In case all players were already ready
-        before the ready events finished.
-    */
-
-    setTimeout(
-        () => {
-
-            if(
-                initialStarted
-            ){
-
-                return;
-
-            }
-
-
-            const centerIndex =
-                getCenterSlide();
-
-
-            if(
-                centerIndex >= 0
-            ){
-
-                playVideo(
-                    centerIndex,
-                    false
-                );
-
-            }
-
-        },
-        1500
-    );
-
-}
-
-/*==================================================
-    GET YOUTUBE VIDEO ID
-==================================================*/
-
-function getYoutubeVideoId(
-    url
-){
-
-    if(!url){
-
-        return "";
-
-    }
-
-
-    const value =
-        String(url).trim();
-
-
-    /*
-        Direct YouTube ID
-        Example:
-        dQw4w9WgXcQ
-    */
-
-    if(
-        /^[a-zA-Z0-9_-]{11}$/.test(
-            value
-        )
-    ){
-
-        return value;
-
-    }
-
-
-    try{
-
-        const parsed =
-            new URL(value);
-
-
-        const hostname =
-            parsed.hostname
-                .toLowerCase()
-                .replace(
-                    "www.",
-                    ""
-                );
-
-
-        /*==================================================
-            YOUTUBE SHORTS
-
-            youtube.com/shorts/VIDEO_ID
-        ==================================================*/
-
-        if(
-            hostname ===
-            "youtube.com" &&
-            parsed.pathname.startsWith(
-                "/shorts/"
-            )
-        ){
-
-            return parsed.pathname
-                .split("/shorts/")[1]
-                .split("/")[0]
-                .split("?")[0];
-
-        }
-
-
-        /*==================================================
-            NORMAL WATCH
-
-            youtube.com/watch?v=VIDEO_ID
-        ==================================================*/
-
-        if(
-            hostname ===
-            "youtube.com"
-        ){
-
-            const id =
-                parsed.searchParams.get(
-                    "v"
-                );
-
-
-            if(id){
-
-                return id;
-
-            }
-
-        }
-
-
-        /*==================================================
-            YOUTU.BE
-
-            youtu.be/VIDEO_ID
-        ==================================================*/
-
-        if(
-            hostname ===
-            "youtu.be"
-        ){
-
-            return parsed.pathname
-                .replace(
-                    "/",
-                    ""
-                )
-                .split("?")[0];
-
-        }
-
-    }
-
-    catch(error){
-
-        console.warn(
-            "Invalid YouTube URL:",
-            url
-        );
-
-    }
-
-
-    return "";
-
-}
-
-
-/*==================================================
-    YOUTUBE THUMBNAIL
-==================================================*/
-
-function getYoutubeThumbnail(
-    videoId
-){
-
-    if(!videoId){
-
-        return "";
-
-    }
-
-
-    /*
-        maxresdefault is sometimes unavailable,
-        so hqdefault is more reliable.
-    */
-
-    return `https://img.youtube.com/vi/${encodeURIComponent(
-        videoId
-    )}/hqdefault.jpg`;
-
-}
-
-/*==================================================
-    YOUTUBE DOTS
-==================================================*/
-
-function updateYoutubeDots(
-    carousel,
-    index
-){
-
-    const container =
-        carousel.closest(
-            ".home-section"
-        );
-
-
-    if(!container){
-
-        return;
-
-    }
-
-
-    const dots =
-        container.querySelectorAll(
-            ".carousel-dots span"
-        );
-
-
-    dots.forEach(
-        (dot,i) => {
-
-            dot.classList.toggle(
-                "active",
-                i === index
-            );
-
-        }
-    );
-
-}
-
-
-
-/*==================================================
-    REVIEWS
+    REVIEW CAROUSEL
 ==================================================*/
 
 function renderReviewCarousel(
@@ -3384,11 +2062,15 @@ function renderReviewCarousel(
         Array.isArray(
             section.reviews
         )
-        ? section.reviews
-        : [];
+        ?
+        section.reviews
+        :
+        [];
 
 
-    if(!reviews.length){
+    if(
+        !reviews.length
+    ){
 
         container.remove();
 
@@ -3434,6 +2116,7 @@ function renderReviewCarousel(
                                 review.image
                                 ?
                                 `
+
                                 <img
                                     class="review-avatar"
                                     src="${escapeAttribute(
@@ -3445,15 +2128,18 @@ function renderReviewCarousel(
                                     )}"
                                     loading="lazy"
                                 >
+
                                 `
                                 :
                                 `
+
                                 <div
                                     class="
                                         review-avatar
                                         review-avatar-empty
                                     "
                                 >
+
                                     ${escapeHtml(
                                         (
                                             review.name ||
@@ -3462,7 +2148,9 @@ function renderReviewCarousel(
                                         .charAt(0)
                                         .toUpperCase()
                                     )}
+
                                 </div>
+
                                 `
                             }
 
@@ -3496,6 +2184,7 @@ function renderReviewCarousel(
                                 review.name
                                 ?
                                 `
+
                                 <h3
                                     class="review-name"
                                 >
@@ -3505,6 +2194,7 @@ function renderReviewCarousel(
                                     )}
 
                                 </h3>
+
                                 `
                                 :
                                 ""
@@ -3522,7 +2212,9 @@ function renderReviewCarousel(
             <div class="carousel-dots">
 
                 <span class="active"></span>
+
                 <span></span>
+
                 <span></span>
 
             </div>
@@ -3553,7 +2245,9 @@ function renderStars(
             0,
             Math.min(
                 5,
-                Number(stars) || 0
+                Number(
+                    stars
+                ) || 0
             )
         );
 
@@ -3561,7 +2255,8 @@ function renderStars(
     return (
         "★".repeat(
             rating
-        ) +
+        )
+        +
         "☆".repeat(
             5 - rating
         )
@@ -3586,7 +2281,9 @@ function renderSpacer(
         )}px`;
 
 
-    if(section.background){
+    if(
+        section.background
+    ){
 
         container.style.background =
             section.background;
@@ -3594,7 +2291,9 @@ function renderSpacer(
     }
 
 
-    if(section.backgroundColor){
+    if(
+        section.backgroundColor
+    ){
 
         container.style.backgroundColor =
             section.backgroundColor;
@@ -3628,7 +2327,7 @@ function initHorizontalCarousel(
 
     carousel.addEventListener(
         "scroll",
-        ()=>{
+        () => {
 
             updateCarouselDots(
                 carousel,
@@ -3659,7 +2358,9 @@ function updateCarouselDots(
         );
 
 
-    if(!dots.length){
+    if(
+        !dots.length
+    ){
 
         return;
 
@@ -3671,7 +2372,9 @@ function updateCarouselDots(
         carousel.clientWidth;
 
 
-    if(max <= 0){
+    if(
+        max <= 0
+    ){
 
         return;
 
@@ -3686,12 +2389,18 @@ function updateCarouselDots(
     const index =
         Math.round(
             progress *
-            (dots.length - 1)
+            (
+                dots.length -
+                1
+            )
         );
 
 
     dots.forEach(
-        (dot,i)=>{
+        (
+            dot,
+            i
+        ) => {
 
             dot.classList.toggle(
                 "active",
@@ -3712,7 +2421,9 @@ function getTimestamp(
     value
 ){
 
-    if(!value){
+    if(
+        !value
+    ){
 
         return 0;
 
@@ -3750,7 +2461,9 @@ function getTimestamp(
 
 function showLoader(){
 
-    if(loader){
+    if(
+        loader
+    ){
 
         loader.classList.remove(
             "hidden"
@@ -3763,7 +2476,9 @@ function showLoader(){
 
 function hideLoader(){
 
-    if(loader){
+    if(
+        loader
+    ){
 
         loader.classList.add(
             "hidden"
@@ -3775,7 +2490,7 @@ function hideLoader(){
 
 
 /*==================================================
-    ESCAPE
+    ESCAPE HTML
 ==================================================*/
 
 function escapeHtml(
@@ -3808,6 +2523,10 @@ function escapeHtml(
 
 }
 
+
+/*==================================================
+    ESCAPE ATTRIBUTE
+==================================================*/
 
 function escapeAttribute(
     value
@@ -3893,8 +2612,10 @@ function(){
 
 
     setTimeout(
-        ()=>{
+        () => {
+
             input?.focus();
+
         },
         100
     );
