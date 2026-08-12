@@ -30,8 +30,14 @@ body {
 
 /* LOGO */
 .logo img {
-  height: 32px;
+  width: auto;
+  height: auto;
+
+  max-width: 330px;
+  max-height: 45px;
+
   object-fit: contain;
+  display: block;
 }
 
 /* SEARCH ICON */
