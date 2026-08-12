@@ -1,177 +1,610 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
+
+  <!-- =========================================
+       DEFAULT TITLE
+       Firebase site-settings.js can replace this
+  ========================================== -->
 
   <title>Imaginary Gifts - Customized Gifts</title>
 
-  <meta name="description" content="Customized gifts from Imaginary Gifts">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="">
-  <meta property="og:description" content="">
-  <meta property="og:image" content="">
-  <meta property="og:url" content="">
-  <meta property="og:type" content="product">
+  <!-- =========================================
+       DEFAULT META DESCRIPTION
+       Firebase site-settings.js can replace this
+  ========================================== -->
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Customized gifts from Imaginary Gifts"
+  >
 
-  <link rel="stylesheet" href="css/store.css">
+
+  <!-- =========================================
+       OPEN GRAPH
+  ========================================== -->
+
+  <meta
+    property="og:title"
+    content="Imaginary Gifts - Customized Gifts"
+  >
+
+  <meta
+    property="og:description"
+    content="Customized gifts from Imaginary Gifts"
+  >
+
+  <meta
+    property="og:image"
+    content=""
+  >
+
+  <meta
+    property="og:url"
+    content=""
+  >
+
+  <meta
+    property="og:type"
+    content="product"
+  >
+
+
+  <!-- =========================================
+       VIEWPORT
+  ========================================== -->
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+
+  <!-- =========================================
+       STORE CSS
+  ========================================== -->
+
+  <link
+    rel="stylesheet"
+    href="css/store.css"
+  >
+
 </head>
+
+
 <body>
 
-<!-- ================= TOP BAR ================= -->
+
+<!-- ==================================================
+     TOP BAR
+================================================== -->
+
 <header class="topbar">
 
-  <!-- MENU -->
-  <div class="menu-btn" onclick="toggleSidebar()">☰</div>
 
-  <!-- LOGO (IMAGE) -->
+  <!-- =========================================
+       MENU
+  ========================================== -->
+
+  <div
+    class="menu-btn"
+    onclick="toggleSidebar()"
+  >
+    ☰
+  </div>
+
+
+  <!-- =========================================
+       LOGO
+
+       IMPORTANT:
+       Logo is now loaded from:
+
+       settings/general/logoUrl
+
+       Company name is used automatically
+       as alt text by site-settings.js.
+  ========================================== -->
+
   <div class="logo">
-  <a id="logoLink" href="index">
-    <img id="siteLogo" src="" alt="">
-  </a>
-</div>
 
- 
+    <a
+      id="logoLink"
+      data-logo-link
+      href="index"
+      aria-label="Home"
+    >
+
+      <img
+        id="siteLogo"
+        data-site-logo
+        src=""
+        alt="Company Logo"
+      >
+
+    </a>
+
+  </div>
+
 
 </header>
 
 
-<!-- ================= SEARCH OVERLAY ================= -->
-<div id="searchOverlay" class="search-overlay">
-  <input type="text" id="searchInput" placeholder="Search for products...">
-</div>
 
+<!-- ==================================================
+     SEARCH OVERLAY
+================================================== -->
 
-<!-- ================= SIDEBAR ================= -->
-<div id="sidebar" class="sidebar">
+<div
+  id="searchOverlay"
+  class="search-overlay"
+>
 
-  <!-- SEARCH INSIDE SIDEBAR -->
-  
-
-  <!-- MENU -->
-  <a href="index">🏠 Home</a>  
-  <a href="aboutus">ℹ️ About Us</a>
-  <a href="contact-us">📞 Contact Us</a>
-  <a href="t&c">📜 Terms & Conditions</a>
-  <a href="privacy-policy">🔒 Privacy Policy</a>
-  <a href="refund">💸 Refund Policy</a>
-  <a href="shipping">🚚 Shipping Policy</a>
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search for products..."
+  >
 
 </div>
 
-<!-- OVERLAY -->
-<div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
 
-    <div class="top-bar custom-topbar">
-  <span class="back-btn" onclick="goBack()">←</span>
+
+<!-- ==================================================
+     SIDEBAR
+================================================== -->
+
+<div
+  id="sidebar"
+  class="sidebar"
+>
+
+
+  <!-- =========================================
+       HOME
+
+       data-home-link allows Firebase/site
+       settings system to control the home link.
+  ========================================== -->
+
+  <a
+    id="homeLink"
+    data-home-link
+    href="index"
+  >
+    🏠 Home
+  </a>
+
+
+  <!-- =========================================
+       STATIC PAGE LINKS
+  ========================================== -->
+
+  <a href="aboutus">
+    ℹ️ About Us
+  </a>
+
+
+  <a href="contact-us">
+    📞 Contact Us
+  </a>
+
+
+  <a href="t&c">
+    📜 Terms & Conditions
+  </a>
+
+
+  <a href="privacy-policy">
+    🔒 Privacy Policy
+  </a>
+
+
+  <a href="refund">
+    💸 Refund Policy
+  </a>
+
+
+  <a href="shipping">
+    🚚 Shipping Policy
+  </a>
+
+
 </div>
+
+
+
+<!-- ==================================================
+     SIDEBAR OVERLAY
+================================================== -->
+
+<div
+  id="overlay"
+  class="overlay"
+  onclick="toggleSidebar()"
+></div>
+
+
+
+<!-- ==================================================
+     BACK BAR
+================================================== -->
+
+<div class="top-bar custom-topbar">
+
+  <span
+    class="back-btn"
+    onclick="goBack()"
+  >
+    ←
+  </span>
+
+</div>
+
+
+
+<!-- ==================================================
+     PRODUCT PAGE
+================================================== -->
 
 <div class="product-page">
 
-  <div id="slider" class="slider"></div>
-  <div id="sliderDots" class="slider-dots"></div>
 
-  <div id="productDetails" class="product-details"></div>
+  <!-- =========================================
+       PRODUCT IMAGE SLIDER
+  ========================================== -->
+
+  <div
+    id="slider"
+    class="slider"
+  ></div>
+
+
+  <!-- =========================================
+       SLIDER DOTS
+  ========================================== -->
+
+  <div
+    id="sliderDots"
+    class="slider-dots"
+  ></div>
+
+
+  <!-- =========================================
+       PRODUCT DETAILS
+
+       product.js renders:
+
+       - Product name
+       - Description
+       - Price
+       - Colors
+       - Sizes
+       - Custom options
+       - Related designs
+  ========================================== -->
+
+  <div
+    id="productDetails"
+    class="product-details"
+  ></div>
+
 
 </div>
 
-<!-- ================= CUSTOMIZE PRODUCT POPUP ================= -->
 
-<div id="customizeOverlay" class="hidden">
+
+<!-- ==================================================
+     CUSTOMIZE PRODUCT POPUP
+================================================== -->
+
+<div
+  id="customizeOverlay"
+  class="hidden"
+>
 
   <div class="customize-form">
 
-    <h3>Customize Your Product</h3>
 
-    <div id="customOptionsContainer"></div>
+    <h3>
+      Customize Your Product
+    </h3>
+
+
+    <div
+      id="customOptionsContainer"
+    ></div>
+
+
+    <!-- =========================================
+         POPUP PRICE
+    ========================================== -->
 
     <div class="popup-price">
 
       Total :
-      <span id="popupPrice">₹0</span>
+
+      <span id="popupPrice">
+        ₹0
+      </span>
 
     </div>
+
+
+    <!-- =========================================
+         ACTIONS
+    ========================================== -->
 
     <div class="wa-actions">
 
-      <button onclick="closeCustomizePopup()">
+
+      <button
+        type="button"
+        onclick="closeCustomizePopup()"
+      >
         Cancel
       </button>
 
-      <button onclick="nextToAddress()">
+
+      <button
+        type="button"
+        onclick="nextToAddress()"
+      >
         Next →
       </button>
 
+
     </div>
 
+
   </div>
 
 </div>
 
 
 
-<!-- WhatsApp Order Form -->
-<div id="waFormOverlay" class="hidden">
+<!-- ==================================================
+     WHATSAPP ORDER FORM
+================================================== -->
+
+<div
+  id="waFormOverlay"
+  class="hidden"
+>
+
   <div class="wa-form">
-    <h3>Enter delivery details</h3>
 
-    <input id="custName" placeholder="Full Name">
-    <input id="custPhone" placeholder="Mobile Number">
-    <textarea id="custAddress" placeholder="Full Address"></textarea>
-    <input id="custPincode" placeholder="Pincode">
 
-  <div class="wa-actions">
+    <h3>
+      Enter delivery details
+    </h3>
 
-  <button onclick="backToCustomize()">
-    ← Back
-  </button>
 
-  <button onclick="submitWaOrder()">
-    Continue to WhatsApp
-  </button>
+    <!-- =========================================
+         CUSTOMER NAME
+    ========================================== -->
 
-</div>
+    <input
+      id="custName"
+      type="text"
+      placeholder="Full Name"
+      autocomplete="name"
+    >
+
+
+    <!-- =========================================
+         CUSTOMER PHONE
+    ========================================== -->
+
+    <input
+      id="custPhone"
+      type="tel"
+      placeholder="Mobile Number"
+      inputmode="numeric"
+      autocomplete="tel"
+    >
+
+
+    <!-- =========================================
+         CUSTOMER ADDRESS
+    ========================================== -->
+
+    <textarea
+      id="custAddress"
+      placeholder="Full Address"
+      autocomplete="street-address"
+    ></textarea>
+
+
+    <!-- =========================================
+         PINCODE
+    ========================================== -->
+
+    <input
+      id="custPincode"
+      type="tel"
+      placeholder="Pincode"
+      inputmode="numeric"
+      maxlength="6"
+      autocomplete="postal-code"
+    >
+
+
+    <!-- =========================================
+         ACTIONS
+    ========================================== -->
+
+    <div class="wa-actions">
+
+
+      <button
+        type="button"
+        onclick="backToCustomize()"
+      >
+        ← Back
+      </button>
+
+
+      <button
+        type="button"
+        onclick="submitWaOrder()"
+      >
+        Continue to WhatsApp
+      </button>
+
+
+    </div>
+
+
   </div>
+
 </div>
 
 
 
+<!-- ==================================================
+     ERROR MODAL
+================================================== -->
 
-<div id="errorModal" class="error-modal hidden">
+<div
+  id="errorModal"
+  class="error-modal hidden"
+>
+
   <div class="error-box">
-    <h3>Please Fill These First</h3>
-    <ul id="errorList"></ul>
-    <button onclick="closeErrorModal()">OK</button>
+
+
+    <h3>
+      Please Fill These First
+    </h3>
+
+
+    <ul
+      id="errorList"
+    ></ul>
+
+
+    <button
+      type="button"
+      onclick="closeErrorModal()"
+    >
+      OK
+    </button>
+
+
   </div>
+
 </div>
 
 
 
-
+<!-- ==================================================
+     STICKY ORDER BAR
+================================================== -->
 
 <div class="sticky-order">
 
- <button class="order-btn" onclick="orderNow()">
+
+  <!-- =========================================
+       WHATSAPP ORDER
+  ========================================== -->
+
+  <button
+    type="button"
+    class="order-btn"
+    onclick="orderNow()"
+  >
     Order on WhatsApp
   </button>
 
-  <button class="share-btn" onclick="sharePage()">
+
+  <!-- =========================================
+       SHARE
+  ========================================== -->
+
+  <button
+    type="button"
+    class="share-btn"
+    onclick="sharePage()"
+  >
     Share 🔗
   </button>
 
-</div>
 
 </div>
-</div>
 
-<script type="module" src="js/product.js"></script>
-<script src="js/share.js"></script>
+
+
+<!-- ==================================================
+     SITE SETTINGS
+
+     MUST LOAD BEFORE PRODUCT.JS
+
+     Reads:
+
+     settings/general
+
+     and automatically applies:
+
+     - Logo
+     - Company name
+     - Home URL
+     - SEO title
+     - Meta description
+     - OG tags
+================================================== -->
+
+<script
+  type="module"
+  src="js/site-settings.js"
+></script>
+
+
+
+<!-- ==================================================
+     PRODUCT JS
+================================================== -->
+
+<script
+  type="module"
+  src="js/product.js"
+></script>
+
+
+
+<!-- ==================================================
+     SHARE JS
+================================================== -->
+
+<script
+  src="js/share.js"
+></script>
+
+
+
+<!-- ==================================================
+     BACK BUTTON
+================================================== -->
+
 <script>
-  function goBack() {
+
+  function goBack(){
+
+    /*
+      Always return to homepage.
+    */
+
     location.href = "index";
+
   }
-</script> 
+
+</script>
+
+
 </body>
+
 </html>
