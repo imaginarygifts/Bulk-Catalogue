@@ -2382,9 +2382,18 @@ button{
 
 }
 
-/*==================================================
-    YOUTUBE VIDEO BOX
-==================================================*/
+/* ==========================================
+   YOUTUBE ITEM
+========================================== */
+
+.youtube-item {
+    flex: 0 0 auto;
+}
+
+
+/* ==========================================
+   VIDEO BOX
+========================================== */
 
 .youtube-video-box {
     position: relative;
@@ -2392,26 +2401,32 @@ button{
 }
 
 
-/*==================================================
-    YOUTUBE VIDEO TITLE
-==================================================*/
+/* ==========================================
+   YOUTUBE VIDEO TITLE
+========================================== */
 
 .youtube-video-title {
-    margin-top: 10px;
-    padding: 0 4px;
+    margin-top: 8px;
+    padding: 0;
 
     color: #ffffff;
 
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
 
-    line-height: 1.35;
+    line-height: 1.3;
 
-    text-align: left;
+    text-align: center;
 
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.youtube-video-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border-radius: 16px;
 }
