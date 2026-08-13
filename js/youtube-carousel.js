@@ -1,6 +1,12 @@
 /*==================================================
     YOUTUBE CAROUSEL
     Independent Homepage Component
+
+    BEHAVIOR:
+    - NO automatic playback on page load
+    - Swipe/scroll -> centered video plays WITH SOUND
+    - Tap video -> plays WITH SOUND
+    - Only one video plays at a time
 ==================================================*/
 
 
@@ -429,12 +435,6 @@ async function initYoutubeCarousel(
         ).fill(false);
 
 
-    const pendingAutoPlay =
-        new Array(
-            slides.length
-        ).fill(false);
-
-
     let activeIndex =
         -1;
 
@@ -445,10 +445,6 @@ async function initYoutubeCarousel(
 
     let readyCount =
         0;
-
-
-    let initialStarted =
-        false;
 
 
     /*==================================================
@@ -497,6 +493,11 @@ async function initYoutubeCarousel(
                 );
 
 
+            /*
+                Keep iframe hidden until
+                user starts a video.
+            */
+
             iframe.style.display =
                 "none";
 
@@ -534,6 +535,10 @@ async function initYoutubeCarousel(
             );
 
 
+            /*==================================================
+                CREATE YOUTUBE PLAYER
+            ==================================================*/
+
             const player =
                 new YT.Player(
                     iframe,
@@ -541,9 +546,9 @@ async function initYoutubeCarousel(
 
                         events: {
 
-                            /*==================================
+                            /*======================================
                                 READY
-                            ==================================*/
+                            ======================================*/
 
                             onReady:
                                 event => {
@@ -559,72 +564,22 @@ async function initYoutubeCarousel(
                                     readyCount++;
 
 
-                                    try{
+                                    /*
+                                        IMPORTANT:
 
-                                        event.target.mute();
+                                        We DO NOT call mute().
+                                        We DO NOT call playVideo().
 
-                                    }
-
-                                    catch(error){}
-
-
-                                    /*==============================
-                                        START CENTER VIDEO
-                                    ==============================*/
-
-                                    if(
-                                        !initialStarted &&
-                                        readyCount ===
-                                        slides.length
-                                    ){
-
-                                        initialStarted =
-                                            true;
-
-
-                                        const centerIndex =
-                                            getCenterSlide();
-
-
-                                        if(
-                                            centerIndex >= 0
-                                        ){
-
-                                            playVideo(
-                                                centerIndex,
-                                                false
-                                            );
-
-                                        }
-
-                                    }
-
-
-                                    /*==============================
-                                        PENDING AUTOPLAY
-                                    ==============================*/
-
-                                    if(
-                                        pendingAutoPlay[index]
-                                    ){
-
-                                        pendingAutoPlay[index] =
-                                            false;
-
-
-                                        playVideo(
-                                            index,
-                                            false
-                                        );
-
-                                    }
+                                        The video stays stopped until
+                                        the user interacts.
+                                    */
 
                                 },
 
 
-                            /*==================================
+                            /*======================================
                                 STATE CHANGE
-                            ==================================*/
+                            ======================================*/
 
                             onStateChange:
                                 event => {
@@ -643,9 +598,9 @@ async function initYoutubeCarousel(
                                 },
 
 
-                            /*==================================
+                            /*======================================
                                 ERROR
-                            ==================================*/
+                            ======================================*/
 
                             onError:
                                 event => {
@@ -677,11 +632,11 @@ async function initYoutubeCarousel(
 
     /*==================================================
         PLAY VIDEO
+        USER ACTION ONLY
     ==================================================*/
 
     function playVideo(
-        index,
-        userClick = false
+        index
     ){
 
         if(
@@ -695,7 +650,7 @@ async function initYoutubeCarousel(
 
 
         /*==============================================
-            STOP OTHER VIDEOS
+            STOP ALL OTHER VIDEOS
         ==============================================*/
 
         slides.forEach(
@@ -722,13 +677,18 @@ async function initYoutubeCarousel(
             !players[index]
         ){
 
-            pendingAutoPlay[index] =
-                true;
+            /*
+                The YouTube player may still be loading.
 
+                Do NOT automatically play it later.
 
-            activeIndex =
-                index;
+                This is important because we only want
+                playback as a result of user interaction.
+            */
 
+            console.warn(
+                "YouTube player is not ready yet."
+            );
 
             return;
 
@@ -736,8 +696,7 @@ async function initYoutubeCarousel(
 
 
         activateVideo(
-            index,
-            userClick
+            index
         );
 
     }
@@ -748,8 +707,7 @@ async function initYoutubeCarousel(
     ==================================================*/
 
     function activateVideo(
-        index,
-        userClick = false
+        index
     ){
 
         const player =
@@ -765,16 +723,13 @@ async function initYoutubeCarousel(
             !slide
         ){
 
-            pendingAutoPlay[index] =
-                true;
-
             return;
 
         }
 
 
         /*==================================================
-            STOP ALL OTHER PLAYERS
+            STOP OTHER PLAYERS
         ==================================================*/
 
         slides.forEach(
@@ -832,6 +787,10 @@ async function initYoutubeCarousel(
         );
 
 
+        /*==================================================
+            ACTIVE SLIDE
+        ==================================================*/
+
         activeIndex =
             index;
 
@@ -862,41 +821,32 @@ async function initYoutubeCarousel(
 
 
         /*==================================================
-            USER CLICK = SOUND
+            SOUND
         ==================================================*/
 
-        if(userClick){
+        /*
+            This playback is triggered by the user's
+            click/touch/swipe interaction.
 
-            try{
+            Therefore we explicitly enable sound.
+        */
 
-                player.unMute();
+        try{
 
-                player.setVolume(
-                    100
-                );
+            player.unMute();
 
-            }
-
-            catch(error){
-
-                console.warn(
-                    "Unable to unmute:",
-                    error
-                );
-
-            }
+            player.setVolume(
+                100
+            );
 
         }
 
-        else{
+        catch(error){
 
-            try{
-
-                player.mute();
-
-            }
-
-            catch(error){}
+            console.warn(
+                "Unable to enable YouTube sound:",
+                error
+            );
 
         }
 
@@ -939,10 +889,6 @@ async function initYoutubeCarousel(
             return;
 
         }
-
-
-        pendingAutoPlay[index] =
-            false;
 
 
         const player =
@@ -1091,7 +1037,7 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        HORIZONTAL SWIPE
+        HORIZONTAL SWIPE / SCROLL
     ==================================================*/
 
     carousel.addEventListener(
@@ -1104,7 +1050,7 @@ async function initYoutubeCarousel(
 
 
             /*==========================================
-                STOP VIDEO MOVING AWAY
+                STOP CURRENT VIDEO WHEN IT MOVES AWAY
             ==========================================*/
 
             if(
@@ -1163,7 +1109,7 @@ async function initYoutubeCarousel(
 
 
             /*==========================================
-                AUTOPLAY CENTER VIDEO AFTER SWIPE
+                AFTER USER FINISHES SWIPING
             ==========================================*/
 
             scrollTimer =
@@ -1183,9 +1129,17 @@ async function initYoutubeCarousel(
                         }
 
 
+                        /*
+                            IMPORTANT:
+
+                            This playback happens after
+                            a USER SCROLL/TOUCH gesture.
+
+                            Sound is therefore requested.
+                        */
+
                         playVideo(
-                            centerIndex,
-                            false
+                            centerIndex
                         );
 
                     },
@@ -1200,7 +1154,7 @@ async function initYoutubeCarousel(
 
 
     /*==================================================
-        CLICK VIDEO
+        CLICK / TOUCH VIDEO
     ==================================================*/
 
     carousel.addEventListener(
@@ -1233,9 +1187,14 @@ async function initYoutubeCarousel(
             }
 
 
+            /*
+                Direct user click.
+
+                Video plays with sound.
+            */
+
             playVideo(
-                index,
-                true
+                index
             );
 
         }
@@ -1303,8 +1262,7 @@ async function initYoutubeCarousel(
 
 
             playVideo(
-                index,
-                true
+                index
             );
 
         }
@@ -1372,42 +1330,6 @@ async function initYoutubeCarousel(
             }
 
         }
-    );
-
-
-    /*==================================================
-        INITIAL CENTER VIDEO
-    ==================================================*/
-
-    setTimeout(
-        () => {
-
-            if(
-                initialStarted
-            ){
-
-                return;
-
-            }
-
-
-            const centerIndex =
-                getCenterSlide();
-
-
-            if(
-                centerIndex >= 0
-            ){
-
-                playVideo(
-                    centerIndex,
-                    false
-                );
-
-            }
-
-        },
-        1500
     );
 
 }
