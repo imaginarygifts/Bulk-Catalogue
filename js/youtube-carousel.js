@@ -200,76 +200,82 @@ function renderYoutubeCarousel(
             >
 
                 ${
-                    validVideos.map(
-                        video => {
+    validVideos.map(
+        video => {
 
-                            const thumbnail =
-                                getYoutubeThumbnail(
-                                    video.videoId
+            const thumbnail =
+                getYoutubeThumbnail(
+                    video.videoId
+                );
+
+
+            return `
+
+                <div
+                    class="youtube-item"
+                    data-video-id="${escapeAttribute(
+                        video.videoId
+                    )}"
+                >
+
+                    <!-- VIDEO BOX -->
+
+                    <div class="youtube-video-box">
+
+                        <!-- THUMBNAIL -->
+
+                        <div
+                            class="youtube-thumbnail"
+                            style="
+                                background-image:url(
+                                    '${escapeAttribute(
+                                        thumbnail
+                                    )}'
                                 );
+                            "
+                            aria-label="Play video"
+                            role="button"
+                            tabindex="0"
+                        ></div>
 
 
-                            return `
+                        <!-- PLAY ICON -->
 
-                                <div
-                                    class="youtube-item"
-                                    data-video-id="${escapeAttribute(
-                                        video.videoId
-                                    )}"
-                                >
+                        <div
+                            class="youtube-play-indicator"
+                            aria-hidden="true"
+                        ></div>
 
-                                    <!-- THUMBNAIL -->
-
-                                    <div
-                                        class="youtube-thumbnail"
-                                        style="
-                                            background-image:url(
-                                                '${escapeAttribute(
-                                                    thumbnail
-                                                )}'
-                                            );
-                                        "
-                                        aria-label="Play video"
-                                        role="button"
-                                        tabindex="0"
-                                    ></div>
+                    </div>
 
 
-                                    <!-- PLAY ICON -->
+                    <!-- VIDEO TITLE -->
 
-                                    <div
-                                        class="youtube-play-indicator"
-                                        aria-hidden="true"
-                                    ></div>
-
-                                </div>
-
-                            `;
-
-                        }
-                    ).join("")
-                }
-
-            </div>
-
-
-            <div class="carousel-dots">
-
-                ${
-                    validVideos.map(
-                        (_,index) => `
-
-                            <span
-                                class="${
-                                    index === 0
-                                    ? "active"
-                                    : ""
-                                }"
-                            ></span>
-
+                    ${
+                        video.title
+                        ?
                         `
-                    ).join("")
-                }
+                        <div class="youtube-video-title">
+
+                            ${escapeHtml(
+                                video.title
+                            )}
+
+                        </div>
+                        `
+                        :
+                        ""
+                    }
+
+                </div>
+
+            `;
+
+        }
+    ).join("")
+}
+
+            
 
             </div>
 
