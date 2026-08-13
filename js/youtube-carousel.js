@@ -200,101 +200,76 @@ function renderYoutubeCarousel(
             >
 
    ${
-    validVideos.map(
-        video => {
+                    validVideos.map(
+                        video => {
 
-            const thumbnail =
-                getYoutubeThumbnail(
-                    video.videoId
-                );
-
-
-            return `
-
-                <div
-                    class="youtube-item"
-                    data-video-id="${escapeAttribute(
-                        video.videoId
-                    )}"
-                >
-
-                    <!-- VIDEO BOX -->
-
-                    <div class="youtube-video-box">
-
-                        <!-- THUMBNAIL -->
-
-                        <div
-                            class="youtube-thumbnail"
-                            style="
-                                background-image:url(
-                                    '${escapeAttribute(
-                                        thumbnail
-                                    )}'
+                            const thumbnail =
+                                getYoutubeThumbnail(
+                                    video.videoId
                                 );
-                            "
-                            aria-label="Play video"
-                            role="button"
-                            tabindex="0"
-                        ></div>
 
 
-                        <!-- PLAY ICON -->
+                            return `
 
-                        <div
-                            class="youtube-play-indicator"
-                            aria-hidden="true"
-                        ></div>
+                                <div
+                                    class="youtube-item"
+                                    data-video-id="${escapeAttribute(
+                                        video.videoId
+                                    )}"
+                                >
 
-                    </div>
+                                    <!-- THUMBNAIL -->
+
+                                    <div
+                                        class="youtube-thumbnail"
+                                        style="
+                                            background-image:url(
+                                                '${escapeAttribute(
+                                                    thumbnail
+                                                )}'
+                                            );
+                                        "
+                                        aria-label="Play video"
+                                        role="button"
+                                        tabindex="0"
+                                    ></div>
 
 
-                    <!-- VIDEO TITLE -->
+                                    <!-- PLAY ICON -->
 
-                    ${
-                        video.title
-                        ?
+                                    <div
+                                        class="youtube-play-indicator"
+                                        aria-hidden="true"
+                                    ></div>
+
+                                </div>
+
+                            `;
+
+                        }
+                    ).join("")
+                }
+
+            </div>
+
+
+            <div class="carousel-dots">
+
+                ${
+                    validVideos.map(
+                        (_,index) => `
+
+                            <span
+                                class="${
+                                    index === 0
+                                    ? "active"
+                                    : ""
+                                }"
+                            ></span>
+
                         `
-                        <div class="youtube-video-title">
-
-                            ${escapeHtml(
-                                video.title
-                            )}
-
-                        </div>
-                        `
-                        :
-                        ""
-                    }
-
-                </div>
-
-            `;
-
-        }
-    ).join("")
-}
-
-</div>
-
-
-<div class="carousel-dots">
-
-    ${
-        validVideos.map(
-            (_,index) => `
-
-                <span
-                    class="${
-                        index === 0
-                        ? "active"
-                        : ""
-                    }"
-                ></span>
-
-            `
-        ).join("")
-    }
+                    ).join("")
+                }
 
 </div>
             
