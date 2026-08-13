@@ -199,7 +199,7 @@ function renderYoutubeCarousel(
                 data-youtube-carousel
             >
 
-                ${
+   ${
     validVideos.map(
         video => {
 
@@ -275,6 +275,28 @@ function renderYoutubeCarousel(
     ).join("")
 }
 
+</div>
+
+
+<div class="carousel-dots">
+
+    ${
+        validVideos.map(
+            (_,index) => `
+
+                <span
+                    class="${
+                        index === 0
+                        ? "active"
+                        : ""
+                    }"
+                ></span>
+
+            `
+        ).join("")
+    }
+
+</div>
             
 
             </div>
