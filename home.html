@@ -378,10 +378,225 @@
 
 </main>
 
+<button
+    type="button"
+    class="write-review-btn"
+    onclick="openReviewPopup()"
+>
+    ⭐ Write a Review
+</button>
 
 
+<!-- ==================================================
+     CUSTOMER REVIEW POPUP
+================================================== -->
+
+<div
+    id="reviewPopup"
+    class="review-popup hidden"
+>
+
+    <div class="review-popup-box">
+
+        <!-- HEADER -->
+
+        <div class="review-popup-header">
+
+            <h2>
+                Write a Review
+            </h2>
+
+            <button
+                type="button"
+                onclick="closeReviewPopup()"
+                class="review-close-btn"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
 
 
+        <!-- FORM -->
+
+        <form
+            id="customerReviewForm"
+            class="customer-review-form"
+        >
+
+            <!-- NAME -->
+
+            <label>
+                Your Name
+            </label>
+
+            <input
+                type="text"
+                id="reviewCustomerName"
+                placeholder="Enter your name"
+                required
+            >
+
+
+            <!-- CUSTOMER IMAGE -->
+
+            <label>
+                Customer Image
+            </label>
+
+            <input
+                type="file"
+                id="reviewCustomerImage"
+                accept="image/*"
+            >
+
+            <div
+                id="customerImagePreview"
+                class="customer-image-preview hidden"
+            ></div>
+
+
+            <!-- PRODUCT SEARCH -->
+
+            <label>
+                Select Product
+            </label>
+
+            <div class="review-product-search">
+
+                <input
+                    type="text"
+                    id="reviewProductSearch"
+                    placeholder="Search product..."
+                    autocomplete="off"
+                >
+
+                <div
+                    id="reviewProductResults"
+                    class="review-product-results hidden"
+                ></div>
+
+            </div>
+
+
+            <!-- SELECTED PRODUCT -->
+
+            <div
+                id="selectedReviewProduct"
+                class="selected-review-product hidden"
+            >
+
+                <img
+                    id="selectedProductImage"
+                    src=""
+                    alt="Product"
+                >
+
+                <div>
+
+                    <strong
+                        id="selectedProductName"
+                    ></strong>
+
+                    <button
+                        type="button"
+                        onclick="clearSelectedReviewProduct()"
+                    >
+                        Change
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RATING -->
+
+            <label>
+                Rating
+            </label>
+
+            <div
+                id="reviewRating"
+                class="review-rating"
+            >
+
+                <button
+                    type="button"
+                    data-rating="1"
+                >
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="2"
+                >
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="3"
+                >
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="4"
+                >
+                    ★
+                </button>
+
+                <button
+                    type="button"
+                    data-rating="5"
+                >
+                    ★
+                </button>
+
+            </div>
+
+
+            <!-- REVIEW -->
+
+            <label>
+                Review
+            </label>
+
+            <textarea
+                id="reviewText"
+                placeholder="Write your experience..."
+                rows="5"
+                required
+            ></textarea>
+
+
+            <!-- ERROR -->
+
+            <div
+                id="reviewFormError"
+                class="review-form-error hidden"
+            ></div>
+
+
+            <!-- SUBMIT -->
+
+            <button
+                type="submit"
+                id="submitReviewBtn"
+                class="submit-review-btn"
+            >
+                Submit Review
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
 
 <!-- ==================================================
      HOMEPAGE JAVASCRIPT
