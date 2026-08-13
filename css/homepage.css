@@ -2381,3 +2381,37 @@ button{
     }
 
 }
+
+/*==================================================
+    YOUTUBE VIDEO BOX
+==================================================*/
+
+.youtube-video-box {
+    position: relative;
+    width: 100%;
+}
+
+
+/*==================================================
+    YOUTUBE VIDEO TITLE
+==================================================*/
+
+.youtube-video-title {
+    margin-top: 10px;
+    padding: 0 4px;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    line-height: 1.35;
+
+    text-align: left;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+
+    overflow: hidden;
+}
