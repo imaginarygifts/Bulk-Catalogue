@@ -11,10 +11,57 @@
     content="width=device-width, initial-scale=1.0"
 >
 
+<!-- SITE TITLE / DESCRIPTION
+     These are updated automatically by site-settings.js
+     from Firestore settings/general
+-->
+
 <title>Homepage</title>
 
+<meta
+    name="description"
+    content=""
+    id="siteMetaDescription"
+>
 
-<!-- HOMEPAGE CSS -->
+
+<!-- ==================================================
+     OPEN GRAPH
+================================================== -->
+
+<meta
+    property="og:title"
+    content=""
+    id="ogTitle"
+>
+
+<meta
+    property="og:description"
+    content=""
+    id="ogDescription"
+>
+
+<meta
+    property="og:image"
+    content=""
+    id="ogImage"
+>
+
+<meta
+    property="og:url"
+    content=""
+    id="ogUrl"
+>
+
+<meta
+    property="og:type"
+    content="website"
+>
+
+
+<!-- ==================================================
+     HOMEPAGE CSS
+================================================== -->
 
 <link
     rel="stylesheet"
@@ -22,7 +69,9 @@
 >
 
 
-<!-- FONT AWESOME -->
+<!-- ==================================================
+     FONT AWESOME
+================================================== -->
 
 <link
     rel="stylesheet"
@@ -47,7 +96,7 @@
     <button
         class="menu-btn"
         type="button"
-        onclick="toggleSidebar()"
+        onclick="window.toggleSidebar()"
         aria-label="Open menu"
     >
 
@@ -56,38 +105,39 @@
     </button>
 
 
+    <!-- ==================================================
+         LOGO
+    ================================================== -->
 
-    <!-- LOGO -->
+    <div class="logo">
 
-      <div class="logo">
+        <a
+            id="logoLink"
+            data-logo-link
+            href="index"
+            aria-label="Home"
+        >
 
-    <a
-      id="logoLink"
-      data-logo-link
-      href="index"
-      aria-label="Home"
-    >
+            <img
+                id="siteLogo"
+                data-site-logo
+                src=""
+                alt="Company Logo"
+            >
 
-      <img
-        id="siteLogo"
-        data-site-logo
-        src=""
-        alt="Company Logo"
-      >
+        </a>
 
-    </a>
-
-  </div>
+    </div>
 
 
-
-    <!-- SEARCH BUTTON -->
-
+    <!-- ==================================================
+         SEARCH BUTTON
+    ================================================== -->
 
     <button
         class="search-icon"
         type="button"
-        onclick="openSearch()"
+        onclick="window.openSearch()"
         aria-label="Search"
     >
 
@@ -123,7 +173,7 @@
 
         <button
             type="button"
-            onclick="closeSearch()"
+            onclick="window.closeSearch()"
             aria-label="Close search"
         >
 
@@ -148,30 +198,42 @@
     class="sidebar"
 >
 
-    <!-- SIDEBAR HEADER -->
+
+    <!-- ==================================================
+         SIDEBAR HEADER
+    ================================================== -->
+
+    <div class="sidebar-header">
+
+        <strong data-company-name>
+
+            Company Name
+
+        </strong>
 
 
-<div class="sidebar-header">
+        <button
+            type="button"
+            onclick="window.toggleSidebar()"
+            aria-label="Close menu"
+        >
 
-    <strong data-company-name>
-        Company Name
-    </strong>
+            <i class="fa-solid fa-xmark"></i>
 
-    <button
-        type="button"
-        onclick="toggleSidebar()"
-        aria-label="Close menu"
-    >
-        <i class="fa-solid fa-xmark"></i>
-    </button>
+        </button>
 
-</div>
+    </div>
+
+
 
     <!-- ==================================================
          HOME
     ================================================== -->
 
-    <a href="">
+    <a
+        href="index"
+        data-home-link
+    >
 
         <i class="fa-solid fa-house"></i>
 
@@ -182,11 +244,13 @@
     </a>
 
 
+
     <!-- ==================================================
          CATEGORIES
     ================================================== -->
 
     <div class="sidebar-expandable">
+
 
         <button
             type="button"
@@ -202,6 +266,7 @@
 
             </span>
 
+
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
             ></i>
@@ -215,12 +280,16 @@
         >
 
             <div class="sidebar-loading">
+
                 Loading categories...
+
             </div>
 
         </div>
 
+
     </div>
+
 
 
     <!-- ==================================================
@@ -228,6 +297,7 @@
     ================================================== -->
 
     <div class="sidebar-expandable">
+
 
         <button
             type="button"
@@ -243,6 +313,7 @@
 
             </span>
 
+
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
             ></i>
@@ -256,12 +327,16 @@
         >
 
             <div class="sidebar-loading">
+
                 Loading tags...
+
             </div>
 
         </div>
 
+
     </div>
+
 
 
     <!-- ==================================================
@@ -279,6 +354,7 @@
     </a>
 
 
+
     <!-- ==================================================
          CONTACT
     ================================================== -->
@@ -292,6 +368,7 @@
         </span>
 
     </a>
+
 
 
     <!-- ==================================================
@@ -309,6 +386,7 @@
     </a>
 
 
+
     <!-- ==================================================
          PRIVACY
     ================================================== -->
@@ -324,6 +402,7 @@
     </a>
 
 
+
     <!-- ==================================================
          REFUND
     ================================================== -->
@@ -337,6 +416,7 @@
         </span>
 
     </a>
+
 
 
     <!-- ==================================================
@@ -357,6 +437,7 @@
 </aside>
 
 
+
 <!-- ==================================================
      SIDEBAR OVERLAY
 ================================================== -->
@@ -364,8 +445,9 @@
 <div
     id="overlay"
     class="overlay"
-    onclick="toggleSidebar()"
+    onclick="window.toggleSidebar()"
 ></div>
+
 
 
 <!-- ==================================================
@@ -374,17 +456,29 @@
 
 <main id="homepage">
 
-    <!-- Sections will be loaded from Firestore -->
+    <!--
+        Homepage sections are loaded
+        dynamically from Firestore.
+    -->
 
 </main>
+
+
+
+<!-- ==================================================
+     WRITE REVIEW BUTTON
+================================================== -->
 
 <button
     type="button"
     class="write-review-btn"
-    onclick="openReviewPopup()"
+    onclick="window.openReviewPopup()"
 >
+
     ⭐ Write a Review
+
 </button>
+
 
 
 <!-- ==================================================
@@ -396,54 +490,85 @@
     class="review-popup hidden"
 >
 
+
     <div class="review-popup-box">
 
-        <!-- HEADER -->
+
+        <!-- ==================================================
+             POPUP HEADER
+        ================================================== -->
 
         <div class="review-popup-header">
 
+
             <h2>
+
                 Write a Review
+
             </h2>
+
 
             <button
                 type="button"
-                onclick="closeReviewPopup()"
+                onclick="window.closeReviewPopup()"
                 class="review-close-btn"
                 aria-label="Close"
             >
+
                 ×
+
             </button>
+
 
         </div>
 
 
-        <!-- FORM -->
+
+        <!-- ==================================================
+             REVIEW FORM
+        ================================================== -->
 
         <form
             id="customerReviewForm"
             class="customer-review-form"
         >
 
-            <!-- NAME -->
 
-            <label>
+            <!-- ==================================================
+                 CUSTOMER NAME
+            ================================================== -->
+
+            <label
+                for="reviewCustomerName"
+            >
+
                 Your Name
+
             </label>
+
 
             <input
                 type="text"
                 id="reviewCustomerName"
                 placeholder="Enter your name"
+                autocomplete="name"
                 required
             >
 
 
-            <!-- CUSTOMER IMAGE -->
 
-            <label>
+            <!-- ==================================================
+                 CUSTOMER IMAGE
+            ================================================== -->
+
+            <label
+                for="reviewCustomerImage"
+            >
+
                 Customer Image
+
             </label>
+
 
             <input
                 type="file"
@@ -451,19 +576,29 @@
                 accept="image/*"
             >
 
+
             <div
                 id="customerImagePreview"
                 class="customer-image-preview hidden"
             ></div>
 
 
-            <!-- PRODUCT SEARCH -->
 
-            <label>
+            <!-- ==================================================
+                 PRODUCT SEARCH
+            ================================================== -->
+
+            <label
+                for="reviewProductSearch"
+            >
+
                 Select Product
+
             </label>
 
+
             <div class="review-product-search">
+
 
                 <input
                     type="text"
@@ -472,99 +607,149 @@
                     autocomplete="off"
                 >
 
+
                 <div
                     id="reviewProductResults"
                     class="review-product-results hidden"
                 ></div>
 
+
             </div>
 
 
-            <!-- SELECTED PRODUCT -->
+
+            <!-- ==================================================
+                 SELECTED PRODUCT
+            ================================================== -->
 
             <div
                 id="selectedReviewProduct"
                 class="selected-review-product hidden"
             >
 
+
                 <img
                     id="selectedProductImage"
                     src=""
-                    alt="Product"
+                    alt="Selected Product"
                 >
 
+
                 <div>
+
 
                     <strong
                         id="selectedProductName"
                     ></strong>
 
+
                     <button
                         type="button"
-                        onclick="clearSelectedReviewProduct()"
+                        onclick="window.clearSelectedReviewProduct()"
                     >
+
                         Change
+
                     </button>
 
+
                 </div>
+
 
             </div>
 
 
-            <!-- RATING -->
+
+            <!-- ==================================================
+                 RATING
+            ================================================== -->
 
             <label>
+
                 Rating
+
             </label>
+
 
             <div
                 id="reviewRating"
                 class="review-rating"
+                role="radiogroup"
+                aria-label="Product rating"
             >
+
 
                 <button
                     type="button"
                     data-rating="1"
+                    aria-label="1 star"
                 >
+
                     ★
+
                 </button>
+
 
                 <button
                     type="button"
                     data-rating="2"
+                    aria-label="2 stars"
                 >
+
                     ★
+
                 </button>
+
 
                 <button
                     type="button"
                     data-rating="3"
+                    aria-label="3 stars"
                 >
+
                     ★
+
                 </button>
+
 
                 <button
                     type="button"
                     data-rating="4"
+                    aria-label="4 stars"
                 >
+
                     ★
+
                 </button>
+
 
                 <button
                     type="button"
                     data-rating="5"
+                    aria-label="5 stars"
                 >
+
                     ★
+
                 </button>
+
 
             </div>
 
 
-            <!-- REVIEW -->
 
-            <label>
+            <!-- ==================================================
+                 REVIEW
+            ================================================== -->
+
+            <label
+                for="reviewText"
+            >
+
                 Review
+
             </label>
+
 
             <textarea
                 id="reviewText"
@@ -574,7 +759,10 @@
             ></textarea>
 
 
-            <!-- ERROR -->
+
+            <!-- ==================================================
+                 ERROR
+            ================================================== -->
 
             <div
                 id="reviewFormError"
@@ -582,45 +770,68 @@
             ></div>
 
 
-            <!-- SUBMIT -->
+
+            <!-- ==================================================
+                 SUBMIT
+            ================================================== -->
 
             <button
                 type="submit"
                 id="submitReviewBtn"
                 class="submit-review-btn"
             >
+
                 Submit Review
+
             </button>
+
 
         </form>
 
+
     </div>
 
+
 </div>
+
+
 
 <!-- ==================================================
      HOMEPAGE JAVASCRIPT
 ================================================== -->
 
+
+<!-- SITE SETTINGS -->
+
 <script
-  type="module"
-  src="js/site-settings.js"
+    type="module"
+    src="js/site-settings.js"
 ></script>
+
+
+<!-- HOMEPAGE -->
 
 <script
     type="module"
     src="js/homepage.js"
 ></script>
 
+
+<!-- SIDEBAR -->
+
 <script
     type="module"
     src="/js/sidebar.js"
 ></script>
 
+
+<!-- CUSTOMER REVIEW -->
+
 <script
     type="module"
     src="js/customer-review.js"
 ></script>
+
 
 </body>
 
