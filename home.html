@@ -11,17 +11,19 @@
     content="width=device-width, initial-scale=1.0"
 >
 
-<!-- SITE TITLE / DESCRIPTION
-     These are updated automatically by site-settings.js
+<!-- ==================================================
+     DEFAULT SEO
+     
+     site-settings.js will replace these values
      from Firestore settings/general
--->
+================================================== -->
 
 <title>Homepage</title>
 
 <meta
+    id="siteMetaDescription"
     name="description"
     content=""
-    id="siteMetaDescription"
 >
 
 
@@ -30,27 +32,27 @@
 ================================================== -->
 
 <meta
+    id="ogTitle"
     property="og:title"
     content=""
-    id="ogTitle"
 >
 
 <meta
+    id="ogDescription"
     property="og:description"
     content=""
-    id="ogDescription"
 >
 
 <meta
+    id="ogImage"
     property="og:image"
     content=""
-    id="ogImage"
 >
 
 <meta
+    id="ogUrl"
     property="og:url"
     content=""
-    id="ogUrl"
 >
 
 <meta
@@ -91,12 +93,12 @@
 <header class="topbar">
 
 
-    <!-- MENU BUTTON -->
+    <!-- MENU -->
 
     <button
         class="menu-btn"
+        id="menuButton"
         type="button"
-        onclick="window.toggleSidebar()"
         aria-label="Open menu"
     >
 
@@ -105,9 +107,8 @@
     </button>
 
 
-    <!-- ==================================================
-         LOGO
-    ================================================== -->
+
+    <!-- LOGO -->
 
     <div class="logo">
 
@@ -130,14 +131,13 @@
     </div>
 
 
-    <!-- ==================================================
-         SEARCH BUTTON
-    ================================================== -->
+
+    <!-- SEARCH -->
 
     <button
         class="search-icon"
+        id="searchButton"
         type="button"
-        onclick="window.openSearch()"
         aria-label="Search"
     >
 
@@ -159,9 +159,7 @@
     class="search-overlay"
 >
 
-
     <div class="search-box">
-
 
         <input
             type="text"
@@ -170,10 +168,9 @@
             autocomplete="off"
         >
 
-
         <button
             type="button"
-            onclick="window.closeSearch()"
+            id="closeSearchButton"
             aria-label="Close search"
         >
 
@@ -181,9 +178,7 @@
 
         </button>
 
-
     </div>
-
 
 </div>
 
@@ -199,9 +194,7 @@
 >
 
 
-    <!-- ==================================================
-         SIDEBAR HEADER
-    ================================================== -->
+    <!-- SIDEBAR HEADER -->
 
     <div class="sidebar-header">
 
@@ -214,7 +207,7 @@
 
         <button
             type="button"
-            onclick="window.toggleSidebar()"
+            id="closeSidebarButton"
             aria-label="Close menu"
         >
 
@@ -226,9 +219,7 @@
 
 
 
-    <!-- ==================================================
-         HOME
-    ================================================== -->
+    <!-- HOME -->
 
     <a
         href="index"
@@ -245,12 +236,9 @@
 
 
 
-    <!-- ==================================================
-         CATEGORIES
-    ================================================== -->
+    <!-- CATEGORIES -->
 
     <div class="sidebar-expandable">
-
 
         <button
             type="button"
@@ -265,7 +253,6 @@
                 Categories
 
             </span>
-
 
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
@@ -287,17 +274,13 @@
 
         </div>
 
-
     </div>
 
 
 
-    <!-- ==================================================
-         TAGS
-    ================================================== -->
+    <!-- TAGS -->
 
     <div class="sidebar-expandable">
-
 
         <button
             type="button"
@@ -312,7 +295,6 @@
                 Tags
 
             </span>
-
 
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
@@ -334,14 +316,11 @@
 
         </div>
 
-
     </div>
 
 
 
-    <!-- ==================================================
-         ABOUT
-    ================================================== -->
+    <!-- ABOUT -->
 
     <a href="aboutus">
 
@@ -355,9 +334,7 @@
 
 
 
-    <!-- ==================================================
-         CONTACT
-    ================================================== -->
+    <!-- CONTACT -->
 
     <a href="contact-us">
 
@@ -371,9 +348,7 @@
 
 
 
-    <!-- ==================================================
-         TERMS
-    ================================================== -->
+    <!-- TERMS -->
 
     <a href="t&c">
 
@@ -387,9 +362,7 @@
 
 
 
-    <!-- ==================================================
-         PRIVACY
-    ================================================== -->
+    <!-- PRIVACY -->
 
     <a href="privacy-policy">
 
@@ -403,9 +376,7 @@
 
 
 
-    <!-- ==================================================
-         REFUND
-    ================================================== -->
+    <!-- REFUND -->
 
     <a href="refund">
 
@@ -419,9 +390,7 @@
 
 
 
-    <!-- ==================================================
-         SHIPPING
-    ================================================== -->
+    <!-- SHIPPING -->
 
     <a href="shipping">
 
@@ -445,7 +414,6 @@
 <div
     id="overlay"
     class="overlay"
-    onclick="window.toggleSidebar()"
 ></div>
 
 
@@ -456,10 +424,7 @@
 
 <main id="homepage">
 
-    <!--
-        Homepage sections are loaded
-        dynamically from Firestore.
-    -->
+    <!-- Firestore homepage sections load here -->
 
 </main>
 
@@ -471,8 +436,8 @@
 
 <button
     type="button"
+    id="openReviewButton"
     class="write-review-btn"
-    onclick="window.openReviewPopup()"
 >
 
     ⭐ Write a Review
@@ -488,20 +453,23 @@
 <div
     id="reviewPopup"
     class="review-popup hidden"
+    aria-hidden="true"
 >
 
 
-    <div class="review-popup-box">
+    <div
+        class="review-popup-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reviewPopupTitle"
+    >
 
 
-        <!-- ==================================================
-             POPUP HEADER
-        ================================================== -->
+        <!-- HEADER -->
 
         <div class="review-popup-header">
 
-
-            <h2>
+            <h2 id="reviewPopupTitle">
 
                 Write a Review
 
@@ -510,23 +478,20 @@
 
             <button
                 type="button"
-                onclick="window.closeReviewPopup()"
+                id="closeReviewButton"
                 class="review-close-btn"
-                aria-label="Close"
+                aria-label="Close review form"
             >
 
                 ×
 
             </button>
 
-
         </div>
 
 
 
-        <!-- ==================================================
-             REVIEW FORM
-        ================================================== -->
+        <!-- FORM -->
 
         <form
             id="customerReviewForm"
@@ -534,9 +499,7 @@
         >
 
 
-            <!-- ==================================================
-                 CUSTOMER NAME
-            ================================================== -->
+            <!-- NAME -->
 
             <label
                 for="reviewCustomerName"
@@ -552,14 +515,13 @@
                 id="reviewCustomerName"
                 placeholder="Enter your name"
                 autocomplete="name"
+                maxlength="100"
                 required
             >
 
 
 
-            <!-- ==================================================
-                 CUSTOMER IMAGE
-            ================================================== -->
+            <!-- CUSTOMER IMAGE -->
 
             <label
                 for="reviewCustomerImage"
@@ -567,26 +529,45 @@
 
                 Customer Image
 
+                <span class="optional-label">
+                    Optional
+                </span>
+
             </label>
 
 
             <input
                 type="file"
                 id="reviewCustomerImage"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
             >
 
 
             <div
                 id="customerImagePreview"
                 class="customer-image-preview hidden"
-            ></div>
+            >
+
+                <img
+                    id="customerImagePreviewImg"
+                    src=""
+                    alt="Customer preview"
+                >
+
+                <button
+                    type="button"
+                    id="removeCustomerImageButton"
+                >
+
+                    Remove
+
+                </button>
+
+            </div>
 
 
 
-            <!-- ==================================================
-                 PRODUCT SEARCH
-            ================================================== -->
+            <!-- PRODUCT SEARCH -->
 
             <label
                 for="reviewProductSearch"
@@ -598,7 +579,6 @@
 
 
             <div class="review-product-search">
-
 
                 <input
                     type="text"
@@ -613,20 +593,16 @@
                     class="review-product-results hidden"
                 ></div>
 
-
             </div>
 
 
 
-            <!-- ==================================================
-                 SELECTED PRODUCT
-            ================================================== -->
+            <!-- SELECTED PRODUCT -->
 
             <div
                 id="selectedReviewProduct"
                 class="selected-review-product hidden"
             >
-
 
                 <img
                     id="selectedProductImage"
@@ -635,8 +611,7 @@
                 >
 
 
-                <div>
-
+                <div class="selected-review-product-info">
 
                     <strong
                         id="selectedProductName"
@@ -645,24 +620,20 @@
 
                     <button
                         type="button"
-                        onclick="window.clearSelectedReviewProduct()"
+                        id="changeReviewProductButton"
                     >
 
                         Change
 
                     </button>
 
-
                 </div>
-
 
             </div>
 
 
 
-            <!-- ==================================================
-                 RATING
-            ================================================== -->
+            <!-- RATING -->
 
             <label>
 
@@ -675,72 +646,54 @@
                 id="reviewRating"
                 class="review-rating"
                 role="radiogroup"
-                aria-label="Product rating"
+                aria-label="Rating"
             >
-
 
                 <button
                     type="button"
                     data-rating="1"
                     aria-label="1 star"
                 >
-
                     ★
-
                 </button>
-
 
                 <button
                     type="button"
                     data-rating="2"
                     aria-label="2 stars"
                 >
-
                     ★
-
                 </button>
-
 
                 <button
                     type="button"
                     data-rating="3"
                     aria-label="3 stars"
                 >
-
                     ★
-
                 </button>
-
 
                 <button
                     type="button"
                     data-rating="4"
                     aria-label="4 stars"
                 >
-
                     ★
-
                 </button>
-
 
                 <button
                     type="button"
                     data-rating="5"
                     aria-label="5 stars"
                 >
-
                     ★
-
                 </button>
-
 
             </div>
 
 
 
-            <!-- ==================================================
-                 REVIEW
-            ================================================== -->
+            <!-- REVIEW -->
 
             <label
                 for="reviewText"
@@ -755,14 +708,13 @@
                 id="reviewText"
                 placeholder="Write your experience..."
                 rows="5"
+                maxlength="1000"
                 required
             ></textarea>
 
 
 
-            <!-- ==================================================
-                 ERROR
-            ================================================== -->
+            <!-- ERROR -->
 
             <div
                 id="reviewFormError"
@@ -771,9 +723,16 @@
 
 
 
-            <!-- ==================================================
-                 SUBMIT
-            ================================================== -->
+            <!-- SUCCESS -->
+
+            <div
+                id="reviewFormSuccess"
+                class="review-form-success hidden"
+            ></div>
+
+
+
+            <!-- SUBMIT -->
 
             <button
                 type="submit"
@@ -791,17 +750,13 @@
 
     </div>
 
-
 </div>
 
 
 
 <!-- ==================================================
-     HOMEPAGE JAVASCRIPT
+     JAVASCRIPT
 ================================================== -->
-
-
-<!-- SITE SETTINGS -->
 
 <script
     type="module"
@@ -809,23 +764,17 @@
 ></script>
 
 
-<!-- HOMEPAGE -->
-
 <script
     type="module"
     src="js/homepage.js"
 ></script>
 
 
-<!-- SIDEBAR -->
-
 <script
     type="module"
     src="/js/sidebar.js"
 ></script>
 
-
-<!-- CUSTOMER REVIEW -->
 
 <script
     type="module"
