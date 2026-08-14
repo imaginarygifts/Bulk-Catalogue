@@ -1465,7 +1465,7 @@ event
         ==================================================*/
 
         showSuccess(
-            "Thank you! Your review has been submitted and will appear after approval."
+            "Thank you! Your review has been submitted."
         );
 
 
