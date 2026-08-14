@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews | Admin</title>
+    <link rel="stylesheet" href="reviews.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <header class="topbar">
+        <div class="brand">
+            <button class="icon-btn mobile-menu" id="mobileMenuBtn" aria-label="Menu">☰</button>
+            <div>
+                <div class="brand-title">Admin Dashboard</div>
+                <div class="brand-subtitle">Review Management</div>
+            </div>
+        </div>
+
+        <div class="top-actions">
+            <a class="back-btn" href="dashboard.html">← Dashboard</a>
+            <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-title">MANAGE</div>
+
+            <a href="dashboard.html" class="nav-item">⌂ <span>Dashboard</span></a>
+            <a href="products.html" class="nav-item">▣ <span>Products</span></a>
+            <a href="categories.html" class="nav-item">▦ <span>Categories</span></a>
+            <a href="orders.html" class="nav-item">▤ <span>Orders</span></a>
+            <a href="coupons.html" class="nav-item">% <span>Coupons</span></a>
+            <a href="homepage-builder.html" class="nav-item">▧ <span>Homepage</span></a>
+            <a href="reviews.html" class="nav-item active">★ <span>Reviews</span></a>
+            <a href="settings.html" class="nav-item">⚙ <span>Settings</span></a>
+
+            <div class="sidebar-footer">
+                <span id="adminEmail">Checking admin...</span>
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <section class="page-heading">
+                <div>
+                    <h1>Reviews</h1>
+                    <p>View, approve, edit and control which customer reviews appear on your website.</p>
+                </div>
+
+                <button class="primary-btn" id="addReviewBtn">
+                    + Add Review
+                </button>
+            </section>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">★</div>
+                    <div>
+                        <div class="stat-label">Total Reviews</div>
+                        <div class="stat-value" id="totalCount">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon pending">◷</div>
+                    <div>
+                        <div class="stat-label">Pending</div>
+                        <div class="stat-value" id="pendingCount">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon approved">✓</div>
+                    <div>
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-value" id="approvedCount">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon published">◉</div>
+                    <div>
+                        <div class="stat-label">On Homepage</div>
+                        <div class="stat-value" id="publishedCount">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon rating">★</div>
+                    <div>
+                        <div class="stat-label">Average Rating</div>
+                        <div class="stat-value" id="averageRating">0.0</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="toolbar">
+                <div class="search-wrap">
+                    <span>⌕</span>
+                    <input id="searchInput" type="search" placeholder="Search customer, review or product...">
+                </div>
+
+                <select id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="published">On Homepage</option>
+                    <option value="hidden">Approved but Hidden</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+
+                <select id="ratingFilter">
+                    <option value="all">All Ratings</option>
+                    <option value="5">5 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="2">2 Stars</option>
+                    <option value="1">1 Star</option>
+                </select>
+
+                <select id="sortFilter">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="ratingHigh">Highest Rating</option>
+                    <option value="ratingLow">Lowest Rating</option>
+                </select>
+            </section>
+
+            <div id="loading" class="state-box">
+                <div class="loader"></div>
+                <p>Loading reviews...</p>
+            </div>
+
+            <div id="errorBox" class="state-box error-box hidden"></div>
+
+            <section id="reviewsGrid" class="reviews-grid"></section>
+
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-icon">★</div>
+                <h2>No reviews found</h2>
+                <p>Try changing the search or filters, or add a review manually.</p>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-backdrop hidden" id="reviewModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <h2 id="modalTitle">Add Review</h2>
+                <p>Create or edit a customer review.</p>
+            </div>
+            <button class="close-btn" id="closeModalBtn">×</button>
+        </div>
+
+        <form id="reviewForm">
+
+            <input type="hidden" id="reviewId">
+
+            <div class="form-grid">
+
+                <div class="form-field">
+                    <label for="customerName">Customer Name *</label>
+                    <input id="customerName" required maxlength="100" placeholder="Customer name">
+                </div>
+
+                <div class="form-field">
+                    <label for="rating">Rating *</label>
+                    <select id="rating" required>
+                        <option value="5">★★★★★ — 5</option>
+                        <option value="4">★★★★☆ — 4</option>
+                        <option value="3">★★★☆☆ — 3</option>
+                        <option value="2">★★☆☆☆ — 2</option>
+                        <option value="1">★☆☆☆☆ — 1</option>
+                    </select>
+                </div>
+
+                <div class="form-field full">
+                    <label for="reviewText">Review *</label>
+                    <textarea id="reviewText" required maxlength="1500" rows="6" placeholder="Customer review..."></textarea>
+                </div>
+
+                <div class="form-field">
+                    <label for="productName">Product Name</label>
+                    <input id="productName" maxlength="150" placeholder="Product name">
+                </div>
+
+                <div class="form-field">
+                    <label for="productId">Product ID</label>
+                    <input id="productId" maxlength="150" placeholder="Optional Firestore product ID">
+                </div>
+
+                <div class="form-field">
+                    <label for="customerPhoto">Customer Photo</label>
+                    <input id="customerPhoto" type="file" accept="image/*">
+                    <div id="customerPhotoPreview" class="upload-preview"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="productPhoto">Product Photo</label>
+                    <input id="productPhoto" type="file" accept="image/*">
+                    <div id="productPhotoPreview" class="upload-preview"></div>
+                </div>
+
+                <div class="form-field checkbox-field">
+                    <label>
+                        <input type="checkbox" id="approved">
+                        <span>Approved</span>
+                    </label>
+                    <small>Approved reviews can be displayed publicly.</small>
+                </div>
+
+                <div class="form-field checkbox-field">
+                    <label>
+                        <input type="checkbox" id="published">
+                        <span>Show on Homepage</span>
+                    </label>
+                    <small>Only turn this on for reviews you want in the homepage carousel.</small>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="secondary-btn" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="primary-btn" id="saveReviewBtn">Save Review</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script type="module" src="./js/reviews.js"></script>
+</body>
+</html>
