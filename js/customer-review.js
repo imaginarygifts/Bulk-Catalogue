@@ -1,8 +1,24 @@
 /*==================================================
     CUSTOMER REVIEW SYSTEM
-    Customer Review Popup + Firestore
+
+    Features:
+    - Open / close popup
+    - Customer name
+    - Customer image
+    - Product search
+    - Product selection
+    - Product image
+    - 1-5 rating
+    - Review text
+    - Firebase Storage upload
+    - Firestore review submission
+    - Review starts as pending
 ==================================================*/
 
+
+/*==================================================
+    FIREBASE
+==================================================*/
 
 import {
     db,
@@ -25,173 +41,241 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 
+
 /*==================================================
-    GLOBAL STATE
+    DOM
 ==================================================*/
 
-let allProducts = [];
+const reviewPopup =
+    document.getElementById(
+        "reviewPopup"
+    );
+
+
+const openReviewButton =
+    document.getElementById(
+        "openReviewButton"
+    );
+
+
+const closeReviewButton =
+    document.getElementById(
+        "closeReviewButton"
+    );
+
+
+const changeReviewProductButton =
+    document.getElementById(
+        "changeReviewProductButton"
+    );
+
+
+const removeCustomerImageButton =
+    document.getElementById(
+        "removeCustomerImageButton"
+    );
+
+
+const form =
+    document.getElementById(
+        "customerReviewForm"
+    );
+
+
+const customerNameInput =
+    document.getElementById(
+        "reviewCustomerName"
+    );
+
+
+const customerImageInput =
+    document.getElementById(
+        "reviewCustomerImage"
+    );
+
+
+const customerImagePreview =
+    document.getElementById(
+        "customerImagePreview"
+    );
+
+
+const customerImagePreviewImg =
+    document.getElementById(
+        "customerImagePreviewImg"
+    );
+
+
+const productSearchInput =
+    document.getElementById(
+        "reviewProductSearch"
+    );
+
+
+const productResults =
+    document.getElementById(
+        "reviewProductResults"
+    );
+
+
+const selectedProductBox =
+    document.getElementById(
+        "selectedReviewProduct"
+    );
+
+
+const selectedProductImage =
+    document.getElementById(
+        "selectedProductImage"
+    );
+
+
+const selectedProductName =
+    document.getElementById(
+        "selectedProductName"
+    );
+
+
+const ratingContainer =
+    document.getElementById(
+        "reviewRating"
+    );
+
+
+const reviewTextInput =
+    document.getElementById(
+        "reviewText"
+    );
+
+
+const errorBox =
+    document.getElementById(
+        "reviewFormError"
+    );
+
+
+const successBox =
+    document.getElementById(
+        "reviewFormSuccess"
+    );
+
+
+const submitButton =
+    document.getElementById(
+        "submitReviewBtn"
+    );
+
+
+
+/*==================================================
+    STATE
+==================================================*/
+
+let products = [];
 
 let selectedProduct = null;
 
 let selectedRating = 0;
 
+let customerImageFile = null;
 
-/*==================================================
-    DOM READY
-==================================================*/
+let productLoading = false;
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        initCustomerReview();
-
-    }
-);
 
 
 /*==================================================
     INITIALIZE
 ==================================================*/
 
-async function initCustomerReview(){
+initCustomerReview();
+
+
+
+/*==================================================
+    INIT
+==================================================*/
+
+function initCustomerReview(){
 
     console.log(
-        "Customer Review System initialized."
+        "Customer Review JS loaded"
     );
 
 
     /*==================================================
-        CHECK POPUP
+        OPEN
     ==================================================*/
 
-    const popup =
-        document.getElementById(
-            "reviewPopup"
+    if(openReviewButton){
+
+        openReviewButton.addEventListener(
+            "click",
+            openReviewPopup
         );
-
-
-    if(!popup){
-
-        console.warn(
-            "Review popup #reviewPopup was not found."
-        );
-
-        return;
 
     }
+    else{
 
-
-    /*==================================================
-        LOAD PRODUCTS
-    ==================================================*/
-
-    await loadReviewProducts();
-
-
-    /*==================================================
-        PRODUCT SEARCH
-    ==================================================*/
-
-    const search =
-        document.getElementById(
-            "reviewProductSearch"
-        );
-
-
-    if(search){
-
-        search.addEventListener(
-            "input",
-            handleProductSearch
+        console.error(
+            "openReviewButton not found"
         );
 
     }
 
 
     /*==================================================
-        CUSTOMER IMAGE
+        CLOSE
     ==================================================*/
 
-    const imageInput =
-        document.getElementById(
-            "reviewCustomerImage"
-        );
+    if(closeReviewButton){
 
-
-    if(imageInput){
-
-        imageInput.addEventListener(
-            "change",
-            handleCustomerImagePreview
+        closeReviewButton.addEventListener(
+            "click",
+            closeReviewPopup
         );
 
     }
 
 
     /*==================================================
-        RATING
+        OUTSIDE CLICK
     ==================================================*/
 
-    const ratingButtons =
-        document.querySelectorAll(
-            "#reviewRating button"
-        );
+    if(reviewPopup){
 
+        reviewPopup.addEventListener(
+            "click",
+            event => {
 
-    ratingButtons.forEach(
-        button => {
+                if(
+                    event.target ===
+                    reviewPopup
+                ){
 
-            button.addEventListener(
-                "click",
-                () => {
-
-                    selectedRating =
-                        Number(
-                            button.dataset.rating
-                        );
-
-
-                    updateRatingUI();
+                    closeReviewPopup();
 
                 }
-            );
 
-        }
-    );
-
-
-    /*==================================================
-        FORM
-    ==================================================*/
-
-    const form =
-        document.getElementById(
-            "customerReviewForm"
-        );
-
-
-    if(form){
-
-        form.addEventListener(
-            "submit",
-            submitCustomerReview
+            }
         );
 
     }
 
 
     /*==================================================
-        CLOSE WHEN CLICKING BACKDROP
+        ESCAPE
     ==================================================*/
 
-    popup.addEventListener(
-        "click",
+    document.addEventListener(
+        "keydown",
         event => {
 
             if(
-                event.target ===
-                popup
+                event.key === "Escape" &&
+                reviewPopup &&
+                !reviewPopup.classList.contains(
+                    "hidden"
+                )
             ){
 
                 closeReviewPopup();
@@ -203,66 +287,145 @@ async function initCustomerReview(){
 
 
     /*==================================================
-        ESC KEY
+        IMAGE
     ==================================================*/
 
-    document.addEventListener(
-        "keydown",
-        event => {
+    if(customerImageInput){
 
-            if(
-                event.key ===
-                "Escape"
-            ){
+        customerImageInput.addEventListener(
+            "change",
+            handleCustomerImage
+        );
+
+    }
+
+
+    /*==================================================
+        REMOVE IMAGE
+    ==================================================*/
+
+    if(removeCustomerImageButton){
+
+        removeCustomerImageButton.addEventListener(
+            "click",
+            removeCustomerImage
+        );
+
+    }
+
+
+    /*==================================================
+        PRODUCT SEARCH
+    ==================================================*/
+
+    if(productSearchInput){
+
+        productSearchInput.addEventListener(
+            "input",
+            handleProductSearch
+        );
+
+
+        productSearchInput.addEventListener(
+            "focus",
+            () => {
 
                 if(
-                    !popup.classList.contains(
-                        "hidden"
-                    )
+                    !products.length
                 ){
 
-                    closeReviewPopup();
+                    loadProducts();
 
                 }
 
             }
+        );
 
-        }
-    );
+    }
+
+
+    /*==================================================
+        CHANGE PRODUCT
+    ==================================================*/
+
+    if(changeReviewProductButton){
+
+        changeReviewProductButton.addEventListener(
+            "click",
+            clearSelectedReviewProduct
+        );
+
+    }
+
+
+    /*==================================================
+        RATING
+    ==================================================*/
+
+    if(ratingContainer){
+
+        ratingContainer
+            .querySelectorAll(
+                "[data-rating]"
+            )
+            .forEach(
+                button => {
+
+                    button.addEventListener(
+                        "click",
+                        () => {
+
+                            const rating =
+                                Number(
+                                    button.dataset.rating
+                                );
+
+
+                            setRating(
+                                rating
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+    }
+
+
+    /*==================================================
+        FORM
+    ==================================================*/
+
+    if(form){
+
+        form.addEventListener(
+            "submit",
+            handleSubmit
+        );
+
+    }
 
 }
 
 
+
 /*==================================================
-    OPEN REVIEW POPUP
+    OPEN POPUP
 ==================================================*/
 
-window.openReviewPopup =
-function(){
+function openReviewPopup(){
 
     console.log(
-        "Opening review popup..."
+        "Opening review popup"
     );
 
 
-    const popup =
-        document.getElementById(
-            "reviewPopup"
-        );
-
-
-    /*==================================================
-        POPUP NOT FOUND
-    ==================================================*/
-
-    if(!popup){
+    if(!reviewPopup){
 
         console.error(
-            "Review popup element #reviewPopup was not found."
-        );
-
-        alert(
-            "Review popup is not available on this page."
+            "reviewPopup element not found"
         );
 
         return;
@@ -270,12 +433,19 @@ function(){
     }
 
 
-    /*==================================================
-        SHOW
-    ==================================================*/
-
-    popup.classList.remove(
+    reviewPopup.classList.remove(
         "hidden"
+    );
+
+
+    reviewPopup.classList.add(
+        "show"
+    );
+
+
+    reviewPopup.setAttribute(
+        "aria-hidden",
+        "false"
     );
 
 
@@ -284,38 +454,58 @@ function(){
     );
 
 
-    /*==================================================
-        PREVENT BACKGROUND SCROLL
-    ==================================================*/
+    /*
+        Load products when popup opens.
+    */
 
-    document.body.style.overflow =
-        "hidden";
+    if(
+        !products.length
+    ){
 
-};
+        loadProducts();
+
+    }
+
+
+    setTimeout(
+        () => {
+
+            customerNameInput?.focus();
+
+        },
+        100
+    );
+
+}
+
 
 
 /*==================================================
-    CLOSE REVIEW POPUP
+    CLOSE POPUP
 ==================================================*/
 
-window.closeReviewPopup =
-function(){
+function closeReviewPopup(){
 
-    const popup =
-        document.getElementById(
-            "reviewPopup"
-        );
-
-
-    if(!popup){
+    if(!reviewPopup){
 
         return;
 
     }
 
 
-    popup.classList.add(
+    reviewPopup.classList.add(
         "hidden"
+    );
+
+
+    reviewPopup.classList.remove(
+        "show"
+    );
+
+
+    reviewPopup.setAttribute(
+        "aria-hidden",
+        "true"
     );
 
 
@@ -323,20 +513,48 @@ function(){
         "review-popup-open"
     );
 
+}
 
-    document.body.style.overflow =
-        "";
-
-};
 
 
 /*==================================================
     LOAD PRODUCTS
 ==================================================*/
 
-async function loadReviewProducts(){
+async function loadProducts(){
+
+    if(productLoading){
+
+        return;
+
+    }
+
+
+    productLoading =
+        true;
+
 
     try{
+
+        if(productResults){
+
+            productResults.innerHTML = `
+
+                <div class="review-product-loading">
+
+                    Loading products...
+
+                </div>
+
+            `;
+
+
+            productResults.classList.remove(
+                "hidden"
+            );
+
+        }
+
 
         const snapshot =
             await getDocs(
@@ -347,7 +565,7 @@ async function loadReviewProducts(){
             );
 
 
-        allProducts =
+        products =
             snapshot.docs.map(
                 docSnap => ({
 
@@ -360,26 +578,96 @@ async function loadReviewProducts(){
             );
 
 
-        console.log(
-            "Review products loaded:",
-            allProducts.length
-        );
+        /*
+            Remove unavailable products
+            if your product documents use
+            published/active fields.
+        */
+
+        products =
+            products.filter(
+                product => {
+
+                    if(
+                        product.published === false
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    if(
+                        product.active === false
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+
+        if(
+            productSearchInput &&
+            productSearchInput.value.trim()
+        ){
+
+            renderProductResults(
+                productSearchInput.value.trim()
+            );
+
+        }
+        else{
+
+            hideProductResults();
+
+        }
 
     }
 
     catch(error){
 
         console.error(
-            "Unable to load products:",
+            "Product loading error:",
             error
         );
 
 
-        allProducts = [];
+        if(productResults){
+
+            productResults.innerHTML = `
+
+                <div class="review-product-error">
+
+                    Unable to load products.
+
+                </div>
+
+            `;
+
+
+            productResults.classList.remove(
+                "hidden"
+            );
+
+        }
+
+    }
+
+    finally{
+
+        productLoading =
+            false;
 
     }
 
 }
+
 
 
 /*==================================================
@@ -392,62 +680,71 @@ function handleProductSearch(
 
     const query =
         String(
-            event.target.value || ""
+            event.target.value ||
+            ""
         )
         .trim()
         .toLowerCase();
 
 
+    if(
+        !query
+    ){
+
+        hideProductResults();
+
+        return;
+
+    }
+
+
+    if(
+        !products.length
+    ){
+
+        loadProducts();
+
+        return;
+
+    }
+
+
+    renderProductResults(
+        query
+    );
+
+}
+
+
+
+/*==================================================
+    RENDER PRODUCT RESULTS
+==================================================*/
+
+function renderProductResults(
+    query
+){
+
+    if(!productResults){
+
+        return;
+
+    }
+
+
     const results =
-        document.getElementById(
-            "reviewProductResults"
-        );
-
-
-    if(!results){
-
-        return;
-
-    }
-
-
-    /*==================================================
-        EMPTY SEARCH
-    ==================================================*/
-
-    if(!query){
-
-        results.innerHTML = "";
-
-        results.classList.add(
-            "hidden"
-        );
-
-        return;
-
-    }
-
-
-    /*==================================================
-        SEARCH PRODUCTS
-    ==================================================*/
-
-    const matches =
-        allProducts
+        products
             .filter(
                 product => {
 
                     const name =
-                        product.name ||
-                        product.title ||
-                        "";
+                        getProductName(
+                            product
+                        )
+                        .toLowerCase();
 
 
-                    return String(
-                        name
-                    )
-                    .toLowerCase()
-                    .includes(
+                    return name.includes(
                         query
                     );
 
@@ -459,24 +756,23 @@ function handleProductSearch(
             );
 
 
-    /*==================================================
-        NO RESULTS
-    ==================================================*/
+    productResults.innerHTML = "";
 
-    if(!matches.length){
 
-        results.innerHTML = `
+    if(!results.length){
 
-            <div class="review-no-products">
+        productResults.innerHTML = `
 
-                No products found
+            <div class="review-product-no-results">
+
+                No products found.
 
             </div>
 
         `;
 
 
-        results.classList.remove(
+        productResults.classList.remove(
             "hidden"
         );
 
@@ -486,143 +782,101 @@ function handleProductSearch(
     }
 
 
-    /*==================================================
-        RESULTS
-    ==================================================*/
+    results.forEach(
+        product => {
 
-    results.innerHTML =
-        matches
-            .map(
-                product =>
-                    createProductSearchItem(
+            const item =
+                document.createElement(
+                    "button"
+                );
+
+
+            item.type =
+                "button";
+
+
+            item.className =
+                "review-product-result";
+
+
+            const image =
+                getProductImage(
+                    product
+                );
+
+
+            item.innerHTML = `
+
+                ${
+                    image
+                    ?
+                    `
+                    <img
+                        src="${escapeAttribute(
+                            image
+                        )}"
+                        alt="${escapeAttribute(
+                            getProductName(
+                                product
+                            )
+                        )}"
+                    >
+                    `
+                    :
+                    `
+                    <div class="review-product-result-placeholder">
+                        No Image
+                    </div>
+                    `
+                }
+
+
+                <span>
+
+                    ${escapeHtml(
+                        getProductName(
+                            product
+                        )
+                    )}
+
+                </span>
+
+            `;
+
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    selectProduct(
                         product
-                    )
-            )
-            .join("");
+                    );
+
+                }
+            );
 
 
-    results.classList.remove(
-        "hidden"
+            productResults.appendChild(
+                item
+            );
+
+        }
     );
 
 
-    /*==================================================
-        RESULT CLICK
-    ==================================================*/
-
-    results
-        .querySelectorAll(
-            ".review-product-result"
-        )
-        .forEach(
-            item => {
-
-                item.addEventListener(
-                    "click",
-                    () => {
-
-                        const productId =
-                            item.dataset.productId;
-
-
-                        const product =
-                            allProducts.find(
-                                p =>
-                                    p.id ===
-                                    productId
-                            );
-
-
-                        if(product){
-
-                            selectReviewProduct(
-                                product
-                            );
-
-                        }
-
-                    }
-                );
-
-            }
-        );
+    productResults.classList.remove(
+        "hidden"
+    );
 
 }
 
-
-/*==================================================
-    CREATE PRODUCT SEARCH ITEM
-==================================================*/
-
-function createProductSearchItem(
-    product
-){
-
-    const name =
-        product.name ||
-        product.title ||
-        "Product";
-
-
-    const image =
-        getProductImage(
-            product
-        );
-
-
-    return `
-
-        <div
-            class="review-product-result"
-            data-product-id="${escapeAttribute(
-                product.id
-            )}"
-        >
-
-            ${
-                image
-                ?
-                `
-                <img
-                    src="${escapeAttribute(
-                        image
-                    )}"
-                    alt="${escapeAttribute(
-                        name
-                    )}"
-                >
-                `
-                :
-                `
-                <div
-                    class="review-product-no-image"
-                >
-                    📦
-                </div>
-                `
-            }
-
-
-            <span>
-
-                ${escapeHtml(
-                    name
-                )}
-
-            </span>
-
-        </div>
-
-    `;
-
-}
 
 
 /*==================================================
     SELECT PRODUCT
 ==================================================*/
 
-function selectReviewProduct(
+function selectProduct(
     product
 ){
 
@@ -631,9 +885,9 @@ function selectReviewProduct(
 
 
     const name =
-        product.name ||
-        product.title ||
-        "Product";
+        getProductName(
+            product
+        );
 
 
     const image =
@@ -642,919 +896,103 @@ function selectReviewProduct(
         );
 
 
-    const selectedBox =
-        document.getElementById(
-            "selectedReviewProduct"
-        );
+    if(selectedProductName){
 
-
-    const selectedImage =
-        document.getElementById(
-            "selectedProductImage"
-        );
-
-
-    const selectedName =
-        document.getElementById(
-            "selectedProductName"
-        );
-
-
-    const results =
-        document.getElementById(
-            "reviewProductResults"
-        );
-
-
-    const search =
-        document.getElementById(
-            "reviewProductSearch"
-        );
-
-
-    /*==================================================
-        NAME
-    ==================================================*/
-
-    if(selectedName){
-
-        selectedName.textContent =
+        selectedProductName.textContent =
             name;
 
     }
 
 
-    /*==================================================
-        IMAGE
-    ==================================================*/
+    if(selectedProductImage){
 
-    if(selectedImage){
-
-        if(image){
-
-            selectedImage.src =
-                image;
-
-            selectedImage.style.display =
-                "block";
-
-        }
-        else{
-
-            selectedImage.src =
-                "";
-
-            selectedImage.style.display =
-                "none";
-
-        }
-
-    }
+        selectedProductImage.src =
+            image || "";
 
 
-    /*==================================================
-        SHOW SELECTED
-    ==================================================*/
-
-    if(selectedBox){
-
-        selectedBox.classList.remove(
-            "hidden"
-        );
-
-    }
-
-
-    /*==================================================
-        HIDE SEARCH RESULTS
-    ==================================================*/
-
-    if(results){
-
-        results.classList.add(
-            "hidden"
-        );
-
-    }
-
-
-    /*==================================================
-        HIDE SEARCH INPUT
-    ==================================================*/
-
-    if(search){
-
-        search.value =
+        selectedProductImage.alt =
             name;
 
-        search.style.display =
+
+        selectedProductImage.style.display =
+            image
+            ?
+            "block"
+            :
             "none";
 
     }
 
+
+    selectedProductBox?.classList.remove(
+        "hidden"
+    );
+
+
+    if(productSearchInput){
+
+        productSearchInput.value =
+            name;
+
+    }
+
+
+    hideProductResults();
+
 }
+
 
 
 /*==================================================
     CLEAR SELECTED PRODUCT
 ==================================================*/
 
-window.clearSelectedReviewProduct =
-function(){
+function clearSelectedReviewProduct(){
 
     selectedProduct =
         null;
 
 
-    const selectedBox =
-        document.getElementById(
-            "selectedReviewProduct"
-        );
+    selectedProductBox?.classList.add(
+        "hidden"
+    );
 
 
-    const search =
-        document.getElementById(
-            "reviewProductSearch"
-        );
+    if(productSearchInput){
 
-
-    const results =
-        document.getElementById(
-            "reviewProductResults"
-        );
-
-
-    if(selectedBox){
-
-        selectedBox.classList.add(
-            "hidden"
-        );
-
-    }
-
-
-    if(search){
-
-        search.style.display =
-            "block";
-
-        search.value =
+        productSearchInput.value =
             "";
 
-        search.focus();
+
+        productSearchInput.focus();
 
     }
 
+}
 
-    if(results){
-
-        results.innerHTML =
-            "";
-
-        results.classList.add(
-            "hidden"
-        );
-
-    }
-
-};
 
 
 /*==================================================
-    CUSTOMER IMAGE PREVIEW
+    PRODUCT NAME
 ==================================================*/
 
-function handleCustomerImagePreview(
-    event
+function getProductName(
+    product
 ){
 
-    const file =
-        event.target.files?.[0];
-
-
-    const preview =
-        document.getElementById(
-            "customerImagePreview"
-        );
-
-
-    if(!preview){
-
-        return;
-
-    }
-
-
-    /*==================================================
-        NO IMAGE
-    ==================================================*/
-
-    if(!file){
-
-        preview.innerHTML =
-            "";
-
-        preview.classList.add(
-            "hidden"
-        );
-
-        return;
-
-    }
-
-
-    /*==================================================
-        VALIDATE
-    ==================================================*/
-
-    if(
-        !file.type.startsWith(
-            "image/"
-        )
-    ){
-
-        alert(
-            "Please select a valid image."
-        );
-
-
-        event.target.value =
-            "";
-
-
-        return;
-
-    }
-
-
-    if(
-        file.size >
-        5 * 1024 * 1024
-    ){
-
-        alert(
-            "Customer image must be smaller than 5 MB."
-        );
-
-
-        event.target.value =
-            "";
-
-
-        return;
-
-    }
-
-
-    /*==================================================
-        PREVIEW
-    ==================================================*/
-
-    const url =
-        URL.createObjectURL(
-            file
-        );
-
-
-    preview.innerHTML = `
-
-        <img
-            src="${url}"
-            alt="Customer image preview"
-        >
-
-    `;
-
-
-    preview.classList.remove(
-        "hidden"
+    return (
+        product?.name ||
+        product?.title ||
+        product?.productName ||
+        "Product"
     );
 
 }
 
 
-/*==================================================
-    UPDATE RATING UI
-==================================================*/
-
-function updateRatingUI(){
-
-    document
-        .querySelectorAll(
-            "#reviewRating button"
-        )
-        .forEach(
-            button => {
-
-                const rating =
-                    Number(
-                        button.dataset.rating
-                    );
-
-
-                button.classList.toggle(
-                    "active",
-                    rating <=
-                    selectedRating
-                );
-
-            }
-        );
-
-}
-
 
 /*==================================================
-    SUBMIT CUSTOMER REVIEW
-==================================================*/
-
-async function submitCustomerReview(
-    event
-){
-
-    event.preventDefault();
-
-
-    /*==================================================
-        ELEMENTS
-    ==================================================*/
-
-    const nameInput =
-        document.getElementById(
-            "reviewCustomerName"
-        );
-
-
-    const reviewInput =
-        document.getElementById(
-            "reviewText"
-        );
-
-
-    const imageInput =
-        document.getElementById(
-            "reviewCustomerImage"
-        );
-
-
-    const submitButton =
-        document.getElementById(
-            "submitReviewBtn"
-        );
-
-
-    const name =
-        nameInput?.value
-            .trim() ||
-        "";
-
-
-    const review =
-        reviewInput?.value
-            .trim() ||
-        "";
-
-
-    /*==================================================
-        VALIDATION
-    ==================================================*/
-
-    if(!name){
-
-        showReviewError(
-            "Please enter your name."
-        );
-
-        return;
-
-    }
-
-
-    if(!selectedProduct){
-
-        showReviewError(
-            "Please select a product."
-        );
-
-        return;
-
-    }
-
-
-    if(!selectedRating){
-
-        showReviewError(
-            "Please select a rating."
-        );
-
-        return;
-
-    }
-
-
-    if(!review){
-
-        showReviewError(
-            "Please write your review."
-        );
-
-        return;
-
-    }
-
-
-    /*==================================================
-        START SUBMISSION
-    ==================================================*/
-
-    try{
-
-        if(submitButton){
-
-            submitButton.disabled =
-                true;
-
-            submitButton.textContent =
-                "Submitting...";
-
-        }
-
-
-        hideReviewError();
-
-
-        /*==================================================
-            CUSTOMER IMAGE
-        ==================================================*/
-
-        let customerImage =
-            "";
-
-
-        const file =
-            imageInput?.files?.[0];
-
-
-        if(file){
-
-            /*==============================================
-                VALIDATE TYPE
-            ==============================================*/
-
-            if(
-                !file.type.startsWith(
-                    "image/"
-                )
-            ){
-
-                throw new Error(
-                    "Please select a valid customer image."
-                );
-
-            }
-
-
-            /*==============================================
-                VALIDATE SIZE
-            ==============================================*/
-
-            if(
-                file.size >
-                5 * 1024 * 1024
-            ){
-
-                throw new Error(
-                    "Customer image must be smaller than 5 MB."
-                );
-
-            }
-
-
-            /*==============================================
-                FILE NAME
-            ==============================================*/
-
-            const safeName =
-                file.name
-                    .replace(
-                        /[^a-zA-Z0-9._-]/g,
-                        "_"
-                    );
-
-
-            const fileName =
-                `${Date.now()}_${Math.random()
-                    .toString(36)
-                    .substring(2,10)}_${safeName}`;
-
-
-            /*==============================================
-                STORAGE
-            ==============================================*/
-
-            const imageRef =
-                ref(
-                    storage,
-                    `reviews/customer-images/${fileName}`
-                );
-
-
-            await uploadBytes(
-                imageRef,
-                file,
-                {
-                    contentType:
-                        file.type
-                }
-            );
-
-
-            /*==============================================
-                DOWNLOAD URL
-            ==============================================*/
-
-            customerImage =
-                await getDownloadURL(
-                    imageRef
-                );
-
-        }
-
-
-        /*==================================================
-            PRODUCT IMAGE
-        ==================================================*/
-
-        const productImage =
-            getProductImage(
-                selectedProduct
-            );
-
-
-        /*==================================================
-            PRODUCT NAME
-        ==================================================*/
-
-        const productName =
-            selectedProduct.name ||
-            selectedProduct.title ||
-            "Product";
-
-
-        /*==================================================
-            PRODUCT LINK
-        ==================================================*/
-
-        const productLink =
-            `product.html?id=${encodeURIComponent(
-                selectedProduct.id
-            )}`;
-
-
-        /*==================================================
-            SAVE FIRESTORE
-        ==================================================*/
-
-        const reviewData = {
-
-            /*==============================================
-                CUSTOMER
-            ==============================================*/
-
-            name:
-                name,
-
-
-            image:
-                customerImage,
-
-
-            /*==============================================
-                RATING
-            ==============================================*/
-
-            stars:
-                Number(
-                    selectedRating
-                ),
-
-
-            /*==============================================
-                REVIEW
-            ==============================================*/
-
-            review:
-                review,
-
-
-            /*==============================================
-                PRODUCT
-            ==============================================*/
-
-            productId:
-                selectedProduct.id,
-
-
-            productName:
-                productName,
-
-
-            productImage:
-                productImage || "",
-
-
-            productLink:
-                productLink,
-
-
-            /*==============================================
-                MODERATION
-            ==============================================*/
-
-            status:
-                "pending",
-
-
-            approved:
-                false,
-
-
-            /*==============================================
-                SOURCE
-            ==============================================*/
-
-            source:
-                "customer",
-
-
-            /*==============================================
-                DATES
-            ==============================================*/
-
-            createdAt:
-                serverTimestamp(),
-
-
-            approvedAt:
-                null
-
-        };
-
-
-        await addDoc(
-            collection(
-                db,
-                "reviews"
-            ),
-            reviewData
-        );
-
-
-        /*==================================================
-            SUCCESS
-        ==================================================*/
-
-        alert(
-            "Thank you! Your review has been submitted successfully and will appear after approval."
-        );
-
-
-        /*==================================================
-            RESET
-        ==================================================*/
-
-        resetReviewForm();
-
-
-        /*==================================================
-            CLOSE
-        ==================================================*/
-
-        closeReviewPopup();
-
-    }
-
-    catch(error){
-
-        console.error(
-            "Customer review submission error:",
-            error
-        );
-
-
-        console.error(
-            "Error code:",
-            error?.code
-        );
-
-
-        console.error(
-            "Error message:",
-            error?.message
-        );
-
-
-        showReviewError(
-            error?.message ||
-            "Unable to submit review. Please try again."
-        );
-
-    }
-
-    finally{
-
-        if(submitButton){
-
-            submitButton.disabled =
-                false;
-
-            submitButton.textContent =
-                "Submit Review";
-
-        }
-
-    }
-
-}
-
-
-/*==================================================
-    RESET FORM
-==================================================*/
-
-function resetReviewForm(){
-
-    const form =
-        document.getElementById(
-            "customerReviewForm"
-        );
-
-
-    if(form){
-
-        form.reset();
-
-    }
-
-
-    selectedProduct =
-        null;
-
-
-    selectedRating =
-        0;
-
-
-    updateRatingUI();
-
-
-    /*==================================================
-        SELECTED PRODUCT
-    ==================================================*/
-
-    document
-        .getElementById(
-            "selectedReviewProduct"
-        )
-        ?.classList.add(
-            "hidden"
-        );
-
-
-    /*==================================================
-        PRODUCT SEARCH
-    ==================================================*/
-
-    const search =
-        document.getElementById(
-            "reviewProductSearch"
-        );
-
-
-    if(search){
-
-        search.style.display =
-            "block";
-
-        search.value =
-            "";
-
-    }
-
-
-    /*==================================================
-        PRODUCT RESULTS
-    ==================================================*/
-
-    const results =
-        document.getElementById(
-            "reviewProductResults"
-        );
-
-
-    if(results){
-
-        results.innerHTML =
-            "";
-
-        results.classList.add(
-            "hidden"
-        );
-
-    }
-
-
-    /*==================================================
-        CUSTOMER IMAGE
-    ==================================================*/
-
-    const preview =
-        document.getElementById(
-            "customerImagePreview"
-        );
-
-
-    if(preview){
-
-        preview.innerHTML =
-            "";
-
-        preview.classList.add(
-            "hidden"
-        );
-
-    }
-
-
-    hideReviewError();
-
-}
-
-
-/*==================================================
-    SHOW ERROR
-==================================================*/
-
-function showReviewError(
-    message
-){
-
-    const errorBox =
-        document.getElementById(
-            "reviewFormError"
-        );
-
-
-    if(!errorBox){
-
-        alert(
-            message
-        );
-
-        return;
-
-    }
-
-
-    errorBox.textContent =
-        message;
-
-
-    errorBox.classList.remove(
-        "hidden"
-    );
-
-}
-
-
-/*==================================================
-    HIDE ERROR
-==================================================*/
-
-function hideReviewError(){
-
-    const errorBox =
-        document.getElementById(
-            "reviewFormError"
-        );
-
-
-    if(errorBox){
-
-        errorBox.classList.add(
-            "hidden"
-        );
-
-        errorBox.textContent =
-            "";
-
-    }
-
-}
-
-
-/*==================================================
-    GET PRODUCT IMAGE
+    PRODUCT IMAGE
 ==================================================*/
 
 function getProductImage(
@@ -1563,9 +1001,8 @@ function getProductImage(
 
     if(
         Array.isArray(
-            product.images
-        )
-        &&
+            product?.images
+        ) &&
         product.images.length
     ){
 
@@ -1593,13 +1030,967 @@ function getProductImage(
 
 
     return (
-        product.image ||
-        product.imageUrl ||
-        product.thumbnail ||
+        product?.image ||
+        product?.imageUrl ||
+        product?.thumbnail ||
         ""
     );
 
 }
+
+
+
+/*==================================================
+    HIDE PRODUCT RESULTS
+==================================================*/
+
+function hideProductResults(){
+
+    productResults?.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/*==================================================
+    RATING
+==================================================*/
+
+function setRating(
+    rating
+){
+
+    rating =
+        Math.max(
+            1,
+            Math.min(
+                5,
+                Number(rating) || 1
+            )
+        );
+
+
+    selectedRating =
+        rating;
+
+
+    if(!ratingContainer){
+
+        return;
+
+    }
+
+
+    ratingContainer
+        .querySelectorAll(
+            "[data-rating]"
+        )
+        .forEach(
+            button => {
+
+                const value =
+                    Number(
+                        button.dataset.rating
+                    );
+
+
+                button.classList.toggle(
+                    "active",
+                    value <= rating
+                );
+
+            }
+        );
+
+}
+
+
+
+/*==================================================
+    CUSTOMER IMAGE
+==================================================*/
+
+function handleCustomerImage(
+    event
+){
+
+    const file =
+        event.target.files?.[0];
+
+
+    customerImageFile =
+        null;
+
+
+    if(!file){
+
+        hideCustomerImagePreview();
+
+        return;
+
+    }
+
+
+    if(
+        !file.type.startsWith(
+            "image/"
+        )
+    ){
+
+        showError(
+            "Please select a valid image."
+        );
+
+
+        event.target.value =
+            "";
+
+
+        return;
+
+    }
+
+
+    const maxSize =
+        5 *
+        1024 *
+        1024;
+
+
+    if(
+        file.size >
+        maxSize
+    ){
+
+        showError(
+            "Customer image must be smaller than 5 MB."
+        );
+
+
+        event.target.value =
+            "";
+
+
+        return;
+
+    }
+
+
+    customerImageFile =
+        file;
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        event => {
+
+            if(customerImagePreviewImg){
+
+                customerImagePreviewImg.src =
+                    event.target.result;
+
+            }
+
+
+            customerImagePreview?.classList.remove(
+                "hidden"
+            );
+
+        };
+
+
+    reader.onerror =
+        () => {
+
+            showError(
+                "Unable to preview customer image."
+            );
+
+        };
+
+
+    reader.readAsDataURL(
+        file
+    );
+
+}
+
+
+
+/*==================================================
+    REMOVE CUSTOMER IMAGE
+==================================================*/
+
+function removeCustomerImage(){
+
+    customerImageFile =
+        null;
+
+
+    if(customerImageInput){
+
+        customerImageInput.value =
+            "";
+
+    }
+
+
+    hideCustomerImagePreview();
+
+}
+
+
+
+/*==================================================
+    HIDE CUSTOMER IMAGE
+==================================================*/
+
+function hideCustomerImagePreview(){
+
+    customerImagePreview?.classList.add(
+        "hidden"
+    );
+
+
+    if(customerImagePreviewImg){
+
+        customerImagePreviewImg.src =
+            "";
+
+    }
+
+}
+
+
+
+/*==================================================
+    SUBMIT
+==================================================*/
+
+async function handleSubmit(
+    event
+){
+
+    event.preventDefault();
+
+
+    clearMessages();
+
+
+    /*==================================================
+        VALIDATE NAME
+    ==================================================*/
+
+    const name =
+        String(
+            customerNameInput?.value ||
+            ""
+        ).trim();
+
+
+    if(!name){
+
+        showError(
+            "Please enter your name."
+        );
+
+
+        customerNameInput?.focus();
+
+        return;
+
+    }
+
+
+    /*==================================================
+        VALIDATE PRODUCT
+    ==================================================*/
+
+    if(!selectedProduct){
+
+        showError(
+            "Please select a product."
+        );
+
+
+        productSearchInput?.focus();
+
+        return;
+
+    }
+
+
+    /*==================================================
+        VALIDATE RATING
+    ==================================================*/
+
+    if(
+        selectedRating < 1 ||
+        selectedRating > 5
+    ){
+
+        showError(
+            "Please select a rating."
+        );
+
+
+        return;
+
+    }
+
+
+    /*==================================================
+        VALIDATE REVIEW
+    ==================================================*/
+
+    const reviewText =
+        String(
+            reviewTextInput?.value ||
+            ""
+        ).trim();
+
+
+    if(!reviewText){
+
+        showError(
+            "Please write your review."
+        );
+
+
+        reviewTextInput?.focus();
+
+        return;
+
+    }
+
+
+    if(
+        reviewText.length <
+        5
+    ){
+
+        showError(
+            "Please write a little more about your experience."
+        );
+
+
+        reviewTextInput?.focus();
+
+        return;
+
+    }
+
+
+    /*==================================================
+        DISABLE
+    ==================================================*/
+
+    setSubmitting(
+        true
+    );
+
+
+    try{
+
+        let customerImageUrl =
+            "";
+
+
+        /*==================================================
+            CUSTOMER IMAGE UPLOAD
+        ==================================================*/
+
+        if(
+            customerImageFile
+        ){
+
+            showInfo(
+                "Uploading customer image..."
+            );
+
+
+            const extension =
+                getFileExtension(
+                    customerImageFile.name
+                );
+
+
+            const fileName =
+                `customer_${Date.now()}_${randomString(8)}.${extension}`;
+
+
+            const imageRef =
+                ref(
+                    storage,
+                    `reviews/customer-images/${fileName}`
+                );
+
+
+            await uploadBytes(
+                imageRef,
+                customerImageFile,
+                {
+                    contentType:
+                        customerImageFile.type
+                }
+            );
+
+
+            customerImageUrl =
+                await getDownloadURL(
+                    imageRef
+                );
+
+        }
+
+
+        /*==================================================
+            PRODUCT DATA
+        ==================================================*/
+
+        const productId =
+            selectedProduct.id;
+
+
+        const productName =
+            getProductName(
+                selectedProduct
+            );
+
+
+        const productImage =
+            getProductImage(
+                selectedProduct
+            );
+
+
+        const productLink =
+            selectedProduct.link ||
+            `product.html?id=${encodeURIComponent(
+                productId
+            )}`;
+
+
+        /*==================================================
+            REVIEW DATA
+        ==================================================*/
+
+        const reviewData = {
+
+            /*----------------------------------------------
+                CUSTOMER
+            ----------------------------------------------*/
+
+            name:
+                name,
+
+
+            image:
+                customerImageUrl,
+
+
+            /*----------------------------------------------
+                PRODUCT
+            ----------------------------------------------*/
+
+            productId:
+                productId,
+
+
+            productName:
+                productName,
+
+
+            productImage:
+                productImage,
+
+
+            productLink:
+                productLink,
+
+
+            /*----------------------------------------------
+                REVIEW
+            ----------------------------------------------*/
+
+            stars:
+                selectedRating,
+
+
+            rating:
+                selectedRating,
+
+
+            review:
+                reviewText,
+
+
+            text:
+                reviewText,
+
+
+            /*----------------------------------------------
+                MODERATION
+            ----------------------------------------------*/
+
+            approved:
+                false,
+
+
+            status:
+                "pending",
+
+
+            published:
+                false,
+
+
+            source:
+                "customer",
+
+
+            /*----------------------------------------------
+                TIMESTAMP
+            ----------------------------------------------*/
+
+            createdAt:
+                serverTimestamp()
+
+        };
+
+
+        /*==================================================
+            SAVE FIRESTORE
+        ==================================================*/
+
+        showInfo(
+            "Submitting your review..."
+        );
+
+
+        await addDoc(
+            collection(
+                db,
+                "reviews"
+            ),
+            reviewData
+        );
+
+
+        /*==================================================
+            SUCCESS
+        ==================================================*/
+
+        showSuccess(
+            "Thank you! Your review has been submitted and will appear after approval."
+        );
+
+
+        resetForm();
+
+
+        /*
+            Keep success visible briefly,
+            then close popup.
+        */
+
+        setTimeout(
+            () => {
+
+                closeReviewPopup();
+
+            },
+            2200
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Customer review submission error:",
+            error
+        );
+
+
+        showError(
+            getFriendlyError(
+                error
+            )
+        );
+
+    }
+
+    finally{
+
+        setSubmitting(
+            false
+        );
+
+    }
+
+}
+
+
+
+/*==================================================
+    RESET FORM
+==================================================*/
+
+function resetForm(){
+
+    form?.reset();
+
+
+    selectedProduct =
+        null;
+
+
+    selectedRating =
+        0;
+
+
+    customerImageFile =
+        null;
+
+
+    selectedProductBox?.classList.add(
+        "hidden"
+    );
+
+
+    hideProductResults();
+
+
+    hideCustomerImagePreview();
+
+
+    if(ratingContainer){
+
+        ratingContainer
+            .querySelectorAll(
+                "[data-rating]"
+            )
+            .forEach(
+                button => {
+
+                    button.classList.remove(
+                        "active"
+                    );
+
+                }
+            );
+
+    }
+
+}
+
+
+
+/*==================================================
+    SUBMITTING STATE
+==================================================*/
+
+function setSubmitting(
+    submitting
+){
+
+    if(!submitButton){
+
+        return;
+
+    }
+
+
+    submitButton.disabled =
+        submitting;
+
+
+    submitButton.textContent =
+        submitting
+        ?
+        "Submitting..."
+        :
+        "Submit Review";
+
+}
+
+
+
+/*==================================================
+    ERROR
+==================================================*/
+
+function showError(
+    text
+){
+
+    if(!errorBox){
+
+        return;
+
+    }
+
+
+    errorBox.textContent =
+        text;
+
+
+    errorBox.classList.remove(
+        "hidden"
+    );
+
+
+    successBox?.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/*==================================================
+    SUCCESS
+==================================================*/
+
+function showSuccess(
+    text
+){
+
+    if(!successBox){
+
+        return;
+
+    }
+
+
+    successBox.textContent =
+        text;
+
+
+    successBox.classList.remove(
+        "hidden"
+    );
+
+
+    errorBox?.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/*==================================================
+    INFO
+==================================================*/
+
+function showInfo(
+    text
+){
+
+    if(!errorBox){
+
+        return;
+
+    }
+
+
+    errorBox.textContent =
+        text;
+
+
+    errorBox.classList.remove(
+        "hidden"
+    );
+
+
+    successBox?.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/*==================================================
+    CLEAR MESSAGES
+==================================================*/
+
+function clearMessages(){
+
+    errorBox?.classList.add(
+        "hidden"
+    );
+
+
+    successBox?.classList.add(
+        "hidden"
+    );
+
+
+    if(errorBox){
+
+        errorBox.textContent =
+            "";
+
+    }
+
+
+    if(successBox){
+
+        successBox.textContent =
+            "";
+
+    }
+
+}
+
+
+
+/*==================================================
+    FRIENDLY ERROR
+==================================================*/
+
+function getFriendlyError(
+error
+){
+
+    if(
+        error?.code ===
+        "permission-denied"
+    ){
+
+        return "Unable to submit review. Firebase permission was denied.";
+
+    }
+
+
+    if(
+        error?.code ===
+        "storage/unauthorized"
+    ){
+
+        return "Unable to upload customer image. Storage permission was denied.";
+
+    }
+
+
+    if(
+        error?.code ===
+        "storage/quota-exceeded"
+    ){
+
+        return "Storage quota exceeded. Please try again later.";
+
+    }
+
+
+    if(
+        error?.code ===
+        "unavailable"
+    ){
+
+        return "Network unavailable. Please check your internet connection.";
+
+    }
+
+
+    return (
+        error?.message ||
+        "Unable to submit review. Please try again."
+    );
+
+}
+
+
+
+/*==================================================
+    FILE EXTENSION
+==================================================*/
+
+function getFileExtension(
+filename
+){
+
+    const parts =
+        String(
+            filename ||
+            ""
+        ).split(".");
+
+
+    if(
+        parts.length <
+        2
+    ){
+
+        return "jpg";
+
+    }
+
+
+    const extension =
+        parts
+            .pop()
+            .toLowerCase()
+            .replace(
+                /[^a-z0-9]/g,
+                ""
+            );
+
+
+    return (
+        extension ||
+        "jpg"
+    );
+
+}
+
+
+
+/*==================================================
+    RANDOM STRING
+==================================================*/
+
+function randomString(
+length = 8
+){
+
+    const chars =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+
+    let result =
+        "";
+
+
+    for(
+        let i = 0;
+        i < length;
+        i++
+    ){
+
+        result +=
+            chars[
+                Math.floor(
+                    Math.random() *
+                    chars.length
+                )
+            ];
+
+    }
+
+
+    return result;
+
+}
+
 
 
 /*==================================================
@@ -1607,7 +1998,7 @@ function getProductImage(
 ==================================================*/
 
 function escapeHtml(
-    value
+value
 ){
 
     return String(
@@ -1637,12 +2028,13 @@ function escapeHtml(
 }
 
 
+
 /*==================================================
     ESCAPE ATTRIBUTE
 ==================================================*/
 
 function escapeAttribute(
-    value
+value
 ){
 
     return escapeHtml(
@@ -1652,21 +2044,22 @@ function escapeAttribute(
 }
 
 
+
 /*==================================================
-    GLOBAL TEST HELPERS
+    WINDOW EXPORTS
 ==================================================*/
 
-window.testReviewPopup =
-function(){
-
-    console.log(
-        "Review popup test"
-    );
+window.openReviewPopup =
+    openReviewPopup;
 
 
-    window.openReviewPopup();
+window.closeReviewPopup =
+    closeReviewPopup;
 
-};
+
+window.clearSelectedReviewProduct =
+    clearSelectedReviewProduct;
+
 
 
 /*==================================================
@@ -1675,10 +2068,10 @@ function(){
 
 export {
 
-    initCustomerReview,
-
     openReviewPopup,
 
-    closeReviewPopup
+    closeReviewPopup,
+
+    clearSelectedReviewProduct
 
 };
