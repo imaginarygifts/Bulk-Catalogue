@@ -180,7 +180,7 @@ button{
 
     height:40px;
 
-    max-width:250px;
+    max-width:300px;
 
     object-fit:contain;
 
@@ -201,7 +201,7 @@ button{
 
     justify-content:center;
 
-    
+    background:#050507;
 
     font-size:25px;
 
