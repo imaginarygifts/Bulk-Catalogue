@@ -2061,7 +2061,7 @@ async function renderReviewCarousel(
     try{
 
         /*==================================================
-            LOAD REVIEWS FROM FIRESTORE
+            LOAD REVIEWS
         ==================================================*/
 
         const snapshot =
@@ -2072,10 +2072,6 @@ async function renderReviewCarousel(
                 )
             );
 
-
-        /*==================================================
-            GET APPROVED + PUBLISHED REVIEWS
-        ==================================================*/
 
         let reviews =
             snapshot.docs.map(
@@ -2090,21 +2086,25 @@ async function renderReviewCarousel(
             );
 
 
+        /*==================================================
+            ONLY APPROVED + PUBLISHED
+        ==================================================*/
+
         reviews =
             reviews.filter(
                 review =>
 
-                    review.approved === true &&
-
-                    review.published === true &&
-
+                    review.approved === true
+                    &&
+                    review.published === true
+                    &&
                     review.rejected !== true
 
             );
 
 
         /*==================================================
-            SORT NEWEST FIRST
+            NEWEST FIRST
         ==================================================*/
 
         reviews.sort(
@@ -2143,7 +2143,7 @@ async function renderReviewCarousel(
 
 
         console.log(
-            "Homepage reviews:",
+            "Published homepage reviews:",
             reviews
         );
 
@@ -2155,10 +2155,6 @@ async function renderReviewCarousel(
         if(
             !reviews.length
         ){
-
-            console.log(
-                "No approved/published reviews found."
-            );
 
             container.remove();
 
@@ -2186,25 +2182,45 @@ async function renderReviewCarousel(
                         reviews.map(
                             review => {
 
+                                /*==================================
+                                    CUSTOMER NAME
+                                ==================================*/
+
                                 const name =
                                     review.customerName ||
                                     review.name ||
                                     "Customer";
 
 
+                                /*==================================
+                                    CUSTOMER IMAGE
+                                ==================================*/
+
                                 const customerImage =
                                     review.customerPhoto ||
                                     review.customerImage ||
+                                    review.image ||
                                     review.userPhoto ||
-                                    review.avatar ||
                                     "";
 
 
-                                const productImage =
+                                /*==================================
+                                    CUSTOMER UPLOADED PRODUCT PHOTO
+                                    
+                                    IMPORTANT:
+                                    Do NOT use productImage here.
+                                ==================================*/
+
+                                const customerProductImage =
+                                    review.customerProductImage ||
+                                    review.reviewProductImage ||
                                     review.productPhoto ||
-                                    review.productImage ||
                                     "";
 
+
+                                /*==================================
+                                    PRODUCT NAME
+                                ==================================*/
 
                                 const productName =
                                     review.productName ||
@@ -2212,12 +2228,20 @@ async function renderReviewCarousel(
                                     "";
 
 
+                                /*==================================
+                                    REVIEW TEXT
+                                ==================================*/
+
                                 const reviewText =
-                                    review.text ||
                                     review.review ||
+                                    review.text ||
                                     review.comment ||
                                     "";
 
+
+                                /*==================================
+                                    RATING
+                                ==================================*/
 
                                 const rating =
                                     Number(
@@ -2233,10 +2257,13 @@ async function renderReviewCarousel(
                                         class="review-card"
                                     >
 
+
                                         <!-- CUSTOMER -->
 
                                         <div
-                                            class="review-customer"
+                                            class="
+                                                review-customer
+                                            "
                                         >
 
                                             ${
@@ -2316,9 +2343,7 @@ async function renderReviewCarousel(
                                             >
 
                                                 <h3
-                                                    class="
-                                                        review-name
-                                                    "
+                                                    class="review-name"
                                                 >
 
                                                     ${escapeHtml(
@@ -2345,7 +2370,7 @@ async function renderReviewCarousel(
                                         </div>
 
 
-                                        <!-- REVIEW -->
+                                        <!-- REVIEW TEXT -->
 
                                         <p
                                             class="
@@ -2360,10 +2385,10 @@ async function renderReviewCarousel(
                                         </p>
 
 
-                                        <!-- PRODUCT IMAGE -->
+                                        <!-- CUSTOMER PRODUCT PHOTO -->
 
                                         ${
-                                            productImage
+                                            customerProductImage
                                             ?
 
                                             `
@@ -2376,13 +2401,13 @@ async function renderReviewCarousel(
 
                                                 <img
                                                     src="${escapeAttribute(
-                                                        productImage
+                                                        customerProductImage
                                                     )}"
-                                                    alt="${escapeAttribute(
-                                                        productName ||
-                                                        "Product"
-                                                    )}"
+                                                    alt="Customer product photo"
                                                     loading="lazy"
+                                                    onerror="
+                                                        this.parentElement.style.display='none';
+                                                    "
                                                 >
 
                                             </div>
@@ -2479,10 +2504,6 @@ async function renderReviewCarousel(
         `;
 
 
-        /*==================================================
-            CAROUSEL
-        ==================================================*/
-
         initHorizontalCarousel(
             container,
             ".review-carousel"
@@ -2493,29 +2514,12 @@ async function renderReviewCarousel(
     catch(error){
 
         console.error(
-            "REVIEW CAROUSEL ERROR:",
+            "Review carousel error:",
             error
         );
 
 
-        /*
-            Do NOT silently fail.
-            This helps us see the actual problem.
-        */
-
-        container.innerHTML = `
-
-            <div class="home-container">
-
-                <div class="carousel-empty">
-
-                    Unable to load reviews.
-
-                </div>
-
-            </div>
-
-        `;
+        container.remove();
 
     }
 
