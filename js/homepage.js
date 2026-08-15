@@ -2051,7 +2051,6 @@ function renderImageCarousel(
 
 /*==================================================
     REVIEW CAROUSEL
-    APPROVED + PUBLISHED REVIEWS
 ==================================================*/
 
 async function renderReviewCarousel(
@@ -2062,7 +2061,7 @@ async function renderReviewCarousel(
     try{
 
         /*==================================================
-            LOAD REVIEWS
+            LOAD REVIEWS FROM FIRESTORE
         ==================================================*/
 
         const snapshot =
@@ -2075,31 +2074,37 @@ async function renderReviewCarousel(
 
 
         /*==================================================
-            PUBLIC REVIEWS ONLY
+            GET APPROVED + PUBLISHED REVIEWS
         ==================================================*/
 
         let reviews =
-            snapshot.docs
-                .map(
-                    docSnap => ({
+            snapshot.docs.map(
+                docSnap => ({
 
-                        id:
-                            docSnap.id,
+                    id:
+                        docSnap.id,
 
-                        ...docSnap.data()
+                    ...docSnap.data()
 
-                    })
-                )
-                .filter(
-                    review =>
-                        review.approved === true &&
-                        review.published === true &&
-                        review.rejected !== true
-                );
+                })
+            );
+
+
+        reviews =
+            reviews.filter(
+                review =>
+
+                    review.approved === true &&
+
+                    review.published === true &&
+
+                    review.rejected !== true
+
+            );
 
 
         /*==================================================
-            NEWEST FIRST
+            SORT NEWEST FIRST
         ==================================================*/
 
         reviews.sort(
@@ -2107,6 +2112,7 @@ async function renderReviewCarousel(
                 a,
                 b
             ) =>
+
                 getTimestamp(
                     b.createdAt
                 )
@@ -2114,6 +2120,7 @@ async function renderReviewCarousel(
                 getTimestamp(
                     a.createdAt
                 )
+
         );
 
 
@@ -2135,6 +2142,12 @@ async function renderReviewCarousel(
             );
 
 
+        console.log(
+            "Homepage reviews:",
+            reviews
+        );
+
+
         /*==================================================
             NO REVIEWS
         ==================================================*/
@@ -2142,6 +2155,10 @@ async function renderReviewCarousel(
         if(
             !reviews.length
         ){
+
+            console.log(
+                "No approved/published reviews found."
+            );
 
             container.remove();
 
@@ -2163,42 +2180,31 @@ async function renderReviewCarousel(
                 )}
 
 
-                <div
-                    class="review-carousel"
-                    data-review-carousel
-                >
+                <div class="review-carousel">
 
                     ${
                         reviews.map(
                             review => {
 
-                                /*==================================
-                                    CUSTOMER NAME
-                                ==================================*/
-
-                                const customerName =
+                                const name =
                                     review.customerName ||
                                     review.name ||
-                                    review.userName ||
                                     "Customer";
 
 
-                                /*==================================
-                                    CUSTOMER PHOTO
-                                ==================================*/
-
-                                const customerPhoto =
+                                const customerImage =
                                     review.customerPhoto ||
-                                    review.userPhoto ||
                                     review.customerImage ||
-                                    review.userImage ||
+                                    review.userPhoto ||
                                     review.avatar ||
                                     "";
 
 
-                                /*==================================
-                                    PRODUCT NAME
-                                ==================================*/
+                                const productImage =
+                                    review.productPhoto ||
+                                    review.productImage ||
+                                    "";
+
 
                                 const productName =
                                     review.productName ||
@@ -2206,20 +2212,12 @@ async function renderReviewCarousel(
                                     "";
 
 
-                                /*==================================
-                                    PRODUCT PHOTO
-                                ==================================*/
-
-                                const productPhoto =
-                                    review.productPhoto ||
-                                    review.productImage ||
-                                    review.productImageUrl ||
+                                const reviewText =
+                                    review.text ||
+                                    review.review ||
+                                    review.comment ||
                                     "";
 
-
-                                /*==================================
-                                    RATING
-                                ==================================*/
 
                                 const rating =
                                     Number(
@@ -2229,174 +2227,86 @@ async function renderReviewCarousel(
                                     );
 
 
-                                /*==================================
-                                    CUSTOMER IMAGE
-                                ==================================*/
-
-                                const customerHtml =
-                                    customerPhoto
-                                    ?
-                                    `
-
-                                    <img
-                                        class="
-                                            review-avatar
-                                            review-avatar-image
-                                        "
-                                        src="${escapeAttribute(
-                                            customerPhoto
-                                        )}"
-                                        alt="${escapeAttribute(
-                                            customerName
-                                        )}"
-                                        loading="lazy"
-                                        onerror="
-                                            this.style.display='none';
-                                            this.nextElementSibling.style.display='flex';
-                                        "
-                                    >
-
-                                    <div
-                                        class="
-                                            review-avatar
-                                            review-avatar-empty
-                                        "
-                                        style="display:none;"
-                                    >
-
-                                        ${escapeHtml(
-                                            customerName
-                                                .charAt(0)
-                                                .toUpperCase()
-                                        )}
-
-                                    </div>
-
-                                    `
-                                    :
-                                    `
-
-                                    <div
-                                        class="
-                                            review-avatar
-                                            review-avatar-empty
-                                        "
-                                    >
-
-                                        ${escapeHtml(
-                                            customerName
-                                                .charAt(0)
-                                                .toUpperCase()
-                                        )}
-
-                                    </div>
-
-                                    `;
-
-
-                                /*==================================
-                                    PRODUCT IMAGE
-                                ==================================*/
-
-                                const productHtml =
-                                    productPhoto ||
-                                    productName
-                                    ?
-                                    `
-
-                                    <div
-                                        class="
-                                            review-product
-                                        "
-                                    >
-
-                                        ${
-                                            productPhoto
-                                            ?
-                                            `
-
-                                            <div
-                                                class="
-                                                    review-product-image
-                                                "
-                                            >
-
-                                                <img
-                                                    src="${escapeAttribute(
-                                                        productPhoto
-                                                    )}"
-                                                    alt="${escapeAttribute(
-                                                        productName ||
-                                                        "Product"
-                                                    )}"
-                                                    loading="lazy"
-                                                    onerror="
-                                                        this.parentElement.style.display='none';
-                                                    "
-                                                >
-
-                                            </div>
-
-                                            `
-                                            :
-                                            ""
-                                        }
-
-
-                                        ${
-                                            productName
-                                            ?
-                                            `
-
-                                            <div
-                                                class="
-                                                    review-product-name
-                                                "
-                                            >
-
-                                                ${escapeHtml(
-                                                    productName
-                                                )}
-
-                                            </div>
-
-                                            `
-                                            :
-                                            ""
-                                        }
-
-                                    </div>
-
-                                    `
-                                    :
-                                    "";
-
-
                                 return `
 
                                     <article
-                                        class="
-                                            review-card
-                                        "
+                                        class="review-card"
                                     >
 
                                         <!-- CUSTOMER -->
 
                                         <div
-                                            class="
-                                                review-customer
-                                            "
+                                            class="review-customer"
                                         >
 
-                                            <div
-                                                class="
-                                                    review-avatar-wrap
-                                                "
-                                            >
+                                            ${
+                                                customerImage
+                                                ?
 
-                                                ${customerHtml}
+                                                `
 
-                                            </div>
+                                                <img
+                                                    class="
+                                                        review-avatar
+                                                    "
+                                                    src="${escapeAttribute(
+                                                        customerImage
+                                                    )}"
+                                                    alt="${escapeAttribute(
+                                                        name
+                                                    )}"
+                                                    loading="lazy"
+                                                    onerror="
+                                                        this.style.display='none';
+                                                        this.nextElementSibling.style.display='flex';
+                                                    "
+                                                >
+
+                                                <div
+                                                    class="
+                                                        review-avatar
+                                                        review-avatar-empty
+                                                    "
+                                                    style="
+                                                        display:none;
+                                                    "
+                                                >
+
+                                                    ${escapeHtml(
+                                                        name
+                                                            .charAt(
+                                                                0
+                                                            )
+                                                            .toUpperCase()
+                                                    )}
+
+                                                </div>
+
+                                                `
+
+                                                :
+
+                                                `
+
+                                                <div
+                                                    class="
+                                                        review-avatar
+                                                        review-avatar-empty
+                                                    "
+                                                >
+
+                                                    ${escapeHtml(
+                                                        name
+                                                            .charAt(
+                                                                0
+                                                            )
+                                                            .toUpperCase()
+                                                    )}
+
+                                                </div>
+
+                                                `
+                                            }
 
 
                                             <div
@@ -2412,7 +2322,7 @@ async function renderReviewCarousel(
                                                 >
 
                                                     ${escapeHtml(
-                                                        customerName
+                                                        name
                                                     )}
 
                                                 </h3>
@@ -2435,39 +2345,82 @@ async function renderReviewCarousel(
                                         </div>
 
 
-                                        <!-- REVIEW TEXT -->
+                                        <!-- REVIEW -->
+
+                                        <p
+                                            class="
+                                                review-text
+                                            "
+                                        >
+
+                                            ${escapeHtml(
+                                                reviewText
+                                            )}
+
+                                        </p>
+
+
+                                        <!-- PRODUCT IMAGE -->
 
                                         ${
-                                            review.text ||
-                                            review.review ||
-                                            review.comment
+                                            productImage
                                             ?
+
                                             `
 
-                                            <p
+                                            <div
                                                 class="
-                                                    review-text
+                                                    review-product-image
                                                 "
                                             >
 
-                                                ${escapeHtml(
-                                                    review.text ||
-                                                    review.review ||
-                                                    review.comment ||
-                                                    ""
-                                                )}
+                                                <img
+                                                    src="${escapeAttribute(
+                                                        productImage
+                                                    )}"
+                                                    alt="${escapeAttribute(
+                                                        productName ||
+                                                        "Product"
+                                                    )}"
+                                                    loading="lazy"
+                                                >
 
-                                            </p>
+                                            </div>
 
                                             `
+
                                             :
+
                                             ""
                                         }
 
 
-                                        <!-- PRODUCT -->
+                                        <!-- PRODUCT NAME -->
 
-                                        ${productHtml}
+                                        ${
+                                            productName
+                                            ?
+
+                                            `
+
+                                            <div
+                                                class="
+                                                    review-product-name
+                                                "
+                                            >
+
+                                                ${escapeHtml(
+                                                    productName
+                                                )}
+
+                                            </div>
+
+                                            `
+
+                                            :
+
+                                            ""
+                                        }
 
                                     </article>
 
@@ -2483,6 +2436,7 @@ async function renderReviewCarousel(
                 ${
                     reviews.length > 1
                     ?
+
                     `
 
                     <div
@@ -2514,7 +2468,9 @@ async function renderReviewCarousel(
                     </div>
 
                     `
+
                     :
+
                     ""
                 }
 
@@ -2524,7 +2480,7 @@ async function renderReviewCarousel(
 
 
         /*==================================================
-            SWIPE
+            CAROUSEL
         ==================================================*/
 
         initHorizontalCarousel(
@@ -2532,32 +2488,38 @@ async function renderReviewCarousel(
             ".review-carousel"
         );
 
-
-        /*==================================================
-            AUTO PLAY
-        ==================================================*/
-
-        initReviewAutoPlay(
-            container,
-            section
-        );
-
     }
 
     catch(error){
 
         console.error(
-            "Review carousel loading error:",
+            "REVIEW CAROUSEL ERROR:",
             error
         );
 
-        container.remove();
+
+        /*
+            Do NOT silently fail.
+            This helps us see the actual problem.
+        */
+
+        container.innerHTML = `
+
+            <div class="home-container">
+
+                <div class="carousel-empty">
+
+                    Unable to load reviews.
+
+                </div>
+
+            </div>
+
+        `;
 
     }
 
 }
-
-
 /*==================================================
     STARS
 ==================================================*/
