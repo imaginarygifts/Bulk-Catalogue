@@ -143,7 +143,9 @@ button{
 }
 
 
-/* LOGO */
+/*==================================================
+    LOGO
+==================================================*/
 
 .logo{
     position:absolute;
@@ -151,23 +153,33 @@ button{
     left:50%;
     top:50%;
 
-    transform:translate(-50%,-50%);
+    transform:translate(-50%, -50%);
+
+    width:65%;
+    height:62px;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
+    z-index:2;
+
     pointer-events:none;
+
+    overflow:visible;
 }
 
 .logo img{
+    display:block;
+
     width:auto;
-    height:52px;
-    max-width:360px;
+    height:58px;
+
+    max-width:100%;
 
     object-fit:contain;
 
-    display:block;
+    transform:scale(1.15);
 }
 
 
