@@ -2053,183 +2053,708 @@ function renderImageCarousel(
     REVIEW CAROUSEL
 ==================================================*/
 
-function renderReviewCarousel(
+/*==================================================
+    REVIEW CAROUSEL
+    LOADS APPROVED + PUBLISHED REVIEWS
+==================================================*/
+
+async function renderReviewCarousel(
     container,
     section
 ){
 
-    const reviews =
-        Array.isArray(
-            section.reviews
-        )
-        ?
-        section.reviews
-        :
-        [];
+    try{
+
+        /*==================================================
+            LOAD REVIEWS
+        ==================================================*/
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "reviews"
+                )
+            );
 
 
-    if(
-        !reviews.length
-    ){
+        /*==================================================
+            FILTER PUBLIC REVIEWS
+        ==================================================*/
+
+        let reviews =
+            snapshot.docs
+                .map(
+                    docSnap => ({
+
+                        id:
+                            docSnap.id,
+
+                        ...docSnap.data()
+
+                    })
+                )
+                .filter(
+                    review =>
+                        review.approved === true &&
+                        review.published === true &&
+                        review.rejected !== true
+                );
+
+
+        /*==================================================
+            SORT NEWEST FIRST
+        ==================================================*/
+
+        reviews.sort(
+            (
+                a,
+                b
+            ) =>
+                getTimestamp(
+                    b.createdAt
+                )
+                -
+                getTimestamp(
+                    a.createdAt
+                )
+        );
+
+
+        /*==================================================
+            LIMIT
+        ==================================================*/
+
+        const limit =
+            Number(
+                section.limit ||
+                10
+            );
+
+
+        reviews =
+            reviews.slice(
+                0,
+                limit
+            );
+
+
+        /*==================================================
+            NO REVIEWS
+        ==================================================*/
+
+        if(
+            !reviews.length
+        ){
+
+            container.remove();
+
+            return;
+
+        }
+
+
+        /*==================================================
+            HTML
+        ==================================================*/
+
+        container.innerHTML = `
+
+            <div class="home-container">
+
+                ${renderSectionHeading(
+                    section
+                )}
+
+
+                <div
+                    class="review-carousel"
+                    data-review-carousel
+                >
+
+                    ${
+                        reviews.map(
+                            review => {
+
+                                const customerName =
+                                    review.customerName ||
+                                    "Customer";
+
+
+                                const rating =
+                                    Number(
+                                        review.rating ||
+                                        5
+                                    );
+
+
+                                return `
+
+                                    <article
+                                        class="review-card"
+                                    >
+
+                                        <!-- CUSTOMER -->
+
+                                        <div
+                                            class="
+                                                review-customer
+                                            "
+                                        >
+
+                                            ${
+                                                review.customerPhoto
+                                                ?
+                                                `
+
+                                                <img
+                                                    class="
+                                                        review-avatar
+                                                    "
+                                                    src="${escapeAttribute(
+                                                        review.customerPhoto
+                                                    )}"
+                                                    alt="${escapeAttribute(
+                                                        customerName
+                                                    )}"
+                                                    loading="lazy"
+                                                >
+
+                                                `
+                                                :
+                                                `
+
+                                                <div
+                                                    class="
+                                                        review-avatar
+                                                        review-avatar-empty
+                                                    "
+                                                >
+
+                                                    ${escapeHtml(
+                                                        customerName
+                                                            .charAt(0)
+                                                            .toUpperCase()
+                                                    )}
+
+                                                </div>
+
+                                                `
+                                            }
+
+
+                                            <div
+                                                class="
+                                                    review-customer-info
+                                                "
+                                            >
+
+                                                <h3
+                                                    class="
+                                                        review-name
+                                                    "
+                                                >
+
+                                                    ${escapeHtml(
+                                                        customerName
+                                                    )}
+
+                                                </h3>
+
+
+                                                <div
+                                                    class="
+                                                        review-stars
+                                                    "
+                                                >
+
+                                                    ${renderStars(
+                                                        rating
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- REVIEW -->
+
+                                        <p
+                                            class="
+                                                review-text
+                                            "
+                                        >
+
+                                            ${escapeHtml(
+                                                review.text ||
+                                                ""
+                                            )}
+
+                                        </p>
+
+
+                                        <!-- PRODUCT -->
+
+                                        ${
+                                            review.productName ||
+                                            review.productPhoto
+                                            ?
+                                            `
+
+                                            <div
+                                                class="
+                                                    review-product
+                                                "
+                                            >
+
+                                                ${
+                                                    review.productPhoto
+                                                    ?
+                                                    `
+
+                                                    <img
+                                                        src="${escapeAttribute(
+                                                            review.productPhoto
+                                                        )}"
+                                                        alt="${escapeAttribute(
+                                                            review.productName ||
+                                                            "Product"
+                                                        )}"
+                                                        loading="lazy"
+                                                    >
+
+                                                    `
+                                                    :
+                                                    ""
+                                                }
+
+
+                                                <div
+                                                    class="
+                                                        review-product-info
+                                                    "
+                                                >
+
+                                                    ${
+                                                        review.productName
+                                                        ?
+                                                        `
+
+                                                        <span
+                                                            class="
+                                                                review-product-name
+                                                            "
+                                                        >
+
+                                                            ${escapeHtml(
+                                                                review.productName
+                                                            )}
+
+                                                        </span>
+
+                                                        `
+                                                        :
+                                                        ""
+                                                    }
+
+                                                </div>
+
+                                            </div>
+
+                                            `
+                                            :
+                                            ""
+                                        }
+
+                                    </article>
+
+                                `;
+
+                            }
+                        ).join("")
+                    }
+
+                </div>
+
+
+                ${
+                    reviews.length > 1
+                    ?
+                    `
+
+                    <div
+                        class="
+                            carousel-dots
+                            review-dots
+                        "
+                    >
+
+                        ${
+                            reviews.map(
+                                (
+                                    _,
+                                    index
+                                ) => `
+
+                                    <span
+                                        class="${
+                                            index === 0
+                                            ? "active"
+                                            : ""
+                                        }"
+                                    ></span>
+
+                                `
+                            ).join("")
+                        }
+
+                    </div>
+
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+        `;
+
+
+        /*==================================================
+            INITIALIZE SWIPE
+        ==================================================*/
+
+        initHorizontalCarousel(
+            container,
+            ".review-carousel"
+        );
+
+
+        /*==================================================
+            REVIEW AUTO PLAY
+        ==================================================*/
+
+        initReviewAutoPlay(
+            container,
+            section
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Review carousel loading error:",
+            error
+        );
 
         container.remove();
+
+    }
+
+}
+
+
+/*==================================================
+    REVIEW AUTO PLAY
+==================================================*/
+
+function initReviewAutoPlay(
+    container,
+    section
+){
+
+    const carousel =
+        container.querySelector(
+            ".review-carousel"
+        );
+
+
+    if(!carousel){
 
         return;
 
     }
 
 
-    const limit =
+    /*==================================================
+        AUTO PLAY DISABLED
+    ==================================================*/
+
+    if(
+        section.autoPlay === false
+    ){
+
+        return;
+
+    }
+
+
+    const cards =
+        Array.from(
+            carousel.querySelectorAll(
+                ".review-card"
+            )
+        );
+
+
+    if(
+        cards.length <= 1
+    ){
+
+        return;
+
+    }
+
+
+    const interval =
         Number(
-            section.limit ||
-            10
+            section.interval ||
+            5000
         );
 
 
-    const visible =
-        reviews.slice(
-            0,
-            limit
-        );
+    let timer =
+        null;
 
 
-    container.innerHTML = `
-
-        <div class="home-container">
-
-            ${renderSectionHeading(
-                section
-            )}
+    let paused =
+        false;
 
 
-            <div class="review-carousel">
+    /*==================================================
+        GET CURRENT CARD
+    ==================================================*/
 
-                ${
-                    visible.map(
-                        review => `
+    function getCurrentIndex(){
 
-                        <article
-                            class="review-card"
-                        >
-
-                            ${
-                                review.image
-                                ?
-                                `
-
-                                <img
-                                    class="review-avatar"
-                                    src="${escapeAttribute(
-                                        review.image
-                                    )}"
-                                    alt="${escapeAttribute(
-                                        review.name ||
-                                        "Customer"
-                                    )}"
-                                    loading="lazy"
-                                >
-
-                                `
-                                :
-                                `
-
-                                <div
-                                    class="
-                                        review-avatar
-                                        review-avatar-empty
-                                    "
-                                >
-
-                                    ${escapeHtml(
-                                        (
-                                            review.name ||
-                                            "C"
-                                        )
-                                        .charAt(0)
-                                        .toUpperCase()
-                                    )}
-
-                                </div>
-
-                                `
-                            }
+        const center =
+            carousel.scrollLeft +
+            (
+                carousel.clientWidth /
+                2
+            );
 
 
-                            <div
-                                class="review-stars"
-                            >
-
-                                ${renderStars(
-                                    review.stars ||
-                                    5
-                                )}
-
-                            </div>
+        let closest =
+            0;
 
 
-                            <p
-                                class="review-text"
-                            >
-
-                                ${escapeHtml(
-                                    review.review ||
-                                    review.text ||
-                                    ""
-                                )}
-
-                            </p>
+        let distance =
+            Infinity;
 
 
-                            ${
-                                review.name
-                                ?
-                                `
+        cards.forEach(
+            (
+                card,
+                index
+            ) => {
 
-                                <h3
-                                    class="review-name"
-                                >
+                const cardCenter =
+                    card.offsetLeft +
+                    (
+                        card.offsetWidth /
+                        2
+                    );
 
-                                    ${escapeHtml(
-                                        review.name
-                                    )}
 
-                                </h3>
+                const difference =
+                    Math.abs(
+                        cardCenter -
+                        center
+                    );
 
-                                `
-                                :
-                                ""
-                            }
 
-                        </article>
+                if(
+                    difference <
+                    distance
+                ){
 
-                    `
-                    ).join("")
+                    distance =
+                        difference;
+
+
+                    closest =
+                        index;
+
                 }
 
-            </div>
+            }
+        );
 
 
-            <div class="carousel-dots">
+        return closest;
 
-                <span class="active"></span>
-
-                <span></span>
-
-                <span></span>
-
-            </div>
-
-        </div>
-
-    `;
+    }
 
 
-    initHorizontalCarousel(
-        container,
-        ".review-carousel"
+    /*==================================================
+        SHOW NEXT
+    ==================================================*/
+
+    function next(){
+
+        if(
+            paused
+        ){
+
+            return;
+
+        }
+
+
+        const current =
+            getCurrentIndex();
+
+
+        const nextIndex =
+            (
+                current +
+                1
+            )
+            %
+            cards.length;
+
+
+        cards[
+            nextIndex
+        ].scrollIntoView({
+
+            behavior:
+                "smooth",
+
+            block:
+                "nearest",
+
+            inline:
+                "center"
+
+        });
+
+
+        setTimeout(
+            () => {
+
+                updateCarouselDots(
+                    carousel,
+                    container
+                );
+
+            },
+            400
+        );
+
+    }
+
+
+    /*==================================================
+        START
+    ==================================================*/
+
+    function start(){
+
+        stop();
+
+
+        timer =
+            setInterval(
+                next,
+                interval
+            );
+
+    }
+
+
+    /*==================================================
+        STOP
+    ==================================================*/
+
+    function stop(){
+
+        if(
+            timer
+        ){
+
+            clearInterval(
+                timer
+            );
+
+            timer =
+                null;
+
+        }
+
+    }
+
+
+    /*==================================================
+        PAUSE WHILE TOUCHING
+    ==================================================*/
+
+    carousel.addEventListener(
+        "touchstart",
+        () => {
+
+            paused =
+                true;
+
+        },
+        {
+            passive:true
+        }
     );
 
+
+    carousel.addEventListener(
+        "touchend",
+        () => {
+
+            paused =
+                false;
+
+        },
+        {
+            passive:true
+        }
+    );
+
+
+    /*==================================================
+        PAUSE WHILE MOUSE HOVER
+    ==================================================*/
+
+    carousel.addEventListener(
+        "mouseenter",
+        () => {
+
+            paused =
+                true;
+
+        }
+    );
+
+
+    carousel.addEventListener(
+        "mouseleave",
+        () => {
+
+            paused =
+                false;
+
+        }
+    );
+
+
+    /*==================================================
+        START TIMER
+    ==================================================*/
+
+    start();
+
 }
+
 
 
 /*==================================================
