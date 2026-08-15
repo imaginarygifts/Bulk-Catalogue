@@ -2040,13 +2040,11 @@ button{
 
     scroll-snap-type:x mandatory;
 
-    scroll-behavior:smooth;
-
     -webkit-overflow-scrolling:touch;
 
-    padding:10px 0 20px;
-
     scrollbar-width:none;
+
+    padding:10px 0 20px;
 
 }
 
@@ -2059,7 +2057,7 @@ button{
 
 
 /*==================================================
-    REVIEW CARD
+    CARD
 ==================================================*/
 
 .review-card{
@@ -2084,7 +2082,7 @@ button{
 
 
 /*==================================================
-    CUSTOMER ROW
+    CUSTOMER
 ==================================================*/
 
 .review-customer{
@@ -2100,7 +2098,7 @@ button{
 }
 
 
-.review-avatar-wrap{
+.review-avatar{
 
     width:58px;
 
@@ -2110,22 +2108,9 @@ button{
 
     border-radius:50%;
 
-    overflow:hidden;
-
-}
-
-
-.review-avatar{
-
-    width:58px;
-
-    height:58px;
+    object-fit:cover;
 
     display:block;
-
-    border-radius:50%;
-
-    object-fit:cover;
 
 }
 
@@ -2135,6 +2120,8 @@ button{
     width:58px;
 
     height:58px;
+
+    min-width:58px;
 
     border-radius:50%;
 
@@ -2146,7 +2133,7 @@ button{
 
     background:#292731;
 
-    color:#ffffff;
+    color:#fff;
 
     font-size:24px;
 
@@ -2164,9 +2151,9 @@ button{
 
 .review-name{
 
-    margin:0 0 6px;
+    margin:0 0 7px;
 
-    color:#ffffff;
+    color:#fff;
 
     font-size:18px;
 
@@ -2193,37 +2180,24 @@ button{
 
 
 /*==================================================
-    REVIEW TEXT
+    TEXT
 ==================================================*/
 
 .review-text{
 
-    margin:10px 0 20px;
+    margin:14px 0 18px;
 
-    color:#eeeeee;
+    color:#eee;
 
     font-size:17px;
 
     line-height:1.5;
 
-    word-break:break-word;
-
 }
 
 
 /*==================================================
-    PRODUCT
-==================================================*/
-
-.review-product{
-
-    margin-top:10px;
-
-}
-
-
-/*==================================================
-    PRODUCT IMAGE BOX
+    PRODUCT IMAGE
 ==================================================*/
 
 .review-product-image{
@@ -2236,7 +2210,7 @@ button{
 
     overflow:hidden;
 
-    background:#222128;
+    background:#24232b;
 
 }
 
@@ -2264,24 +2238,11 @@ button{
 
     margin-top:8px;
 
-    color:#ffffff;
+    color:#fff;
 
     font-size:16px;
 
     font-weight:600;
-
-    line-height:1.3;
-
-}
-
-
-/*==================================================
-    REVIEW DOTS
-==================================================*/
-
-.review-dots{
-
-    margin-top:10px;
 
 }
 
@@ -2290,58 +2251,13 @@ button{
     MOBILE
 ==================================================*/
 
-@media(
-    max-width:600px
-){
-
-    .review-carousel{
-
-        gap:16px;
-
-    }
-
+@media(max-width:600px){
 
     .review-card{
 
         flex-basis:86%;
 
         padding:22px;
-
-        border-radius:22px;
-
-    }
-
-
-    .review-avatar-wrap,
-    .review-avatar,
-    .review-avatar-empty{
-
-        width:54px;
-
-        height:54px;
-
-        min-width:54px;
-
-    }
-
-
-    .review-name{
-
-        font-size:17px;
-
-    }
-
-
-    .review-stars{
-
-        font-size:19px;
-
-    }
-
-
-    .review-text{
-
-        font-size:16px;
 
     }
 
@@ -2354,29 +2270,6 @@ button{
 
 }
 
-
-/*==================================================
-    TABLET / DESKTOP
-==================================================*/
-
-@media(
-    min-width:768px
-){
-
-    .review-card{
-
-        flex-basis:360px;
-
-    }
-
-
-    .review-product-image{
-
-        height:190px;
-
-    }
-
-}
 /*==================================================
     SPACER
 ==================================================*/
