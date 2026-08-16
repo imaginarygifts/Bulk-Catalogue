@@ -69,6 +69,7 @@
     rel="stylesheet"
     href="css/homepage.css"
 >
+<link rel="stylesheet" href="css/topbar.css">
 
 
 <!-- ==================================================
@@ -85,13 +86,11 @@
 
 <body>
 
-
 <!-- ==================================================
-     TOP BAR
+     COMMON TOPBAR
 ================================================== -->
 
 <header class="topbar">
-
 
     <!-- MENU -->
 
@@ -105,7 +104,6 @@
         <i class="fa-solid fa-bars"></i>
 
     </button>
-
 
 
     <!-- LOGO -->
@@ -131,7 +129,6 @@
     </div>
 
 
-
     <!-- SEARCH -->
 
     <button
@@ -141,17 +138,16 @@
         aria-label="Search"
     >
 
-        🔍
+        <i class="fa-solid fa-magnifying-glass"></i>
 
     </button>
-
 
 </header>
 
 
 
 <!-- ==================================================
-     SEARCH OVERLAY
+     COMMON SEARCH
 ================================================== -->
 
 <div
@@ -160,45 +156,96 @@
     aria-hidden="true"
 >
 
-    <div class="search-box">
+    <div class="search-panel">
 
-        <input
-            type="search"
-            id="searchInput"
-            placeholder="Search for products..."
-            autocomplete="off"
+        <!-- SEARCH HEADER -->
+
+        <div class="search-header">
+
+            <div class="search-title">
+
+                Search Products
+
+            </div>
+
+
+            <button
+                type="button"
+                class="search-close"
+                id="closeSearchButton"
+                aria-label="Close search"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH INPUT -->
+
+        <div class="search-input-wrap">
+
+            <span class="search-input-icon">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </span>
+
+
+            <input
+                type="search"
+                id="searchInput"
+                class="search-input"
+                placeholder="Search products..."
+                autocomplete="off"
+            >
+
+
+            <button
+                type="button"
+                id="clearSearchButton"
+                class="clear-search-button"
+                aria-label="Clear search"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH RESULTS -->
+
+        <div
+            id="searchResults"
+            class="search-results"
         >
 
-        <button
-            type="button"
-            id="closeSearchButton"
-            aria-label="Close search"
-        >
-            <i class="fa-solid fa-xmark"></i>
-        </button>
+            <div class="search-empty">
+
+                Type to search products
+
+            </div>
+
+        </div>
 
     </div>
-
-
-    <!-- SEARCH RESULTS -->
-
-    <div
-        id="searchResults"
-        class="search-results"
-    ></div>
 
 </div>
 
 
+
 <!-- ==================================================
-     SIDEBAR
+     COMMON SIDEBAR
 ================================================== -->
 
 <aside
     id="sidebar"
     class="sidebar"
 >
-
 
     <!-- SIDEBAR HEADER -->
 
@@ -224,7 +271,6 @@
     </div>
 
 
-
     <!-- HOME -->
 
     <a
@@ -239,7 +285,6 @@
         </span>
 
     </a>
-
 
 
     <!-- CATEGORIES -->
@@ -259,6 +304,7 @@
                 Categories
 
             </span>
+
 
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
@@ -283,7 +329,6 @@
     </div>
 
 
-
     <!-- TAGS -->
 
     <div class="sidebar-expandable">
@@ -301,6 +346,7 @@
                 Tags
 
             </span>
+
 
             <i
                 class="fa-solid fa-chevron-down sidebar-chevron"
@@ -325,7 +371,6 @@
     </div>
 
 
-
     <!-- ABOUT -->
 
     <a href="aboutus">
@@ -337,7 +382,6 @@
         </span>
 
     </a>
-
 
 
     <!-- CONTACT -->
@@ -353,7 +397,6 @@
     </a>
 
 
-
     <!-- TERMS -->
 
     <a href="t&c">
@@ -365,7 +408,6 @@
         </span>
 
     </a>
-
 
 
     <!-- PRIVACY -->
@@ -381,7 +423,6 @@
     </a>
 
 
-
     <!-- REFUND -->
 
     <a href="refund">
@@ -395,7 +436,6 @@
     </a>
 
 
-
     <!-- SHIPPING -->
 
     <a href="shipping">
@@ -407,7 +447,6 @@
         </span>
 
     </a>
-
 
 </aside>
 
@@ -814,6 +853,7 @@
     src="js/site-settings.js"
 ></script>
 
+<script type="module" src="js/topbar.js"></script>
 
 <script
     type="module"
