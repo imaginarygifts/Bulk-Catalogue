@@ -1,737 +1,892 @@
-<!DOCTYPE html>  <html lang="en">  <head>  <meta charset="UTF-8">  <meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
-
-> 
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- ==================================================  
-     DEFAULT SEO  
-       
-     site-settings.js will replace these values  
-     from Firestore settings/general  
-================================================== -->  <title>Homepage</title>  <meta
-id="siteMetaDescription"
-name="description"
-content=""
+<head>
 
-> 
+    <meta charset="UTF-8">
 
-<!-- ==================================================  
-     OPEN GRAPH  
-================================================== -->  <meta
-id="ogTitle"
-property="og:title"
-content=""
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-> 
 
-<meta
-id="ogDescription"
-property="og:description"
-content=""
+    <!-- ==================================================
+         DEFAULT SEO
+    ================================================== -->
 
-> 
-
-<meta
-id="ogImage"
-property="og:image"
-content=""
-
-> 
-
-<meta
-id="ogUrl"
-property="og:url"
-content=""
+    <title>Homepage</title>
 
-> 
+    <meta
+        id="siteMetaDescription"
+        name="description"
+        content=""
+    >
 
-<meta
-property="og:type"
-content="website"
 
-> 
+    <!-- ==================================================
+         OPEN GRAPH
+    ================================================== -->
 
-<!-- ==================================================  
-     HOMEPAGE CSS  
-================================================== -->  <link  
-    rel="stylesheet"  
-    href="css/homepage.css"  
->  <!-- ==================================================  
-     FONT AWESOME  
-================================================== -->  <link  
-    rel="stylesheet"  
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"  
->  </head>  <body>
- <!-- ==================================================  
-     TOP BAR  
-================================================== -->  <header class="topbar">  <!-- MENU -->  
+    <meta
+        id="ogTitle"
+        property="og:title"
+        content=""
+    >
 
-<button  
-    class="menu-btn"  
-    id="menuButton"  
-    type="button"  
-    aria-label="Open menu"  
->  
+    <meta
+        id="ogDescription"
+        property="og:description"
+        content=""
+    >
 
-    <i class="fa-solid fa-bars"></i>  
+    <meta
+        id="ogImage"
+        property="og:image"
+        content=""
+    >
 
-</button>  
+    <meta
+        id="ogUrl"
+        property="og:url"
+        content=""
+    >
 
+    <meta
+        property="og:type"
+        content="website"
+    >
 
 
-<!-- LOGO -->  
+    <!-- ==================================================
+         HOMEPAGE CSS
+    ================================================== -->
 
-<div class="logo">  
+    <link
+        rel="stylesheet"
+        href="css/homepage.css"
+    >
 
-    <a  
-        id="logoLink"  
-        data-logo-link  
-        href="index"  
-        aria-label="Home"  
-    >  
 
-        <img  
-            id="siteLogo"  
-            data-site-logo  
-            src=""  
-            alt="Company Logo"  
-        >  
+    <!-- ==================================================
+         SIDEBAR / TOPBAR CSS
+         Keep this if sidebar.css exists.
+         If all styling is already inside homepage.css,
+         this line can be removed.
+    ================================================== -->
 
-    </a>  
+    <link
+        rel="stylesheet"
+        href="css/sidebar.css"
+    >
 
-</div>  
 
+    <!-- ==================================================
+         FONT AWESOME
+    ================================================== -->
 
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
 
-<!-- SEARCH -->  
+</head>
 
-<button  
-    class="search-icon"  
-    id="searchButton"  
-    type="button"  
-    aria-label="Search"  
->  
 
-    🔍  
+<body>
 
-</button>
 
-</header>  <!-- ==================================================  
-     SEARCH OVERLAY  
-================================================== -->  <div  
-    id="searchOverlay"  
-    class="search-overlay"  
-    aria-hidden="true"  
->  <div class="search-box">  
+    <!-- ==================================================
+         TOP BAR
+    ================================================== -->
 
-    <input  
-        type="search"  
-        id="searchInput"  
-        placeholder="Search for products..."  
-        autocomplete="off"  
-    >  
+    <header class="topbar">
 
-    <button  
-        type="button"  
-        id="closeSearchButton"  
-        aria-label="Close search"  
-    >  
-        <i class="fa-solid fa-xmark"></i>  
-    </button>  
 
-</div>  
+        <!-- MENU -->
 
+        <button
+            class="menu-btn"
+            id="menuButton"
+            type="button"
+            aria-label="Open menu"
+        >
 
-<!-- SEARCH RESULTS -->  
+            <i class="fa-solid fa-bars"></i>
 
-<div  
-    id="searchResults"  
-    class="search-results"  
-></div>
+        </button>
 
-</div>  <!-- ==================================================  
-     SIDEBAR  
-================================================== -->  <aside  
-    id="sidebar"  
-    class="sidebar"  
->  <!-- SIDEBAR HEADER -->  
 
-<div class="sidebar-header">  
 
-    <strong data-company-name>  
+        <!-- LOGO -->
 
-        Company Name  
+        <div class="logo">
 
-    </strong>  
+            <a
+                id="logoLink"
+                data-logo-link
+                href="index"
+                aria-label="Home"
+            >
 
+                <img
+                    id="siteLogo"
+                    data-site-logo
+                    src=""
+                    alt="Company Logo"
+                >
 
-    <button  
-        type="button"  
-        id="closeSidebarButton"  
-        aria-label="Close menu"  
-    >  
+            </a>
 
-        <i class="fa-solid fa-xmark"></i>  
+        </div>
 
-    </button>  
 
-</div>  
 
+        <!-- SEARCH -->
 
+        <button
+            class="search-icon"
+            id="searchButton"
+            type="button"
+            aria-label="Search"
+        >
 
-<!-- HOME -->  
+            <i class="fa-solid fa-magnifying-glass"></i>
 
-<a  
-    href="index"  
-    data-home-link  
->  
+        </button>
 
-    <i class="fa-solid fa-house"></i>  
+    </header>
 
-    <span>  
-        Home  
-    </span>  
 
-</a>  
 
+    <!-- ==================================================
+         SEARCH OVERLAY
+         
+         Search functionality is handled separately.
+         It is NOT inside homepage.js.
+    ================================================== -->
 
+    <div
+        id="searchOverlay"
+        class="search-overlay"
+        aria-hidden="true"
+    >
 
-<!-- CATEGORIES -->  
+        <div class="search-box">
 
-<div class="sidebar-expandable">  
+            <input
+                type="search"
+                id="searchInput"
+                placeholder="Search for products..."
+                autocomplete="off"
+            >
 
-    <button  
-        type="button"  
-        class="sidebar-expand-button"  
-        id="categoriesToggle"  
-    >  
+            <button
+                type="button"
+                id="closeSearchButton"
+                aria-label="Close search"
+            >
 
-        <span>  
+                <i class="fa-solid fa-xmark"></i>
 
-            <i class="fa-solid fa-layer-group"></i>  
+            </button>
 
-            Categories  
+        </div>
 
-        </span>  
 
-        <i  
-            class="fa-solid fa-chevron-down sidebar-chevron"  
-        ></i>  
+        <!-- SEARCH RESULTS -->
 
-    </button>  
+        <div
+            id="searchResults"
+            class="search-results"
+        ></div>
 
+    </div>
 
-    <div  
-        id="sidebarCategories"  
-        class="sidebar-submenu"  
-    >  
 
-        <div class="sidebar-loading">  
 
-            Loading categories...  
+    <!-- ==================================================
+         SIDEBAR
+    ================================================== -->
 
-        </div>  
+    <aside
+        id="sidebar"
+        class="sidebar"
+    >
 
-    </div>  
 
-</div>  
+        <!-- SIDEBAR HEADER -->
 
+        <div class="sidebar-header">
 
+            <strong data-company-name>
 
-<!-- TAGS -->  
+                Company Name
 
-<div class="sidebar-expandable">  
+            </strong>
 
-    <button  
-        type="button"  
-        class="sidebar-expand-button"  
-        id="tagsToggle"  
-    >  
 
-        <span>  
+            <button
+                type="button"
+                id="closeSidebarButton"
+                aria-label="Close menu"
+            >
 
-            <i class="fa-solid fa-tags"></i>  
+                <i class="fa-solid fa-xmark"></i>
 
-            Tags  
+            </button>
 
-        </span>  
+        </div>
 
-        <i  
-            class="fa-solid fa-chevron-down sidebar-chevron"  
-        ></i>  
 
-    </button>  
 
+        <!-- HOME -->
 
-    <div  
-        id="sidebarTags"  
-        class="sidebar-submenu"  
-    >  
+        <a
+            href="index"
+            data-home-link
+        >
 
-        <div class="sidebar-loading">  
+            <i class="fa-solid fa-house"></i>
 
-            Loading tags...  
+            <span>
+                Home
+            </span>
 
-        </div>  
+        </a>
 
-    </div>  
 
-</div>  
 
+        <!-- CATEGORIES -->
 
+        <div class="sidebar-expandable">
 
-<!-- ABOUT -->  
+            <button
+                type="button"
+                class="sidebar-expand-button"
+                id="categoriesToggle"
+            >
 
-<a href="aboutus">  
+                <span>
 
-    <i class="fa-solid fa-circle-info"></i>  
+                    <i class="fa-solid fa-layer-group"></i>
 
-    <span>  
-        About Us  
-    </span>  
+                    Categories
 
-</a>  
+                </span>
 
+                <i
+                    class="fa-solid fa-chevron-down sidebar-chevron"
+                ></i>
 
+            </button>
 
-<!-- CONTACT -->  
 
-<a href="contact-us">  
+            <div
+                id="sidebarCategories"
+                class="sidebar-submenu"
+            >
 
-    <i class="fa-solid fa-phone"></i>  
+                <div class="sidebar-loading">
 
-    <span>  
-        Contact Us  
-    </span>  
+                    Loading categories...
 
-</a>  
+                </div>
 
+            </div>
 
+        </div>
 
-<!-- TERMS -->  
 
-<a href="t&c">  
 
-    <i class="fa-solid fa-file-contract"></i>  
+        <!-- TAGS -->
 
-    <span>  
-        Terms & Conditions  
-    </span>  
+        <div class="sidebar-expandable">
 
-</a>  
+            <button
+                type="button"
+                class="sidebar-expand-button"
+                id="tagsToggle"
+            >
 
+                <span>
 
+                    <i class="fa-solid fa-tags"></i>
 
-<!-- PRIVACY -->  
+                    Tags
 
-<a href="privacy-policy">  
+                </span>
 
-    <i class="fa-solid fa-lock"></i>  
+                <i
+                    class="fa-solid fa-chevron-down sidebar-chevron"
+                ></i>
 
-    <span>  
-        Privacy Policy  
-    </span>  
+            </button>
 
-</a>  
 
+            <div
+                id="sidebarTags"
+                class="sidebar-submenu"
+            >
 
+                <div class="sidebar-loading">
 
-<!-- REFUND -->  
+                    Loading tags...
 
-<a href="refund">  
+                </div>
 
-    <i class="fa-solid fa-money-bill-transfer"></i>  
+            </div>
 
-    <span>  
-        Refund Policy  
-    </span>  
+        </div>
 
-</a>  
 
 
+        <!-- ABOUT -->
 
-<!-- SHIPPING -->  
+        <a href="aboutus">
 
-<a href="shipping">  
+            <i class="fa-solid fa-circle-info"></i>
 
-    <i class="fa-solid fa-truck"></i>  
+            <span>
+                About Us
+            </span>
 
-    <span>  
-        Shipping Policy  
-    </span>  
+        </a>
 
-</a>
 
-</aside>  <!-- ==================================================  
-     SIDEBAR OVERLAY  
-================================================== -->  <div  
-    id="overlay"  
-    class="overlay"  
-></div>  
 
-   <!-- ==================================================  
-     HOMEPAGE  
-================================================== -->  <main id="homepage">  <!-- Firestore homepage sections load here -->
+        <!-- CONTACT -->
 
-</main>  <!-- ==================================================  
-     WRITE REVIEW BUTTON  
-================================================== -->  <button
-type="button"
-id="openReviewButton"
-class="write-review-btn"
+        <a href="contact-us">
 
-> 
+            <i class="fa-solid fa-phone"></i>
 
-⭐ Write a Review
+            <span>
+                Contact Us
+            </span>
 
-</button>  <!-- ==================================================  
-     CUSTOMER REVIEW POPUP  
-================================================== -->  <div  
-    id="reviewPopup"  
-    class="review-popup hidden"  
-    aria-hidden="true"  
->  <div  
-    class="review-popup-box"  
-    role="dialog"  
-    aria-modal="true"  
-    aria-labelledby="reviewPopupTitle"  
->  
+        </a>
 
 
-    <!-- HEADER -->  
 
-    <div class="review-popup-header">  
+        <!-- TERMS -->
 
-        <h2 id="reviewPopupTitle">  
+        <a href="t&c">
 
-            Write a Review  
+            <i class="fa-solid fa-file-contract"></i>
 
-        </h2>  
+            <span>
+                Terms & Conditions
+            </span>
 
+        </a>
 
-        <button  
-            type="button"  
-            id="closeReviewButton"  
-            class="review-close-btn"  
-            aria-label="Close review form"  
-        >  
 
-            ×  
 
-        </button>  
+        <!-- PRIVACY -->
 
-    </div>  
+        <a href="privacy-policy">
 
+            <i class="fa-solid fa-lock"></i>
 
+            <span>
+                Privacy Policy
+            </span>
 
-    <!-- FORM -->  
+        </a>
 
-    <form  
-        id="customerReviewForm"  
-        class="customer-review-form"  
-    >  
 
 
-        <!-- NAME -->  
+        <!-- REFUND -->
 
-        <label  
-            for="reviewCustomerName"  
-        >  
+        <a href="refund">
 
-            Your Name  
+            <i class="fa-solid fa-money-bill-transfer"></i>
 
-        </label>  
+            <span>
+                Refund Policy
+            </span>
 
+        </a>
 
-        <input  
-            type="text"  
-            id="reviewCustomerName"  
-            placeholder="Enter your name"  
-            autocomplete="name"  
-            maxlength="100"  
-            required  
-        >  
 
 
+        <!-- SHIPPING -->
 
-        <!-- CUSTOMER IMAGE -->  
+        <a href="shipping">
 
-        <label  
-            for="reviewCustomerImage"  
-        >  
+            <i class="fa-solid fa-truck"></i>
 
-            Customer Image  
+            <span>
+                Shipping Policy
+            </span>
 
-            <span class="optional-label">  
-                Optional  
-            </span>  
+        </a>
 
-        </label>  
+    </aside>
 
 
-        <input  
-            type="file"  
-            id="reviewCustomerImage"  
-            accept="image/jpeg,image/png,image/webp,image/gif"  
-        >  
 
+    <!-- ==================================================
+         SIDEBAR OVERLAY
+    ================================================== -->
 
-        <div  
-            id="customerImagePreview"  
-            class="customer-image-preview hidden"  
-        >  
+    <div
+        id="overlay"
+        class="overlay"
+    ></div>
 
-            <img  
-                id="customerImagePreviewImg"  
-                src=""  
-                alt="Customer preview"  
-            >  
 
-            <button  
-                type="button"  
-                id="removeCustomerImageButton"  
-            >  
 
-                Remove  
+    <!-- ==================================================
+         HOMEPAGE
+         
+         Firestore homepage sections are rendered here
+         by homepage.js.
+    ================================================== -->
 
-            </button>  
+    <main id="homepage">
 
-        </div>  
+        <!-- Firestore homepage sections load here -->
 
+    </main>
 
 
-        <!-- PRODUCT SEARCH -->  
 
-        <label  
-            for="reviewProductSearch"  
-        >  
+    <!-- ==================================================
+         HOMEPAGE LOADER
+         
+         IMPORTANT:
+         homepage.js looks for #homepageLoader.
+    ================================================== -->
 
-            Select Product  
+    <div
+        id="homepageLoader"
+        class="homepage-loader"
+    >
 
-        </label>  
+        <div class="homepage-loader-spinner"></div>
 
+    </div>
 
-        <div class="review-product-search">  
 
-            <input  
-                type="text"  
-                id="reviewProductSearch"  
-                placeholder="Search product..."  
-                autocomplete="off"  
-            >  
 
+    <!-- ==================================================
+         WRITE REVIEW BUTTON
+    ================================================== -->
 
-            <div  
-                id="reviewProductResults"  
-                class="review-product-results hidden"  
-            ></div>  
+    <button
+        type="button"
+        id="openReviewButton"
+        class="write-review-btn"
+    >
 
-        </div>  
+        ⭐ Write a Review
 
+    </button>
 
 
-        <!-- SELECTED PRODUCT -->  
 
-        <div  
-            id="selectedReviewProduct"  
-            class="selected-review-product hidden"  
-        >  
+    <!-- ==================================================
+         CUSTOMER REVIEW POPUP
+    ================================================== -->
 
-            <img  
-                id="selectedProductImage"  
-                src=""  
-                alt="Selected Product"  
-            >  
+    <div
+        id="reviewPopup"
+        class="review-popup hidden"
+        aria-hidden="true"
+    >
 
+        <div
+            class="review-popup-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reviewPopupTitle"
+        >
 
-            <div class="selected-review-product-info">  
 
-                <strong  
-                    id="selectedProductName"  
-                ></strong>  
+            <!-- HEADER -->
 
+            <div class="review-popup-header">
 
-                <button  
-                    type="button"  
-                    id="changeReviewProductButton"  
-                >  
+                <h2 id="reviewPopupTitle">
 
-                    Change  
+                    Write a Review
 
-                </button>  
+                </h2>
 
-            </div>  
 
-        </div>  
+                <button
+                    type="button"
+                    id="closeReviewButton"
+                    class="review-close-btn"
+                    aria-label="Close review form"
+                >
 
+                    ×
 
+                </button>
 
-        <!-- RATING -->  
+            </div>
 
-        <label>  
 
-            Rating  
 
-        </label>  
+            <!-- FORM -->
 
+            <form
+                id="customerReviewForm"
+                class="customer-review-form"
+            >
 
-        <div  
-            id="reviewRating"  
-            class="review-rating"  
-            role="radiogroup"  
-            aria-label="Rating"  
-        >  
 
-            <button  
-                type="button"  
-                data-rating="1"  
-                aria-label="1 star"  
-            >  
-                ★  
-            </button>  
+                <!-- NAME -->
 
-            <button  
-                type="button"  
-                data-rating="2"  
-                aria-label="2 stars"  
-            >  
-                ★  
-            </button>  
+                <label
+                    for="reviewCustomerName"
+                >
 
-            <button  
-                type="button"  
-                data-rating="3"  
-                aria-label="3 stars"  
-            >  
-                ★  
-            </button>  
+                    Your Name
 
-            <button  
-                type="button"  
-                data-rating="4"  
-                aria-label="4 stars"  
-            >  
-                ★  
-            </button>  
+                </label>
 
-            <button  
-                type="button"  
-                data-rating="5"  
-                aria-label="5 stars"  
-            >  
-                ★  
-            </button>  
 
-        </div>  
+                <input
+                    type="text"
+                    id="reviewCustomerName"
+                    placeholder="Enter your name"
+                    autocomplete="name"
+                    maxlength="100"
+                    required
+                >
 
 
 
-        <!-- REVIEW -->  
+                <!-- CUSTOMER IMAGE -->
 
-        <label  
-            for="reviewText"  
-        >  
+                <label
+                    for="reviewCustomerImage"
+                >
 
-            Review  
+                    Customer Image
 
-        </label>  
+                    <span class="optional-label">
 
+                        Optional
 
-        <textarea  
-            id="reviewText"  
-            placeholder="Write your experience..."  
-            rows="5"  
-            maxlength="1000"  
-            required  
-        ></textarea>
+                    </span>
 
-<!-- ==================================================  
-     CUSTOMER PRODUCT IMAGE  
-================================================== -->  <label
-for="reviewProductImage"
+                </label>
 
-> 
 
-Product Image  
+                <input
+                    type="file"
+                    id="reviewCustomerImage"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                >
 
-<span class="optional-label">  
-    Optional  
-</span>
 
-</label>  <input
-type="file"
-id="reviewProductImage"
-accept="image/jpeg,image/png,image/webp,image/gif"
+                <div
+                    id="customerImagePreview"
+                    class="customer-image-preview hidden"
+                >
 
-> 
+                    <img
+                        id="customerImagePreviewImg"
+                        src=""
+                        alt="Customer preview"
+                    >
 
-<div  
-    id="productImagePreview"  
-    class="customer-image-preview hidden"  
->  <img  
-    id="productImagePreviewImg"  
-    src=""  
-    alt="Product image preview"  
->  
 
-<button  
-    type="button"  
-    id="removeProductImageButton"  
->  
+                    <button
+                        type="button"
+                        id="removeCustomerImageButton"
+                    >
 
-    Remove  
+                        Remove
 
-</button>
+                    </button>
 
-</div>  <!-- ERROR -->  
+                </div>
 
-        <div  
-            id="reviewFormError"  
-            class="review-form-error hidden"  
-        ></div>  
 
 
+                <!-- PRODUCT SEARCH -->
 
-        <!-- SUCCESS -->  
+                <label
+                    for="reviewProductSearch"
+                >
 
-        <div  
-            id="reviewFormSuccess"  
-            class="review-form-success hidden"  
-        ></div>  
+                    Select Product
 
+                </label>
 
 
-        <!-- SUBMIT -->  
+                <div class="review-product-search">
 
-        <button  
-            type="submit"  
-            id="submitReviewBtn"  
-            class="submit-review-btn"  
-        >  
+                    <input
+                        type="text"
+                        id="reviewProductSearch"
+                        placeholder="Search product..."
+                        autocomplete="off"
+                    >
 
-            Submit Review  
 
-        </button>  
+                    <div
+                        id="reviewProductResults"
+                        class="review-product-results hidden"
+                    ></div>
 
+                </div>
 
-    </form>  
 
 
-</div>
+                <!-- SELECTED PRODUCT -->
 
-</div>  <!-- ==================================================  
-     JAVASCRIPT  
-================================================== -->  <script  
-    type="module"  
-    src="js/site-settings.js"  
-></script>  <script  
-    type="module"  
-    src="js/homepage.js"  
-></script>  <script  
-    type="module"  
-    src="/js/sidebar.js"  
-></script>  <script  
-    type="module"  
-    src="js/customer-review.js"  
-></script>  </body>  </html>  
+                <div
+                    id="selectedReviewProduct"
+                    class="selected-review-product hidden"
+                >
+
+                    <img
+                        id="selectedProductImage"
+                        src=""
+                        alt="Selected Product"
+                    >
+
+
+                    <div class="selected-review-product-info">
+
+                        <strong
+                            id="selectedProductName"
+                        ></strong>
+
+
+                        <button
+                            type="button"
+                            id="changeReviewProductButton"
+                        >
+
+                            Change
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- RATING -->
+
+                <label>
+
+                    Rating
+
+                </label>
+
+
+                <div
+                    id="reviewRating"
+                    class="review-rating"
+                    role="radiogroup"
+                    aria-label="Rating"
+                >
+
+                    <button
+                        type="button"
+                        data-rating="1"
+                        aria-label="1 star"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="2"
+                        aria-label="2 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="3"
+                        aria-label="3 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="4"
+                        aria-label="4 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="5"
+                        aria-label="5 stars"
+                    >
+                        ★
+                    </button>
+
+                </div>
+
+
+
+                <!-- REVIEW -->
+
+                <label
+                    for="reviewText"
+                >
+
+                    Review
+
+                </label>
+
+
+                <textarea
+                    id="reviewText"
+                    placeholder="Write your experience..."
+                    rows="5"
+                    maxlength="1000"
+                    required
+                ></textarea>
+
+
+
+                <!-- ==================================================
+                     CUSTOMER PRODUCT IMAGE
+                ================================================== -->
+
+                <label
+                    for="reviewProductImage"
+                >
+
+                    Product Image
+
+                    <span class="optional-label">
+
+                        Optional
+
+                    </span>
+
+                </label>
+
+
+                <input
+                    type="file"
+                    id="reviewProductImage"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                >
+
+
+                <div
+                    id="productImagePreview"
+                    class="customer-image-preview hidden"
+                >
+
+                    <img
+                        id="productImagePreviewImg"
+                        src=""
+                        alt="Product image preview"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="removeProductImageButton"
+                    >
+
+                        Remove
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- ERROR -->
+
+                <div
+                    id="reviewFormError"
+                    class="review-form-error hidden"
+                ></div>
+
+
+
+                <!-- SUCCESS -->
+
+                <div
+                    id="reviewFormSuccess"
+                    class="review-form-success hidden"
+                ></div>
+
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    id="submitReviewBtn"
+                    class="submit-review-btn"
+                >
+
+                    Submit Review
+
+                </button>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==================================================
+         JAVASCRIPT
+    ================================================== -->
+
+
+    <!-- SITE SETTINGS -->
+
+    <script
+        type="module"
+        src="js/site-settings.js"
+    ></script>
+
+
+
+    <!-- HOMEPAGE -->
+
+    <script
+        type="module"
+        src="js/homepage.js"
+    ></script>
+
+
+
+    <!-- SIDEBAR -->
+
+    <script
+        type="module"
+        src="js/sidebar.js"
+    ></script>
+
+
+
+    <!-- CUSTOMER REVIEW FORM -->
+
+    <script
+        type="module"
+        src="js/customer-review.js"
+    ></script>
+
+
+</body>
+
+</html>
