@@ -87,457 +87,122 @@
 <body>
 
 
-<!-- ==================================================
-     COMMON TOPBAR
+ /* ==========================================
+       CUSTOMER REVIEWS
+    ========================================== */
 
-     Controlled by:
-     topbar.js
-     topbar.css
-================================================== -->
+    match /reviews/{reviewId} {
 
-<header class="topbar">
 
+      /* ----------------------------------------
+         PUBLIC REVIEW READING
 
-    <!-- ==========================================
-         MENU
-    =========================================== -->
+         Website customers can see ONLY reviews
+         that admin has approved AND published.
+      ---------------------------------------- */
 
-    <button
-        class="menu-btn"
-        id="menuButton"
-        type="button"
-        aria-label="Open menu"
-        aria-expanded="false"
-    >
+      allow read: if
+        resource.data.approved == true
+        &&
+        resource.data.published == true;
 
-        <i class="fa-solid fa-bars"></i>
 
-    </button>
+      /* ----------------------------------------
+         ADMIN REVIEW READING
 
+         Admin can see ALL reviews, including
+         pending reviews.
+      ---------------------------------------- */
 
+      allow read: if
+        request.auth != null
+        &&
+        exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        );
 
-    <!-- ==========================================
-         LOGO
-    =========================================== -->
 
-    <div class="logo">
+      /* ----------------------------------------
+         CUSTOMER REVIEW SUBMISSION
 
-        <a
-            id="logoLink"
-            data-logo-link
-            href="index"
-            aria-label="Home"
-        >
+         Customer does NOT need login.
 
-            <img
-                id="siteLogo"
-                data-site-logo
-                src=""
-                alt="Company Logo"
-            >
+         New review MUST start as:
 
-        </a>
+         approved  = false
+         published = false
+      ---------------------------------------- */
 
-    </div>
+      allow create: if
 
+        /* Customer name */
 
+        request.resource.data.name is string
+        &&
+        request.resource.data.name.size() > 0
+        &&
+        request.resource.data.name.size() <= 100
 
-    <!-- ==========================================
-         SEARCH BUTTON
-    =========================================== -->
+        &&
 
-    <button
-        class="search-icon"
-        id="searchButton"
-        type="button"
-        aria-label="Search"
-    >
+        /* Rating */
 
-        <i class="fa-solid fa-magnifying-glass"></i>
+        request.resource.data.rating is int
+        &&
+        request.resource.data.rating >= 1
+        &&
+        request.resource.data.rating <= 5
 
-    </button>
+        &&
 
-</header>
+        /* Review text */
 
+        request.resource.data.review is string
+        &&
+        request.resource.data.review.size() > 0
+        &&
+        request.resource.data.review.size() <= 2000
 
+        &&
 
-<!-- ==================================================
-     SEARCH OVERLAY
+        /* New reviews cannot bypass admin approval */
 
-     Controlled by:
-     topbar.js
-     topbar.css
+        request.resource.data.approved == false
+        &&
+        request.resource.data.published == false;
 
-     DO NOT add search logic to store.js
-================================================== -->
 
-<div
-    id="searchOverlay"
-    class="search-overlay"
-    aria-hidden="true"
->
+      /* ----------------------------------------
+         ADMIN CAN UPDATE REVIEWS
 
+         Admin can:
 
-    <div class="search-panel">
+         - approve review
+         - publish review
+         - hide review
+         - edit review
+      ---------------------------------------- */
 
+      allow update: if
+        request.auth != null
+        &&
+        exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        );
 
-        <!-- ======================================
-             SEARCH HEADER
-        ======================================= -->
 
-        <div class="search-header">
+      /* ----------------------------------------
+         ADMIN CAN DELETE REVIEWS
+      ---------------------------------------- */
 
+      allow delete: if
+        request.auth != null
+        &&
+        exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        );
 
-            <div class="search-title">
-
-                Search Products
-
-            </div>
-
-
-            <button
-                type="button"
-                class="search-close"
-                id="closeSearchButton"
-                aria-label="Close search"
-            >
-
-                <i class="fa-solid fa-xmark"></i>
-
-            </button>
-
-        </div>
-
-
-
-        <!-- ======================================
-             SEARCH INPUT
-        ======================================= -->
-
-        <div class="search-input-wrap">
-
-
-            <span class="search-input-icon">
-
-                <i
-                    class="fa-solid fa-magnifying-glass"
-                ></i>
-
-            </span>
-
-
-            <input
-                type="search"
-                id="searchInput"
-                class="search-input"
-                placeholder="Search products..."
-                autocomplete="off"
-            >
-
-
-            <button
-                type="button"
-                id="clearSearchButton"
-                class="clear-search-button"
-                aria-label="Clear search"
-            >
-
-                <i class="fa-solid fa-xmark"></i>
-
-            </button>
-
-        </div>
-
-
-
-        <!-- ======================================
-             SEARCH RESULTS
-        ======================================= -->
-
-        <div
-            id="searchResults"
-            class="search-results"
-        >
-
-            <div class="search-empty">
-
-                Type to search products
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-</div>
-
-
-
-<!-- ==================================================
-     COMMON SIDEBAR
-
-     Controlled by:
-     topbar.js
-     topbar.css
-================================================== -->
-
-<aside
-    id="sidebar"
-    class="sidebar"
-    aria-hidden="true"
->
-
-
-    <!-- ==========================================
-         SIDEBAR HEADER
-    =========================================== -->
-
-    <div class="sidebar-header">
-
-
-        <strong data-company-name>
-
-            Company Name
-
-        </strong>
-
-
-        <button
-            type="button"
-            id="closeSidebarButton"
-            aria-label="Close menu"
-        >
-
-            <i class="fa-solid fa-xmark"></i>
-
-        </button>
-
-
-    </div>
-
-
-
-    <!-- ==========================================
-         HOME
-    =========================================== -->
-
-    <a
-        href="index"
-        data-home-link
-    >
-
-        <i class="fa-solid fa-house"></i>
-
-        <span>
-            Home
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         CATEGORIES
-    =========================================== -->
-
-    <div class="sidebar-expandable">
-
-
-        <button
-            type="button"
-            class="sidebar-expand-button"
-            id="categoriesToggle"
-        >
-
-            <span>
-
-                <i class="fa-solid fa-layer-group"></i>
-
-                Categories
-
-            </span>
-
-
-            <i
-                class="fa-solid fa-chevron-down sidebar-chevron"
-            ></i>
-
-        </button>
-
-
-        <div
-            id="sidebarCategories"
-            class="sidebar-submenu"
-        >
-
-            <div class="sidebar-loading">
-
-                Loading categories...
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-
-    <!-- ==========================================
-         TAGS
-    =========================================== -->
-
-    <div class="sidebar-expandable">
-
-
-        <button
-            type="button"
-            class="sidebar-expand-button"
-            id="tagsToggle"
-        >
-
-            <span>
-
-                <i class="fa-solid fa-tags"></i>
-
-                Tags
-
-            </span>
-
-
-            <i
-                class="fa-solid fa-chevron-down sidebar-chevron"
-            ></i>
-
-        </button>
-
-
-        <div
-            id="sidebarTags"
-            class="sidebar-submenu"
-        >
-
-            <div class="sidebar-loading">
-
-                Loading tags...
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-
-    <!-- ==========================================
-         ABOUT
-    =========================================== -->
-
-    <a href="aboutus">
-
-        <i class="fa-solid fa-circle-info"></i>
-
-        <span>
-            About Us
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         CONTACT
-    =========================================== -->
-
-    <a href="contact-us">
-
-        <i class="fa-solid fa-phone"></i>
-
-        <span>
-            Contact Us
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         TERMS
-    =========================================== -->
-
-    <a href="t&c">
-
-        <i class="fa-solid fa-file-contract"></i>
-
-        <span>
-            Terms & Conditions
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         PRIVACY
-    =========================================== -->
-
-    <a href="privacy-policy">
-
-        <i class="fa-solid fa-lock"></i>
-
-        <span>
-            Privacy Policy
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         REFUND
-    =========================================== -->
-
-    <a href="refund">
-
-        <i class="fa-solid fa-money-bill-transfer"></i>
-
-        <span>
-            Refund Policy
-        </span>
-
-    </a>
-
-
-
-    <!-- ==========================================
-         SHIPPING
-    =========================================== -->
-
-    <a href="shipping">
-
-        <i class="fa-solid fa-truck"></i>
-
-        <span>
-            Shipping Policy
-        </span>
-
-    </a>
-
-
-</aside>
-
-
-
-<!-- ==================================================
-     SIDEBAR OVERLAY
-================================================== -->
-
-<div
-    id="overlay"
-    class="overlay"
-></div>
+    }
 
 
 
