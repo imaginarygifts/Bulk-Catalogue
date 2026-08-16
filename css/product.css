@@ -74,9 +74,9 @@ img {
 
 .product-back-button {
 
-    width: 78px;
+    width: 40px;
 
-    height: 78px;
+    height: 40px;
 
     border: none;
 
@@ -92,7 +92,7 @@ img {
 
     justify-content: center;
 
-    font-size: 25px;
+    font-size: 15px;
 
     cursor: pointer;
 
