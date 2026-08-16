@@ -2805,7 +2805,109 @@ return escapeHtml(
 
 }
 
+/==================================================
+SIDEBAR
+==================================================/
 
+window.toggleSidebar =
+function(){
+
+const sidebar =  
+    document.getElementById(  
+        "sidebar"  
+    );  
+
+
+const overlay =  
+    document.getElementById(  
+        "overlay"  
+    );  
+
+
+if(  
+    !sidebar ||  
+    !overlay  
+){  
+
+    return;  
+
+}  
+
+
+sidebar.classList.toggle(  
+    "open"  
+);  
+
+
+overlay.classList.toggle(  
+    "show"  
+);
+
+};
+
+/==================================================
+SEARCH
+==================================================/
+
+window.openSearch =
+function(){
+
+const search =  
+    document.getElementById(  
+        "searchOverlay"  
+    );  
+
+
+const input =  
+    document.getElementById(  
+        "searchInput"  
+    );  
+
+
+if(!search){  
+
+    return;  
+
+}  
+
+
+search.classList.add(  
+    "open"  
+);  
+
+
+setTimeout(  
+    () => {  
+
+        input?.focus();  
+
+    },  
+    100  
+);
+
+};
+
+window.closeSearch =
+function(){
+
+const search =  
+    document.getElementById(  
+        "searchOverlay"  
+    );  
+
+
+if(!search){  
+
+    return;  
+
+}  
+
+
+search.classList.remove(  
+    "open"  
+);
+
+};
 
 /==================================================
 EXPORT
