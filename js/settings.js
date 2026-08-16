@@ -241,6 +241,22 @@ async function loadSettings(){
             );
 
 
+            /*------------------------------------------
+                DEFAULT ORDER BUTTON
+            ------------------------------------------*/
+
+            setValue(
+                "orderButton",
+                "whatsapp"
+            );
+
+
+            setValue(
+                "razorpayKeyId",
+                ""
+            );
+
+
             return;
 
         }
@@ -277,6 +293,28 @@ async function loadSettings(){
         setValue(
             "email",
             settings.email
+        );
+
+
+        /*==============================================
+            ORDER BUTTON
+        ==============================================*/
+
+        setValue(
+            "orderButton",
+            settings.orderButton ||
+            "whatsapp"
+        );
+
+
+        /*==============================================
+            RAZORPAY KEY ID
+        ==============================================*/
+
+        setValue(
+            "razorpayKeyId",
+            settings.razorpayKeyId ||
+            ""
         );
 
 
@@ -745,6 +783,42 @@ async function handleSave(
 
 
         /*==============================================
+            ORDER BUTTON
+        ==============================================*/
+
+        let orderButton =
+            getValue(
+                "orderButton"
+            );
+
+
+        /*
+            Only allow the two values that
+            product.js understands.
+        */
+
+        if(
+            orderButton !== "whatsapp" &&
+            orderButton !== "buyNow"
+        ){
+
+            orderButton =
+                "whatsapp";
+
+        }
+
+
+        /*==============================================
+            RAZORPAY KEY
+        ==============================================*/
+
+        const razorpayKeyId =
+            getValue(
+                "razorpayKeyId"
+            );
+
+
+        /*==============================================
             COLLECT SETTINGS
         ==============================================*/
 
@@ -770,6 +844,18 @@ async function handleSave(
                 getValue(
                     "email"
                 ),
+
+
+            /*------------------------------------------
+                PRODUCT ORDER SETTINGS
+            ------------------------------------------*/
+
+            orderButton:
+                orderButton,
+
+
+            razorpayKeyId:
+                razorpayKeyId,
 
 
             /*------------------------------------------
