@@ -2091,6 +2091,11 @@ This is the homepage REVIEW DISPLAY.
 
 customer-review.js is NOT imported here
 because customer-review.js is the REVIEW FORM.
+
+PUBLIC USERS CAN ONLY LOAD:
+
+approved == true
+published == true
 ==================================================*/
 
 async function renderReviewCarousel(
@@ -2101,15 +2106,51 @@ async function renderReviewCarousel(
     try{
 
         /*==================================================
-        LOAD REVIEWS
+        PUBLIC REVIEWS QUERY
+
+        IMPORTANT:
+
+        Do NOT load the complete reviews collection.
+
+        Firestore rules allow public reading only when:
+
+        approved == true
+        published == true
+
+        Therefore the query MUST contain these
+        two conditions.
+        ==================================================*/
+
+        const reviewsQuery =
+            query(
+
+                collection(
+                    db,
+                    "reviews"
+                ),
+
+                where(
+                    "approved",
+                    "==",
+                    true
+                ),
+
+                where(
+                    "published",
+                    "==",
+                    true
+                )
+
+            );
+
+
+        /*==================================================
+        LOAD PUBLIC REVIEWS
         ==================================================*/
 
         const snapshot =
             await getDocs(
-                collection(
-                    db,
-                    "reviews"
-                )
+                reviewsQuery
             );
 
 
@@ -2127,7 +2168,14 @@ async function renderReviewCarousel(
 
 
         /*==================================================
-        ONLY APPROVED + PUBLISHED
+        EXTRA FRONTEND SAFETY
+
+        Firestore already filtered these.
+
+        This additionally prevents a rejected review
+        from being displayed if your data contains:
+
+        rejected: true
         ==================================================*/
 
         reviews =
@@ -2139,6 +2187,7 @@ async function renderReviewCarousel(
                     review.published === true
                     &&
                     review.rejected !== true
+
             );
 
 
@@ -2181,7 +2230,7 @@ async function renderReviewCarousel(
 
 
         console.log(
-            "Published homepage reviews:",
+            "Public homepage reviews:",
             reviews
         );
 
@@ -2293,7 +2342,6 @@ async function renderReviewCarousel(
                                     <article
                                         class="review-card"
                                     >
-
 
                                         <!-- CUSTOMER -->
 
@@ -2409,17 +2457,30 @@ async function renderReviewCarousel(
 
                                         <!-- REVIEW TEXT -->
 
-                                        <p
-                                            class="
-                                                review-text
-                                            "
-                                        >
+                                        ${
+                                            reviewText
+                                            ?
 
-                                            ${escapeHtml(
-                                                reviewText
-                                            )}
+                                            `
 
-                                        </p>
+                                            <p
+                                                class="
+                                                    review-text
+                                                "
+                                            >
+
+                                                ${escapeHtml(
+                                                    reviewText
+                                                )}
+
+                                            </p>
+
+                                            `
+
+                                            :
+
+                                            ""
+                                        }
 
 
                                         <!-- CUSTOMER PRODUCT PHOTO -->
@@ -2543,6 +2604,10 @@ async function renderReviewCarousel(
         `;
 
 
+        /*==================================================
+        INITIALIZE CAROUSEL
+        ==================================================*/
+
         initHorizontalCarousel(
             container,
             ".review-carousel"
@@ -2556,7 +2621,6 @@ async function renderReviewCarousel(
             "Review carousel error:",
             error
         );
-
 
         container.remove();
 
@@ -2586,17 +2650,20 @@ function renderStars(
 
 
     return (
+
         "★".repeat(
             rating
         )
+
         +
+
         "☆".repeat(
             5 - rating
         )
+
     );
 
 }
-
 
 /*==================================================
 SPACER
