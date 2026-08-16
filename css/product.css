@@ -1,0 +1,1691 @@
+/* ==================================================
+   PRODUCT PAGE
+   MOBILE FIRST
+================================================== */
+
+
+/* ==================================================
+   GLOBAL
+================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background: #0b0b0f;
+
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    overflow-x: hidden;
+}
+
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+img {
+    max-width: 100%;
+}
+
+
+
+/* ==================================================
+   PRODUCT BACK BAR
+================================================== */
+
+.product-back-bar {
+
+    width: 100%;
+
+    padding:
+        8px
+        0
+        16px;
+
+    background: #0b0b0f;
+
+}
+
+
+.product-back-button {
+
+    width: 78px;
+
+    height: 78px;
+
+    border: none;
+
+    border-radius: 16px;
+
+    background: #17171d;
+
+    color: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.product-back-button:active {
+
+    transform: scale(0.94);
+
+}
+
+
+.product-back-button:hover {
+
+    background: #222229;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT PAGE
+================================================== */
+
+.product-page {
+
+    width: 100%;
+
+    padding:
+        0
+        0
+        110px;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT GALLERY
+================================================== */
+
+.product-gallery {
+
+    width: 100%;
+
+    overflow: hidden;
+
+}
+
+
+
+/* ==================================================
+   IMAGE SLIDER
+================================================== */
+
+.slider {
+
+    width: 100%;
+
+    display: flex;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+    background: #0b0b0f;
+
+}
+
+
+.slider::-webkit-scrollbar {
+
+    display: none;
+
+}
+
+
+.slider img {
+
+    flex:
+        0 0 100%;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+
+    display: block;
+
+    scroll-snap-align: start;
+
+    border-radius: 0 0 28px 28px;
+
+}
+
+
+
+/* ==================================================
+   SLIDER DOTS
+================================================== */
+
+.slider-dots {
+
+    min-height: 42px;
+
+    padding:
+        15px
+        10px
+        8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+}
+
+
+.slider-dots span {
+
+    width: 15px;
+
+    height: 15px;
+
+    border-radius: 50%;
+
+    background: #2a2a31;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.slider-dots span.active {
+
+    background: #ffffff;
+
+    transform: scale(1.05);
+
+}
+
+
+
+/* ==================================================
+   PRODUCT DETAILS
+================================================== */
+
+.product-details {
+
+    width: 100%;
+
+    padding:
+        8px
+        22px
+        30px;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT HEADER
+================================================== */
+
+.product-header {
+
+    position: relative;
+
+    padding:
+        8px
+        0
+        16px;
+
+}
+
+
+.product-header h2 {
+
+    margin:
+        10px
+        0
+        10px;
+
+    color: #ffffff;
+
+    font-size: 27px;
+
+    line-height: 1.18;
+
+    font-weight: 800;
+
+}
+
+
+.product-header p {
+
+    margin:
+        0
+        0
+        18px;
+
+    color: #a8a8b0;
+
+    font-size: 15px;
+
+    line-height: 1.55;
+
+}
+
+
+
+/* ==================================================
+   PRICE
+================================================== */
+
+.price-wrap {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 8px;
+
+}
+
+
+.price-wrap .sale {
+
+    color: #ffffff;
+
+    font-size: 26px;
+
+    font-weight: 900;
+
+}
+
+
+.price-wrap .old {
+
+    color: #73737b;
+
+    font-size: 16px;
+
+    text-decoration: line-through;
+
+}
+
+
+
+/* ==================================================
+   BADGES
+================================================== */
+
+.badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: fit-content;
+
+    min-height: 36px;
+
+    padding:
+        8px
+        13px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    white-space: nowrap;
+
+}
+
+
+/* ==================================================
+   BESTSELLER
+   YELLOW / ORANGE LIKE SCREENSHOT
+================================================== */
+
+.badge.bestseller {
+
+    position: absolute;
+
+    top: 0;
+
+    right: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffd21c,
+            #ff9f00
+        );
+
+    color: #111111;
+
+    box-shadow:
+        0 5px 15px
+        rgba(255, 174, 0, 0.22);
+
+}
+
+
+/* ==================================================
+   DISCOUNT
+   GREEN LIKE SCREENSHOT
+================================================== */
+
+.badge.discount {
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+
+    background:
+        #00e894;
+
+    color: #06150f;
+
+    box-shadow:
+        0 5px 15px
+        rgba(0, 232, 148, 0.18);
+
+}
+
+
+/*
+   If both Bestseller and Discount exist,
+   keep enough space for the product title.
+*/
+
+.product-header:has(.badge.discount)
+.product-header h2 {
+
+    margin-top: 48px;
+
+}
+
+
+/* ==================================================
+   OUT OF STOCK
+================================================== */
+
+.badge.stock {
+
+    position: absolute;
+
+    top: 48px;
+
+    left: 0;
+
+    background:
+        rgba(255,255,255,0.12);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    color: #ffffff;
+
+}
+
+
+
+/* ==================================================
+   SECTION HEADINGS
+================================================== */
+
+.product-details h4 {
+
+    margin:
+        20px
+        0
+        11px;
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+}
+
+
+
+/* ==================================================
+   VARIANT ROW
+================================================== */
+
+.variant-row {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+}
+
+
+
+/* ==================================================
+   VARIANT BUTTON
+================================================== */
+
+.btn-outline {
+
+    min-height: 44px;
+
+    padding:
+        9px
+        18px;
+
+    border-radius: 999px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.16);
+
+    background: #19191f;
+
+    color: #e5e5e9;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        0.2s ease;
+
+}
+
+
+.btn-outline:hover {
+
+    background: #24242b;
+
+}
+
+
+.btn-outline.active {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffb52a 0%,
+            #ff3366 48%,
+            #b72cff 100%
+        );
+
+    border-color: transparent;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 6px 18px
+        rgba(255, 51, 102, 0.2);
+
+}
+
+
+
+/* ==================================================
+   RELATED DESIGNS
+================================================== */
+
+.design-wrap {
+
+    margin-top: 30px;
+
+}
+
+
+.design-wrap h3 {
+
+    margin:
+        0
+        0
+        14px;
+
+    font-size: 20px;
+
+    color: #ffffff;
+
+}
+
+
+.design-row {
+
+    display: flex;
+
+    gap: 12px;
+
+    overflow-x: auto;
+
+    padding-bottom: 8px;
+
+    scrollbar-width: none;
+
+}
+
+
+.design-row::-webkit-scrollbar {
+
+    display: none;
+
+}
+
+
+.design-card {
+
+    flex:
+        0 0 145px;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    background: #19191e;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border 0.2s ease;
+
+}
+
+
+.design-card:active {
+
+    transform: scale(0.97);
+
+}
+
+
+.design-card.active {
+
+    border:
+        2px solid
+        #ff3c91;
+
+}
+
+
+.design-card img {
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+
+    display: block;
+
+}
+
+
+.design-card small {
+
+    display: -webkit-box;
+
+    padding:
+        9px
+        9px
+        3px;
+
+    color: #ffffff;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+
+}
+
+
+.design-card .price {
+
+    padding:
+        5px
+        9px
+        10px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+}
+
+
+
+/* ==================================================
+   STICKY ORDER BAR
+================================================== */
+
+.sticky-order {
+
+    position: fixed;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+
+    z-index: 900;
+
+    display: flex;
+
+    gap: 10px;
+
+    padding:
+        12px
+        14px
+        calc(12px + env(safe-area-inset-bottom));
+
+    background:
+        rgba(11,11,15,0.94);
+
+    border-top:
+        1px solid
+        rgba(255,255,255,0.08);
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+
+}
+
+
+/* ==================================================
+   COMMON STICKY BUTTON
+================================================== */
+
+.order-btn,
+.share-btn {
+
+    min-height: 58px;
+
+    border: none;
+
+    border-radius: 18px;
+
+    cursor: pointer;
+
+    font-weight: 800;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.order-btn:active,
+.share-btn:active {
+
+    transform: scale(0.97);
+
+}
+
+
+
+/* ==================================================
+   WHATSAPP ORDER BUTTON
+   GREEN LIKE SCREENSHOT
+================================================== */
+
+.whatsapp-order-btn {
+
+    flex: 1;
+
+    background:
+        linear-gradient(
+            135deg,
+            #24d36f,
+            #16c979
+        );
+
+    color: #06150d;
+
+    font-size: 17px;
+
+    box-shadow:
+        0 8px 24px
+        rgba(22, 201, 121, 0.22);
+
+}
+
+
+.whatsapp-order-btn i {
+
+    margin-right: 7px;
+
+    font-size: 20px;
+
+}
+
+
+
+/* ==================================================
+   BUY NOW BUTTON
+   INSTAGRAM GRADIENT
+
+   NOT USED IN CURRENT HTML.
+   Use the separate button code below.
+================================================== */
+
+.buy-now-btn {
+
+    flex: 1;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff9f1c 0%,
+            #ff3d81 45%,
+            #c42cff 100%
+        );
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    box-shadow:
+        0 8px 24px
+        rgba(255, 48, 130, 0.25);
+
+}
+
+
+.buy-now-btn i {
+
+    margin-right: 7px;
+
+}
+
+
+
+/* ==================================================
+   SHARE BUTTON
+================================================== */
+
+.share-btn {
+
+    flex:
+        0 0 118px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff9d19 0%,
+            #ff8a00 35%,
+            #df267f 100%
+        );
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    box-shadow:
+        0 8px 24px
+        rgba(255, 92, 31, 0.2);
+
+}
+
+
+.share-btn i {
+
+    margin-left: 5px;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT MODALS
+================================================== */
+
+.product-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 2000;
+
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+    padding:
+        15px;
+
+    background:
+        rgba(0,0,0,0.72);
+
+    backdrop-filter:
+        blur(7px);
+
+    -webkit-backdrop-filter:
+        blur(7px);
+
+}
+
+
+.product-modal.hidden {
+
+    display: none;
+
+}
+
+
+
+/* ==================================================
+   CUSTOMIZE FORM
+================================================== */
+
+.customize-form,
+.wa-form,
+.error-box {
+
+    position: relative;
+
+    width: 100%;
+
+    max-width: 520px;
+
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    padding: 24px 20px;
+
+    border-radius:
+        24px
+        24px
+        0
+        0;
+
+    background: #18181e;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.09);
+
+    box-shadow:
+        0 -10px 40px
+        rgba(0,0,0,0.4);
+
+}
+
+
+.customize-form h3,
+.wa-form h3,
+.error-box h3 {
+
+    margin:
+        0
+        0
+        20px;
+
+    color: #ffffff;
+
+    font-size: 22px;
+
+}
+
+
+
+/* ==================================================
+   MODAL CLOSE
+================================================== */
+
+.modal-close {
+
+    position: absolute;
+
+    top: 14px;
+
+    right: 14px;
+
+    width: 38px;
+
+    height: 38px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #292930;
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+
+/* ==================================================
+   CUSTOM OPTIONS
+================================================== */
+
+.custom-option {
+
+    margin-bottom: 17px;
+
+}
+
+
+.custom-option label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+}
+
+
+.custom-input,
+.custom-select,
+.wa-form input,
+.wa-form textarea {
+
+    width: 100%;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background: #24242a;
+
+    color: #ffffff;
+
+    padding:
+        13px
+        14px;
+
+}
+
+
+.custom-input:focus,
+.custom-select:focus,
+.wa-form input:focus,
+.wa-form textarea:focus {
+
+    border-color: #ff3c91;
+
+}
+
+
+.wa-form textarea {
+
+    min-height: 110px;
+
+    resize: vertical;
+
+}
+
+
+.custom-input::placeholder,
+.wa-form input::placeholder,
+.wa-form textarea::placeholder {
+
+    color: #777780;
+
+}
+
+
+
+/* ==================================================
+   OPTION ROW
+================================================== */
+
+.option-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding:
+        12px;
+
+    border-radius: 12px;
+
+    background: #24242a;
+
+}
+
+
+.option-row input {
+
+    width: 20px;
+
+    height: 20px;
+
+    accent-color: #ff3c91;
+
+}
+
+
+.option-row span {
+
+    color: #eeeeee;
+
+    font-size: 14px;
+
+}
+
+
+
+/* ==================================================
+   IMAGE UPLOAD
+================================================== */
+
+.upload-box {
+
+    padding: 14px;
+
+    border:
+        1px dashed
+        rgba(255,255,255,0.2);
+
+    border-radius: 12px;
+
+    background: #222229;
+
+}
+
+
+.upload-box input {
+
+    width: 100%;
+
+    color: #ffffff;
+
+}
+
+
+.upload-box small {
+
+    display: block;
+
+    margin-top: 8px;
+
+    color: #a8a8b0;
+
+}
+
+
+.upload-success {
+
+    color: #20dc82;
+
+}
+
+
+.upload-error {
+
+    color: #ff5e6d;
+
+}
+
+
+.uploading {
+
+    color: #ffc12e;
+
+}
+
+
+
+/* ==================================================
+   POPUP PRICE
+================================================== */
+
+.popup-price {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-top: 20px;
+
+    padding:
+        15px;
+
+    border-radius: 14px;
+
+    background: #222229;
+
+    color: #bcbcc5;
+
+}
+
+
+.popup-price strong {
+
+    color: #ffffff;
+
+    font-size: 20px;
+
+}
+
+
+
+/* ==================================================
+   MODAL ACTIONS
+================================================== */
+
+.modal-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+}
+
+
+.modal-actions button {
+
+    min-height: 52px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    font-weight: 800;
+
+}
+
+
+.modal-cancel-btn {
+
+    flex:
+        0 0 105px;
+
+    background: #292930;
+
+    color: #ffffff;
+
+}
+
+
+.modal-next-btn {
+
+    flex: 1;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffb329,
+            #ff347d,
+            #c12cff
+        );
+
+    color: #ffffff;
+
+}
+
+
+.modal-whatsapp-btn {
+
+    flex: 1;
+
+    background:
+        linear-gradient(
+            135deg,
+            #24d36f,
+            #16c979
+        );
+
+    color: #06150d;
+
+}
+
+
+
+/* ==================================================
+   FORM SUBTITLE
+================================================== */
+
+.form-subtitle {
+
+    margin:
+        -10px
+        0
+        18px;
+
+    color: #85858d;
+
+    font-size: 13px;
+
+}
+
+
+
+/* ==================================================
+   WA FORM SPACING
+================================================== */
+
+.wa-form input,
+.wa-form textarea {
+
+    margin-bottom: 12px;
+
+}
+
+
+
+/* ==================================================
+   ERROR MODAL
+================================================== */
+
+.error-box {
+
+    text-align: center;
+
+    border-radius: 24px;
+
+    max-height: none;
+
+}
+
+
+.error-icon {
+
+    width: 55px;
+
+    height: 55px;
+
+    margin:
+        0
+        auto
+        12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,70,85,0.13);
+
+    color: #ff5868;
+
+    font-size: 25px;
+
+}
+
+
+.error-box ul {
+
+    margin:
+        0
+        0
+        20px;
+
+    padding-left: 20px;
+
+    text-align: left;
+
+    color: #d6d6dc;
+
+}
+
+
+.error-box li {
+
+    margin-bottom: 7px;
+
+}
+
+
+.error-ok-btn {
+
+    width: 100%;
+
+    min-height: 50px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff4c69,
+            #d42cff
+        );
+
+    color: #ffffff;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT ERROR
+================================================== */
+
+.product-error {
+
+    margin:
+        30px 0;
+
+    padding:
+        25px;
+
+    border-radius: 16px;
+
+    background: #19191e;
+
+    color: #ff6877;
+
+    text-align: center;
+
+}
+
+
+
+/* ==================================================
+   TABLET
+================================================== */
+
+@media (
+    min-width: 600px
+) {
+
+    .product-page {
+
+        max-width: 900px;
+
+        margin:
+            0
+            auto;
+
+    }
+
+
+    .slider img {
+
+        border-radius:
+            0
+            0
+            28px
+            28px;
+
+    }
+
+
+    .product-details {
+
+        padding:
+            20px
+            35px
+            40px;
+
+    }
+
+
+    .product-header h2 {
+
+        font-size: 32px;
+
+    }
+
+
+    .product-modal {
+
+        align-items: center;
+
+    }
+
+
+    .customize-form,
+    .wa-form,
+    .error-box {
+
+        border-radius: 24px;
+
+    }
+
+}
+
+
+
+/* ==================================================
+   DESKTOP
+================================================== */
+
+@media (
+    min-width: 900px
+) {
+
+    .product-page {
+
+        max-width: 1100px;
+
+        margin:
+            0
+            auto;
+
+        padding-bottom: 120px;
+
+    }
+
+
+    .product-gallery {
+
+        padding:
+            0
+            25px;
+
+    }
+
+
+    .slider {
+
+        border-radius: 28px;
+
+    }
+
+
+    .slider img {
+
+        max-height: 650px;
+
+        aspect-ratio: auto;
+
+        object-fit: contain;
+
+        background: #111116;
+
+        border-radius: 28px;
+
+    }
+
+
+    .product-details {
+
+        padding:
+            30px
+            45px
+            50px;
+
+    }
+
+
+    .product-header h2 {
+
+        font-size: 38px;
+
+    }
+
+
+    .product-header p {
+
+        max-width: 800px;
+
+        font-size: 16px;
+
+    }
+
+
+    .design-card:hover {
+
+        transform:
+            translateY(-3px);
+
+    }
+
+
+    .product-back-bar {
+
+        max-width: 1100px;
+
+        margin:
+            0
+            auto;
+
+    }
+
+}
+
+
+
+/* ==================================================
+   LARGE DESKTOP
+================================================== */
+
+@media (
+    min-width: 1200px
+) {
+
+    .product-page {
+
+        max-width: 1200px;
+
+    }
+
+
+    .product-gallery {
+
+        padding:
+            0
+            35px;
+
+    }
+
+}
