@@ -1,30 +1,14 @@
 /*==================================================
-    TOPBAR SYSTEM
-==================================================
-
-    Handles ONLY:
-
-    • Topbar
-    • Menu button
-    • Logo
-    • Search button
-    • Search overlay
-    • Product search
-
-    Works on:
-
-    • home.html
-    • shop.html
-    • product.html
-    • other storefront pages
-
+    COMMON TOPBAR + SIDEBAR + SEARCH
 ==================================================*/
 
 import { db } from "./firebase.js";
 
 import {
     collection,
-    getDocs
+    getDocs,
+    query,
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
@@ -34,31 +18,17 @@ import {
 
 let searchProducts = [];
 
-let searchProductsLoaded =
-    false;
+let searchProductsLoaded = false;
 
-let searchProductsLoading =
-    false;
+let searchLoading = false;
 
-let searchInitialized =
-    false;
+let categoriesLoaded = false;
 
-
-/*==================================================
-    DOM HELPERS
-==================================================*/
-
-function getElement(id){
-
-    return document.getElementById(
-        id
-    );
-
-}
+let tagsLoaded = false;
 
 
 /*==================================================
-    INIT
+    DOM READY
 ==================================================*/
 
 document.addEventListener(
@@ -67,20 +37,26 @@ document.addEventListener(
 );
 
 
-function initTopbar(){
+/*==================================================
+    INIT
+==================================================*/
+
+async function initTopbar(){
 
     console.log(
-        "✅ Topbar system loaded"
+        "✅ Common Topbar / Sidebar / Search loaded"
     );
 
 
     initMenu();
 
-
-    initLogo();
-
-
     initSearch();
+
+    initSidebarToggles();
+
+    await loadSidebarCategories();
+
+    await loadSidebarTags();
 
 }
 
@@ -92,88 +68,68 @@ function initTopbar(){
 function initMenu(){
 
     const menuButton =
-        getElement(
+        document.getElementById(
             "menuButton"
         );
 
 
-    if(!menuButton){
+    const closeButton =
+        document.getElementById(
+            "closeSidebarButton"
+        );
 
-        return;
 
-    }
+    const overlay =
+        document.getElementById(
+            "overlay"
+        );
 
 
-    /*
-        IMPORTANT:
+    /*==================================================
+        OPEN MENU
+    ==================================================*/
 
-        sidebar.js already contains
-        window.toggleSidebar().
-
-        We simply call it here.
-
-        This keeps sidebar functionality
-        inside sidebar.js.
-    */
-
-    menuButton.addEventListener(
+    menuButton?.addEventListener(
         "click",
+        openSidebar
+    );
+
+
+    /*==================================================
+        CLOSE BUTTON
+    ==================================================*/
+
+    closeButton?.addEventListener(
+        "click",
+        closeSidebar
+    );
+
+
+    /*==================================================
+        OVERLAY CLICK
+    ==================================================*/
+
+    overlay?.addEventListener(
+        "click",
+        closeSidebar
+    );
+
+
+    /*==================================================
+        ESCAPE
+    ==================================================*/
+
+    document.addEventListener(
+        "keydown",
         event => {
 
-            event.preventDefault();
-
-
             if(
-                typeof window.toggleSidebar ===
-                "function"
+                event.key === "Escape"
             ){
 
-                window.toggleSidebar();
+                closeSidebar();
 
-                return;
-
-            }
-
-
-            /*
-                Fallback in case sidebar.js
-                is not loaded.
-            */
-
-            const sidebar =
-                getElement(
-                    "sidebar"
-                );
-
-
-            const overlay =
-                getElement(
-                    "overlay"
-                );
-
-
-            if(sidebar){
-
-                sidebar.classList.toggle(
-                    "open"
-                );
-
-                sidebar.classList.toggle(
-                    "active"
-                );
-
-            }
-
-
-            if(overlay){
-
-                overlay.classList.toggle(
-                    "show"
-                );
-
-                overlay.classList.toggle(
-                    "active"
-                );
+                closeSearch();
 
             }
 
@@ -184,24 +140,24 @@ function initMenu(){
 
 
 /*==================================================
-    LOGO
+    OPEN SIDEBAR
 ==================================================*/
 
-function initLogo(){
+function openSidebar(){
 
-    const logo =
-        getElement(
-            "siteLogo"
+    const sidebar =
+        document.getElementById(
+            "sidebar"
         );
 
 
-    const logoLink =
-        getElement(
-            "logoLink"
+    const overlay =
+        document.getElementById(
+            "overlay"
         );
 
 
-    if(!logo){
+    if(!sidebar){
 
         return;
 
@@ -209,194 +165,883 @@ function initLogo(){
 
 
     /*
-        site-settings.js normally handles
-        the actual logo image.
-
-        We only make sure the logo
-        behaves correctly.
+        Support both:
+        .open
+        .active
     */
 
-    logo.addEventListener(
-        "error",
-        () => {
-
-            logo.style.display =
-                "none";
-
-        }
+    sidebar.classList.add(
+        "open"
     );
 
-
-    /*
-        Home link.
-
-        data-logo-link can still be
-        changed by site-settings.js.
-    */
-
-    if(logoLink){
-
-        logoLink.addEventListener(
-            "click",
-            event => {
-
-                /*
-                    If site-settings.js has
-                    already assigned a valid
-                    custom link, don't interfere.
-                */
-
-                const href =
-                    logoLink.getAttribute(
-                        "href"
-                    );
-
-
-                if(
-                    !href ||
-                    href === "#"
-                ){
-
-                    event.preventDefault();
-
-                    window.location.href =
-                        "index";
-
-                }
-
-            }
-        );
-
-    }
-
-}
-
-
-/*==================================================
-    SEARCH
-==================================================*/
-
-function initSearch(){
-
-    if(searchInitialized){
-
-        return;
-
-    }
-
-
-    searchInitialized =
-        true;
-
-
-    const searchButton =
-        getElement(
-            "searchButton"
-        );
-
-
-    if(searchButton){
-
-        searchButton.addEventListener(
-            "click",
-            event => {
-
-                event.preventDefault();
-
-
-                openSearch();
-
-            }
-        );
-
-    }
-
-
-    /*
-        Remove old search overlay.
-
-        Your current home.html already has:
-
-        #searchOverlay
-
-        But that old HTML is not enough
-        for our new search system.
-
-        We replace it with our new
-        complete search system.
-    */
-
-    const oldOverlay =
-        getElement(
-            "searchOverlay"
-        );
-
-
-    if(oldOverlay){
-
-        oldOverlay.remove();
-
-    }
-
-
-    createSearchOverlay();
-
-}
-
-
-/*==================================================
-    CREATE SEARCH OVERLAY
-==================================================*/
-
-function createSearchOverlay(){
-
-    /*
-        Prevent duplicate overlay
-    */
-
-    let overlay =
-        getElement(
-            "searchOverlay"
-        );
+    sidebar.classList.add(
+        "active"
+    );
 
 
     if(overlay){
 
-        return overlay;
+        overlay.classList.add(
+            "show"
+        );
+
+        overlay.classList.add(
+            "active"
+        );
 
     }
 
 
-    overlay =
-        document.createElement(
-            "div"
+    document.body.classList.add(
+        "sidebar-open"
+    );
+
+}
+
+
+/*==================================================
+    CLOSE SIDEBAR
+==================================================*/
+
+function closeSidebar(){
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
         );
 
 
-    overlay.id =
-        "searchOverlay";
+    const overlay =
+        document.getElementById(
+            "overlay"
+        );
 
 
-    overlay.className =
-        "search-overlay";
+    sidebar?.classList.remove(
+        "open"
+    );
 
 
-    overlay.innerHTML = `
-
-        <div
-            class="search-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Search products"
-        >
+    sidebar?.classList.remove(
+        "active"
+    );
 
 
-            <!--========================================
-                HEADER
-            ========================================-->
+    overlay?.classList.remove(
+        "show"
+    );
+
+
+    overlay?.classList.remove(
+        "active"
+    );
+
+
+    document.body.classList.remove(
+        "sidebar-open"
+    );
+
+}
+
+
+/*==================================================
+    GLOBAL SIDEBAR FUNCTIONS
+==================================================*/
+
+window.toggleSidebar =
+function(){
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    if(
+        sidebar?.classList.contains("open") ||
+        sidebar?.classList.contains("active")
+    ){
+
+        closeSidebar();
+
+    }
+    else{
+
+        openSidebar();
+
+    }
+
+};
+
+
+window.openSidebar =
+openSidebar;
+
+
+window.closeSidebar =
+closeSidebar;
+
+
+/*==================================================
+    SIDEBAR CATEGORY / TAG TOGGLES
+==================================================*/
+
+function initSidebarToggles(){
+
+    const categoriesToggle =
+        document.getElementById(
+            "categoriesToggle"
+        );
+
+
+    const tagsToggle =
+        document.getElementById(
+            "tagsToggle"
+        );
+
+
+    categoriesToggle?.addEventListener(
+        "click",
+        () => {
+
+            toggleSidebarSection(
+                categoriesToggle,
+                "sidebarCategories"
+            );
+
+        }
+    );
+
+
+    tagsToggle?.addEventListener(
+        "click",
+        () => {
+
+            toggleSidebarSection(
+                tagsToggle,
+                "sidebarTags"
+            );
+
+        }
+    );
+
+}
+
+
+/*==================================================
+    TOGGLE SIDEBAR SECTION
+==================================================*/
+
+function toggleSidebarSection(
+    button,
+    targetId
+){
+
+    const target =
+        document.getElementById(
+            targetId
+        );
+
+
+    if(!target){
+
+        return;
+
+    }
+
+
+    const isOpen =
+        target.classList.contains(
+            "open"
+        );
+
+
+    target.classList.toggle(
+        "open",
+        !isOpen
+    );
+
+
+    button.classList.toggle(
+        "active",
+        !isOpen
+    );
+
+}
+
+
+/*==================================================
+    LOAD SIDEBAR CATEGORIES
+==================================================*/
+
+async function loadSidebarCategories(){
+
+    if(categoriesLoaded){
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "sidebarCategories"
+        );
+
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    try{
+
+        container.innerHTML = `
+
+            <div class="sidebar-loading">
+
+                Loading categories...
+
+            </div>
+
+        `;
+
+
+        const snapshot =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "categories"
+                    ),
+                    orderBy(
+                        "order"
+                    )
+                )
+            );
+
+
+        const categories =
+            snapshot.docs.map(
+                docSnap => ({
+
+                    id:
+                        docSnap.id,
+
+                    ...docSnap.data()
+
+                })
+            );
+
+
+        const mainCategories =
+            categories.filter(
+                category =>
+                    !category.parentId
+            );
+
+
+        const subCategories =
+            categories.filter(
+                category =>
+                    category.parentId
+            );
+
+
+        categoriesLoaded =
+            true;
+
+
+        renderSidebarCategories(
+            container,
+            mainCategories,
+            subCategories
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Sidebar categories error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="sidebar-error">
+
+                Unable to load categories.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*==================================================
+    RENDER SIDEBAR CATEGORIES
+==================================================*/
+
+function renderSidebarCategories(
+    container,
+    mainCategories,
+    subCategories
+){
+
+    container.innerHTML = "";
+
+
+    if(!mainCategories.length){
+
+        container.innerHTML = `
+
+            <div class="sidebar-empty">
+
+                No categories found.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    mainCategories.forEach(
+        category => {
+
+            const children =
+                subCategories.filter(
+                    sub =>
+                        sub.parentId ===
+                        category.id
+                );
+
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "sidebar-category-row";
+
+
+            /*==================================================
+                MAIN CATEGORY LINK
+            ==================================================*/
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.href =
+                `shop?category=${encodeURIComponent(
+                    category.id
+                )}`;
+
+
+            link.innerHTML = `
+
+                <i class="fa-solid fa-folder"></i>
+
+                <span>
+                    ${escapeHtml(
+                        category.name ||
+                        "Category"
+                    )}
+                </span>
+
+            `;
+
+
+            link.addEventListener(
+                "click",
+                closeSidebar
+            );
+
+
+            row.appendChild(
+                link
+            );
+
+
+            /*==================================================
+                SUBCATEGORY TOGGLE
+            ==================================================*/
+
+            if(children.length){
+
+                const toggle =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                toggle.type =
+                    "button";
+
+
+                toggle.className =
+                    "sidebar-category-toggle";
+
+
+                toggle.setAttribute(
+                    "aria-label",
+                    "Show subcategories"
+                );
+
+
+                toggle.innerHTML = `
+
+                    <i class="
+                        fa-solid
+                        fa-chevron-down
+                    "></i>
+
+                `;
+
+
+                const childrenBox =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                childrenBox.className =
+                    "sidebar-category-children";
+
+
+                children.forEach(
+                    sub => {
+
+                        const subLink =
+                            document.createElement(
+                                "a"
+                            );
+
+
+                        subLink.href =
+                            `shop?category=${encodeURIComponent(
+                                category.id
+                            )}&sub=${encodeURIComponent(
+                                sub.id
+                            )}`;
+
+
+                        subLink.innerHTML = `
+
+                            <i class="
+                                fa-solid
+                                fa-angle-right
+                            "></i>
+
+                            <span>
+                                ${escapeHtml(
+                                    sub.name ||
+                                    "Subcategory"
+                                )}
+                            </span>
+
+                        `;
+
+
+                        subLink.addEventListener(
+                            "click",
+                            closeSidebar
+                        );
+
+
+                        childrenBox.appendChild(
+                            subLink
+                        );
+
+                    }
+                );
+
+
+                toggle.addEventListener(
+                    "click",
+                    event => {
+
+                        event.preventDefault();
+
+                        event.stopPropagation();
+
+
+                        const isOpen =
+                            childrenBox.classList.contains(
+                                "open"
+                            );
+
+
+                        childrenBox.classList.toggle(
+                            "open",
+                            !isOpen
+                        );
+
+
+                        toggle.classList.toggle(
+                            "active",
+                            !isOpen
+                        );
+
+                    }
+                );
+
+
+                row.appendChild(
+                    toggle
+                );
+
+
+                container.appendChild(
+                    row
+                );
+
+
+                container.appendChild(
+                    childrenBox
+                );
+
+            }
+            else{
+
+                container.appendChild(
+                    row
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/*==================================================
+    LOAD SIDEBAR TAGS
+==================================================*/
+
+async function loadSidebarTags(){
+
+    if(tagsLoaded){
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "sidebarTags"
+        );
+
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    try{
+
+        container.innerHTML = `
+
+            <div class="sidebar-loading">
+
+                Loading tags...
+
+            </div>
+
+        `;
+
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "tags"
+                )
+            );
+
+
+        const tags =
+            snapshot.docs.map(
+                docSnap => ({
+
+                    id:
+                        docSnap.id,
+
+                    ...docSnap.data()
+
+                })
+            );
+
+
+        tagsLoaded =
+            true;
+
+
+        renderSidebarTags(
+            container,
+            tags
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Sidebar tags error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="sidebar-error">
+
+                Unable to load tags.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*==================================================
+    RENDER SIDEBAR TAGS
+==================================================*/
+
+function renderSidebarTags(
+    container,
+    tags
+){
+
+    container.innerHTML = "";
+
+
+    if(!tags.length){
+
+        container.innerHTML = `
+
+            <div class="sidebar-empty">
+
+                No tags found.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    tags.forEach(
+        tag => {
+
+            const slug =
+                tag.slug ||
+                tag.id ||
+                "";
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.className =
+                "sidebar-tag-link";
+
+
+            link.href =
+                `shop?tag=${encodeURIComponent(
+                    slug
+                )}`;
+
+
+            link.innerHTML = `
+
+                <i class="
+                    fa-solid
+                    fa-tag
+                "></i>
+
+                <span>
+
+                    ${escapeHtml(
+                        tag.name ||
+                        slug ||
+                        "Tag"
+                    )}
+
+                </span>
+
+            `;
+
+
+            link.addEventListener(
+                "click",
+                closeSidebar
+            );
+
+
+            container.appendChild(
+                link
+            );
+
+        }
+    );
+
+}
+
+
+/*==================================================
+    SEARCH INIT
+==================================================*/
+
+function initSearch(){
+
+    const searchButton =
+        document.getElementById(
+            "searchButton"
+        );
+
+
+    searchButton?.addEventListener(
+        "click",
+        openSearch
+    );
+
+
+    /*
+        Existing HTML search close button
+    */
+
+    const closeButton =
+        document.getElementById(
+            "closeSearchButton"
+        );
+
+
+    closeButton?.addEventListener(
+        "click",
+        closeSearch
+    );
+
+
+    /*
+        Existing search overlay
+    */
+
+    const existingOverlay =
+        document.getElementById(
+            "searchOverlay"
+        );
+
+
+    existingOverlay?.addEventListener(
+        "click",
+        event => {
+
+            if(
+                event.target ===
+                existingOverlay
+            ){
+
+                closeSearch();
+
+            }
+
+        }
+    );
+
+}
+
+
+/*==================================================
+    CREATE / PREPARE SEARCH UI
+==================================================*/
+
+function prepareSearchOverlay(){
+
+    let overlay =
+        document.getElementById(
+            "searchOverlay"
+        );
+
+
+    /*==================================================
+        CREATE IF NOT IN HTML
+    ==================================================*/
+
+    if(!overlay){
+
+        overlay =
+            document.createElement(
+                "div"
+            );
+
+
+        overlay.id =
+            "searchOverlay";
+
+
+        overlay.className =
+            "search-overlay";
+
+
+        document.body.appendChild(
+            overlay
+        );
+
+    }
+
+
+    /*==================================================
+        CREATE SEARCH PANEL IF NEEDED
+    ==================================================*/
+
+    let panel =
+        overlay.querySelector(
+            ".search-panel"
+        );
+
+
+    if(!panel){
+
+        panel =
+            document.createElement(
+                "div"
+            );
+
+
+        panel.className =
+            "search-panel";
+
+
+        panel.innerHTML = `
 
             <div class="search-header">
-
 
                 <div class="search-title">
 
@@ -419,18 +1064,9 @@ function createSearchOverlay(){
             </div>
 
 
-
-            <!--========================================
-                SEARCH INPUT
-            ========================================-->
-
             <div class="search-input-wrap">
 
-
-                <span
-                    class="search-input-icon"
-                    aria-hidden="true"
-                >
+                <span class="search-input-icon">
 
                     🔍
 
@@ -443,7 +1079,6 @@ function createSearchOverlay(){
                     class="search-input"
                     placeholder="Search products..."
                     autocomplete="off"
-                    enterkeyhint="search"
                 >
 
 
@@ -452,7 +1087,6 @@ function createSearchOverlay(){
                     id="clearSearchButton"
                     class="clear-search-button"
                     aria-label="Clear search"
-                    style="display:none;"
                 >
 
                     ×
@@ -461,11 +1095,6 @@ function createSearchOverlay(){
 
             </div>
 
-
-
-            <!--========================================
-                RESULTS
-            ========================================-->
 
             <div
                 id="searchResults"
@@ -480,180 +1109,110 @@ function createSearchOverlay(){
 
             </div>
 
-
-        </div>
-
-    `;
+        `;
 
 
-    document.body.appendChild(
-        overlay
-    );
+        overlay.innerHTML = "";
 
 
-    /*==================================================
-        CLOSE BUTTON
-    ==================================================*/
+        overlay.appendChild(
+            panel
+        );
 
-    getElement(
-        "searchCloseButton"
-    )?.addEventListener(
-        "click",
-        closeSearch
-    );
+    }
 
 
-    /*==================================================
-        OUTSIDE CLICK
-    ==================================================*/
+    /*
+        If your existing home.html has
+        the simple .search-box, convert it
+        to the full search UI.
+    */
 
-    overlay.addEventListener(
-        "click",
-        event => {
+    else{
 
-            if(
-                event.target ===
-                overlay
-            ){
+        ensureSearchElements(
+            panel
+        );
 
-                closeSearch();
-
-            }
-
-        }
-    );
+    }
 
 
     /*==================================================
-        ESCAPE
+        CLOSE
     ==================================================*/
 
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if(
-                event.key ===
-                "Escape"
-            ){
-
-                const currentOverlay =
-                    getElement(
-                        "searchOverlay"
-                    );
+    document
+        .getElementById(
+            "searchCloseButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeSearch
+        );
 
 
-                if(
-                    currentOverlay &&
-                    currentOverlay.classList.contains(
-                        "open"
-                    )
-                ){
-
-                    closeSearch();
-
-                }
-
-            }
-
-        }
-    );
+    document
+        .getElementById(
+            "closeSearchButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeSearch
+        );
 
 
     /*==================================================
-        SEARCH INPUT
+        INPUT
     ==================================================*/
 
-    getElement(
-        "searchInput"
-    )?.addEventListener(
-        "input",
-        handleSearchInput
-    );
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
 
 
-    /*==================================================
-        ENTER
-    ==================================================*/
+    if(
+        input &&
+        !input.dataset.searchInitialized
+    ){
 
-    getElement(
-        "searchInput"
-    )?.addEventListener(
-        "keydown",
-        event => {
-
-            if(
-                event.key ===
-                "Enter"
-            ){
-
-                const query =
-                    event.target.value
-                        .trim();
+        input.dataset.searchInitialized =
+            "true";
 
 
-                if(!query){
+        input.addEventListener(
+            "input",
+            handleSearchInput
+        );
 
-                    return;
-
-                }
-
-
-                /*
-                    Go to shop with search
-                    parameter.
-
-                    store.js will read:
-
-                        ?search=
-                */
-
-                window.location.href =
-                    `shop?search=${encodeURIComponent(
-                        query
-                    )}`;
-
-            }
-
-        }
-    );
+    }
 
 
     /*==================================================
         CLEAR
     ==================================================*/
 
-    getElement(
-        "clearSearchButton"
-    )?.addEventListener(
-        "click",
-        () => {
-
-            const input =
-                getElement(
-                    "searchInput"
-                );
+    const clearButton =
+        document.getElementById(
+            "clearSearchButton"
+        );
 
 
-            if(input){
+    if(
+        clearButton &&
+        !clearButton.dataset.searchInitialized
+    ){
 
-                input.value =
-                    "";
-
-                input.focus();
-
-            }
-
-
-            updateClearButton();
+        clearButton.dataset.searchInitialized =
+            "true";
 
 
-            renderSearchMessage(
-                "Type to search products"
-            );
+        clearButton.addEventListener(
+            "click",
+            clearSearch
+        );
 
-        }
-    );
+    }
 
 
     return overlay;
@@ -662,39 +1221,79 @@ function createSearchOverlay(){
 
 
 /*==================================================
-    OPEN SEARCH
+    ENSURE SEARCH ELEMENTS
 ==================================================*/
 
-function openSearch(){
+function ensureSearchElements(
+    panel
+){
 
-    const overlay =
-        getElement(
-            "searchOverlay"
+    let results =
+        document.getElementById(
+            "searchResults"
         );
 
 
-    if(!overlay){
+    if(!results){
 
-        createSearchOverlay();
+        results =
+            document.createElement(
+                "div"
+            );
+
+
+        results.id =
+            "searchResults";
+
+
+        results.className =
+            "search-results";
+
+
+        results.innerHTML = `
+
+            <div class="search-empty">
+
+                Type to search products
+
+            </div>
+
+        `;
+
+
+        panel.appendChild(
+            results
+        );
 
     }
 
-
-    const currentOverlay =
-        getElement(
-            "searchOverlay"
-        );
+}
 
 
-    if(!currentOverlay){
+/*==================================================
+    OPEN SEARCH
+==================================================*/
+
+async function openSearch(){
+
+    const overlay =
+        prepareSearchOverlay();
+
+
+    if(!overlay){
 
         return;
 
     }
 
 
-    currentOverlay.classList.add(
+    overlay.classList.add(
         "open"
+    );
+
+
+    overlay.classList.add(
+        "active"
     );
 
 
@@ -704,7 +1303,7 @@ function openSearch(){
 
 
     const input =
-        getElement(
+        document.getElementById(
             "searchInput"
         );
 
@@ -719,15 +1318,15 @@ function openSearch(){
     );
 
 
-    /*
-        Load products only once.
-    */
+    /*==================================================
+        LOAD PRODUCTS
+    ==================================================*/
 
     if(
         !searchProductsLoaded
     ){
 
-        loadSearchProducts();
+        await loadSearchProducts();
 
     }
 
@@ -741,7 +1340,7 @@ function openSearch(){
 function closeSearch(){
 
     const overlay =
-        getElement(
+        document.getElementById(
             "searchOverlay"
         );
 
@@ -758,6 +1357,11 @@ function closeSearch(){
     );
 
 
+    overlay.classList.remove(
+        "active"
+    );
+
+
     document.body.classList.remove(
         "search-open"
     );
@@ -765,14 +1369,22 @@ function closeSearch(){
 }
 
 
+window.openSearch =
+openSearch;
+
+
+window.closeSearch =
+closeSearch;
+
+
 /*==================================================
-    LOAD PRODUCTS
+    LOAD SEARCH PRODUCTS
 ==================================================*/
 
 async function loadSearchProducts(){
 
     if(
-        searchProductsLoading ||
+        searchLoading ||
         searchProductsLoaded
     ){
 
@@ -781,13 +1393,29 @@ async function loadSearchProducts(){
     }
 
 
-    searchProductsLoading =
+    searchLoading =
         true;
 
 
-    renderSearchMessage(
-        "Loading products..."
-    );
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    if(results){
+
+        results.innerHTML = `
+
+            <div class="search-loading">
+
+                Loading products...
+
+            </div>
+
+        `;
+
+    }
 
 
     try{
@@ -828,13 +1456,12 @@ async function loadSearchProducts(){
 
 
         console.log(
-            "Search products loaded:",
-            searchProducts.length
+            `✅ Search loaded ${searchProducts.length} products`
         );
 
 
         const input =
-            getElement(
+            document.getElementById(
                 "searchInput"
             );
 
@@ -845,16 +1472,13 @@ async function loadSearchProducts(){
         ){
 
             handleSearchInput({
-                target:
-                    input
+                target: input
             });
 
         }
         else{
 
-            renderSearchMessage(
-                "Type to search products"
-            );
+            showSearchEmpty();
 
         }
 
@@ -868,15 +1492,25 @@ async function loadSearchProducts(){
         );
 
 
-        renderSearchMessage(
-            "Unable to load products. Please try again."
-        );
+        if(results){
+
+            results.innerHTML = `
+
+                <div class="search-error">
+
+                    Unable to load products.
+
+                </div>
+
+            `;
+
+        }
 
     }
 
     finally{
 
-        searchProductsLoading =
+        searchLoading =
             false;
 
     }
@@ -901,37 +1535,32 @@ function handleSearchInput(
         .toLowerCase();
 
 
-    updateClearButton();
+    const clearButton =
+        document.getElementById(
+            "clearSearchButton"
+        );
+
+
+    if(clearButton){
+
+        clearButton.style.display =
+            query
+                ? "flex"
+                : "none";
+
+    }
 
 
     if(!query){
 
-        renderSearchMessage(
-            "Type to search products"
-        );
+        showSearchEmpty();
 
         return;
 
     }
 
 
-    if(
-        !searchProductsLoaded
-    ){
-
-        renderSearchMessage(
-            "Loading products..."
-        );
-
-
-        /*
-            In case the user started
-            typing immediately after
-            opening search.
-        */
-
-        loadSearchProducts();
-
+    if(!searchProductsLoaded){
 
         return;
 
@@ -954,47 +1583,8 @@ function handleSearchInput(
 
 
     renderSearchResults(
-        matched,
-        query
+        matched
     );
-
-}
-
-
-/*==================================================
-    UPDATE CLEAR BUTTON
-==================================================*/
-
-function updateClearButton(){
-
-    const input =
-        getElement(
-            "searchInput"
-        );
-
-
-    const clearButton =
-        getElement(
-            "clearSearchButton"
-        );
-
-
-    if(
-        !input ||
-        !clearButton
-    ){
-
-        return;
-
-    }
-
-
-    clearButton.style.display =
-        input.value.trim()
-        ?
-        "flex"
-        :
-        "none";
 
 }
 
@@ -1030,7 +1620,6 @@ function productMatchesSearch(
         String(
             product.categoryName ||
             product.category ||
-            product.category?.name ||
             ""
         )
         .toLowerCase();
@@ -1040,153 +1629,19 @@ function productMatchesSearch(
         getProductTags(
             product
         )
-        .join(
-            " "
-        )
+        .join(" ")
         .toLowerCase();
 
 
     return (
-
-        name.includes(
-            query
-        )
-
+        name.includes(query)
         ||
-
-        description.includes(
-            query
-        )
-
+        description.includes(query)
         ||
-
-        category.includes(
-            query
-        )
-
+        category.includes(query)
         ||
-
-        tags.includes(
-            query
-        )
-
+        tags.includes(query)
     );
-
-}
-
-
-/*==================================================
-    PRODUCT TAGS
-==================================================*/
-
-function getProductTags(
-    product
-){
-
-    let tags =
-        [];
-
-
-    if(
-        Array.isArray(
-            product.tags
-        )
-    ){
-
-        tags.push(
-            ...product.tags
-        );
-
-    }
-
-
-    if(
-        product.tag
-    ){
-
-        if(
-            Array.isArray(
-                product.tag
-            )
-        ){
-
-            tags.push(
-                ...product.tag
-            );
-
-        }
-        else{
-
-            tags.push(
-                product.tag
-            );
-
-        }
-
-    }
-
-
-    return tags.map(
-        tag => {
-
-            if(
-                typeof tag ===
-                "object"
-            ){
-
-                return String(
-                    tag.slug ||
-                    tag.name ||
-                    ""
-                )
-                .toLowerCase();
-
-            }
-
-
-            return String(
-                tag
-            )
-            .toLowerCase();
-
-        }
-    );
-
-}
-
-
-/*==================================================
-    RENDER SEARCH MESSAGE
-==================================================*/
-
-function renderSearchMessage(
-    message
-){
-
-    const results =
-        getElement(
-            "searchResults"
-        );
-
-
-    if(!results){
-
-        return;
-
-    }
-
-
-    results.innerHTML = `
-
-        <div class="search-empty">
-
-            ${escapeHtml(
-                message
-            )}
-
-        </div>
-
-    `;
 
 }
 
@@ -1196,12 +1651,11 @@ function renderSearchMessage(
 ==================================================*/
 
 function renderSearchResults(
-    products,
-    query
+    products
 ){
 
     const results =
-        getElement(
+        document.getElementById(
             "searchResults"
         );
 
@@ -1215,17 +1669,27 @@ function renderSearchResults(
 
     if(!products.length){
 
+        const input =
+            document.getElementById(
+                "searchInput"
+            );
+
+
+        const query =
+            input?.value.trim();
+
+
         results.innerHTML = `
 
             <div class="search-empty">
 
-                <strong>
-                    No products found
-                </strong>
-
-                <span>
-                    Try another search.
-                </span>
+                ${
+                    query
+                    ?
+                    "No products found."
+                    :
+                    "Type to search products"
+                }
 
             </div>
 
@@ -1241,15 +1705,11 @@ function renderSearchResults(
 
         <div class="search-results-count">
 
-            ${
-                products.length
-            }
+            ${products.length}
             ${
                 products.length === 1
-                ?
-                "product"
-                :
-                "products"
+                ? "product"
+                : "products"
             }
             found
 
@@ -1271,26 +1731,8 @@ function renderSearchResults(
 
         </div>
 
-
-        <button
-            type="button"
-            class="search-view-all"
-            id="searchViewAllButton"
-        >
-
-            View all results for
-            "${escapeHtml(
-                query
-            )}"
-
-        </button>
-
     `;
 
-
-    /*==================================================
-        RESULT CLICK
-    ==================================================*/
 
     results
         .querySelectorAll(
@@ -1307,15 +1749,7 @@ function renderSearchResults(
                             item.dataset.productId;
 
 
-                        const product =
-                            searchProducts.find(
-                                product =>
-                                    product.id ===
-                                    productId
-                            );
-
-
-                        if(!product){
+                        if(!productId){
 
                             return;
 
@@ -1323,8 +1757,8 @@ function renderSearchResults(
 
 
                         window.location.href =
-                            getProductLink(
-                                product
+                            getProductLinkById(
+                                productId
                             );
 
                     }
@@ -1332,25 +1766,6 @@ function renderSearchResults(
 
             }
         );
-
-
-    /*==================================================
-        VIEW ALL
-    ==================================================*/
-
-    getElement(
-        "searchViewAllButton"
-    )?.addEventListener(
-        "click",
-        () => {
-
-            window.location.href =
-                `shop?search=${encodeURIComponent(
-                    query
-                )}`;
-
-        }
-    );
 
 }
 
@@ -1395,14 +1810,10 @@ function createSearchResult(
             )}"
         >
 
-
-            <!-- IMAGE -->
-
             <div class="search-result-image">
 
                 ${
                     image
-
                     ?
 
                     `
@@ -1439,12 +1850,7 @@ function createSearchResult(
             </div>
 
 
-
-            <!-- INFO -->
-
-            <div
-                class="search-result-info"
-            >
+            <div class="search-result-info">
 
                 <div
                     class="search-result-name"
@@ -1459,7 +1865,6 @@ function createSearchResult(
 
                 ${
                     price !== ""
-
                     ?
 
                     `
@@ -1489,18 +1894,13 @@ function createSearchResult(
             </div>
 
 
-
-            <!-- ARROW -->
-
             <span
                 class="search-result-arrow"
-                aria-hidden="true"
             >
 
                 ›
 
             </span>
-
 
         </button>
 
@@ -1562,22 +1962,163 @@ function getProductImage(
     PRODUCT LINK
 ==================================================*/
 
-function getProductLink(
+function getProductLinkById(
+    id
+){
+
+    return `product?id=${encodeURIComponent(
+        id
+    )}`;
+
+}
+
+
+/*==================================================
+    PRODUCT TAGS
+==================================================*/
+
+function getProductTags(
     product
 ){
 
+    let tags = [];
+
+
     if(
-        product.link
+        Array.isArray(
+            product.tags
+        )
     ){
 
-        return product.link;
+        tags.push(
+            ...product.tags
+        );
 
     }
 
 
-    return `product?id=${encodeURIComponent(
-        product.id
-    )}`;
+    if(
+        product.tag
+    ){
+
+        if(
+            Array.isArray(
+                product.tag
+            )
+        ){
+
+            tags.push(
+                ...product.tag
+            );
+
+        }
+        else{
+
+            tags.push(
+                product.tag
+            );
+
+        }
+
+    }
+
+
+    return tags.map(
+        tag => {
+
+            if(
+                typeof tag ===
+                "object"
+            ){
+
+                return String(
+                    tag.slug ||
+                    tag.name ||
+                    ""
+                );
+
+            }
+
+
+            return String(
+                tag
+            );
+
+        }
+    );
+
+}
+
+
+/*==================================================
+    CLEAR SEARCH
+==================================================*/
+
+function clearSearch(){
+
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
+
+
+    if(input){
+
+        input.value =
+            "";
+
+        input.focus();
+
+    }
+
+
+    const clearButton =
+        document.getElementById(
+            "clearSearchButton"
+        );
+
+
+    if(clearButton){
+
+        clearButton.style.display =
+            "none";
+
+    }
+
+
+    showSearchEmpty();
+
+}
+
+
+/*==================================================
+    EMPTY SEARCH
+==================================================*/
+
+function showSearchEmpty(){
+
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    if(!results){
+
+        return;
+
+    }
+
+
+    results.innerHTML = `
+
+        <div class="search-empty">
+
+            Type to search products
+
+        </div>
+
+    `;
 
 }
 
@@ -1633,18 +2174,6 @@ function escapeAttribute(
 
 
 /*==================================================
-    GLOBAL EXPORTS
-==================================================*/
-
-window.openSearch =
-    openSearch;
-
-
-window.closeSearch =
-    closeSearch;
-
-
-/*==================================================
     EXPORT
 ==================================================*/
 
@@ -1652,8 +2181,16 @@ export {
 
     initTopbar,
 
+    openSidebar,
+
+    closeSidebar,
+
     openSearch,
 
-    closeSearch
+    closeSearch,
+
+    loadSidebarCategories,
+
+    loadSidebarTags
 
 };
