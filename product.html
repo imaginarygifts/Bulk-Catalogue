@@ -3,79 +3,117 @@
 
 <head>
 
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-  <!-- =========================================
-       DEFAULT TITLE
-       Firebase site-settings.js can replace this
-  ========================================== -->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-  <title>Imaginary Gifts - Customized Gifts</title>
+    <!-- ==================================================
+         DEFAULT SEO
+         site-settings.js / product.js can replace these
+    ================================================== -->
 
+    <title>
+        Imaginary Gifts - Customized Gifts
+    </title>
 
-  <!-- =========================================
-       DEFAULT META DESCRIPTION
-       Firebase site-settings.js can replace this
-  ========================================== -->
+    <meta
+        name="description"
+        content="Customized gifts from Imaginary Gifts"
+    >
 
-  <meta
-    name="description"
-    content="Customized gifts from Imaginary Gifts"
-  >
-
-
-  <!-- =========================================
-       OPEN GRAPH
-  ========================================== -->
-
-  <meta
-    property="og:title"
-    content="Imaginary Gifts - Customized Gifts"
-  >
-
-  <meta
-    property="og:description"
-    content="Customized gifts from Imaginary Gifts"
-  >
-
-  <meta
-    property="og:image"
-    content=""
-  >
-
-  <meta
-    property="og:url"
-    content=""
-  >
-
-  <meta
-    property="og:type"
-    content="product"
-  >
+    <meta
+        name="keywords"
+        content=""
+    >
 
 
-  <!-- =========================================
-       VIEWPORT
-  ========================================== -->
+    <!-- ==================================================
+         OPEN GRAPH
+    ================================================== -->
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+    <meta
+        property="og:title"
+        content="Imaginary Gifts - Customized Gifts"
+    >
+
+    <meta
+        property="og:description"
+        content="Customized gifts from Imaginary Gifts"
+    >
+
+    <meta
+        property="og:image"
+        content=""
+    >
+
+    <meta
+        property="og:url"
+        content=""
+    >
+
+    <meta
+        property="og:type"
+        content="product"
+    >
 
 
-  <!-- =========================================
-       STORE CSS
-  ========================================== -->
+    <!-- ==================================================
+         TWITTER
+    ================================================== -->
 
-  <link
-    rel="stylesheet"
-    href="css/store.css"
-  >
-<link
-    rel="stylesheet"
-    href="css/topbar.css"
-  >
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    >
+
+    <meta
+        name="twitter:title"
+        content="Imaginary Gifts"
+    >
+
+    <meta
+        name="twitter:description"
+        content="Customized gifts"
+    >
+
+    <meta
+        name="twitter:image"
+        content=""
+    >
+
+
+    <!-- ==================================================
+         FONT AWESOME
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+
+    <!-- ==================================================
+         PRODUCT CSS
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/product.css"
+    >
+
+
+    <!-- ==================================================
+         COMMON TOPBAR CSS
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/topbar.css"
+    >
+
 </head>
 
 
@@ -83,12 +121,12 @@
 
 
 <!-- ==================================================
-     TOPBAR
+     COMMON TOPBAR
 ================================================== -->
 
 <header class="site-topbar">
 
-    <!-- MENU BUTTON -->
+    <!-- MENU -->
 
     <button
         type="button"
@@ -97,7 +135,9 @@
         aria-label="Open menu"
         aria-expanded="false"
     >
+
         <i class="fa-solid fa-bars"></i>
+
     </button>
 
 
@@ -124,7 +164,7 @@
     </div>
 
 
-    <!-- SEARCH BUTTON -->
+    <!-- SEARCH -->
 
     <button
         type="button"
@@ -132,7 +172,9 @@
         id="searchButton"
         aria-label="Search"
     >
+
         <i class="fa-solid fa-magnifying-glass"></i>
+
     </button>
 
 </header>
@@ -141,7 +183,6 @@
 
 <!-- ==================================================
      SEARCH OVERLAY
-     HIDDEN UNTIL SEARCH BUTTON IS CLICKED
 ================================================== -->
 
 <div
@@ -152,13 +193,12 @@
 
     <div class="search-panel">
 
-        <!-- SEARCH HEADER -->
-
         <div class="search-header">
 
             <div class="search-title">
                 Search Products
             </div>
+
 
             <button
                 type="button"
@@ -166,17 +206,20 @@
                 id="closeSearchButton"
                 aria-label="Close search"
             >
+
                 <i class="fa-solid fa-xmark"></i>
+
             </button>
 
         </div>
 
 
-        <!-- SEARCH INPUT -->
-
         <div class="search-input-wrapper">
 
-            <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+            <i
+                class="fa-solid fa-magnifying-glass search-input-icon"
+            ></i>
+
 
             <input
                 type="search"
@@ -186,19 +229,20 @@
                 autocomplete="off"
             >
 
+
             <button
                 type="button"
                 id="clearSearchButton"
                 class="clear-search-button"
                 aria-label="Clear search"
             >
+
                 <i class="fa-solid fa-xmark"></i>
+
             </button>
 
         </div>
 
-
-        <!-- SEARCH RESULTS -->
 
         <div
             id="searchResults"
@@ -206,7 +250,9 @@
         >
 
             <div class="search-message">
+
                 Search for a product
+
             </div>
 
         </div>
@@ -239,13 +285,12 @@
     aria-hidden="true"
 >
 
-    <!-- SIDEBAR HEADER -->
-
     <div class="sidebar-header">
 
         <strong data-company-name>
             Company Name
         </strong>
+
 
         <button
             type="button"
@@ -297,6 +342,7 @@
 
             </span>
 
+
             <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
 
         </button>
@@ -334,6 +380,7 @@
                 Tags
 
             </span>
+
 
             <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
 
@@ -452,18 +499,23 @@
 </aside>
 
 
+
 <!-- ==================================================
-     BACK BAR
+     PRODUCT BACK BAR
 ================================================== -->
 
-<div class="top-bar custom-topbar">
+<div class="product-back-bar">
 
-  <span
-    class="back-btn"
-    onclick="goBack()"
-  >
-    ←
-  </span>
+    <button
+        type="button"
+        class="product-back-button"
+        onclick="goBack()"
+        aria-label="Go back"
+    >
+
+        <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
 
 </div>
 
@@ -473,216 +525,229 @@
      PRODUCT PAGE
 ================================================== -->
 
-<div class="product-page">
+<main class="product-page">
 
 
-  <!-- =========================================
-       PRODUCT IMAGE SLIDER
-  ========================================== -->
+    <!-- ==================================================
+         IMAGE SLIDER
+    ================================================== -->
 
-  <div
-    id="slider"
-    class="slider"
-  ></div>
+    <section class="product-gallery">
 
-
-  <!-- =========================================
-       SLIDER DOTS
-  ========================================== -->
-
-  <div
-    id="sliderDots"
-    class="slider-dots"
-  ></div>
+        <div
+            id="slider"
+            class="slider"
+        ></div>
 
 
-  <!-- =========================================
-       PRODUCT DETAILS
+        <div
+            id="sliderDots"
+            class="slider-dots"
+        ></div>
 
-       product.js renders:
+    </section>
 
-       - Product name
-       - Description
-       - Price
-       - Colors
-       - Sizes
-       - Custom options
-       - Related designs
-  ========================================== -->
 
-  <div
-    id="productDetails"
-    class="product-details"
-  ></div>
 
+    <!-- ==================================================
+         PRODUCT DETAILS
+         
+         product.js renders:
+         - badges
+         - title
+         - description
+         - price
+         - colors
+         - sizes
+         - related products
+    ================================================== -->
+
+    <section
+        id="productDetails"
+        class="product-details"
+    ></section>
+
+</main>
+
+
+
+<!-- ==================================================
+     CUSTOMIZE POPUP
+================================================== -->
+
+<div
+    id="customizeOverlay"
+    class="product-modal hidden"
+>
+
+    <div class="customize-form">
+
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeCustomizePopup()"
+            aria-label="Close"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <h3>
+            Customize Your Product
+        </h3>
+
+
+        <div
+            id="customOptionsContainer"
+            class="custom-options-container"
+        ></div>
+
+
+        <!-- PRICE -->
+
+        <div class="popup-price">
+
+            <span>
+                Total
+            </span>
+
+            <strong id="popupPrice">
+                ₹0
+            </strong>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="modal-actions">
+
+            <button
+                type="button"
+                class="modal-cancel-btn"
+                onclick="closeCustomizePopup()"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-next-btn"
+                onclick="nextToAddress()"
+            >
+                Next
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
 
 
 <!-- ==================================================
-     CUSTOMIZE PRODUCT POPUP
+     WHATSAPP DELIVERY FORM
 ================================================== -->
 
 <div
-  id="customizeOverlay"
-  class="hidden"
+    id="waFormOverlay"
+    class="product-modal hidden"
 >
 
-  <div class="customize-form">
+    <div class="wa-form">
+
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeWaForm()"
+            aria-label="Close"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
 
 
-    <h3>
-      Customize Your Product
-    </h3>
+        <h3>
+            Enter delivery details
+        </h3>
 
 
-    <div
-      id="customOptionsContainer"
-    ></div>
+        <p class="form-subtitle">
+            Your details will be sent with your order.
+        </p>
 
 
-    <!-- =========================================
-         POPUP PRICE
-    ========================================== -->
-
-    <div class="popup-price">
-
-      Total :
-
-      <span id="popupPrice">
-        ₹0
-      </span>
-
-    </div>
+        <input
+            id="custName"
+            type="text"
+            placeholder="Full Name"
+            autocomplete="name"
+        >
 
 
-    <!-- =========================================
-         ACTIONS
-    ========================================== -->
-
-    <div class="wa-actions">
-
-
-      <button
-        type="button"
-        onclick="closeCustomizePopup()"
-      >
-        Cancel
-      </button>
+        <input
+            id="custPhone"
+            type="tel"
+            placeholder="Mobile Number"
+            inputmode="numeric"
+            maxlength="10"
+            autocomplete="tel"
+        >
 
 
-      <button
-        type="button"
-        onclick="nextToAddress()"
-      >
-        Next →
-      </button>
+        <textarea
+            id="custAddress"
+            placeholder="Full Address"
+            autocomplete="street-address"
+        ></textarea>
 
 
-    </div>
+        <input
+            id="custPincode"
+            type="tel"
+            placeholder="Pincode"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="postal-code"
+        >
 
 
-  </div>
+        <div class="modal-actions">
 
-</div>
+            <button
+                type="button"
+                class="modal-cancel-btn"
+                onclick="backToCustomize()"
+            >
 
+                <i class="fa-solid fa-arrow-left"></i>
 
+                Back
 
-<!-- ==================================================
-     WHATSAPP ORDER FORM
-================================================== -->
-
-<div
-  id="waFormOverlay"
-  class="hidden"
->
-
-  <div class="wa-form">
+            </button>
 
 
-    <h3>
-      Enter delivery details
-    </h3>
+            <button
+                type="button"
+                class="modal-whatsapp-btn"
+                onclick="submitWaOrder()"
+            >
 
+                <i class="fa-brands fa-whatsapp"></i>
 
-    <!-- =========================================
-         CUSTOMER NAME
-    ========================================== -->
+                Continue to WhatsApp
 
-    <input
-      id="custName"
-      type="text"
-      placeholder="Full Name"
-      autocomplete="name"
-    >
+            </button>
 
-
-    <!-- =========================================
-         CUSTOMER PHONE
-    ========================================== -->
-
-    <input
-      id="custPhone"
-      type="tel"
-      placeholder="Mobile Number"
-      inputmode="numeric"
-      autocomplete="tel"
-    >
-
-
-    <!-- =========================================
-         CUSTOMER ADDRESS
-    ========================================== -->
-
-    <textarea
-      id="custAddress"
-      placeholder="Full Address"
-      autocomplete="street-address"
-    ></textarea>
-
-
-    <!-- =========================================
-         PINCODE
-    ========================================== -->
-
-    <input
-      id="custPincode"
-      type="tel"
-      placeholder="Pincode"
-      inputmode="numeric"
-      maxlength="6"
-      autocomplete="postal-code"
-    >
-
-
-    <!-- =========================================
-         ACTIONS
-    ========================================== -->
-
-    <div class="wa-actions">
-
-
-      <button
-        type="button"
-        onclick="backToCustomize()"
-      >
-        ← Back
-      </button>
-
-
-      <button
-        type="button"
-        onclick="submitWaOrder()"
-      >
-        Continue to WhatsApp
-      </button>
-
+        </div>
 
     </div>
-
-
-  </div>
 
 </div>
 
@@ -693,69 +758,79 @@
 ================================================== -->
 
 <div
-  id="errorModal"
-  class="error-modal hidden"
+    id="errorModal"
+    class="product-modal hidden"
 >
 
-  <div class="error-box">
+    <div class="error-box">
+
+        <div class="error-icon">
+
+            <i class="fa-solid fa-circle-exclamation"></i>
+
+        </div>
 
 
-    <h3>
-      Please Fill These First
-    </h3>
+        <h3>
+            Please Fill These First
+        </h3>
 
 
-    <ul
-      id="errorList"
-    ></ul>
+        <ul
+            id="errorList"
+        ></ul>
 
 
-    <button
-      type="button"
-      onclick="closeErrorModal()"
-    >
-      OK
-    </button>
+        <button
+            type="button"
+            class="error-ok-btn"
+            onclick="closeErrorModal()"
+        >
+            OK
+        </button>
 
-
-  </div>
+    </div>
 
 </div>
 
 
 
 <!-- ==================================================
-     STICKY ORDER BAR
+     STICKY ACTION BAR
+
+     CURRENTLY WHATSAPP ONLY
+
+     If you want Buy Now later,
+     replace ONLY this button with
+     the Buy Now button given separately below.
 ================================================== -->
 
 <div class="sticky-order">
 
+    <button
+        type="button"
+        class="order-btn whatsapp-order-btn"
+        onclick="orderNow()"
+    >
 
-  <!-- =========================================
-       WHATSAPP ORDER
-  ========================================== -->
+        <i class="fa-brands fa-whatsapp"></i>
 
-  <button
-    type="button"
-    class="order-btn"
-    onclick="orderNow()"
-  >
-    Order on WhatsApp
-  </button>
+        Order on WhatsApp
+
+    </button>
 
 
-  <!-- =========================================
-       SHARE
-  ========================================== -->
+    <button
+        type="button"
+        class="share-btn"
+        onclick="sharePage()"
+    >
 
-  <button
-    type="button"
-    class="share-btn"
-    onclick="sharePage()"
-  >
-    Share 🔗
-  </button>
+        Share
 
+        <i class="fa-solid fa-link"></i>
+
+    </button>
 
 </div>
 
@@ -763,31 +838,21 @@
 
 <!-- ==================================================
      SITE SETTINGS
-
-     MUST LOAD BEFORE PRODUCT.JS
-
-     Reads:
-
-     settings/general
-
-     and automatically applies:
-
-     - Logo
-     - Company name
-     - Home URL
-     - SEO title
-     - Meta description
-     - OG tags
 ================================================== -->
 
 <script
-  type="module"
-  src="js/site-settings.js"
+    type="module"
+    src="js/site-settings.js"
 ></script>
 
+
+<!-- ==================================================
+     COMMON TOPBAR / SIDEBAR
+================================================== -->
+
 <script
-  type="module"
-  src="js/topbar.js"
+    type="module"
+    src="js/topbar.js"
 ></script>
 
 
@@ -796,37 +861,32 @@
 ================================================== -->
 
 <script
-  type="module"
-  src="js/product.js"
+    type="module"
+    src="js/product.js"
 ></script>
 
 
-
 <!-- ==================================================
-     SHARE JS
+     SHARE
 ================================================== -->
 
 <script
-  src="js/share.js"
+    src="js/share.js"
 ></script>
 
 
 
 <!-- ==================================================
-     BACK BUTTON
+     BACK
 ================================================== -->
 
 <script>
 
-  function goBack(){
-
-    /*
-      Always return to homepage.
-    */
+function goBack() {
 
     location.href = "index";
 
-  }
+}
 
 </script>
 
