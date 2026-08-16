@@ -1,22 +1,37 @@
 /*==================================================
     HOMEPAGE
     MOBILE FIRST
+==================================================*/
 
-    IMPORTANT:
-    Topbar / Menu / Logo / Search are NOT handled here.
 
-    Those features will be handled separately by:
-        js/topbar.js
-
-    Sidebar will be handled separately by:
-        js/sidebar.js
+/*==================================================
+    FIREBASE
 ==================================================*/
 
 import { db } from "./firebase.js";
 
+
+/*==================================================
+    YOUTUBE CAROUSEL
+==================================================*/
+
 import {
     renderYoutubeCarousel
 } from "./youtube-carousel.js";
+
+
+/*==================================================
+    REVIEW CAROUSEL
+==================================================*/
+
+import {
+    renderReviewCarousel
+} from "./review-carousel.js";
+
+
+/*==================================================
+    FIRESTORE
+==================================================*/
 
 import {
     collection,
@@ -24,16 +39,22 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
+
 /*==================================================
     DOM
 ==================================================*/
 
 const homepage =
-    document.getElementById("homepage");
+    document.getElementById(
+        "homepage"
+    );
 
 
 const loader =
-    document.getElementById("homepageLoader");
+    document.getElementById(
+        "homepageLoader"
+    );
+
 
 
 /*==================================================
@@ -46,6 +67,7 @@ document.addEventListener(
 );
 
 
+
 /*==================================================
     LOAD HOMEPAGE
 ==================================================*/
@@ -55,7 +77,7 @@ async function loadHomepage(){
     if(!homepage){
 
         console.warn(
-            "Homepage container #homepage not found."
+            "Homepage element not found."
         );
 
         return;
@@ -67,6 +89,10 @@ async function loadHomepage(){
 
         showLoader();
 
+
+        /*==================================================
+            LOAD HOMEPAGE SECTIONS
+        ==================================================*/
 
         const snapshot =
             await getDocs(
@@ -106,10 +132,7 @@ async function loadHomepage(){
         ==================================================*/
 
         sections.sort(
-            (
-                a,
-                b
-            ) =>
+            (a,b) =>
                 Number(
                     a.order || 0
                 )
@@ -209,6 +232,7 @@ async function loadHomepage(){
 }
 
 
+
 /*==================================================
     SECTION ROUTER
 ==================================================*/
@@ -217,16 +241,6 @@ async function renderSection(
     parent,
     section
 ){
-
-    if(
-        !parent ||
-        !section
-    ){
-
-        return;
-
-    }
-
 
     const wrapper =
         document.createElement(
@@ -383,37 +397,12 @@ async function renderSection(
     }
 
 
-    /*
-        Some render functions can remove the wrapper
-        when there is no content.
-    */
-
-    if(
-        wrapper.isConnected === false &&
-        section.type !== "reviewCarousel"
-    ){
-
-        return;
-
-    }
-
-
-    /*
-        Only append if it has not already been
-        removed by the renderer.
-    */
-
-    if(
-        !wrapper.parentElement
-    ){
-
-        parent.appendChild(
-            wrapper
-        );
-
-    }
+    parent.appendChild(
+        wrapper
+    );
 
 }
+
 
 
 /*==================================================
@@ -521,6 +510,7 @@ function renderSectionHeading(
 }
 
 
+
 /*==================================================
     HEADING
 ==================================================*/
@@ -613,6 +603,7 @@ function renderHeading(
     `;
 
 }
+
 
 
 /*==================================================
@@ -926,7 +917,7 @@ function renderBanner(
                                     type="button"
                                 ></button>
 
-                                `
+                            `
                             ).join("")
                         }
 
@@ -950,6 +941,7 @@ function renderBanner(
     );
 
 }
+
 
 
 /*==================================================
@@ -1186,6 +1178,7 @@ function initBannerSlider(
 }
 
 
+
 /*==================================================
     PRODUCT CAROUSEL
 ==================================================*/
@@ -1214,6 +1207,20 @@ async function renderProductCarousel(
                 ...docSnap.data()
 
             })
+        );
+
+
+    /*==================================================
+        ONLY ACTIVE / PUBLISHED
+    ==================================================*/
+
+    products =
+        products.filter(
+            product =>
+
+                product.published !== false
+                &&
+                product.active !== false
         );
 
 
@@ -1487,6 +1494,7 @@ async function renderProductCarousel(
     );
 
 }
+
 
 
 /*==================================================
@@ -1767,6 +1775,7 @@ function createProductCard(
 }
 
 
+
 /*==================================================
     PRODUCT IMAGE
 ==================================================*/
@@ -1816,6 +1825,7 @@ function getProductImage(
 }
 
 
+
 /*==================================================
     PRODUCT PRICE
 ==================================================*/
@@ -1858,6 +1868,7 @@ function getProductPrice(
 }
 
 
+
 /*==================================================
     PRODUCT OLD PRICE
 ==================================================*/
@@ -1874,6 +1885,7 @@ function getProductOldPrice(
     );
 
 }
+
 
 
 /*==================================================
@@ -1898,6 +1910,7 @@ function getProductLink(
     )}`;
 
 }
+
 
 
 /*==================================================
@@ -1976,6 +1989,7 @@ function getProductTags(
     );
 
 }
+
 
 
 /*==================================================
@@ -2135,469 +2149,6 @@ function renderImageCarousel(
 }
 
 
-/*==================================================
-    REVIEW CAROUSEL
-==================================================*/
-
-async function renderReviewCarousel(
-    container,
-    section
-){
-
-    try{
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "reviews"
-                )
-            );
-
-
-        let reviews =
-            snapshot.docs.map(
-                docSnap => ({
-
-                    id:
-                        docSnap.id,
-
-                    ...docSnap.data()
-
-                })
-            );
-
-
-        /*==================================================
-            ONLY APPROVED + PUBLISHED
-        ==================================================*/
-
-        reviews =
-            reviews.filter(
-                review =>
-
-                    review.approved === true
-                    &&
-                    review.published === true
-                    &&
-                    review.rejected !== true
-
-            );
-
-
-        /*==================================================
-            NEWEST FIRST
-        ==================================================*/
-
-        reviews.sort(
-            (
-                a,
-                b
-            ) =>
-
-                getTimestamp(
-                    b.createdAt
-                )
-                -
-                getTimestamp(
-                    a.createdAt
-                )
-
-        );
-
-
-        /*==================================================
-            LIMIT
-        ==================================================*/
-
-        const limit =
-            Number(
-                section.limit ||
-                10
-            );
-
-
-        reviews =
-            reviews.slice(
-                0,
-                limit
-            );
-
-
-        console.log(
-            "Published homepage reviews:",
-            reviews
-        );
-
-
-        /*==================================================
-            NO REVIEWS
-        ==================================================*/
-
-        if(
-            !reviews.length
-        ){
-
-            container.remove();
-
-            return;
-
-        }
-
-
-        /*==================================================
-            HTML
-        ==================================================*/
-
-        container.innerHTML = `
-
-            <div class="home-container">
-
-                ${renderSectionHeading(
-                    section
-                )}
-
-
-                <div class="review-carousel">
-
-                    ${
-                        reviews.map(
-                            review => {
-
-                                /*==================================
-                                    CUSTOMER NAME
-                                ==================================*/
-
-                                const name =
-                                    review.customerName ||
-                                    review.name ||
-                                    "Customer";
-
-
-                                /*==================================
-                                    CUSTOMER IMAGE
-                                ==================================*/
-
-                                const customerImage =
-                                    review.customerPhoto ||
-                                    review.customerImage ||
-                                    review.image ||
-                                    review.userPhoto ||
-                                    "";
-
-
-                                /*==================================
-                                    CUSTOMER UPLOADED PRODUCT PHOTO
-
-                                    IMPORTANT:
-                                    Do NOT use productImage here.
-                                ==================================*/
-
-                                const customerProductImage =
-                                    review.customerProductImage ||
-                                    review.reviewProductImage ||
-                                    review.productPhoto ||
-                                    "";
-
-
-                                /*==================================
-                                    PRODUCT NAME
-                                ==================================*/
-
-                                const productName =
-                                    review.productName ||
-                                    review.product ||
-                                    "";
-
-
-                                /*==================================
-                                    REVIEW TEXT
-                                ==================================*/
-
-                                const reviewText =
-                                    review.review ||
-                                    review.text ||
-                                    review.comment ||
-                                    "";
-
-
-                                /*==================================
-                                    RATING
-                                ==================================*/
-
-                                const rating =
-                                    Number(
-                                        review.rating ??
-                                        review.stars ??
-                                        5
-                                    );
-
-
-                                return `
-
-                                    <article
-                                        class="review-card"
-                                    >
-
-                                        <div
-                                            class="
-                                                review-customer
-                                            "
-                                        >
-
-                                            ${
-                                                customerImage
-                                                ?
-
-                                                `
-
-                                                <img
-                                                    class="
-                                                        review-avatar
-                                                    "
-                                                    src="${escapeAttribute(
-                                                        customerImage
-                                                    )}"
-                                                    alt="${escapeAttribute(
-                                                        name
-                                                    )}"
-                                                    loading="lazy"
-                                                    onerror="
-                                                        this.style.display='none';
-                                                        this.nextElementSibling.style.display='flex';
-                                                    "
-                                                >
-
-                                                <div
-                                                    class="
-                                                        review-avatar
-                                                        review-avatar-empty
-                                                    "
-                                                    style="
-                                                        display:none;
-                                                    "
-                                                >
-
-                                                    ${escapeHtml(
-                                                        name
-                                                            .charAt(
-                                                                0
-                                                            )
-                                                            .toUpperCase()
-                                                    )}
-
-                                                </div>
-
-                                                `
-
-                                                :
-
-                                                `
-
-                                                <div
-                                                    class="
-                                                        review-avatar
-                                                        review-avatar-empty
-                                                    "
-                                                >
-
-                                                    ${escapeHtml(
-                                                        name
-                                                            .charAt(
-                                                                0
-                                                            )
-                                                            .toUpperCase()
-                                                    )}
-
-                                                </div>
-
-                                                `
-                                            }
-
-
-                                            <div
-                                                class="
-                                                    review-customer-info
-                                                "
-                                            >
-
-                                                <h3
-                                                    class="review-name"
-                                                >
-
-                                                    ${escapeHtml(
-                                                        name
-                                                    )}
-
-                                                </h3>
-
-
-                                                <div
-                                                    class="
-                                                        review-stars
-                                                    "
-                                                >
-
-                                                    ${renderStars(
-                                                        rating
-                                                    )}
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <p
-                                            class="
-                                                review-text
-                                            "
-                                        >
-
-                                            ${escapeHtml(
-                                                reviewText
-                                            )}
-
-                                        </p>
-
-
-                                        ${
-                                            customerProductImage
-                                            ?
-
-                                            `
-
-                                            <div
-                                                class="
-                                                    review-product-image
-                                                "
-                                            >
-
-                                                <img
-                                                    src="${escapeAttribute(
-                                                        customerProductImage
-                                                    )}"
-                                                    alt="Customer product photo"
-                                                    loading="lazy"
-                                                    onerror="
-                                                        this.parentElement.style.display='none';
-                                                    "
-                                                >
-
-                                            </div>
-
-                                            `
-
-                                            :
-
-                                            ""
-                                        }
-
-
-                                        ${
-                                            productName
-                                            ?
-
-                                            `
-
-                                            <div
-                                                class="
-                                                    review-product-name
-                                                "
-                                            >
-
-                                                ${escapeHtml(
-                                                    productName
-                                                )}
-
-                                            </div>
-
-                                            `
-
-                                            :
-
-                                            ""
-                                        }
-
-                                    </article>
-
-                                `;
-
-                            }
-                        ).join("")
-                    }
-
-                </div>
-
-
-                ${
-                    reviews.length > 1
-                    ?
-
-                    `
-
-                    <div
-                        class="
-                            carousel-dots
-                            review-dots
-                        "
-                    >
-
-                        ${
-                            reviews.map(
-                                (
-                                    _,
-                                    index
-                                ) => `
-
-                                    <span
-                                        class="${
-                                            index === 0
-                                            ? "active"
-                                            : ""
-                                        }"
-                                    ></span>
-
-                                `
-                            ).join("")
-                        }
-
-                    </div>
-
-                    `
-
-                    :
-
-                    ""
-                }
-
-            </div>
-
-        `;
-
-
-        initHorizontalCarousel(
-            container,
-            ".review-carousel"
-        );
-
-    }
-
-    catch(error){
-
-        console.error(
-            "Review carousel error:",
-            error
-        );
-
-
-        container.remove();
-
-    }
-
-}
-
 
 /*==================================================
     STARS
@@ -2630,6 +2181,7 @@ function renderStars(
     );
 
 }
+
 
 
 /*==================================================
@@ -2670,6 +2222,7 @@ function renderSpacer(
 }
 
 
+
 /*==================================================
     HORIZONTAL CAROUSEL
 ==================================================*/
@@ -2708,6 +2261,7 @@ function initHorizontalCarousel(
     );
 
 }
+
 
 
 /*==================================================
@@ -2780,6 +2334,7 @@ function updateCarouselDots(
 }
 
 
+
 /*==================================================
     TIMESTAMP
 ==================================================*/
@@ -2822,6 +2377,7 @@ function getTimestamp(
 }
 
 
+
 /*==================================================
     LOADER
 ==================================================*/
@@ -2854,6 +2410,7 @@ function hideLoader(){
     }
 
 }
+
 
 
 /*==================================================
@@ -2891,6 +2448,7 @@ function escapeHtml(
 }
 
 
+
 /*==================================================
     ESCAPE ATTRIBUTE
 ==================================================*/
@@ -2906,6 +2464,7 @@ function escapeAttribute(
 }
 
 
+
 /*==================================================
     EXPORT
 ==================================================*/
@@ -2914,24 +2473,6 @@ export {
 
     loadHomepage,
 
-    renderSection,
-
-    renderProductCarousel,
-
-    renderImageCarousel,
-
-    renderReviewCarousel,
-
-    renderHeading,
-
-    renderBanner,
-
-    renderSpacer,
-
-    getProductImage,
-
-    getProductLink,
-
-    getProductTags
+    renderSection
 
 };
