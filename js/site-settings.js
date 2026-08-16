@@ -16,6 +16,9 @@
     siteTitle
     metaDescription
 
+    razorpayKeyId
+    orderButton
+
     aboutUs
     contactUs
     terms
@@ -24,12 +27,15 @@
     shippingPolicy
 ==================================================*/
 
+
 import { db } from "./firebase.js";
+
 
 import {
     doc,
     getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 
 /*==================================================
@@ -41,39 +47,103 @@ let siteSettings = null;
 let settingsPromise = null;
 
 
+
 /*==================================================
     DEFAULT SETTINGS
 ==================================================*/
 
 const DEFAULT_SETTINGS = {
 
-    logoUrl: "",
+    logoUrl:
+        "",
 
-    companyName: "Imaginary Gifts",
 
-    whatsapp: "",
+    companyName:
+        "Imaginary Gifts",
 
-    email: "",
+
+    whatsapp:
+        "",
+
+
+    email:
+        "",
+
 
     siteTitle:
         "Imaginary Gifts - Customized Gifts",
 
+
     metaDescription:
         "Customized gifts from Imaginary Gifts",
 
-    aboutUs: "",
 
-    contactUs: "",
+    /*================================================
+        RAZORPAY
+    ================================================*/
 
-    terms: "",
+    /*
+        IMPORTANT:
 
-    privacyPolicy: "",
+        This must contain ONLY the Razorpay
+        Key ID / Public Key.
 
-    refundPolicy: "",
+        Example:
 
-    shippingPolicy: ""
+        rzp_test_xxxxxxxxx
+        rzp_live_xxxxxxxxx
+
+        NEVER store Razorpay Key Secret here.
+    */
+
+    razorpayKeyId:
+        "",
+
+
+    /*================================================
+        ORDER BUTTON
+    ================================================*/
+
+    /*
+        Allowed values:
+
+        whatsapp
+        razorpay
+    */
+
+    orderButton:
+        "whatsapp",
+
+
+    /*================================================
+        PAGE CONTENT
+    ================================================*/
+
+    aboutUs:
+        "",
+
+
+    contactUs:
+        "",
+
+
+    terms:
+        "",
+
+
+    privacyPolicy:
+        "",
+
+
+    refundPolicy:
+        "",
+
+
+    shippingPolicy:
+        ""
 
 };
+
 
 
 /*==================================================
@@ -81,6 +151,7 @@ const DEFAULT_SETTINGS = {
 ==================================================*/
 
 async function loadSiteSettings(){
+
 
     /*----------------------------------------------
         RETURN CACHE
@@ -91,6 +162,7 @@ async function loadSiteSettings(){
         return siteSettings;
 
     }
+
 
 
     /*----------------------------------------------
@@ -104,10 +176,16 @@ async function loadSiteSettings(){
     }
 
 
+
     settingsPromise =
         (async function(){
 
             try{
+
+
+                /*==================================
+                    FIRESTORE
+                ==================================*/
 
                 const settingsRef =
                     doc(
@@ -117,17 +195,21 @@ async function loadSiteSettings(){
                     );
 
 
+
                 const snapshot =
                     await getDoc(
                         settingsRef
                     );
 
 
-                /*--------------------------------------
-                    SETTINGS EXIST
-                --------------------------------------*/
 
-                if(snapshot.exists()){
+                /*==================================
+                    SETTINGS EXIST
+                ==================================*/
+
+                if(
+                    snapshot.exists()
+                ){
 
                     siteSettings = {
 
@@ -155,14 +237,16 @@ async function loadSiteSettings(){
                 }
 
 
-                /*--------------------------------------
+
+                /*==================================
                     NORMALIZE
-                --------------------------------------*/
+                ==================================*/
 
                 siteSettings.companyName =
                     String(
                         siteSettings.companyName || ""
                     ).trim();
+
 
 
                 siteSettings.siteTitle =
@@ -171,10 +255,12 @@ async function loadSiteSettings(){
                     ).trim();
 
 
+
                 siteSettings.metaDescription =
                     String(
                         siteSettings.metaDescription || ""
                     ).trim();
+
 
 
                 siteSettings.email =
@@ -183,17 +269,48 @@ async function loadSiteSettings(){
                     ).trim();
 
 
+
                 siteSettings.whatsapp =
                     normalizeWhatsAppNumber(
                         siteSettings.whatsapp
                     );
 
 
-                /*--------------------------------------
-                    APPLY TO PAGE
-                --------------------------------------*/
+
+                /*==================================
+                    RAZORPAY KEY
+                ==================================*/
+
+                siteSettings.razorpayKeyId =
+                    String(
+                        siteSettings.razorpayKeyId || ""
+                    ).trim();
+
+
+
+                /*==================================
+                    ORDER BUTTON
+                ==================================*/
+
+                siteSettings.orderButton =
+                    normalizeOrderButton(
+                        siteSettings.orderButton
+                    );
+
+
+
+                /*==================================
+                    APPLY SETTINGS
+                ==================================*/
 
                 applySiteSettings(
+                    siteSettings
+                );
+
+
+
+                console.log(
+                    "Site settings loaded:",
                     siteSettings
                 );
 
@@ -201,6 +318,7 @@ async function loadSiteSettings(){
                 return siteSettings;
 
             }
+
 
             catch(error){
 
@@ -212,8 +330,7 @@ async function loadSiteSettings(){
 
                 /*
                     Keep website functional even
-                    when Firebase settings cannot
-                    be loaded.
+                    when Firebase settings fail.
                 */
 
                 siteSettings = {
@@ -230,9 +347,11 @@ async function loadSiteSettings(){
         })();
 
 
+
     return settingsPromise;
 
 }
+
 
 
 /*==================================================
@@ -244,6 +363,7 @@ async function getSiteSettings(){
     return await loadSiteSettings();
 
 }
+
 
 
 /*==================================================
@@ -259,6 +379,7 @@ function applySiteSettings(
         return;
 
     }
+
 
 
     /*================================================
@@ -281,6 +402,7 @@ function applySiteSettings(
                 logo.src =
                     settings.logoUrl;
 
+
                 logo.style.display =
                     "";
 
@@ -293,6 +415,7 @@ function applySiteSettings(
 
         }
     );
+
 
 
     /*================================================
@@ -315,6 +438,7 @@ function applySiteSettings(
     );
 
 
+
     /*================================================
         LOGO LINK
     ================================================*/
@@ -333,6 +457,7 @@ function applySiteSettings(
 
         }
     );
+
 
 
     /*================================================
@@ -355,6 +480,7 @@ function applySiteSettings(
     );
 
 
+
     /*================================================
         EMAIL TEXT
     ================================================*/
@@ -373,6 +499,7 @@ function applySiteSettings(
 
         }
     );
+
 
 
     /*================================================
@@ -401,6 +528,7 @@ function applySiteSettings(
     );
 
 
+
     /*================================================
         WHATSAPP LINK
     ================================================*/
@@ -427,21 +555,10 @@ function applySiteSettings(
     );
 
 
+
     /*================================================
         WEBSITE TITLE
     ================================================*/
-
-    /*
-        IMPORTANT:
-
-        If a product.js or another page-specific
-        script has already created a product title,
-        don't overwrite it.
-
-        The global title is applied only when
-        the page hasn't explicitly marked itself
-        as page-specific.
-    */
 
     const pageUsesCustomTitle =
         document.documentElement.dataset
@@ -457,6 +574,7 @@ function applySiteSettings(
             settings.siteTitle;
 
     }
+
 
 
     /*================================================
@@ -488,6 +606,7 @@ function applySiteSettings(
     }
 
 
+
     /*================================================
         OPEN GRAPH TITLE
     ================================================*/
@@ -510,6 +629,7 @@ function applySiteSettings(
         );
 
     }
+
 
 
     /*================================================
@@ -536,6 +656,7 @@ function applySiteSettings(
     }
 
 
+
     /*================================================
         OPEN GRAPH IMAGE
     ================================================*/
@@ -559,6 +680,7 @@ function applySiteSettings(
     }
 
 
+
     /*================================================
         OPEN GRAPH URL
     ================================================*/
@@ -579,8 +701,9 @@ function applySiteSettings(
     }
 
 
+
     /*================================================
-        HTML LANG / COMPANY
+        HTML COMPANY
     ================================================*/
 
     document.documentElement
@@ -589,7 +712,20 @@ function applySiteSettings(
             settings.companyName || ""
         );
 
+
+
+    /*================================================
+        HTML ORDER BUTTON
+    ================================================*/
+
+    document.documentElement
+        .setAttribute(
+            "data-order-button",
+            settings.orderButton || "whatsapp"
+        );
+
 }
+
 
 
 /*==================================================
@@ -598,27 +734,13 @@ function applySiteSettings(
 
 function getHomeUrl(){
 
-    /*
-        No domain is stored in Firebase.
-
-        Current website origin is automatically
-        used.
-
-        Example:
-
-        https://imaginarygifts.shopcom.in/
-
-        becomes:
-
-        https://imaginarygifts.shopcom.in/
-    */
-
     return (
         window.location.origin +
         "/"
     );
 
 }
+
 
 
 /*==================================================
@@ -650,6 +772,42 @@ function normalizeWhatsAppNumber(
 }
 
 
+
+/*==================================================
+    ORDER BUTTON NORMALIZATION
+==================================================*/
+
+function normalizeOrderButton(
+    value
+){
+
+    const button =
+        String(
+            value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    if(
+        button === "buyNow"
+    ){
+
+        return "buyNow";
+
+    }
+
+
+    /*
+        Everything else defaults to WhatsApp.
+    */
+
+    return "whatsapp";
+
+}
+
+
+
 /*==================================================
     GET WHATSAPP
 ==================================================*/
@@ -666,6 +824,7 @@ async function getWhatsAppNumber(){
     );
 
 }
+
 
 
 /*==================================================
@@ -686,6 +845,7 @@ async function getCompanyName(){
 }
 
 
+
 /*==================================================
     GET COMPANY LOGO
 ==================================================*/
@@ -702,6 +862,7 @@ async function getCompanyLogo(){
     );
 
 }
+
 
 
 /*==================================================
@@ -722,6 +883,7 @@ async function getCompanyEmail(){
 }
 
 
+
 /*==================================================
     GET WEBSITE TITLE
 ==================================================*/
@@ -740,6 +902,7 @@ async function getSiteTitle(){
 }
 
 
+
 /*==================================================
     GET META DESCRIPTION
 ==================================================*/
@@ -756,6 +919,45 @@ async function getMetaDescription(){
     );
 
 }
+
+
+
+/*==================================================
+    GET RAZORPAY KEY
+==================================================*/
+
+async function getRazorpayKeyId(){
+
+    const settings =
+        await loadSiteSettings();
+
+
+    return (
+        settings.razorpayKeyId ||
+        ""
+    );
+
+}
+
+
+
+/*==================================================
+    GET ORDER BUTTON
+==================================================*/
+
+async function getOrderButton(){
+
+    const settings =
+        await loadSiteSettings();
+
+
+    return (
+        settings.orderButton ||
+        "whatsapp"
+    );
+
+}
+
 
 
 /*==================================================
@@ -811,6 +1013,7 @@ async function getPageContent(
 }
 
 
+
 /*==================================================
     REFRESH
 ==================================================*/
@@ -820,6 +1023,7 @@ async function refreshSiteSettings(){
     siteSettings =
         null;
 
+
     settingsPromise =
         null;
 
@@ -827,6 +1031,7 @@ async function refreshSiteSettings(){
     return await loadSiteSettings();
 
 }
+
 
 
 /*==================================================
@@ -851,11 +1056,13 @@ if(
     );
 
 }
+
 else{
 
     loadSiteSettings();
 
 }
+
 
 
 /*==================================================
@@ -881,6 +1088,10 @@ export {
     getSiteTitle,
 
     getMetaDescription,
+
+    getRazorpayKeyId,
+
+    getOrderButton,
 
     getPageContent,
 
