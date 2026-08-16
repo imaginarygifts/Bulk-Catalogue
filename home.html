@@ -157,12 +157,13 @@
 <div
     id="searchOverlay"
     class="search-overlay"
+    aria-hidden="true"
 >
 
     <div class="search-box">
 
         <input
-            type="text"
+            type="search"
             id="searchInput"
             placeholder="Search for products..."
             autocomplete="off"
@@ -173,15 +174,20 @@
             id="closeSearchButton"
             aria-label="Close search"
         >
-
             <i class="fa-solid fa-xmark"></i>
-
         </button>
 
     </div>
 
-</div>
 
+    <!-- SEARCH RESULTS -->
+
+    <div
+        id="searchResults"
+        class="search-results"
+    ></div>
+
+</div>
 
 
 <!-- ==================================================
