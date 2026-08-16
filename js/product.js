@@ -2694,7 +2694,7 @@ function() {
 
 
 /* ==================================================
-   NEXT TO ADDRESS
+   NEXT TO ADDRESS / CHECKOUT
 ================================================== */
 
 window.nextToAddress =
@@ -2716,6 +2716,29 @@ function() {
 
     }
 
+
+    /* ==================================================
+       BUY NOW
+    ================================================== */
+
+    if (
+        orderMode === "buyNow"
+    ) {
+
+        closeCustomizePopup();
+
+
+        saveCheckoutAndGo();
+
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       WHATSAPP
+    ================================================== */
 
     closeCustomizePopup();
 
@@ -2765,6 +2788,50 @@ function() {
 window.orderNow =
 function() {
 
+    orderMode =
+        "whatsapp";
+
+
+    const hasCustomization =
+        Array.isArray(
+            product?.customOptions
+        ) &&
+        product.customOptions.length > 0;
+
+
+    if (!hasCustomization) {
+
+        const errors =
+            validateRequiredSelections();
+
+
+        if (
+            errors.length
+        ) {
+
+            showErrorModal(
+                errors
+            );
+
+            return;
+
+        }
+
+
+        document
+            .getElementById(
+                "waFormOverlay"
+            )
+            ?.classList.remove(
+                "hidden"
+            );
+
+
+        return;
+
+    }
+
+
     renderCustomizePopup();
 
 
@@ -2777,6 +2844,8 @@ function() {
         );
 
 };
+
+
 
 
 /* ==================================================
@@ -3304,23 +3373,57 @@ function() {
 window.buyNow =
 function() {
 
-    /* VALIDATE */
-
-    const errors =
-        validateRequiredSelections();
+    orderMode =
+        "buyNow";
 
 
-    if (
-        errors.length
-    ) {
+    const hasCustomization =
+        Array.isArray(
+            product?.customOptions
+        ) &&
+        product.customOptions.length > 0;
 
-        showErrorModal(
-            errors
-        );
+
+    if (!hasCustomization) {
+
+        const errors =
+            validateRequiredSelections();
+
+
+        if (
+            errors.length
+        ) {
+
+            showErrorModal(
+                errors
+            );
+
+            return;
+
+        }
+
+
+        saveCheckoutAndGo();
+
 
         return;
 
     }
+
+
+    renderCustomizePopup();
+
+
+    document
+        .getElementById(
+            "customizeOverlay"
+        )
+        ?.classList.remove(
+            "hidden"
+        );
+
+};
+
 
 
     /* SAVE COMPLETE CHECKOUT DATA */
