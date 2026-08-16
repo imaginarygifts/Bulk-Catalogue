@@ -494,248 +494,234 @@ function validateRequiredSelections() {
 
 
 /* ==================================================
-   PRODUCT META
+PRODUCT META
 ================================================== */
 
 function updatePageMeta() {
 
-    if (!product) {
+if (!product) {  
 
-        return;
+    return;  
 
-    }
+}  
 
 
-    const companyName =
-        siteSettings.companyName ||
-        "Imaginary Gifts";
+const companyName =  
+    siteSettings.companyName ||  
+    "Imaginary Gifts";  
 
 
-    /* ==================================================
-       PRODUCT TITLE
-       Uses product name
-    ================================================== */
+const title =  
+    product.seoTitle ||  
+    product.metaTitle ||  
+    product.name ||  
+    companyName;  
 
-    const title =
-        String(
-            product.name ||
-            companyName
-        ).trim();
 
+const description =  
+    product.seoDescription ||  
+    product.metaDescription ||  
+    product.description ||  
+    siteSettings.metaDescription ||  
+    `Buy ${product.name} from ${companyName}`;  
 
-    /* ==================================================
-       PRODUCT DESCRIPTION
-       Uses product description
-    ================================================== */
 
-    const description =
-        String(
-            product.description ||
-            `Buy ${product.name || "this product"} from ${companyName}`
-        ).trim();
+const image =  
+    product.images?.[0] ||  
+    siteSettings.logoUrl ||  
+    "";  
 
 
-    /* ==================================================
-       PRODUCT IMAGE
-       Uses first product image
-    ================================================== */
+const url =  
+    window.location.href;  
 
-    const image =
-        product.images?.[0] ||
-        siteSettings.logoUrl ||
-        "";
 
+/* TITLE */  
 
-    /* ==================================================
-       CURRENT URL
-    ================================================== */
+document.title =  
+    title;  
 
-    const url =
-        window.location.href;
 
+/* DESCRIPTION */  
 
-    /* ==================================================
-       TITLE
-    ================================================== */
+let metaDesc =  
+    document.querySelector(  
+        'meta[name="description"]'  
+    );  
 
-    document.title =
-        title;
 
+if (!metaDesc) {  
 
-    /* ==================================================
-       META DESCRIPTION
-    ================================================== */
+    metaDesc =  
+        document.createElement(  
+            "meta"  
+        );  
 
-    let metaDesc =
-        document.querySelector(
-            'meta[name="description"]'
-        );
+    metaDesc.name =  
+        "description";  
 
+    document.head.appendChild(  
+        metaDesc  
+    );  
 
-    if (!metaDesc) {
+}  
 
-        metaDesc =
-            document.createElement(
-                "meta"
-            );
 
-        metaDesc.name =
-            "description";
+metaDesc.content =  
+    description;  
 
-        document.head.appendChild(
-            metaDesc
-        );
 
-    }
+/* KEYWORDS */  
 
+if (  
+    product.seoKeywords ||  
+    product.metaKeywords ||  
+    siteSettings.metaKeywords  
+) {  
 
-    metaDesc.setAttribute(
-        "content",
-        description
-    );
+    let keywords =  
+        document.querySelector(  
+            'meta[name="keywords"]'  
+        );  
 
 
-    /* ==================================================
-       META KEYWORDS
-    ================================================== */
+    if (!keywords) {  
 
-    let keywords = "";
+        keywords =  
+            document.createElement(  
+                "meta"  
+            );  
 
+        keywords.name =  
+            "keywords";  
 
-    if (
-        Array.isArray(
-            product.seoKeywords
-        )
-    ) {
+        document.head.appendChild(  
+            keywords  
+        );  
 
-        keywords =
-            product.seoKeywords
-                .map(
-                    keyword =>
-                        String(
-                            keyword
-                        ).trim()
-                )
-                .filter(
-                    Boolean
-                )
-                .join(", ");
+    }  
 
-    }
 
-    else if (
-        typeof product.seoKeywords ===
-        "string"
-    ) {
+    keywords.content =  
+        product.seoKeywords ||  
+        product.metaKeywords ||  
+        siteSettings.metaKeywords;  
 
-        keywords =
-            product.seoKeywords.trim();
+}  
 
-    }
 
+/* OG TITLE */  
 
-    if (keywords) {
+setMeta(  
+    "property",  
+    "og:title",  
+    title  
+);  
 
-        let metaKeywords =
-            document.querySelector(
-                'meta[name="keywords"]'
-            );
 
+/* OG DESCRIPTION */  
 
-        if (!metaKeywords) {
+setMeta(  
+    "property",  
+    "og:description",  
+    description  
+);  
 
-            metaKeywords =
-                document.createElement(
-                    "meta"
-                );
 
-            metaKeywords.name =
-                "keywords";
+/* OG IMAGE */  
 
-            document.head.appendChild(
-                metaKeywords
-            );
+setMeta(  
+    "property",  
+    "og:image",  
+    image  
+);  
 
-        }
 
+/* OG URL */  
 
-        metaKeywords.setAttribute(
-            "content",
-            keywords
-        );
+setMeta(  
+    "property",  
+    "og:url",  
+    url  
+);  
 
-    }
 
+/* OG TYPE */  
 
-    /* ==================================================
-       OPEN GRAPH
-    ================================================== */
+setMeta(  
+    "property",  
+    "og:type",  
+    "product"  
+);  
 
-    setMeta(
-        "property",
-        "og:title",
-        title
-    );
 
+/* TWITTER TITLE */  
 
-    setMeta(
-        "property",
-        "og:description",
-        description
-    );
+setMeta(  
+    "name",  
+    "twitter:title",  
+    title  
+);  
 
 
-    setMeta(
-        "property",
-        "og:image",
-        image
-    );
+/* TWITTER DESCRIPTION */  
 
+setMeta(  
+    "name",  
+    "twitter:description",  
+    description  
+);  
 
-    setMeta(
-        "property",
-        "og:url",
-        url
-    );
 
+/* TWITTER IMAGE */  
 
-    setMeta(
-        "property",
-        "og:type",
-        "product"
-    );
+setMeta(  
+    "name",  
+    "twitter:image",  
+    image  
+);
 
+}
 
-    /* ==================================================
-       TWITTER
-    ================================================== */
+/* ==================================================
+META HELPER
+================================================== */
 
-    setMeta(
-        "name",
-        "twitter:card",
-        "summary_large_image"
-    );
+function setMeta(
+attribute,
+name,
+content
+) {
 
+let meta =  
+    document.querySelector(  
+        `meta[${attribute}="${name}"]`  
+    );  
 
-    setMeta(
-        "name",
-        "twitter:title",
-        title
-    );
 
+if (!meta) {  
 
-    setMeta(
-        "name",
-        "twitter:description",
-        description
-    );
+    meta =  
+        document.createElement(  
+            "meta"  
+        );  
 
+    meta.setAttribute(  
+        attribute,  
+        name  
+    );  
 
-    setMeta(
-        "name",
-        "twitter:image",
-        image
-    );
+    document.head.appendChild(  
+        meta  
+    );  
+
+}  
+
+
+meta.setAttribute(  
+    "content",  
+    content || ""  
+);
 
 }
 
