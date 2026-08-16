@@ -1,0 +1,814 @@
+/* ==================================================
+   STORE PAGE
+   MOBILE FIRST
+================================================== */
+
+
+/* ==================================================
+   GLOBAL
+================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background: #0d0d10;
+
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    overflow-x: hidden;
+}
+
+
+button,
+input {
+    font: inherit;
+}
+
+
+
+/* ==================================================
+   CATEGORY SCROLL
+================================================== */
+
+.category-scroll {
+
+    width: 100%;
+
+    display: flex;
+
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    white-space: nowrap;
+
+    background: #111114;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,0.06);
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+}
+
+
+.category-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+
+
+/* ==================================================
+   CATEGORY PILL
+================================================== */
+
+.category-pill {
+
+    flex: 0 0 auto;
+
+    padding:
+        9px
+        17px;
+
+    border-radius: 999px;
+
+    background: #1c1c21;
+
+    color: #dcdce2;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.08);
+
+    transition:
+        0.2s ease;
+
+    user-select: none;
+
+}
+
+
+.category-pill:hover {
+
+    background: #29292f;
+
+}
+
+
+.category-pill.active {
+
+    background: #ffffff;
+
+    color: #111111;
+
+    border-color: #ffffff;
+
+}
+
+
+
+/* ==================================================
+   SUBCATEGORY
+================================================== */
+
+.subcategory-row {
+
+    width: 100%;
+
+    display: flex;
+
+    gap: 8px;
+
+    padding:
+        8px
+        14px;
+
+    overflow-x: auto;
+
+    white-space: nowrap;
+
+    background: #111114;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+}
+
+
+.subcategory-row::-webkit-scrollbar {
+    display: none;
+}
+
+
+.subcategory-pill {
+
+    flex: 0 0 auto;
+
+    padding:
+        7px
+        14px;
+
+    border-radius: 999px;
+
+    background: #18181c;
+
+    color: #bdbdc5;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+}
+
+
+.subcategory-pill.active {
+
+    background: #ffffff;
+
+    color: #111111;
+
+    border-color: #ffffff;
+
+}
+
+
+
+/* ==================================================
+   TAG FILTER
+================================================== */
+
+.tag-filter-row {
+
+    width: 100%;
+
+    display: flex;
+
+    gap: 8px;
+
+    padding:
+        8px
+        14px
+        12px;
+
+    overflow-x: auto;
+
+    white-space: nowrap;
+
+    background: #0d0d10;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+}
+
+
+.tag-filter-row::-webkit-scrollbar {
+    display: none;
+}
+
+
+.tag-chip {
+
+    flex: 0 0 auto;
+
+    padding:
+        7px
+        14px;
+
+    border-radius: 999px;
+
+    background: #19191e;
+
+    color: #bcbcc4;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    user-select: none;
+
+}
+
+
+.tag-chip.active {
+
+    background: #ffffff;
+
+    color: #111111;
+
+    border-color: #ffffff;
+
+}
+
+
+
+/* ==================================================
+   STORE MAIN
+================================================== */
+
+.store-main {
+
+    width: 100%;
+
+    padding:
+        8px
+        12px
+        40px;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT GRID
+================================================== */
+
+.product-grid {
+
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT CARD
+================================================== */
+
+.product-card {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    background: #19191e;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.product-card:active {
+
+    transform: scale(0.98);
+
+}
+
+
+
+/* ==================================================
+   IMAGE WRAPPER
+================================================== */
+
+.img-wrap {
+
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    background: #25252a;
+
+}
+
+
+.img-wrap img {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+}
+
+
+
+/* ==================================================
+   NO IMAGE
+================================================== */
+
+.product-no-image {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #777780;
+
+    font-size: 13px;
+
+    background: #222228;
+
+}
+
+
+
+/* ==================================================
+   BADGES
+================================================== */
+
+.badge {
+
+    position: absolute;
+
+    z-index: 5;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding:
+        6px
+        9px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    line-height: 1;
+
+    backdrop-filter: blur(8px);
+
+}
+
+
+/* Bestseller */
+
+.badge.bestseller {
+
+    top: 9px;
+
+    left: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.94);
+
+    color: #111111;
+
+}
+
+
+/* Discount */
+
+.badge.discount {
+
+    top: 9px;
+
+    right: 9px;
+
+    background: #00e894;
+
+    color: #06150f;
+
+}
+
+
+/* Stock */
+
+.badge.stock {
+
+    bottom: 9px;
+
+    left: 9px;
+
+    background:
+        rgba(0,0,0,0.75);
+
+    color: #ffffff;
+
+}
+
+
+
+/* ==================================================
+   PRODUCT INFO
+================================================== */
+
+.product-card-info {
+
+    padding:
+        11px
+        11px
+        14px;
+
+}
+
+
+.product-card h4 {
+
+    margin:
+        0
+        0
+        9px;
+
+    color: #ffffff;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    line-height: 1.25;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+
+}
+
+
+
+/* ==================================================
+   PRICE
+================================================== */
+
+.price-wrap {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-height: 22px;
+
+}
+
+
+.price-wrap .sale {
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+}
+
+
+.price-wrap .old {
+
+    color: #77777f;
+
+    font-size: 13px;
+
+    text-decoration: line-through;
+
+}
+
+
+
+/* ==================================================
+   EMPTY STORE
+================================================== */
+
+.store-empty {
+
+    grid-column:
+        1 / -1;
+
+    min-height: 220px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.store-empty p {
+
+    margin: 0;
+
+    color: #888890;
+
+    font-size: 15px;
+
+}
+
+
+
+/* ==================================================
+   LOAD MORE
+================================================== */
+
+.load-more-btn {
+
+    display: block;
+
+    margin:
+        25px
+        auto
+        0;
+
+    padding:
+        12px
+        28px;
+
+    border: none;
+
+    border-radius: 999px;
+
+    background: #ffffff;
+
+    color: #111111;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+
+}
+
+
+.load-more-btn:active {
+
+    transform: scale(0.96);
+
+}
+
+
+
+/* ==================================================
+   SHARE BUTTON
+================================================== */
+
+.share-button {
+
+    position: fixed;
+
+    right: 18px;
+
+    bottom: 22px;
+
+    z-index: 1000;
+
+    width: 48px;
+
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: #111111;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0,0,0,0.35);
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    transition:
+        transform 0.2s ease;
+
+}
+
+
+.share-button:active {
+
+    transform: scale(0.92);
+
+}
+
+
+
+/* ==================================================
+   TABLET
+================================================== */
+
+@media (
+    min-width: 600px
+) {
+
+    .product-grid {
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 15px;
+
+    }
+
+
+    .store-main {
+
+        padding-left: 18px;
+
+        padding-right: 18px;
+
+    }
+
+}
+
+
+
+/* ==================================================
+   DESKTOP
+================================================== */
+
+@media (
+    min-width: 900px
+) {
+
+    .product-grid {
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 18px;
+
+    }
+
+
+    .store-main {
+
+        max-width: 1400px;
+
+        margin:
+            0
+            auto;
+
+        padding-left: 25px;
+
+        padding-right: 25px;
+
+    }
+
+
+    .product-card:hover {
+
+        transform:
+            translateY(-3px);
+
+        box-shadow:
+            0 12px 30px
+            rgba(0,0,0,0.25);
+
+    }
+
+
+    .category-scroll,
+    .subcategory-row,
+    .tag-filter-row {
+
+        padding-left: 25px;
+
+        padding-right: 25px;
+
+    }
+
+}
+
+
+
+/* ==================================================
+   LARGE DESKTOP
+================================================== */
+
+@media (
+    min-width: 1200px
+) {
+
+    .product-grid {
+
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+
+    }
+
+}
