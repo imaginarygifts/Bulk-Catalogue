@@ -1,3 +1,5 @@
+Now solve search bar issue search not working not even search bar showing
+
 /==================================================
 HOMEPAGE
 MOBILE FIRST
