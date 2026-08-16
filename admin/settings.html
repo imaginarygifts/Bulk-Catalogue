@@ -89,8 +89,6 @@
                     <div class="logo-upload-area">
 
 
-                        <!-- LOGO PREVIEW -->
-
                         <div class="logo-preview">
 
                             <img
@@ -109,8 +107,6 @@
                         </div>
 
 
-
-                        <!-- UPLOAD -->
 
                         <div class="logo-upload-content">
 
@@ -205,6 +201,97 @@
                         placeholder="hello@example.com"
                         autocomplete="email"
                     >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 ORDER SETTINGS
+            ========================================== -->
+
+            <div class="settings-card">
+
+                <div class="settings-card-header">
+
+                    <h2>
+                        Order Settings
+                    </h2>
+
+                    <p>
+                        Choose how customers will place
+                        orders from the product page.
+                    </p>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     ORDER BUTTON
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="orderButton">
+                        Product Order Button
+                    </label>
+
+
+                    <select
+                        id="orderButton"
+                    >
+
+                        <option
+                            value="whatsapp"
+                        >
+                            Order on WhatsApp
+                        </option>
+
+
+                        <option
+                            value="buyNow"
+                        >
+                            Buy Now
+                        </option>
+
+                    </select>
+
+
+                    <small>
+                        This controls the main sticky
+                        order button shown on product pages.
+                    </small>
+
+                </div>
+
+
+
+                <!-- =====================================
+                     RAZORPAY KEY ID
+                ====================================== -->
+
+                <div class="form-group">
+
+                    <label for="razorpayKeyId">
+                        Razorpay Key ID
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="razorpayKeyId"
+                        placeholder="rzp_live_xxxxxxxxxxxxx"
+                        autocomplete="off"
+                    >
+
+
+                    <small>
+                        Enter your Razorpay Key ID.
+                        Do not enter your Razorpay Key Secret.
+                    </small>
 
                 </div>
 
@@ -375,6 +462,7 @@
                 </button>
 
             </div>
+
 
 
             <!-- =========================================
