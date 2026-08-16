@@ -29,6 +29,8 @@ import {
    SITE SETTINGS
 ================================================== */
 
+let orderMode = null;
+
 let siteSettings = {
 
     companyName: "",
