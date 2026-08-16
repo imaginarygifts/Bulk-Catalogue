@@ -1,12 +1,12 @@
-/*==================================================
-    PRODUCT PAGE
-==================================================*/
+/* ==================================================
+   PRODUCT PAGE
+   SITE SETTINGS CONNECTED VERSION
+================================================== */
 
 import {
     db,
     storage
 } from "./firebase.js";
-
 
 import {
     doc,
@@ -18,7 +18,6 @@ import {
     addDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
 import {
     ref,
     uploadBytes,
@@ -26,72 +25,54 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 
-/*==================================================
-    GLOBAL SITE SETTINGS
-==================================================*/
-
-/*
-    Settings are stored in:
-
-    settings
-        └── general
-
-    Fields:
-
-    companyName
-    whatsapp
-    email
-    logoUrl
-    aboutUs
-    contactUs
-    terms
-    privacyPolicy
-    refundPolicy
-    shippingPolicy
-*/
+/* ==================================================
+   SITE SETTINGS
+================================================== */
 
 let siteSettings = {
 
-    companyName:
-        "Imaginary Gifts",
+    companyName: "Imaginary Gifts",
 
-    whatsapp:
-        "",
+    whatsapp: "",
 
-    email:
-        "",
+    email: "",
 
-    logoUrl:
-        "",
+    logoUrl: "",
 
-    aboutUs:
-        "",
+    faviconUrl: "",
 
-    contactUs:
-        "",
+    websiteTitle: "",
 
-    terms:
-        "",
+    metaDescription: "",
 
-    privacyPolicy:
-        "",
+    metaKeywords: "",
 
-    refundPolicy:
-        "",
+    aboutUs: "",
 
-    shippingPolicy:
-        ""
+    contactUs: "",
+
+    terms: "",
+
+    privacyPolicy: "",
+
+    refundPolicy: "",
+
+    shippingPolicy: "",
+
+    razorpayKeyId: "",
+
+    orderPrefix: "IG"
 
 };
 
 
-/*==================================================
-    LOAD SITE SETTINGS
-==================================================*/
+/* ==================================================
+   LOAD SITE SETTINGS
+================================================== */
 
-async function loadSiteSettings(){
+async function loadSiteSettings() {
 
-    try{
+    try {
 
         const settingsRef =
             doc(
@@ -100,16 +81,15 @@ async function loadSiteSettings(){
                 "general"
             );
 
-
         const snapshot =
             await getDoc(
                 settingsRef
             );
 
 
-        if(
+        if (
             snapshot.exists()
-        ){
+        ) {
 
             siteSettings = {
 
@@ -123,16 +103,29 @@ async function loadSiteSettings(){
 
 
         console.log(
-            "Site settings loaded:",
+            "✅ Product site settings loaded",
             siteSettings
         );
 
+
+        /*
+            Make available globally
+            AFTER loading.
+        */
+
+        window.siteSettings =
+            siteSettings;
+
+
+        applySiteSettings();
+
+
     }
 
-    catch(error){
+    catch (error) {
 
         console.error(
-            "Unable to load site settings:",
+            "Site settings error:",
             error
         );
 
@@ -141,28 +134,158 @@ async function loadSiteSettings(){
 }
 
 
-/*==================================================
-    CONFIGURATION
-==================================================*/
+/* ==================================================
+   APPLY GENERAL SITE SETTINGS
+================================================== */
 
-/*
-    DO NOT PUT THE WHATSAPP NUMBER HERE.
+function applySiteSettings() {
 
-    It now comes from:
-
-    settings/general/whatsapp
-*/
+    const companyName =
+        siteSettings.companyName ||
+        "Imaginary Gifts";
 
 
-/*==================================================
-    GLOBALS
-==================================================*/
+    /*
+        PAGE TITLE
+    */
+
+    if (
+        siteSettings.websiteTitle
+    ) {
+
+        document.title =
+            siteSettings.websiteTitle;
+
+    }
+    else {
+
+        document.title =
+            companyName;
+
+    }
+
+
+    /*
+        LOGO
+    */
+
+    document
+        .querySelectorAll(
+            "[data-site-logo]"
+        )
+        .forEach(
+            img => {
+
+                if (
+                    siteSettings.logoUrl
+                ) {
+
+                    img.src =
+                        siteSettings.logoUrl;
+
+                }
+
+                img.alt =
+                    companyName;
+
+            }
+        );
+
+
+    /*
+        COMPANY NAME
+    */
+
+    document
+        .querySelectorAll(
+            "[data-company-name]"
+        )
+        .forEach(
+            el => {
+
+                el.textContent =
+                    companyName;
+
+            }
+        );
+
+
+    /*
+        FAVICON
+    */
+
+    if (
+        siteSettings.faviconUrl
+    ) {
+
+        let favicon =
+            document.querySelector(
+                'link[rel="icon"]'
+            );
+
+
+        if (!favicon) {
+
+            favicon =
+                document.createElement(
+                    "link"
+                );
+
+            favicon.rel =
+                "icon";
+
+            document.head.appendChild(
+                favicon
+            );
+
+        }
+
+
+        favicon.href =
+            siteSettings.faviconUrl;
+
+    }
+
+
+    /*
+        DEFAULT META DESCRIPTION
+    */
+
+    if (
+        siteSettings.metaDescription
+    ) {
+
+        const meta =
+            document.querySelector(
+                'meta[name="description"]'
+            );
+
+
+        if (meta) {
+
+            meta.content =
+                siteSettings.metaDescription;
+
+        }
+
+    }
+
+}
+
+
+/* ==================================================
+   URL
+================================================== */
 
 const id =
     new URLSearchParams(
         window.location.search
     ).get("id");
 
+
+/* ==================================================
+   GLOBALS
+================================================== */
 
 let product =
     null;
@@ -178,60 +301,70 @@ let relatedProducts =
 
 let selected = {
 
-    color:
-        null,
+    color: null,
 
-    size:
-        null,
+    size: null,
 
-    options:
-        {},
+    options: {},
 
-    optionValues:
-        {},
+    optionValues: {},
 
-    imageLinks:
-        {}
+    imageLinks: {}
 
 };
 
 
-let searchQuery =
-    "";
+/* ==================================================
+   ESCAPE HTML
+================================================== */
 
+function escapeHtml(value) {
 
-/*==================================================
-    SIDEBAR
-==================================================*/
-
-window.toggleSidebar =
-function(){
-
-    document
-        .getElementById(
-            "sidebar"
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
         )
-        ?.classList.toggle(
-            "active"
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
         );
 
-
-    document
-        .getElementById(
-            "overlay"
-        )
-        ?.classList.toggle(
-            "active"
-        );
-
-};
+}
 
 
-/*==================================================
-    VALIDATE REQUIRED SELECTIONS
-==================================================*/
+/* ==================================================
+   ESCAPE ATTRIBUTE
+================================================== */
 
-function validateRequiredSelections(){
+function escapeAttribute(value) {
+
+    return escapeHtml(
+        value
+    );
+
+}
+
+
+/* ==================================================
+   REQUIRED SELECTION VALIDATION
+================================================== */
+
+function validateRequiredSelections() {
 
     const errors = [];
 
@@ -251,19 +384,19 @@ function validateRequiredSelections(){
         );
 
 
-    /*==============================================
-        REQUIRED COLOR
-    ==============================================*/
+    /* ==============================================
+       COLOR
+    ============================================== */
 
-    if(
+    if (
         product?.variants?.colors?.some(
             c => c.required
         )
-    ){
+    ) {
 
-        if(
+        if (
             !selected.color
-        ){
+        ) {
 
             errors.push(
                 "Please select a color"
@@ -274,19 +407,19 @@ function validateRequiredSelections(){
     }
 
 
-    /*==============================================
-        REQUIRED SIZE
-    ==============================================*/
+    /* ==============================================
+       SIZE
+    ============================================== */
 
-    if(
+    if (
         product?.variants?.sizes?.some(
             s => s.required
         )
-    ){
+    ) {
 
-        if(
+        if (
             !selected.size
-        ){
+        ) {
 
             errors.push(
                 "Please select a size"
@@ -297,39 +430,42 @@ function validateRequiredSelections(){
     }
 
 
-    /*==============================================
-        REQUIRED CUSTOM OPTIONS
-    ==============================================*/
+    /* ==============================================
+       CUSTOM OPTIONS
+    ============================================== */
 
-    if(
+    if (
         product?.customOptions?.length
-    ){
+    ) {
 
         product.customOptions.forEach(
-            (o,i) => {
+            (option, index) => {
 
-                if(
-                    !o.required
-                ){
+                if (
+                    !option.required
+                ) {
 
                     return;
 
                 }
 
 
-                /* TEXT / DROPDOWN */
+                /*
+                    TEXT
+                    DROPDOWN
+                */
 
-                if(
-                    o.type === "text" ||
-                    o.type === "dropdown"
-                ){
+                if (
+                    option.type === "text" ||
+                    option.type === "dropdown"
+                ) {
 
-                    if(
-                        !selected.optionValues[i]
-                    ){
+                    if (
+                        !selected.optionValues[index]
+                    ) {
 
                         errors.push(
-                            `Please fill ${o.label}`
+                            `Please fill ${option.label}`
                         );
 
                     }
@@ -337,18 +473,20 @@ function validateRequiredSelections(){
                 }
 
 
-                /* CHECKBOX */
+                /*
+                    CHECKBOX
+                */
 
-                if(
-                    o.type === "checkbox"
-                ){
+                if (
+                    option.type === "checkbox"
+                ) {
 
-                    if(
-                        !selected.optionValues[i]
-                    ){
+                    if (
+                        !selected.optionValues[index]
+                    ) {
 
                         errors.push(
-                            `Please select ${o.label}`
+                            `Please select ${option.label}`
                         );
 
                     }
@@ -356,18 +494,20 @@ function validateRequiredSelections(){
                 }
 
 
-                /* IMAGE */
+                /*
+                    IMAGE
+                */
 
-                if(
-                    o.type === "image"
-                ){
+                if (
+                    option.type === "image"
+                ) {
 
-                    if(
-                        !selected.imageLinks[i]
-                    ){
+                    if (
+                        !selected.imageLinks[index]
+                    ) {
 
                         errors.push(
-                            `Please upload ${o.label}`
+                            `Please upload ${option.label}`
                         );
 
                     }
@@ -385,27 +525,42 @@ function validateRequiredSelections(){
 }
 
 
-/*==================================================
-    PAGE META
-==================================================*/
+/* ==================================================
+   PRODUCT META
+================================================== */
 
-function updatePageMeta(
-    product
-){
+function updatePageMeta() {
 
-    const title =
-        product.name ||
+    if (!product) {
+
+        return;
+
+    }
+
+
+    const companyName =
         siteSettings.companyName ||
         "Imaginary Gifts";
 
 
+    const title =
+        product.seoTitle ||
+        product.metaTitle ||
+        product.name ||
+        companyName;
+
+
     const description =
+        product.seoDescription ||
+        product.metaDescription ||
         product.description ||
-        "Check out this customized gift product";
+        siteSettings.metaDescription ||
+        `Buy ${product.name} from ${companyName}`;
 
 
     const image =
         product.images?.[0] ||
+        siteSettings.logoUrl ||
         "";
 
 
@@ -413,17 +568,17 @@ function updatePageMeta(
         window.location.href;
 
 
-    /*==============================================
+    /*
         TITLE
-    ==============================================*/
+    */
 
     document.title =
         title;
 
 
-    /*==============================================
-        META DESCRIPTION
-    ==============================================*/
+    /*
+        DESCRIPTION
+    */
 
     let metaDesc =
         document.querySelector(
@@ -431,93 +586,228 @@ function updatePageMeta(
         );
 
 
-    if(
-        metaDesc
-    ){
+    if (!metaDesc) {
 
-        metaDesc.setAttribute(
-            "content",
-            description
+        metaDesc =
+            document.createElement(
+                "meta"
+            );
+
+        metaDesc.name =
+            "description";
+
+        document.head.appendChild(
+            metaDesc
         );
 
     }
 
 
-    /*==============================================
-        OPEN GRAPH
-    ==============================================*/
-
-    document
-        .querySelector(
-            'meta[property="og:title"]'
-        )
-        ?.setAttribute(
-            "content",
-            title
-        );
+    metaDesc.content =
+        description;
 
 
-    document
-        .querySelector(
-            'meta[property="og:description"]'
-        )
-        ?.setAttribute(
-            "content",
-            description
-        );
+    /*
+        KEYWORDS
+    */
+
+    if (
+        product.seoKeywords ||
+        product.metaKeywords ||
+        siteSettings.metaKeywords
+    ) {
+
+        let keywords =
+            document.querySelector(
+                'meta[name="keywords"]'
+            );
 
 
-    document
-        .querySelector(
-            'meta[property="og:image"]'
-        )
-        ?.setAttribute(
-            "content",
-            image
-        );
+        if (!keywords) {
+
+            keywords =
+                document.createElement(
+                    "meta"
+                );
+
+            keywords.name =
+                "keywords";
+
+            document.head.appendChild(
+                keywords
+            );
+
+        }
 
 
-    document
-        .querySelector(
-            'meta[property="og:url"]'
-        )
-        ?.setAttribute(
-            "content",
-            url
-        );
+        keywords.content =
+            product.seoKeywords ||
+            product.metaKeywords ||
+            siteSettings.metaKeywords;
+
+    }
+
+
+    /*
+        OG TITLE
+    */
+
+    setMeta(
+        "property",
+        "og:title",
+        title
+    );
+
+
+    /*
+        OG DESCRIPTION
+    */
+
+    setMeta(
+        "property",
+        "og:description",
+        description
+    );
+
+
+    /*
+        OG IMAGE
+    */
+
+    setMeta(
+        "property",
+        "og:image",
+        image
+    );
+
+
+    /*
+        OG URL
+    */
+
+    setMeta(
+        "property",
+        "og:url",
+        url
+    );
+
+
+    /*
+        OG TYPE
+    */
+
+    setMeta(
+        "property",
+        "og:type",
+        "product"
+    );
+
+
+    /*
+        TWITTER TITLE
+    */
+
+    setMeta(
+        "name",
+        "twitter:title",
+        title
+    );
+
+
+    /*
+        TWITTER DESCRIPTION
+    */
+
+    setMeta(
+        "name",
+        "twitter:description",
+        description
+    );
+
+
+    /*
+        TWITTER IMAGE
+    */
+
+    setMeta(
+        "name",
+        "twitter:image",
+        image
+    );
 
 }
 
 
-/*==================================================
-    LOAD PRODUCT
-==================================================*/
+/* ==================================================
+   META HELPER
+================================================== */
 
-async function loadProduct(){
+function setMeta(
+    attribute,
+    name,
+    content
+) {
 
-    try{
+    let meta =
+        document.querySelector(
+            `meta[${attribute}="${name}"]`
+        );
+
+
+    if (!meta) {
+
+        meta =
+            document.createElement(
+                "meta"
+            );
+
+        meta.setAttribute(
+            attribute,
+            name
+        );
+
+        document.head.appendChild(
+            meta
+        );
+
+    }
+
+
+    meta.setAttribute(
+        "content",
+        content || ""
+    );
+
+}
+
+
+/* ==================================================
+   LOAD PRODUCT
+================================================== */
+
+async function loadProduct() {
+
+    try {
 
         /*
-            IMPORTANT:
-
-            Load Settings FIRST.
-
-            This ensures WhatsApp number and
-            company name are available before
-            the product page is used.
+            SETTINGS FIRST
         */
 
         await loadSiteSettings();
 
 
-        /*==========================================
-            CHECK PRODUCT ID
-        ==========================================*/
+        /*
+            PRODUCT ID
+        */
 
-        if(!id){
+        if (!id) {
 
             console.error(
-                "Product ID missing."
+                "❌ Product ID missing"
+            );
+
+            showProductError(
+                "Product ID is missing."
             );
 
             return;
@@ -525,9 +815,9 @@ async function loadProduct(){
         }
 
 
-        /*==========================================
+        /*
             GET PRODUCT
-        ==========================================*/
+        */
 
         const snap =
             await getDoc(
@@ -539,11 +829,15 @@ async function loadProduct(){
             );
 
 
-        if(
+        if (
             !snap.exists()
-        ){
+        ) {
 
             console.error(
+                "❌ Product not found"
+            );
+
+            showProductError(
                 "Product not found."
             );
 
@@ -552,66 +846,220 @@ async function loadProduct(){
         }
 
 
-        product =
-            snap.data();
+        product = {
+
+            id,
+
+            ...snap.data()
+
+        };
 
 
-        /*==========================================
+        /*
             FINAL PRICE
-        ==========================================*/
+        */
 
         finalPrice =
-
-            product.salePrice &&
-            product.salePrice <
-            product.basePrice
-
-            ?
-
-            product.salePrice
-
-            :
-
-            product.basePrice;
+            getBasePrice();
 
 
-        /*==========================================
+        /*
             META
-        ==========================================*/
+        */
 
-        updatePageMeta(
-            product
-        );
+        updatePageMeta();
 
 
-        /*==========================================
+        /*
             SLIDER
-        ==========================================*/
+        */
 
         renderSlider(
             product.images || []
         );
 
 
-        /*==========================================
-            RELATED PRODUCTS
-        ==========================================*/
+        /*
+            RELATED
+        */
 
         await loadRelatedDesigns();
 
 
-        /*==========================================
-            RENDER
-        ==========================================*/
+        /*
+            MAIN UI
+        */
 
         render();
 
+
+        console.log(
+            "✅ Product loaded",
+            product
+        );
+
     }
 
-    catch(error){
+    catch (error) {
 
         console.error(
-            "Product loading error:",
+            "❌ Product loading error:",
+            error
+        );
+
+        showProductError(
+            "Unable to load this product."
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   PRODUCT ERROR
+================================================== */
+
+function showProductError(
+    message
+) {
+
+    const details =
+        document.getElementById(
+            "productDetails"
+        );
+
+
+    if (!details) {
+
+        return;
+
+    }
+
+
+    details.innerHTML = `
+
+        <div class="product-error">
+
+            ${escapeHtml(
+                message
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+/* ==================================================
+   BASE PRICE
+================================================== */
+
+function getBasePrice() {
+
+    if (!product) {
+
+        return 0;
+
+    }
+
+
+    const base =
+        Number(
+            product.basePrice || 0
+        );
+
+
+    const sale =
+        Number(
+            product.salePrice || 0
+        );
+
+
+    if (
+        sale > 0 &&
+        sale < base
+    ) {
+
+        return sale;
+
+    }
+
+
+    return base;
+
+}
+
+
+/* ==================================================
+   LOAD PRODUCT
+================================================== */
+
+loadProduct();
+
+
+/* ==================================================
+   RELATED PRODUCTS
+================================================== */
+
+async function loadRelatedDesigns() {
+
+    relatedProducts = [];
+
+
+    if (
+        !product.relatedDesigns ||
+        !product.relatedDesigns.length
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const snap =
+            await getDocs(
+                collection(
+                    db,
+                    "products"
+                )
+            );
+
+
+        snap.forEach(
+            d => {
+
+                if (
+                    product.relatedDesigns.includes(
+                        d.id
+                    )
+                    ||
+                    d.id === id
+                ) {
+
+                    relatedProducts.push({
+
+                        id:
+                            d.id,
+
+                        ...d.data()
+
+                    });
+
+                }
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Related products error:",
             error
         );
 
@@ -620,70 +1068,11 @@ async function loadProduct(){
 }
 
 
-loadProduct();
+/* ==================================================
+   RENDER PRODUCT
+================================================== */
 
-
-/*==================================================
-    LOAD RELATED DESIGNS
-==================================================*/
-
-async function loadRelatedDesigns(){
-
-    relatedProducts = [];
-
-
-    if(
-        !product.relatedDesigns ||
-        !product.relatedDesigns.length
-    ){
-
-        return;
-
-    }
-
-
-    const snap =
-        await getDocs(
-            collection(
-                db,
-                "products"
-            )
-        );
-
-
-    snap.forEach(
-        d => {
-
-            if(
-                product.relatedDesigns.includes(
-                    d.id
-                )
-                ||
-                d.id === id
-            ){
-
-                relatedProducts.push({
-
-                    id:
-                        d.id,
-
-                    ...d.data()
-
-                });
-
-            }
-
-        }
-    );
-
-}
-
-
-/*==================================================
-    RENDER PRODUCT
-==================================================*/
-
-function render(){
+function render() {
 
     const details =
         document.getElementById(
@@ -691,7 +1080,7 @@ function render(){
         );
 
 
-    if(!details){
+    if (!details) {
 
         return;
 
@@ -702,11 +1091,11 @@ function render(){
         0;
 
 
-    if(
+    if (
         product.salePrice &&
         product.salePrice <
         product.basePrice
-    ){
+    ) {
 
         discount =
             Math.round(
@@ -723,18 +1112,16 @@ function render(){
     }
 
 
-    /*==============================================
-        PRICE HTML
-    ==============================================*/
+    /* ==============================================
+       PRICE
+    ============================================== */
 
-    let priceHTML = `
+    const priceHTML = `
 
         <div class="price-wrap">
 
             ${
-                product.salePrice &&
-                product.salePrice <
-                product.basePrice
+                discount > 0
 
                 ?
 
@@ -742,9 +1129,10 @@ function render(){
 
                 <span class="sale">
 
-                    ₹
-                    <span id="price">
-                        ${product.salePrice}
+                    ₹<span id="price">
+
+                        ${finalPrice}
+
                     </span>
 
                 </span>
@@ -764,14 +1152,16 @@ function render(){
 
                 <span class="sale">
 
-                    ₹
-                    <span id="price">
-                        ${product.basePrice}
+                    ₹<span id="price">
+
+                        ${finalPrice}
+
                     </span>
 
                 </span>
 
                 `
+
             }
 
         </div>
@@ -779,17 +1169,35 @@ function render(){
     `;
 
 
-    /*==============================================
-        BADGES
-    ==============================================*/
+    /* ==============================================
+       BADGES
+    ============================================== */
 
     let badgeHTML =
         "";
 
 
-    if(
+    if (
+        product.isBestseller === true ||
+        product.tags?.includes("bestseller")
+    ) {
+
+        badgeHTML += `
+
+            <span class="badge bestseller">
+
+                🔥 Bestseller
+
+            </span>
+
+        `;
+
+    }
+
+
+    if (
         discount > 0
-    ){
+    ) {
 
         badgeHTML += `
 
@@ -804,9 +1212,9 @@ function render(){
     }
 
 
-    if(
+    if (
         product.inStock === false
-    ){
+    ) {
 
         badgeHTML += `
 
@@ -821,9 +1229,9 @@ function render(){
     }
 
 
-    /*==============================================
-        PRODUCT HEADER
-    ==============================================*/
+    /* ==============================================
+       HEADER
+    ============================================== */
 
     let html = `
 
@@ -834,7 +1242,8 @@ function render(){
             <h2>
 
                 ${escapeHtml(
-                    product.name
+                    product.name ||
+                    "Product"
                 )}
 
             </h2>
@@ -857,13 +1266,13 @@ function render(){
     `;
 
 
-    /*==============================================
-        COLORS
-    ==============================================*/
+    /* ==============================================
+       COLORS
+    ============================================== */
 
-    if(
+    if (
         product.variants?.colors?.length
-    ){
+    ) {
 
         html += `
 
@@ -877,17 +1286,24 @@ function render(){
 
 
         product.variants.colors.forEach(
-            (c,i) => {
+            (color, index) => {
 
                 html += `
 
                     <button
+
+                        type="button"
+
                         class="btn-outline color-btn"
-                        onclick="selectColor(${i})"
+
+                        onclick="
+                            selectColor(${index})
+                        "
+
                     >
 
                         ${escapeHtml(
-                            c.name
+                            color.name
                         )}
 
                     </button>
@@ -907,18 +1323,18 @@ function render(){
     }
 
 
-    /*==============================================
-        SIZES
-    ==============================================*/
+    /* ==============================================
+       SIZES
+    ============================================== */
 
-    if(
+    if (
         product.variants?.sizes?.length
-    ){
+    ) {
 
         html += `
 
             <h4>
-                Quantity
+                Sizes
             </h4>
 
             <div class="variant-row">
@@ -927,17 +1343,24 @@ function render(){
 
 
         product.variants.sizes.forEach(
-            (s,i) => {
+            (size, index) => {
 
                 html += `
 
                     <button
+
+                        type="button"
+
                         class="btn-outline size-btn"
-                        onclick="selectSize(${i})"
+
+                        onclick="
+                            selectSize(${index})
+                        "
+
                     >
 
                         ${escapeHtml(
-                            s.name
+                            size.name
                         )}
 
                     </button>
@@ -957,20 +1380,22 @@ function render(){
     }
 
 
-    /*==============================================
-        RELATED DESIGNS
-    ==============================================*/
+    /* ==============================================
+       RELATED DESIGNS
+    ============================================== */
 
-    if(
+    if (
         relatedProducts.length > 1
-    ){
+    ) {
 
         html += `
 
             <div class="design-wrap">
 
                 <h3>
+
                     You may also like
+
                 </h3>
 
 
@@ -980,44 +1405,71 @@ function render(){
 
 
         relatedProducts.forEach(
-            p => {
+            related => {
 
                 const active =
-                    p.name === product.name
+                    related.id === id
                     ?
                     "active"
                     :
                     "";
 
 
+                const relatedPrice =
+                    related.salePrice &&
+                    related.salePrice <
+                    related.basePrice
+
+                    ?
+
+                    related.salePrice
+
+                    :
+
+                    related.basePrice;
+
+
                 html += `
 
                     <div
+
                         class="
                             design-card
                             ${active}
                         "
-                        onclick="goToDesign('${escapeAttribute(
-                            p.id
-                        )}')"
+
+                        onclick="
+                            goToDesign(
+                                '${escapeAttribute(
+                                    related.id
+                                )}'
+                            )
+                        "
+
                     >
 
                         <img
+
                             src="${escapeAttribute(
-                                p.images?.[0] ||
+                                related.images?.[0] ||
                                 ""
                             )}"
+
                             alt="${escapeAttribute(
-                                p.name ||
+                                related.name ||
                                 ""
                             )}"
+
+                            loading="lazy"
+
                         >
 
 
                         <small>
 
                             ${escapeHtml(
-                                p.name
+                                related.name ||
+                                ""
                             )}
 
                         </small>
@@ -1025,17 +1477,7 @@ function render(){
 
                         <div class="price">
 
-                            ₹${
-                                (
-                                    p.salePrice &&
-                                    p.salePrice <
-                                    p.basePrice
-                                )
-                                ?
-                                p.salePrice
-                                :
-                                p.basePrice
-                            }
+                            ₹${relatedPrice}
 
                         </div>
 
@@ -1064,12 +1506,19 @@ function render(){
 }
 
 
-/*==================================================
-    DESIGN NAVIGATION
-==================================================*/
+/* ==================================================
+   RELATED DESIGN NAVIGATION
+================================================== */
 
 window.goToDesign =
-function(pid){
+function(pid) {
+
+    if (!pid) {
+
+        return;
+
+    }
+
 
     location.href =
         `product?id=${encodeURIComponent(
@@ -1079,13 +1528,13 @@ function(pid){
 };
 
 
-/*==================================================
-    SLIDER
-==================================================*/
+/* ==================================================
+   PRODUCT SLIDER
+================================================== */
 
 function renderSlider(
     images
-){
+) {
 
     const slider =
         document.getElementById(
@@ -1099,10 +1548,10 @@ function renderSlider(
         );
 
 
-    if(
+    if (
         !slider ||
         !dotsBox
-    ){
+    ) {
 
         return;
 
@@ -1117,8 +1566,17 @@ function renderSlider(
         "";
 
 
+    if (
+        !images.length
+    ) {
+
+        return;
+
+    }
+
+
     images.forEach(
-        (img,index) => {
+        (img, index) => {
 
             const image =
                 document.createElement(
@@ -1135,6 +1593,10 @@ function renderSlider(
                 "Product";
 
 
+            image.loading =
+                "lazy";
+
+
             slider.appendChild(
                 image
             );
@@ -1146,9 +1608,9 @@ function renderSlider(
                 );
 
 
-            if(
+            if (
                 index === 0
-            ){
+            ) {
 
                 dot.classList.add(
                     "active"
@@ -1165,51 +1627,54 @@ function renderSlider(
     );
 
 
-    slider.addEventListener(
-        "scroll",
-        () => {
+    /*
+        Avoid adding multiple
+        scroll listeners.
+    */
 
-            const i =
-                Math.round(
-                    slider.scrollLeft /
-                    slider.clientWidth
-                );
+    slider.onscroll =
+    function() {
 
-
-            [
-                ...dotsBox.children
-            ].forEach(
-                (d,idx) => {
-
-                    d.classList.toggle(
-                        "active",
-                        idx === i
-                    );
-
-                }
+        const i =
+            Math.round(
+                slider.scrollLeft /
+                slider.clientWidth
             );
 
-        }
-    );
+
+        [
+            ...dotsBox.children
+        ].forEach(
+            (dot, index) => {
+
+                dot.classList.toggle(
+                    "active",
+                    index === i
+                );
+
+            }
+        );
+
+    };
 
 }
 
 
-/*==================================================
-    VARIANTS
-==================================================*/
+/* ==================================================
+   COLOR
+================================================== */
 
 window.selectColor =
-function(i){
+function(index) {
 
     document
         .querySelectorAll(
             ".color-btn"
         )
         .forEach(
-            b => {
+            button => {
 
-                b.classList.remove(
+                button.classList.remove(
                     "active"
                 );
 
@@ -1217,17 +1682,21 @@ function(i){
         );
 
 
-    document
-        .querySelectorAll(
+    const buttons =
+        document.querySelectorAll(
             ".color-btn"
-        )[i]
+        );
+
+
+    buttons[index]
         ?.classList.add(
             "active"
         );
 
 
     selected.color =
-        product.variants.colors[i];
+        product.variants.colors[index] ||
+        null;
 
 
     recalcPrice();
@@ -1235,17 +1704,21 @@ function(i){
 };
 
 
+/* ==================================================
+   SIZE
+================================================== */
+
 window.selectSize =
-function(i){
+function(index) {
 
     document
         .querySelectorAll(
             ".size-btn"
         )
         .forEach(
-            b => {
+            button => {
 
-                b.classList.remove(
+                button.classList.remove(
                     "active"
                 );
 
@@ -1253,17 +1726,21 @@ function(i){
         );
 
 
-    document
-        .querySelectorAll(
+    const buttons =
+        document.querySelectorAll(
             ".size-btn"
-        )[i]
+        );
+
+
+    buttons[index]
         ?.classList.add(
             "active"
         );
 
 
     selected.size =
-        product.variants.sizes[i];
+        product.variants.sizes[index] ||
+        null;
 
 
     recalcPrice();
@@ -1271,21 +1748,21 @@ function(i){
 };
 
 
-/*==================================================
-    CUSTOM OPTIONS
-==================================================*/
+/* ==================================================
+   TEXT OPTION
+================================================== */
 
 window.addTextOption =
 function(
-    i,
-    val
-){
+    index,
+    value
+) {
 
-    if(!val){
+    if (!value) {
 
-        delete selected.options[i];
+        delete selected.options[index];
 
-        delete selected.optionValues[i];
+        delete selected.optionValues[index];
 
         recalcPrice();
 
@@ -1294,12 +1771,12 @@ function(
     }
 
 
-    selected.options[i] =
-        product.customOptions[i].price;
+    selected.options[index] =
+        product.customOptions[index].price;
 
 
-    selected.optionValues[i] =
-        val;
+    selected.optionValues[index] =
+        value;
 
 
     recalcPrice();
@@ -1307,28 +1784,32 @@ function(
 };
 
 
+/* ==================================================
+   CHECKBOX
+================================================== */
+
 window.toggleCheckbox =
 function(
-    i,
+    index,
     checked
-){
+) {
 
-    if(checked){
+    if (checked) {
 
-        selected.options[i] =
-            product.customOptions[i].price;
+        selected.options[index] =
+            product.customOptions[index].price;
 
 
-        selected.optionValues[i] =
+        selected.optionValues[index] =
             "Yes";
 
     }
 
-    else{
+    else {
 
-        delete selected.options[i];
+        delete selected.options[index];
 
-        delete selected.optionValues[i];
+        delete selected.optionValues[index];
 
     }
 
@@ -1338,17 +1819,21 @@ function(
 };
 
 
+/* ==================================================
+   DROPDOWN
+================================================== */
+
 window.addDropdownOption =
 function(
-    i,
-    val
-){
+    index,
+    value
+) {
 
-    if(!val){
+    if (!value) {
 
-        delete selected.options[i];
+        delete selected.options[index];
 
-        delete selected.optionValues[i];
+        delete selected.optionValues[index];
 
         recalcPrice();
 
@@ -1357,12 +1842,12 @@ function(
     }
 
 
-    selected.options[i] =
-        product.customOptions[i].price;
+    selected.options[index] =
+        product.customOptions[index].price;
 
 
-    selected.optionValues[i] =
-        val;
+    selected.optionValues[index] =
+        value;
 
 
     recalcPrice();
@@ -1370,17 +1855,17 @@ function(
 };
 
 
-/*==================================================
-    IMAGE UPLOAD OPTION
-==================================================*/
+/* ==================================================
+   IMAGE UPLOAD
+================================================== */
 
 window.uploadCustomImage =
 async function(
-    i,
+    index,
     file
-){
+) {
 
-    if(!file){
+    if (!file) {
 
         return;
 
@@ -1389,20 +1874,22 @@ async function(
 
     const status =
         document.getElementById(
-            `uploadStatus${i}`
+            `uploadStatus${index}`
         );
 
 
-    if(status){
+    if (status) {
 
         status.innerHTML = `
 
             <div class="uploading">
 
                 ⏳ Uploading
-                <b>${escapeHtml(
-                    file.name
-                )}</b>...
+                <b>
+                    ${escapeHtml(
+                        file.name
+                    )}
+                </b>...
 
             </div>
 
@@ -1411,7 +1898,7 @@ async function(
     }
 
 
-    try{
+    try {
 
         const storageRef =
             ref(
@@ -1432,19 +1919,19 @@ async function(
             );
 
 
-        selected.options[i] =
-            product.customOptions[i].price;
+        selected.options[index] =
+            product.customOptions[index].price;
 
 
-        selected.optionValues[i] =
+        selected.optionValues[index] =
             file.name;
 
 
-        selected.imageLinks[i] =
+        selected.imageLinks[index] =
             url;
 
 
-        if(status){
+        if (status) {
 
             status.innerHTML = `
 
@@ -1473,14 +1960,15 @@ async function(
 
     }
 
-    catch(err){
+    catch (error) {
 
         console.error(
-            err
+            "Image upload error:",
+            error
         );
 
 
-        if(status){
+        if (status) {
 
             status.innerHTML = `
 
@@ -1496,7 +1984,8 @@ async function(
 
 
         alert(
-            err.message
+            error.message ||
+            "Image upload failed."
         );
 
     }
@@ -1504,38 +1993,29 @@ async function(
 };
 
 
-/*==================================================
-    PRICE
-==================================================*/
+/* ==================================================
+   PRICE CALCULATION
+================================================== */
 
-function recalcPrice(){
+function recalcPrice() {
 
     const base =
-
-        product.salePrice &&
-        product.salePrice <
-        product.basePrice
-
-        ?
-
-        product.salePrice
-
-        :
-
-        product.basePrice;
+        getBasePrice();
 
 
     finalPrice =
-        Number(base || 0);
+        Number(
+            base || 0
+        );
 
 
-    /*==============================================
-        COLOR PRICE
-    ==============================================*/
+    /*
+        COLOR
+    */
 
-    if(
+    if (
         selected.color
-    ){
+    ) {
 
         finalPrice +=
             Number(
@@ -1546,13 +2026,13 @@ function recalcPrice(){
     }
 
 
-    /*==============================================
-        SIZE PRICE
-    ==============================================*/
+    /*
+        SIZE
+    */
 
-    if(
+    if (
         selected.size
-    ){
+    ) {
 
         finalPrice +=
             Number(
@@ -1563,9 +2043,9 @@ function recalcPrice(){
     }
 
 
-    /*==============================================
+    /*
         CUSTOM OPTIONS
-    ==============================================*/
+    */
 
     Object
         .values(
@@ -1576,17 +2056,16 @@ function recalcPrice(){
 
                 finalPrice +=
                     Number(
-                        price ||
-                        0
+                        price || 0
                     );
 
             }
         );
 
 
-    /*==============================================
+    /*
         PAGE PRICE
-    ==============================================*/
+    */
 
     const pagePrice =
         document.getElementById(
@@ -1594,7 +2073,7 @@ function recalcPrice(){
         );
 
 
-    if(pagePrice){
+    if (pagePrice) {
 
         pagePrice.innerText =
             finalPrice;
@@ -1602,9 +2081,9 @@ function recalcPrice(){
     }
 
 
-    /*==============================================
+    /*
         POPUP PRICE
-    ==============================================*/
+    */
 
     const popupPrice =
         document.getElementById(
@@ -1612,7 +2091,7 @@ function recalcPrice(){
         );
 
 
-    if(popupPrice){
+    if (popupPrice) {
 
         popupPrice.innerText =
             "₹" +
@@ -1623,76 +2102,11 @@ function recalcPrice(){
 }
 
 
-/*==================================================
-    NEXT TO ADDRESS
-==================================================*/
+/* ==================================================
+   CUSTOMIZE POPUP
+================================================== */
 
-window.nextToAddress =
-function(){
-
-    const errors =
-        validateRequiredSelections();
-
-
-    if(
-        errors.length
-    ){
-
-        showErrorModal(
-            errors
-        );
-
-        return;
-
-    }
-
-
-    closeCustomizePopup();
-
-
-    document
-        .getElementById(
-            "waFormOverlay"
-        )
-        ?.classList.remove(
-            "hidden"
-        );
-
-};
-
-
-/*==================================================
-    BACK TO CUSTOMIZE
-==================================================*/
-
-window.backToCustomize =
-function(){
-
-    document
-        .getElementById(
-            "waFormOverlay"
-        )
-        ?.classList.add(
-            "hidden"
-        );
-
-
-    document
-        .getElementById(
-            "customizeOverlay"
-        )
-        ?.classList.remove(
-            "hidden"
-        );
-
-};
-
-
-/*==================================================
-    CUSTOMIZE POPUP
-==================================================*/
-
-function renderCustomizePopup(){
+function renderCustomizePopup() {
 
     const container =
         document.getElementById(
@@ -1700,7 +2114,7 @@ function renderCustomizePopup(){
         );
 
 
-    if(!container){
+    if (!container) {
 
         return;
 
@@ -1711,17 +2125,13 @@ function renderCustomizePopup(){
         "";
 
 
-    /*==============================================
-        POPUP PRICE
-    ==============================================*/
-
     const popupPrice =
         document.getElementById(
             "popupPrice"
         );
 
 
-    if(popupPrice){
+    if (popupPrice) {
 
         popupPrice.innerText =
             "₹" +
@@ -1730,9 +2140,9 @@ function renderCustomizePopup(){
     }
 
 
-    if(
+    if (
         !product.customOptions?.length
-    ){
+    ) {
 
         return;
 
@@ -1740,7 +2150,7 @@ function renderCustomizePopup(){
 
 
     product.customOptions.forEach(
-        (o,i) => {
+        (option, index) => {
 
             const wrap =
                 document.createElement(
@@ -1748,13 +2158,13 @@ function renderCustomizePopup(){
                 );
 
 
-            wrap.style.marginBottom =
-                "16px";
+            wrap.className =
+                "custom-option";
 
 
-            /*==========================================
+            /*
                 LABEL
-            ==========================================*/
+            */
 
             const label =
                 document.createElement(
@@ -1764,10 +2174,10 @@ function renderCustomizePopup(){
 
             label.innerHTML =
                 escapeHtml(
-                    o.label
+                    option.label
                 ) +
                 (
-                    o.required
+                    option.required
                     ?
                     ' <span style="color:red">*</span>'
                     :
@@ -1780,38 +2190,38 @@ function renderCustomizePopup(){
             );
 
 
-            /*==========================================
+            /*
                 TEXT
-            ==========================================*/
+            */
 
-            if(
-                o.type === "text"
-            ){
+            if (
+                option.type === "text"
+            ) {
 
                 wrap.innerHTML += `
 
                     <input
+
+                        type="text"
+
                         class="custom-input"
+
                         placeholder="${escapeAttribute(
-                            o.label
+                            option.label
                         )}"
+
                         value="${escapeAttribute(
-                            selected.optionValues[i] ||
+                            selected.optionValues[index] ||
                             ""
                         )}"
+
                         oninput="
                             addTextOption(
-                                ${i},
+                                ${index},
                                 this.value
-                            );
-
-                            document
-                                .getElementById(
-                                    'popupPrice'
-                                )
-                                .innerText =
-                                '₹' + finalPrice;
+                            )
                         "
+
                     >
 
                 `;
@@ -1819,45 +2229,61 @@ function renderCustomizePopup(){
             }
 
 
-            /*==========================================
+            /*
                 CHECKBOX
-            ==========================================*/
+            */
 
-            else if(
-                o.type === "checkbox"
-            ){
+            else if (
+                option.type === "checkbox"
+            ) {
 
                 wrap.innerHTML += `
 
                     <div class="option-row">
 
                         <input
+
                             type="checkbox"
+
                             ${
-                                selected.optionValues[i]
+                                selected.optionValues[index]
                                 ?
                                 "checked"
                                 :
                                 ""
                             }
+
                             onchange="
                                 toggleCheckbox(
-                                    ${i},
+                                    ${index},
                                     this.checked
                                 )
                             "
-                        >
 
+                        >
 
                         <span>
 
                             ${escapeHtml(
-                                o.label
+                                option.label
                             )}
 
-                            (+₹${escapeHtml(
-                                o.price
-                            )})
+                            ${
+                                Number(
+                                    option.price || 0
+                                ) > 0
+
+                                ?
+
+                                `(+₹${escapeHtml(
+                                    option.price
+                                )})`
+
+                                :
+
+                                ""
+
+                            }
 
                         </span>
 
@@ -1868,21 +2294,21 @@ function renderCustomizePopup(){
             }
 
 
-            /*==========================================
+            /*
                 DROPDOWN
-            ==========================================*/
+            */
 
-            else if(
-                o.type === "dropdown"
-            ){
+            else if (
+                option.type === "dropdown"
+            ) {
 
-                let options = `
+                let optionsHTML = `
 
                     <option value="">
 
                         Select
                         ${escapeHtml(
-                            o.label
+                            option.label
                         )}
 
                     </option>
@@ -1891,12 +2317,12 @@ function renderCustomizePopup(){
 
 
                 (
-                    o.choices ||
+                    option.choices ||
                     []
                 ).forEach(
                     choice => {
 
-                        options += `
+                        optionsHTML += `
 
                             <option
 
@@ -1905,12 +2331,15 @@ function renderCustomizePopup(){
                                 )}"
 
                                 ${
-                                    selected.optionValues[i] ===
+                                    selected.optionValues[index] ===
                                     choice
 
                                     ?
+
                                     "selected"
+
                                     :
+
                                     ""
                                 }
 
@@ -1936,22 +2365,14 @@ function renderCustomizePopup(){
 
                         onchange="
                             addDropdownOption(
-                                ${i},
+                                ${index},
                                 this.value
-                            );
-
-                            document
-                                .getElementById(
-                                    'popupPrice'
-                                )
-                                .innerText =
-                                '₹' +
-                                finalPrice;
+                            )
                         "
 
                     >
 
-                        ${options}
+                        ${optionsHTML}
 
                     </select>
 
@@ -1960,36 +2381,40 @@ function renderCustomizePopup(){
             }
 
 
-            /*==========================================
+            /*
                 IMAGE
-            ==========================================*/
+            */
 
-            else if(
-                o.type === "image"
-            ){
+            else if (
+                option.type === "image"
+            ) {
 
                 wrap.innerHTML += `
 
                     <div class="upload-box">
 
                         <input
+
                             type="file"
+
                             accept="image/*"
+
                             onchange="
                                 uploadCustomImage(
-                                    ${i},
+                                    ${index},
                                     this.files[0]
                                 )
                             "
+
                         >
 
 
                         <small
-                            id="uploadStatus${i}"
+                            id="uploadStatus${index}"
                         >
 
                             ${
-                                selected.imageLinks[i]
+                                selected.imageLinks[index]
 
                                 ?
 
@@ -1997,7 +2422,7 @@ function renderCustomizePopup(){
 
                                 ✅
                                 ${escapeHtml(
-                                    selected.optionValues[i]
+                                    selected.optionValues[index]
                                 )}
 
                                 `
@@ -2024,15 +2449,18 @@ function renderCustomizePopup(){
         }
     );
 
+
+    recalcPrice();
+
 }
 
 
-/*==================================================
-    OPEN CUSTOMIZE POPUP
-==================================================*/
+/* ==================================================
+   OPEN CUSTOMIZE
+================================================== */
 
 window.openCustomizePopup =
-function(){
+function() {
 
     renderCustomizePopup();
 
@@ -2048,12 +2476,12 @@ function(){
 };
 
 
-/*==================================================
-    CLOSE CUSTOMIZE POPUP
-==================================================*/
+/* ==================================================
+   CLOSE CUSTOMIZE
+================================================== */
 
 window.closeCustomizePopup =
-function(){
+function() {
 
     document
         .getElementById(
@@ -2066,23 +2494,23 @@ function(){
 };
 
 
-/*==================================================
-    CONTINUE AFTER CUSTOMIZE
-==================================================*/
+/* ==================================================
+   NEXT TO ADDRESS
+================================================== */
 
-window.continueAfterCustomize =
-function(){
+window.nextToAddress =
+function() {
 
     const errors =
         validateRequiredSelections();
 
 
-    if(
+    if (
         errors.length
-    ){
+    ) {
 
-        alert(
-            errors.join("\n")
+        showErrorModal(
+            errors
         );
 
         return;
@@ -2104,12 +2532,39 @@ function(){
 };
 
 
-/*==================================================
-    ORDER NOW
-==================================================*/
+/* ==================================================
+   BACK TO CUSTOMIZE
+================================================== */
+
+window.backToCustomize =
+function() {
+
+    document
+        .getElementById(
+            "waFormOverlay"
+        )
+        ?.classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "customizeOverlay"
+        )
+        ?.classList.remove(
+            "hidden"
+        );
+
+};
+
+
+/* ==================================================
+   ORDER NOW / WHATSAPP
+================================================== */
 
 window.orderNow =
-function(){
+function() {
 
     renderCustomizePopup();
 
@@ -2125,12 +2580,12 @@ function(){
 };
 
 
-/*==================================================
-    WHATSAPP ORDER
-==================================================*/
+/* ==================================================
+   WHATSAPP ORDER
+================================================== */
 
 window.submitWaOrder =
-async function(){
+async function() {
 
     const name =
         document
@@ -2168,16 +2623,16 @@ async function(){
             .trim();
 
 
-    /*==============================================
+    /*
         VALIDATION
-    ==============================================*/
+    */
 
-    if(
+    if (
         !name ||
         !phone ||
         !address ||
         !pincode
-    ){
+    ) {
 
         alert(
             "⚠ Please fill all customer details"
@@ -2188,11 +2643,11 @@ async function(){
     }
 
 
-    if(
+    if (
         !/^[6-9]\d{9}$/.test(
             phone
         )
-    ){
+    ) {
 
         alert(
             "⚠ Enter valid 10-digit mobile number"
@@ -2203,11 +2658,11 @@ async function(){
     }
 
 
-    if(
+    if (
         !/^\d{6}$/.test(
             pincode
         )
-    ){
+    ) {
 
         alert(
             "⚠ Enter valid 6-digit pincode"
@@ -2218,31 +2673,27 @@ async function(){
     }
 
 
-    /*==============================================
-        WHATSAPP SETTINGS CHECK
-    ==============================================*/
+    /*
+        WHATSAPP FROM SITE SETTINGS
+    */
 
     const whatsappNumber =
         String(
             siteSettings.whatsapp ||
             ""
         )
-        .replace(
-            /\D/g,
-            ""
-        );
+            .replace(
+                /\D/g,
+                ""
+            );
 
 
-    if(
+    if (
         !whatsappNumber
-    ){
+    ) {
 
         alert(
-            "WhatsApp number is not configured in Settings."
-        );
-
-        console.error(
-            "WhatsApp number missing from settings/general"
+            "WhatsApp number is not configured in Site Settings."
         );
 
         return;
@@ -2250,11 +2701,11 @@ async function(){
     }
 
 
-    try{
+    try {
 
-        /*==========================================
+        /*
             ORDER NUMBER
-        ==========================================*/
+        */
 
         const counterRef =
             doc(
@@ -2274,9 +2725,9 @@ async function(){
             1001;
 
 
-        if(
+        if (
             counterSnap.exists()
-        ){
+        ) {
 
             nextNumber =
                 (
@@ -2295,7 +2746,7 @@ async function(){
 
         }
 
-        else{
+        else {
 
             await setDoc(
                 counterRef,
@@ -2308,21 +2759,29 @@ async function(){
         }
 
 
+        const prefix =
+            String(
+                siteSettings.orderPrefix ||
+                "IG"
+            )
+                .replace(
+                    /\s+/g,
+                    ""
+                )
+                .toUpperCase();
+
+
         const orderNumber =
-            `IG-${nextNumber}`;
+            `${prefix}-${nextNumber}`;
 
 
-        /*==========================================
+        /*
             SAVE ORDER
-        ==========================================*/
+        */
 
         const orderData = {
 
-            orderNumber:
-
-
-                orderNumber,
-
+            orderNumber,
 
             customer: {
 
@@ -2377,28 +2836,26 @@ async function(){
 
                 Object
                     .keys(
-                        selected.options ||
+                        selected.optionValues ||
                         {}
                     )
                     .map(
-                        i => ({
+                        index => ({
 
                             label:
                                 product
-                                    .customOptions?.[i]
+                                    .customOptions?.[index]
                                     ?.label ||
                                 "",
 
-
                             value:
                                 selected
-                                    .optionValues?.[i] ||
+                                    .optionValues?.[index] ||
                                 "",
-
 
                             image:
                                 selected
-                                    .imageLinks?.[i] ||
+                                    .imageLinks?.[index] ||
                                 null
 
                         })
@@ -2437,6 +2894,11 @@ async function(){
                 "product-whatsapp",
 
 
+            companyName:
+                siteSettings.companyName ||
+                "",
+
+
             productLink:
                 location.href,
 
@@ -2456,83 +2918,83 @@ async function(){
         );
 
 
-        /*==========================================
+        /*
             WHATSAPP MESSAGE
-        ==========================================*/
+        */
 
         const companyName =
             siteSettings.companyName ||
             "Imaginary Gifts";
 
 
-        let msg =
+        let message =
             `🛍 *New Order — ${companyName}*\n\n`;
 
 
-        msg +=
+        message +=
             `🧾 *Order No:* ${orderNumber}\n\n`;
 
 
-        msg +=
+        message +=
             `👤 *Name:* ${name}\n`;
 
 
-        msg +=
+        message +=
             `📞 *Mobile:* ${phone}\n`;
 
 
-        msg +=
+        message +=
             `🏠 *Address:* ${address}\n`;
 
 
-        msg +=
+        message +=
             `📮 *Pincode:* ${pincode}\n\n`;
 
 
-        msg +=
+        message +=
             `📦 *Product:* ${product.name}\n`;
 
 
-        /*==========================================
+        /*
             COLOR
-        ==========================================*/
+        */
 
-        if(
+        if (
             selected.color
-        ){
+        ) {
 
-            msg +=
+            message +=
                 `🎨 Color: ${selected.color.name}\n`;
 
         }
 
 
-        /*==========================================
+        /*
             SIZE
-        ==========================================*/
+        */
 
-        if(
+        if (
             selected.size
-        ){
+        ) {
 
-            msg +=
+            message +=
                 `📏 Size: ${selected.size.name}\n`;
 
         }
 
 
-        /*==========================================
-            CUSTOM OPTIONS
-        ==========================================*/
+        /*
+            OPTIONS
+        */
 
-        if(
+        if (
             Object.keys(
                 selected.optionValues
             ).length
-        ){
+        ) {
 
-            msg +=
-                `\n⚙ Options:\n`;
+            message +=
+                `\n⚙ *Options:*\n`;
 
 
             Object
@@ -2540,30 +3002,30 @@ async function(){
                     selected.optionValues
                 )
                 .forEach(
-                    i => {
+                    index => {
 
                         const option =
                             product
-                                .customOptions?.[i];
+                                .customOptions?.[index];
 
 
-                        if(!option){
+                        if (!option) {
 
                             return;
 
                         }
 
 
-                        msg +=
-                            `- ${option.label}: ${selected.optionValues[i]}\n`;
+                        message +=
+                            `- ${option.label}: ${selected.optionValues[index]}\n`;
 
 
-                        if(
-                            selected.imageLinks[i]
-                        ){
+                        if (
+                            selected.imageLinks[index]
+                        ) {
 
-                            msg +=
-                                `  Image: ${selected.imageLinks[i]}\n`;
+                            message +=
+                                `  Image: ${selected.imageLinks[index]}\n`;
 
                         }
 
@@ -2573,35 +3035,23 @@ async function(){
         }
 
 
-        /*==========================================
-            TOTAL
-        ==========================================*/
-
-        msg +=
+        message +=
             `\n💰 *Total:* ₹${finalPrice}\n`;
 
 
-        /*==========================================
-            PRODUCT LINK
-        ==========================================*/
-
-        msg +=
+        message +=
             `🔗 Product Link:\n${location.href}`;
 
 
-        /*==========================================
+        /*
             WHATSAPP URL
-        ==========================================*/
+        */
 
         const whatsappUrl =
             `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-                msg
+                message
             )}`;
 
-
-        /*==========================================
-            OPEN WHATSAPP
-        ==========================================*/
 
         window.open(
             whatsappUrl,
@@ -2609,9 +3059,9 @@ async function(){
         );
 
 
-        /*==========================================
+        /*
             CLOSE FORM
-        ==========================================*/
+        */
 
         document
             .getElementById(
@@ -2623,18 +3073,18 @@ async function(){
 
     }
 
-    catch(err){
+    catch (error) {
 
         console.error(
             "WhatsApp order error:",
-            err
+            error
         );
 
 
         alert(
             "Order failed: " +
             (
-                err?.message ||
+                error.message ||
                 "Unknown error"
             )
         );
@@ -2644,12 +3094,12 @@ async function(){
 };
 
 
-/*==================================================
-    CLOSE WHATSAPP FORM
-==================================================*/
+/* ==================================================
+   CLOSE WHATSAPP FORM
+================================================== */
 
 window.closeWaForm =
-function(){
+function() {
 
     document
         .getElementById(
@@ -2662,20 +3112,24 @@ function(){
 };
 
 
-/*==================================================
-    BUY NOW
-==================================================*/
+/* ==================================================
+   BUY NOW
+================================================== */
 
 window.buyNow =
-function(){
+function() {
+
+    /*
+        Validate first
+    */
 
     const errors =
         validateRequiredSelections();
 
 
-    if(
+    if (
         errors.length
-    ){
+    ) {
 
         showErrorModal(
             errors
@@ -2686,7 +3140,11 @@ function(){
     }
 
 
-    const data = {
+    /*
+        SAVE COMPLETE CHECKOUT DATA
+    */
+
+    const checkoutData = {
 
         product,
 
@@ -2705,7 +3163,33 @@ function(){
             selected.optionValues,
 
         imageLinks:
-            selected.imageLinks
+            selected.imageLinks,
+
+
+        /*
+            SITE SETTINGS
+            Needed by order/payment page
+        */
+
+        site: {
+
+            companyName:
+                siteSettings.companyName ||
+                "",
+
+            email:
+                siteSettings.email ||
+                "",
+
+            logoUrl:
+                siteSettings.logoUrl ||
+                "",
+
+            razorpayKeyId:
+                siteSettings.razorpayKeyId ||
+                ""
+
+        }
 
     };
 
@@ -2713,10 +3197,14 @@ function(){
     localStorage.setItem(
         "checkoutData",
         JSON.stringify(
-            data
+            checkoutData
         )
     );
 
+
+    /*
+        GO TO CHECKOUT
+    */
 
     location.href =
         "order";
@@ -2724,13 +3212,13 @@ function(){
 };
 
 
-/*==================================================
-    ERROR MODAL
-==================================================*/
+/* ==================================================
+   ERROR MODAL
+================================================== */
 
 function showErrorModal(
     errors
-){
+) {
 
     const modal =
         document.getElementById(
@@ -2744,13 +3232,15 @@ function showErrorModal(
         );
 
 
-    if(
+    if (
         !modal ||
         !list
-    ){
+    ) {
 
         alert(
-            errors.join("\n")
+            errors.join(
+                "\n"
+            )
         );
 
         return;
@@ -2763,7 +3253,7 @@ function showErrorModal(
 
 
     errors.forEach(
-        err => {
+        error => {
 
             const li =
                 document.createElement(
@@ -2771,8 +3261,8 @@ function showErrorModal(
                 );
 
 
-            li.innerText =
-                err;
+            li.textContent =
+                error;
 
 
             list.appendChild(
@@ -2790,12 +3280,12 @@ function showErrorModal(
 }
 
 
-/*==================================================
-    CLOSE ERROR MODAL
-==================================================*/
+/* ==================================================
+   CLOSE ERROR
+================================================== */
 
 window.closeErrorModal =
-function(){
+function() {
 
     document
         .getElementById(
@@ -2808,17 +3298,9 @@ function(){
 };
 
 
-/*==================================================
-    OPTIONAL GLOBAL SETTINGS ACCESS
-==================================================*/
-
-window.siteSettings =
-    siteSettings;
-
-
-/*==================================================
-    EXPORT
-==================================================*/
+/* ==================================================
+   EXPORT
+================================================== */
 
 export {
 
