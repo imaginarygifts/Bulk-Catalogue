@@ -395,96 +395,40 @@ img {
 }
 
 
-/* ==================================================
-   BESTSELLER
-   YELLOW / ORANGE LIKE SCREENSHOT
-================================================== */
-
-.badge.bestseller {
-
-    position: absolute;
-
-    top: 0;
-
-    right: 0;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ffd21c,
-            #ff9f00
-        );
-
-    color: #111111;
-
-    box-shadow:
-        0 5px 15px
-        rgba(255, 174, 0, 0.22);
-
-}
-
 
 /* ==================================================
-   DISCOUNT
-   GREEN LIKE SCREENSHOT
+   OUT OF STOCK STICKY BUTTON
 ================================================== */
 
-.badge.discount {
+.out-of-stock-sticky {
+    background: #2b2b2f !important;
+    color: #ffffff !important;
+    border: 1px solid #555 !important;
 
-    position: absolute;
+    cursor: not-allowed !important;
 
-    top: 0;
+    pointer-events: auto;
 
-    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    background:
-        #00e894;
+    font-weight: 700;
+    font-size: 18px;
 
-    color: #06150f;
+    user-select: none;
 
-    box-shadow:
-        0 5px 15px
-        rgba(0, 232, 148, 0.18);
-
+    opacity: 1;
 }
 
 
-/*
-   If both Bestseller and Discount exist,
-   keep enough space for the product title.
-*/
+/* Make sure it completely replaces
+   the order button visually */
 
-.product-header:has(.badge.discount)
-.product-header h2 {
-
-    margin-top: 48px;
-
+.sticky-order .out-of-stock-sticky {
+    position: relative;
+    z-index: 20;
 }
-
-
-/* ==================================================
-   OUT OF STOCK
-================================================== */
-
-.badge.stock {
-
-    position: absolute;
-
-    top: 48px;
-
-    left: 0;
-
-    background:
-        rgba(255,255,255,0.12);
-
-    border:
-        1px solid
-        rgba(255,255,255,0.15);
-
-    color: #ffffff;
-
-}
-
 
 
 /* ==================================================
