@@ -61,7 +61,10 @@ let siteSettings = {
 
     razorpayKeyId: "",
 
-    orderPrefix: "IG"
+    orderPrefix: "IG",
+
+    orderButton: "whatsapp"
+
 
 };
 
@@ -1381,67 +1384,139 @@ function render() {
 }
 
 
-/* ==================================================
-   STICKY ORDER BUTTON
-================================================== */
+/*==================================================
+    STICKY ORDER BUTTON
+==================================================*/
 
-function updateStickyOrderButton() {
+function updateStickyOrderButton(){
 
     const button =
         document.getElementById(
             "productOrderButton"
         );
 
-    if (!button) {
+
+    if(!button){
+
         return;
+
     }
 
 
-    /* ==============================================
-       OUT OF STOCK
-    ============================================== */
+    /*================================================
+        OUT OF STOCK
+        Always overrides the Site Settings
+    ================================================*/
 
-    if (product?.inStock === false) {
+    if(
+        product?.inStock === false
+    ){
 
         button.className =
             "order-btn out-of-stock-sticky";
 
+
         button.innerHTML =
             "Out of Stock";
+
 
         button.onclick =
             null;
 
+
         button.removeAttribute(
             "onclick"
         );
+
 
         button.setAttribute(
             "aria-disabled",
             "true"
         );
 
+
         return;
 
     }
 
 
-    /* ==============================================
-       IN STOCK
-    ============================================== */
+    /*================================================
+        ORDER ON WHATSAPP
+    ================================================*/
+
+    if(
+        siteSettings.orderButton ===
+        "whatsapp"
+    ){
+
+        button.className =
+            "order-btn";
+
+
+        button.innerHTML =
+            "Order on WhatsApp";
+
+
+        button.onclick =
+            window.orderNow;
+
+
+        button.removeAttribute(
+            "aria-disabled"
+        );
+
+
+        return;
+
+    }
+
+
+    /*================================================
+        BUY NOW
+    ================================================*/
+
+    if(
+        siteSettings.orderButton ===
+        "buyNow"
+    ){
+
+        button.className =
+            "buy-now-btn";
+
+
+        button.innerHTML =
+            "🛍 Buy Now";
+
+
+        button.onclick =
+            window.buyNow;
+
+
+        button.removeAttribute(
+            "aria-disabled"
+        );
+
+
+        return;
+
+    }
+
+
+    /*================================================
+        FALLBACK
+        If Firestore has an unexpected value
+    ================================================*/
 
     button.className =
         "order-btn";
 
+
     button.innerHTML =
         "Order on WhatsApp";
 
+
     button.onclick =
         window.orderNow;
-
-    button.removeAttribute(
-        "aria-disabled"
-    );
 
 }
 
