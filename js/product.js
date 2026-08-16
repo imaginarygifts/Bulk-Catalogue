@@ -31,6 +31,7 @@ import {
 
 let orderMode = null;
 
+
 let siteSettings = {
 
     companyName: "",
@@ -119,6 +120,7 @@ async function loadSiteSettings() {
 
         applySiteSettings();
 
+
         return siteSettings;
 
     }
@@ -130,11 +132,6 @@ async function loadSiteSettings() {
             error
         );
 
-
-        /*
-            Keep default settings so
-            product page can continue loading.
-        */
 
         window.siteSettings =
             siteSettings;
@@ -388,7 +385,9 @@ function validateRequiredSelections() {
         );
 
 
-    /* COLOR */
+    /* ==================================================
+       COLOR
+    ================================================== */
 
     if (
         product?.variants?.colors?.some(
@@ -409,7 +408,9 @@ function validateRequiredSelections() {
     }
 
 
-    /* SIZE */
+    /* ==================================================
+       SIZE
+    ================================================== */
 
     if (
         product?.variants?.sizes?.some(
@@ -430,10 +431,15 @@ function validateRequiredSelections() {
     }
 
 
-    /* CUSTOM OPTIONS */
+    /* ==================================================
+       CUSTOM OPTIONS
+    ================================================== */
 
     if (
-        product?.customOptions?.length
+        Array.isArray(
+            product?.customOptions
+        ) &&
+        product.customOptions.length
     ) {
 
         product.customOptions.forEach(
@@ -522,7 +528,9 @@ function validateRequiredSelections() {
 
 function updatePageMeta() {
 
-    if (!product) {
+    if (
+        !product
+    ) {
 
         return;
 
@@ -547,15 +555,10 @@ function updatePageMeta() {
 
     /* ==================================================
        PRODUCT DESCRIPTION = META DESCRIPTION
-
-       Safely handles:
-       - normal string
-       - null
-       - undefined
-       - array
     ================================================== */
 
-    let description = "";
+    let description =
+        "";
 
 
     if (
@@ -602,7 +605,9 @@ function updatePageMeta() {
     }
 
 
-    if (!description) {
+    if (
+        !description
+    ) {
 
         description =
             `Buy ${product.name || "this product"} from ${companyName}`;
@@ -614,7 +619,8 @@ function updatePageMeta() {
        PRODUCT IMAGE = OG IMAGE
     ================================================== */
 
-    let image = "";
+    let image =
+        "";
 
 
     if (
@@ -668,7 +674,9 @@ function updatePageMeta() {
         );
 
 
-    if (!metaDesc) {
+    if (
+        !metaDesc
+    ) {
 
         metaDesc =
             document.createElement(
@@ -695,21 +703,11 @@ function updatePageMeta() {
        PRODUCT KEYWORDS
     ================================================== */
 
-    let keywords = "";
+    let keywords =
+        "";
 
 
-    /*
-       Supports:
-
-       seoKeywords: "gift, personalized gift"
-
-       OR
-
-       seoKeywords: [
-           ""
-       ]
-    */
-
+    /* ARRAY */
 
     if (
         Array.isArray(
@@ -733,6 +731,9 @@ function updatePageMeta() {
 
     }
 
+
+    /* STRING */
+
     else if (
         typeof product.seoKeywords ===
         "string"
@@ -744,9 +745,7 @@ function updatePageMeta() {
     }
 
 
-    /*
-       Backward compatibility
-    */
+    /* BACKWARD COMPATIBILITY */
 
     if (
         !keywords &&
@@ -760,11 +759,25 @@ function updatePageMeta() {
     }
 
 
-    /*
-       Create / update keywords meta
-    */
+    /* SITE KEYWORDS FALLBACK */
 
-    if (keywords) {
+    if (
+        !keywords &&
+        typeof siteSettings.metaKeywords ===
+        "string"
+    ) {
+
+        keywords =
+            siteSettings.metaKeywords.trim();
+
+    }
+
+
+    /* CREATE / UPDATE KEYWORDS */
+
+    if (
+        keywords
+    ) {
 
         let metaKeywords =
             document.querySelector(
@@ -772,7 +785,9 @@ function updatePageMeta() {
             );
 
 
-        if (!metaKeywords) {
+        if (
+            !metaKeywords
+        ) {
 
             metaKeywords =
                 document.createElement(
@@ -798,7 +813,7 @@ function updatePageMeta() {
 
 
     /* ==================================================
-       OPEN GRAPH TITLE
+       OPEN GRAPH
     ================================================== */
 
     setMeta(
@@ -808,20 +823,12 @@ function updatePageMeta() {
     );
 
 
-    /* ==================================================
-       OPEN GRAPH DESCRIPTION
-    ================================================== */
-
     setMeta(
         "property",
         "og:description",
         description
     );
 
-
-    /* ==================================================
-       OPEN GRAPH IMAGE
-    ================================================== */
 
     setMeta(
         "property",
@@ -830,20 +837,12 @@ function updatePageMeta() {
     );
 
 
-    /* ==================================================
-       OPEN GRAPH URL
-    ================================================== */
-
     setMeta(
         "property",
         "og:url",
         url
     );
 
-
-    /* ==================================================
-       OPEN GRAPH TYPE
-    ================================================== */
 
     setMeta(
         "property",
@@ -853,7 +852,7 @@ function updatePageMeta() {
 
 
     /* ==================================================
-       TWITTER CARD
+       TWITTER
     ================================================== */
 
     setMeta(
@@ -902,17 +901,21 @@ function setMeta(
         );
 
 
-    if (!meta) {
+    if (
+        !meta
+    ) {
 
         meta =
             document.createElement(
                 "meta"
             );
 
+
         meta.setAttribute(
             attribute,
             name
         );
+
 
         document.head.appendChild(
             meta
@@ -944,15 +947,19 @@ async function loadProduct() {
 
         /* PRODUCT ID */
 
-        if (!id) {
+        if (
+            !id
+        ) {
 
             console.error(
                 "Product ID missing"
             );
 
+
             showProductError(
                 "Product ID is missing."
             );
+
 
             return;
 
@@ -979,9 +986,11 @@ async function loadProduct() {
                 "Product not found"
             );
 
+
             showProductError(
                 "Product not found."
             );
+
 
             return;
 
@@ -1048,6 +1057,7 @@ async function loadProduct() {
             error
         );
 
+
         showProductError(
             "Unable to load this product."
         );
@@ -1071,7 +1081,9 @@ function showProductError(
         );
 
 
-    if (!details) {
+    if (
+        !details
+    ) {
 
         return;
 
@@ -1099,7 +1111,9 @@ function showProductError(
 
 function getBasePrice() {
 
-    if (!product) {
+    if (
+        !product
+    ) {
 
         return 0;
 
@@ -1217,7 +1231,9 @@ function render() {
         );
 
 
-    if (!details) {
+    if (
+        !details
+    ) {
 
         return;
 
@@ -1594,7 +1610,9 @@ function updateStickyOrderButton() {
         );
 
 
-    if (!button) {
+    if (
+        !button
+    ) {
 
         return;
 
@@ -1726,7 +1744,9 @@ function updateStickyOrderButton() {
 window.goToDesign =
 function(pid) {
 
-    if (!pid) {
+    if (
+        !pid
+    ) {
 
         return;
 
@@ -1976,7 +1996,9 @@ function(
     value
 ) {
 
-    if (!value) {
+    if (
+        !value
+    ) {
 
         delete selected.options[index];
 
@@ -2012,7 +2034,9 @@ function(
     checked
 ) {
 
-    if (checked) {
+    if (
+        checked
+    ) {
 
         selected.options[index] =
             product.customOptions[index].price;
@@ -2047,7 +2071,9 @@ function(
     value
 ) {
 
-    if (!value) {
+    if (
+        !value
+    ) {
 
         delete selected.options[index];
 
@@ -2083,7 +2109,9 @@ async function(
     file
 ) {
 
-    if (!file) {
+    if (
+        !file
+    ) {
 
         return;
 
@@ -2096,7 +2124,9 @@ async function(
         );
 
 
-    if (status) {
+    if (
+        status
+    ) {
 
         status.innerHTML = `
 
@@ -2152,7 +2182,9 @@ async function(
             url;
 
 
-        if (status) {
+        if (
+            status
+        ) {
 
             status.innerHTML = `
 
@@ -2189,7 +2221,9 @@ async function(
         );
 
 
-        if (status) {
+        if (
+            status
+        ) {
 
             status.innerHTML = `
 
@@ -2286,7 +2320,9 @@ function recalcPrice() {
         );
 
 
-    if (pagePrice) {
+    if (
+        pagePrice
+    ) {
 
         pagePrice.innerText =
             finalPrice;
@@ -2302,7 +2338,9 @@ function recalcPrice() {
         );
 
 
-    if (popupPrice) {
+    if (
+        popupPrice
+    ) {
 
         popupPrice.innerText =
             "₹" +
@@ -2325,7 +2363,9 @@ function renderCustomizePopup() {
         );
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -2342,7 +2382,9 @@ function renderCustomizePopup() {
         );
 
 
-    if (popupPrice) {
+    if (
+        popupPrice
+    ) {
 
         popupPrice.innerText =
             "₹" +
@@ -2351,14 +2393,25 @@ function renderCustomizePopup() {
     }
 
 
+    /* ==================================================
+       NO CUSTOMIZATION
+    ================================================== */
+
     if (
-        !product.customOptions?.length
+        !Array.isArray(
+            product?.customOptions
+        ) ||
+        product.customOptions.length === 0
     ) {
 
         return;
 
     }
 
+
+    /* ==================================================
+       RENDER CUSTOM OPTIONS
+    ================================================== */
 
     product.customOptions.forEach(
         (option, index) => {
@@ -2399,7 +2452,9 @@ function renderCustomizePopup() {
             );
 
 
-            /* TEXT */
+            /* ==================================================
+               TEXT
+            ================================================== */
 
             if (
                 option.type === "text"
@@ -2436,7 +2491,9 @@ function renderCustomizePopup() {
             }
 
 
-            /* CHECKBOX */
+            /* ==================================================
+               CHECKBOX
+            ================================================== */
 
             else if (
                 option.type === "checkbox"
@@ -2499,7 +2556,9 @@ function renderCustomizePopup() {
             }
 
 
-            /* DROPDOWN */
+            /* ==================================================
+               DROPDOWN
+            ================================================== */
 
             else if (
                 option.type === "dropdown"
@@ -2584,7 +2643,9 @@ function renderCustomizePopup() {
             }
 
 
-            /* IMAGE */
+            /* ==================================================
+               IMAGE
+            ================================================== */
 
             else if (
                 option.type === "image"
@@ -2662,6 +2723,18 @@ function renderCustomizePopup() {
 
 window.openCustomizePopup =
 function() {
+
+    if (
+        !Array.isArray(
+            product?.customOptions
+        ) ||
+        product.customOptions.length === 0
+    ) {
+
+        return;
+
+    }
+
 
     renderCustomizePopup();
 
@@ -2794,6 +2867,10 @@ function() {
         "whatsapp";
 
 
+    /* ==================================================
+       CHECK CUSTOMIZATION
+    ================================================== */
+
     const hasCustomization =
         Array.isArray(
             product?.customOptions
@@ -2801,7 +2878,13 @@ function() {
         product.customOptions.length > 0;
 
 
-    if (!hasCustomization) {
+    /* ==================================================
+       NO CUSTOMIZATION
+    ================================================== */
+
+    if (
+        !hasCustomization
+    ) {
 
         const errors =
             validateRequiredSelections();
@@ -2834,6 +2917,10 @@ function() {
     }
 
 
+    /* ==================================================
+       CUSTOMIZATION AVAILABLE
+    ================================================== */
+
     renderCustomizePopup();
 
 
@@ -2846,8 +2933,6 @@ function() {
         );
 
 };
-
-
 
 
 /* ==================================================
@@ -2893,7 +2978,9 @@ async function() {
             .trim();
 
 
-    /* VALIDATION */
+    /* ==================================================
+       VALIDATION
+    ================================================== */
 
     if (
         !name ||
@@ -2941,7 +3028,9 @@ async function() {
     }
 
 
-    /* WHATSAPP FROM SITE SETTINGS */
+    /* ==================================================
+       WHATSAPP NUMBER
+    ================================================== */
 
     const whatsappNumber =
         String(
@@ -2969,7 +3058,9 @@ async function() {
 
     try {
 
-        /* ORDER NUMBER */
+        /* ==================================================
+           ORDER NUMBER
+        ================================================== */
 
         const counterRef =
             doc(
@@ -3023,6 +3114,10 @@ async function() {
         }
 
 
+        /* ==================================================
+           ORDER PREFIX
+        ================================================== */
+
         const prefix =
             String(
                 siteSettings.orderPrefix ||
@@ -3039,7 +3134,9 @@ async function() {
             `${prefix}-${nextNumber}`;
 
 
-        /* SAVE ORDER */
+        /* ==================================================
+           SAVE ORDER
+        ================================================== */
 
         const orderData = {
 
@@ -3182,7 +3279,9 @@ async function() {
         );
 
 
-        /* WHATSAPP MESSAGE */
+        /* ==================================================
+           WHATSAPP MESSAGE
+        ================================================== */
 
         const companyName =
             siteSettings.companyName ||
@@ -3265,7 +3364,9 @@ async function() {
                                 .customOptions?.[index];
 
 
-                        if (!option) {
+                        if (
+                            !option
+                        ) {
 
                             return;
 
@@ -3303,7 +3404,9 @@ async function() {
             `🔗 Product Link:\n${location.href}`;
 
 
-        /* WHATSAPP URL */
+        /* ==================================================
+           WHATSAPP URL
+        ================================================== */
 
         const whatsappUrl =
             `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
@@ -3379,6 +3482,10 @@ function() {
         "buyNow";
 
 
+    /* ==================================================
+       CHECK CUSTOMIZATION
+    ================================================== */
+
     const hasCustomization =
         Array.isArray(
             product?.customOptions
@@ -3386,7 +3493,13 @@ function() {
         product.customOptions.length > 0;
 
 
-    if (!hasCustomization) {
+    /* ==================================================
+       NO CUSTOMIZATION
+    ================================================== */
+
+    if (
+        !hasCustomization
+    ) {
 
         const errors =
             validateRequiredSelections();
@@ -3413,6 +3526,10 @@ function() {
     }
 
 
+    /* ==================================================
+       CUSTOMIZATION AVAILABLE
+    ================================================== */
+
     renderCustomizePopup();
 
 
@@ -3427,8 +3544,36 @@ function() {
 };
 
 
+/* ==================================================
+   SAVE CHECKOUT AND GO
+================================================== */
 
-    /* SAVE COMPLETE CHECKOUT DATA */
+function saveCheckoutAndGo() {
+
+    /* ==================================================
+       FINAL VALIDATION
+    ================================================== */
+
+    const errors =
+        validateRequiredSelections();
+
+
+    if (
+        errors.length
+    ) {
+
+        showErrorModal(
+            errors
+        );
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       CHECKOUT DATA
+    ================================================== */
 
     const checkoutData = {
 
@@ -3452,7 +3597,9 @@ function() {
             selected.imageLinks,
 
 
-        /* SITE SETTINGS */
+        /* ==================================================
+           SITE SETTINGS
+        ================================================== */
 
         site: {
 
@@ -3477,20 +3624,47 @@ function() {
     };
 
 
-    localStorage.setItem(
-        "checkoutData",
-        JSON.stringify(
-            checkoutData
-        )
-    );
+    /* ==================================================
+       SAVE CHECKOUT DATA
+    ================================================== */
+
+    try {
+
+        localStorage.setItem(
+            "checkoutData",
+            JSON.stringify(
+                checkoutData
+            )
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Checkout data save error:",
+            error
+        );
 
 
-    /* GO TO CHECKOUT */
+        alert(
+            "Unable to prepare checkout. Please try again."
+        );
+
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       GO TO CHECKOUT
+    ================================================== */
 
     location.href =
         "order";
 
-};
+}
 
 
 /* ==================================================
