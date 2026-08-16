@@ -818,6 +818,7 @@ async function loadProduct() {
         /* MAIN UI */
 
         render();
+        updateStickyOrderButton();
 
 
         console.log(
@@ -1379,6 +1380,70 @@ function render() {
 
 }
 
+
+/* ==================================================
+   STICKY ORDER BUTTON
+================================================== */
+
+function updateStickyOrderButton() {
+
+    const button =
+        document.getElementById(
+            "productOrderButton"
+        );
+
+    if (!button) {
+        return;
+    }
+
+
+    /* ==============================================
+       OUT OF STOCK
+    ============================================== */
+
+    if (product?.inStock === false) {
+
+        button.className =
+            "order-btn out-of-stock-sticky";
+
+        button.innerHTML =
+            "Out of Stock";
+
+        button.onclick =
+            null;
+
+        button.removeAttribute(
+            "onclick"
+        );
+
+        button.setAttribute(
+            "aria-disabled",
+            "true"
+        );
+
+        return;
+
+    }
+
+
+    /* ==============================================
+       IN STOCK
+    ============================================== */
+
+    button.className =
+        "order-btn";
+
+    button.innerHTML =
+        "Order on WhatsApp";
+
+    button.onclick =
+        window.orderNow;
+
+    button.removeAttribute(
+        "aria-disabled"
+    );
+
+}
 
 /* ==================================================
    RELATED DESIGN NAVIGATION
