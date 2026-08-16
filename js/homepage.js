@@ -1,2478 +1,2819 @@
-/*==================================================
-    HOMEPAGE
-    MOBILE FIRST
-==================================================*/
-
-
-/*==================================================
-    FIREBASE
-==================================================*/
+/==================================================
+HOMEPAGE
+MOBILE FIRST
+==================================================/
 
 import { db } from "./firebase.js";
 
-
-/*==================================================
-    YOUTUBE CAROUSEL
-==================================================*/
-
 import {
-    renderYoutubeCarousel
+renderYoutubeCarousel
 } from "./youtube-carousel.js";
 
-
-/*==================================================
-    REVIEW CAROUSEL
-==================================================*/
-
 import {
-    renderReviewCarousel
-} from "./review-carousel.js";
-
-
-/*==================================================
-    FIRESTORE
-==================================================*/
-
-import {
-    collection,
-    getDocs
+collection,
+getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-
-/*==================================================
-    DOM
-==================================================*/
+/==================================================
+DOM
+==================================================/
 
 const homepage =
-    document.getElementById(
-        "homepage"
-    );
-
+document.getElementById("homepage");
 
 const loader =
-    document.getElementById(
-        "homepageLoader"
-    );
+document.getElementById("homepageLoader");
 
-
-
-/*==================================================
-    INIT
-==================================================*/
+/==================================================
+INIT
+==================================================/
 
 document.addEventListener(
-    "DOMContentLoaded",
-    loadHomepage
+"DOMContentLoaded",
+loadHomepage
 );
 
-
-
-/*==================================================
-    LOAD HOMEPAGE
-==================================================*/
+/==================================================
+LOAD HOMEPAGE
+==================================================/
 
 async function loadHomepage(){
 
-    if(!homepage){
+try{  
 
-        console.warn(
-            "Homepage element not found."
-        );
-
-        return;
-
-    }
+    showLoader();  
 
 
-    try{
-
-        showLoader();
-
-
-        /*==================================================
-            LOAD HOMEPAGE SECTIONS
-        ==================================================*/
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "homepageSections"
-                )
-            );
+    const snapshot =  
+        await getDocs(  
+            collection(  
+                db,  
+                "homepageSections"  
+            )  
+        );  
 
 
-        let sections =
-            snapshot.docs.map(
-                docSnap => ({
+    let sections =  
+        snapshot.docs.map(  
+            docSnap => ({  
 
-                    id:
-                        docSnap.id,
+                id: docSnap.id,  
 
-                    ...docSnap.data()
+                ...docSnap.data()  
 
-                })
-            );
-
-
-        /*==================================================
-            ONLY PUBLISHED
-        ==================================================*/
-
-        sections =
-            sections.filter(
-                section =>
-                    section.published !== false
-            );
+            })  
+        );  
 
 
-        /*==================================================
-            SORT
-        ==================================================*/
+    /*==================================================  
+        ONLY PUBLISHED  
+    ==================================================*/  
 
-        sections.sort(
-            (a,b) =>
-                Number(
-                    a.order || 0
-                )
-                -
-                Number(
-                    b.order || 0
-                )
-        );
+    sections =  
+        sections.filter(  
+            section =>  
+                section.published !== false  
+        );  
 
 
-        /*==================================================
-            CLEAR HOMEPAGE
-        ==================================================*/
+    /*==================================================  
+        SORT  
+    ==================================================*/  
 
-        homepage.innerHTML = "";
-
-
-        /*==================================================
-            EMPTY HOMEPAGE
-        ==================================================*/
-
-        if(!sections.length){
-
-            homepage.innerHTML = `
-
-                <div class="homepage-empty">
-
-                    <h2>
-                        Homepage
-                    </h2>
-
-                    <p>
-                        No sections have been published yet.
-                    </p>
-
-                </div>
-
-            `;
+    sections.sort(  
+        (a,b) =>  
+            Number(a.order || 0) -  
+            Number(b.order || 0)  
+    );  
 
 
-            hideLoader();
+    /*==================================================  
+        CLEAR HOMEPAGE  
+    ==================================================*/  
 
-            return;
-
-        }
-
-
-        /*==================================================
-            RENDER SECTIONS
-        ==================================================*/
-
-        for(
-            const section of sections
-        ){
-
-            await renderSection(
-                homepage,
-                section
-            );
-
-        }
+    homepage.innerHTML = "";  
 
 
-        hideLoader();
+    /*==================================================  
+        EMPTY HOMEPAGE  
+    ==================================================*/  
 
-    }
+    if(!sections.length){  
 
-    catch(error){
+        homepage.innerHTML = `  
 
-        console.error(
-            "Homepage loading error:",
-            error
-        );
+            <div class="homepage-empty">  
 
+                <h2>  
+                    Homepage  
+                </h2>  
 
-        homepage.innerHTML = `
+                <p>  
+                    No sections have been published yet.  
+                </p>  
 
-            <div class="homepage-error">
+            </div>  
 
-                <h2>
-                    Unable to load homepage
-                </h2>
-
-                <p>
-                    Please try again later.
-                </p>
-
-            </div>
-
-        `;
+        `;  
 
 
-        hideLoader();
+        hideLoader();  
 
-    }
+        return;  
+
+    }  
+
+
+    /*==================================================  
+        RENDER SECTIONS  
+    ==================================================*/  
+
+    for(  
+        const section of sections  
+    ){  
+
+        await renderSection(  
+            homepage,  
+            section  
+        );  
+
+    }  
+
+
+    hideLoader();  
+
+}  
+
+catch(error){  
+
+    console.error(  
+        "Homepage loading error:",  
+        error  
+    );  
+
+
+    homepage.innerHTML = `  
+
+        <div class="homepage-error">  
+
+            <h2>  
+                Unable to load homepage  
+            </h2>  
+
+            <p>  
+                Please try again later.  
+            </p>  
+
+        </div>  
+
+    `;  
+
+
+    hideLoader();  
 
 }
 
+}
 
-
-/*==================================================
-    SECTION ROUTER
-==================================================*/
+/==================================================
+SECTION ROUTER
+==================================================/
 
 async function renderSection(
-    parent,
-    section
+parent,
+section
 ){
 
-    const wrapper =
-        document.createElement(
-            "section"
-        );
+const wrapper =  
+    document.createElement(  
+        "section"  
+    );  
 
 
-    wrapper.className =
-        "home-section";
+wrapper.className =  
+    "home-section";  
 
 
-    wrapper.classList.add(
-        `home-section-${section.type}`
-    );
+wrapper.classList.add(  
+    `home-section-${section.type}`  
+);  
 
 
-    wrapper.dataset.sectionId =
-        section.id;
+wrapper.dataset.sectionId =  
+    section.id;  
 
 
-    /*==================================================
-        BACKGROUND COLOR
-    ==================================================*/
+/*==================================================  
+    BACKGROUND COLOR  
+==================================================*/  
 
-    if(
-        section.backgroundColor
-    ){
+if(  
+    section.backgroundColor  
+){  
 
-        wrapper.style.backgroundColor =
-            section.backgroundColor;
+    wrapper.style.backgroundColor =  
+        section.backgroundColor;  
 
-    }
-
-
-    /*==================================================
-        SECTION TYPE
-    ==================================================*/
-
-    switch(
-        section.type
-    ){
-
-        /*==============================================
-            HEADING
-        ==============================================*/
-
-        case "heading":
-
-            renderHeading(
-                wrapper,
-                section
-            );
-
-            break;
+}  
 
 
-        /*==============================================
-            BANNER
-        ==============================================*/
+/*==================================================  
+    SECTION TYPE  
+==================================================*/  
 
-        case "banner":
+switch(  
+    section.type  
+){  
 
-            renderBanner(
-                wrapper,
-                section
-            );
+    /*==============================================  
+        HEADING  
+    ==============================================*/  
 
-            break;
+    case "heading":  
 
+        renderHeading(  
+            wrapper,  
+            section  
+        );  
 
-        /*==============================================
-            PRODUCT CAROUSEL
-        ==============================================*/
-
-        case "productCarousel":
-
-            await renderProductCarousel(
-                wrapper,
-                section
-            );
-
-            break;
+        break;  
 
 
-        /*==============================================
-            IMAGE CAROUSEL
-        ==============================================*/
+    /*==============================================  
+        BANNER  
+    ==============================================*/  
 
-        case "imageCarousel":
+    case "banner":  
 
-            renderImageCarousel(
-                wrapper,
-                section
-            );
+        renderBanner(  
+            wrapper,  
+            section  
+        );  
 
-            break;
-
-
-        /*==============================================
-            YOUTUBE CAROUSEL
-        ==============================================*/
-
-        case "youtubeCarousel":
-
-            renderYoutubeCarousel(
-                wrapper,
-                section
-            );
-
-            break;
+        break;  
 
 
-        /*==============================================
-            REVIEW CAROUSEL
-        ==============================================*/
+    /*==============================================  
+        PRODUCT CAROUSEL  
+    ==============================================*/  
 
-        case "reviewCarousel":
+    case "productCarousel":  
 
-            await renderReviewCarousel(
-                wrapper,
-                section
-            );
+        await renderProductCarousel(  
+            wrapper,  
+            section  
+        );  
 
-            break;
-
-
-        /*==============================================
-            SPACER
-        ==============================================*/
-
-        case "spacer":
-
-            renderSpacer(
-                wrapper,
-                section
-            );
-
-            break;
+        break;  
 
 
-        /*==============================================
-            UNKNOWN
-        ==============================================*/
+    /*==============================================  
+        IMAGE CAROUSEL  
+    ==============================================*/  
 
-        default:
+    case "imageCarousel":  
 
-            console.warn(
-                "Unknown homepage section:",
-                section.type
-            );
+        renderImageCarousel(  
+            wrapper,  
+            section  
+        );  
 
-            return;
-
-    }
+        break;  
 
 
-    parent.appendChild(
-        wrapper
-    );
+    /*==============================================  
+        YOUTUBE CAROUSEL  
+
+        This component is now loaded  
+        from youtube-carousel.js  
+    ==============================================*/  
+
+    case "youtubeCarousel":  
+
+        renderYoutubeCarousel(  
+            wrapper,  
+            section  
+        );  
+
+        break;  
+
+
+    /*==============================================  
+        REVIEW CAROUSEL  
+    ==============================================*/  
+
+    case "reviewCarousel":  
+
+        renderReviewCarousel(  
+            wrapper,  
+            section  
+        );  
+
+        break;  
+
+
+    /*==============================================  
+        SPACER  
+    ==============================================*/  
+
+    case "spacer":  
+
+        renderSpacer(  
+            wrapper,  
+            section  
+        );  
+
+        break;  
+
+
+    /*==============================================  
+        UNKNOWN  
+    ==============================================*/  
+
+    default:  
+
+        console.warn(  
+            "Unknown homepage section:",  
+            section.type  
+        );  
+
+        return;  
+
+}  
+
+
+parent.appendChild(  
+    wrapper  
+);
 
 }
 
-
-
-/*==================================================
-    REUSABLE SECTION HEADING
-==================================================*/
+/==================================================
+REUSABLE SECTION HEADING
+==================================================/
 
 function renderSectionHeading(
-    section,
-    className = "carousel-heading"
+section,
+className = "carousel-heading"
 ){
 
-    const hasTitle =
-        Boolean(
-            section.title
-        );
+const hasTitle =  
+    Boolean(  
+        section.title  
+    );  
 
 
-    const hasSubtitle =
-        Boolean(
-            section.subtitle
-        );
+const hasSubtitle =  
+    Boolean(  
+        section.subtitle  
+    );  
 
 
-    if(
-        !hasTitle &&
-        !hasSubtitle
-    ){
+if(  
+    !hasTitle &&  
+    !hasSubtitle  
+){  
 
-        return "";
+    return "";  
 
-    }
-
-
-    const titleColor =
-        section.titleColor ||
-        "#ffffff";
+}  
 
 
-    const subtitleColor =
-        section.subtitleColor ||
-        "#aaaaaa";
+const titleColor =  
+    section.titleColor ||  
+    "#ffffff";  
 
 
-    return `
-
-        <div class="${className}">
-
-            <div>
-
-                ${
-                    hasTitle
-                    ?
-                    `
-
-                    <h2
-                        style="
-                            color:${escapeAttribute(
-                                titleColor
-                            )};
-                        "
-                    >
-
-                        ${escapeHtml(
-                            section.title
-                        )}
-
-                    </h2>
-
-                    `
-                    :
-                    ""
-                }
+const subtitleColor =  
+    section.subtitleColor ||  
+    "#aaaaaa";  
 
 
-                ${
-                    hasSubtitle
-                    ?
-                    `
+return `  
 
-                    <p
-                        style="
-                            color:${escapeAttribute(
-                                subtitleColor
-                            )};
-                        "
-                    >
+    <div class="${className}">  
 
-                        ${escapeHtml(
-                            section.subtitle
-                        )}
+        <div>  
 
-                    </p>
+            ${  
+                hasTitle  
+                ?  
+                `  
+                <h2  
+                    style="  
+                        color:${escapeAttribute(  
+                            titleColor  
+                        )};  
+                    "  
+                >  
 
-                    `
-                    :
-                    ""
-                }
+                    ${escapeHtml(  
+                        section.title  
+                    )}  
 
-            </div>
+                </h2>  
+                `  
+                :  
+                ""  
+            }  
 
-        </div>
 
-    `;
+            ${  
+                hasSubtitle  
+                ?  
+                `  
+                <p  
+                    style="  
+                        color:${escapeAttribute(  
+                            subtitleColor  
+                        )};  
+                    "  
+                >  
+
+                    ${escapeHtml(  
+                        section.subtitle  
+                    )}  
+
+                </p>  
+                `  
+                :  
+                ""  
+            }  
+
+        </div>  
+
+    </div>  
+
+`;
 
 }
 
-
-
-/*==================================================
-    HEADING
-==================================================*/
+/==================================================
+HEADING
+==================================================/
 
 function renderHeading(
-    container,
-    section
+container,
+section
 ){
 
-    container.innerHTML = `
+container.innerHTML = `  
 
-        <div class="home-container">
+    <div class="home-container">  
 
-            <div class="heading-section">
+        <div class="heading-section">  
 
-                ${
-                    section.badge
-                    ?
-                    `
+            ${  
+                section.badge  
+                ?  
+                `  
+                <div class="heading-badge">  
 
-                    <div class="heading-badge">
+                    ${escapeHtml(  
+                        section.badge  
+                    )}  
 
-                        ${escapeHtml(
-                            section.badge
-                        )}
-
-                    </div>
-
-                    `
-                    :
-                    ""
-                }
+                </div>  
+                `  
+                :  
+                ""  
+            }  
 
 
-                ${
-                    section.title
-                    ?
-                    `
+            ${  
+                section.title  
+                ?  
+                `  
+                <h2  
+                    style="  
+                        color:${escapeAttribute(  
+                            section.titleColor ||  
+                            "#ffffff"  
+                        )};  
+                    "  
+                >  
 
-                    <h2
-                        style="
-                            color:${escapeAttribute(
-                                section.titleColor ||
-                                "#ffffff"
-                            )};
-                        "
-                    >
+                    ${escapeHtml(  
+                        section.title  
+                    )}  
 
-                        ${escapeHtml(
-                            section.title
-                        )}
-
-                    </h2>
-
-                    `
-                    :
-                    ""
-                }
+                </h2>  
+                `  
+                :  
+                ""  
+            }  
 
 
-                ${
-                    section.subtitle
-                    ?
-                    `
+            ${  
+                section.subtitle  
+                ?  
+                `  
+                <p  
+                    style="  
+                        color:${escapeAttribute(  
+                            section.subtitleColor ||  
+                            "#aaaaaa"  
+                        )};  
+                    "  
+                >  
 
-                    <p
-                        style="
-                            color:${escapeAttribute(
-                                section.subtitleColor ||
-                                "#aaaaaa"
-                            )};
-                        "
-                    >
+                    ${escapeHtml(  
+                        section.subtitle  
+                    )}  
 
-                        ${escapeHtml(
-                            section.subtitle
-                        )}
+                </p>  
+                `  
+                :  
+                ""  
+            }  
 
-                    </p>
+        </div>  
 
-                    `
-                    :
-                    ""
-                }
+    </div>  
 
-            </div>
-
-        </div>
-
-    `;
+`;
 
 }
 
-
-
-/*==================================================
-    BANNER
-==================================================*/
+/==================================================
+BANNER
+==================================================/
 
 function renderBanner(
-    container,
-    section
+container,
+section
 ){
 
-    const slides =
-        Array.isArray(
-            section.slides
-        )
-        ?
-        section.slides
-        :
-        [];
+const slides =  
+    Array.isArray(  
+        section.slides  
+    )  
+        ? section.slides  
+        : [];  
+
+
+if(  
+    !slides.length  
+){  
+
+    container.remove();  
+
+    return;  
+
+}  
+
+
+container.innerHTML = `  
+
+    <div class="home-container banner-container">  
+
+        <div class="home-banner">  
+
+            <div class="banner-track">  
+
+                ${  
+                    slides.map(  
+                        (  
+                            slide,  
+                            index  
+                        ) => {  
+
+                            const titleColor =  
+                                section.titleColor ||  
+                                slide.titleColor ||  
+                                "#ffffff";  
+
+
+                            const subtitleColor =  
+                                section.subtitleColor ||  
+                                slide.subtitleColor ||  
+                                "#ffffff";  
+
+
+                            const slideContent =  
+                                slide.title ||  
+                                slide.subtitle ||  
+                                slide.buttonText;  
+
+
+                            const bannerImage =  
+                                slide.image  
+                                ?  
+                                `  
+                                <img  
+                                    src="${escapeAttribute(  
+                                        slide.image  
+                                    )}"  
+                                    alt="${escapeAttribute(  
+                                        slide.title ||  
+                                        "Banner"  
+                                    )}"  
+                                >  
+                                `  
+                                :  
+                                `  
+                                <div class="banner-no-image">  
+
+                                    Banner  
+
+                                </div>  
+                                `;  
+
+
+                            const content =  
+                                slideContent  
+                                ?  
+                                `  
+                                <div  
+                                    class="  
+                                        banner-content  
+                                        banner-content-${  
+                                            slide.buttonPosition ||  
+                                            "center"  
+                                        }  
+                                    "  
+                                >  
+
+                                    ${  
+                                        slide.title  
+                                        ?  
+                                        `  
+                                        <h2  
+                                            style="  
+                                                color:${escapeAttribute(  
+                                                    titleColor  
+                                                )};  
+                                            "  
+                                        >  
+
+                                            ${escapeHtml(  
+                                                slide.title  
+                                            )}  
+
+                                        </h2>  
+                                        `  
+                                        :  
+                                        ""  
+                                    }  
+
+
+                                    ${  
+                                        slide.subtitle  
+                                        ?  
+                                        `  
+                                        <p  
+                                            style="  
+                                                color:${escapeAttribute(  
+                                                    subtitleColor  
+                                                )};  
+                                            "  
+                                        >  
+
+                                            ${escapeHtml(  
+                                                slide.subtitle  
+                                            )}  
+
+                                        </p>  
+                                        `  
+                                        :  
+                                        ""  
+                                    }  
+
+
+                                    ${  
+                                        slide.buttonText  
+                                        ?  
+                                        `  
+                                        <a  
+                                            class="banner-button"  
+                                            href="${escapeAttribute(  
+                                                slide.buttonLink ||  
+                                                "#"  
+                                            )}"  
+                                        >  
+
+                                            ${escapeHtml(  
+                                                slide.buttonText  
+                                            )}  
+
+                                        </a>  
+                                        `  
+                                        :  
+                                        ""  
+                                    }  
 
+                                </div>  
+                                `  
+                                :  
+                                "";  
 
-    if(
-        !slides.length
-    ){
 
-        container.remove();
+                            /*==================================  
+                                COMPLETE BANNER LINK  
+                            ==================================*/  
 
-        return;
+                            if(  
+                                slide.bannerLink  
+                            ){  
 
-    }
+                                return `  
 
+                                    <div  
+                                        class="  
+                                            banner-slide  
+                                            ${  
+                                                index === 0  
+                                                ? "active"  
+                                                : ""  
+                                            }  
+                                        "  
+                                        data-index="${index}"  
+                                    >  
+
+                                        <a  
+                                            class="banner-main-link"  
+                                            href="${escapeAttribute(  
+                                                slide.bannerLink  
+                                            )}"  
+                                        >  
 
-    container.innerHTML = `
+                                            ${bannerImage}  
 
-        <div class="home-container banner-container">
+                                            ${content}  
 
-            <div class="home-banner">
+                                        </a>  
+
+                                    </div>  
 
-                <div class="banner-track">
+                                `;  
 
-                    ${
-                        slides.map(
-                            (
-                                slide,
-                                index
-                            ) => {
+                            }  
 
-                                const titleColor =
-                                    section.titleColor ||
-                                    slide.titleColor ||
-                                    "#ffffff";
 
+                            /*==================================  
+                                NORMAL BANNER  
+                            ==================================*/  
 
-                                const subtitleColor =
-                                    section.subtitleColor ||
-                                    slide.subtitleColor ||
-                                    "#ffffff";
+                            return `  
 
+                                <div  
+                                    class="  
+                                        banner-slide  
+                                        ${  
+                                            index === 0  
+                                            ? "active"  
+                                            : ""  
+                                        }  
+                                    "  
+                                    data-index="${index}"  
+                                >  
 
-                                const slideContent =
-                                    slide.title ||
-                                    slide.subtitle ||
-                                    slide.buttonText;
+                                    ${bannerImage}  
 
+                                    ${content}  
 
-                                const bannerImage =
-                                    slide.image
-                                    ?
-                                    `
+                                </div>  
 
-                                    <img
-                                        src="${escapeAttribute(
-                                            slide.image
-                                        )}"
-                                        alt="${escapeAttribute(
-                                            slide.title ||
-                                            "Banner"
-                                        )}"
-                                    >
+                            `;  
 
-                                    `
-                                    :
-                                    `
+                        }  
+                    ).join("")  
+                }  
 
-                                    <div class="banner-no-image">
+            </div>  
 
-                                        Banner
 
-                                    </div>
+            ${  
+                slides.length > 1  
+                ?  
+                `  
 
-                                    `;
+                <button  
+                    class="banner-prev"  
+                    type="button"  
+                    aria-label="Previous banner"  
+                >  
 
+                    ‹  
 
-                                const content =
-                                    slideContent
-                                    ?
-                                    `
+                </button>  
 
-                                    <div
-                                        class="
-                                            banner-content
-                                            banner-content-${
-                                                slide.buttonPosition ||
-                                                "center"
-                                            }
-                                        "
-                                    >
 
-                                        ${
-                                            slide.title
-                                            ?
-                                            `
-
-                                            <h2
-                                                style="
-                                                    color:${escapeAttribute(
-                                                        titleColor
-                                                    )};
-                                                "
-                                            >
-
-                                                ${escapeHtml(
-                                                    slide.title
-                                                )}
-
-                                            </h2>
+                <button  
+                    class="banner-next"  
+                    type="button"  
+                    aria-label="Next banner"  
+                >  
 
-                                            `
-                                            :
-                                            ""
-                                        }
+                    ›  
 
+                </button>  
 
-                                        ${
-                                            slide.subtitle
-                                            ?
-                                            `
 
-                                            <p
-                                                style="
-                                                    color:${escapeAttribute(
-                                                        subtitleColor
-                                                    )};
-                                                "
-                                            >
+                <div class="banner-dots">  
 
-                                                ${escapeHtml(
-                                                    slide.subtitle
-                                                )}
+                    ${  
+                        slides.map(  
+                            (  
+                                _,  
+                                index  
+                            ) => `  
 
-                                            </p>
+                            <button  
+                                class="  
+                                    banner-dot  
+                                    ${  
+                                        index === 0  
+                                        ? "active"  
+                                        : ""  
+                                    }  
+                                "  
+                                data-index="${index}"  
+                                type="button"  
+                            ></button>  
 
-                                            `
-                                            :
-                                            ""
-                                        }
+                        `  
+                        ).join("")  
+                    }  
 
+                </div>  
 
-                                        ${
-                                            slide.buttonText
-                                            ?
-                                            `
+                `  
+                :  
+                ""  
+            }  
 
-                                            <a
-                                                class="banner-button"
-                                                href="${escapeAttribute(
-                                                    slide.buttonLink ||
-                                                    "#"
-                                                )}"
-                                            >
+        </div>  
 
-                                                ${escapeHtml(
-                                                    slide.buttonText
-                                                )}
+    </div>  
 
-                                            </a>
+`;  
 
-                                            `
-                                            :
-                                            ""
-                                        }
 
-                                    </div>
-
-                                    `
-                                    :
-                                    "";
-
-
-                                /*==================================
-                                    COMPLETE BANNER LINK
-                                ==================================*/
-
-                                if(
-                                    slide.bannerLink
-                                ){
-
-                                    return `
-
-                                        <div
-                                            class="
-                                                banner-slide
-                                                ${
-                                                    index === 0
-                                                    ? "active"
-                                                    : ""
-                                                }
-                                            "
-                                            data-index="${index}"
-                                        >
-
-                                            <a
-                                                class="banner-main-link"
-                                                href="${escapeAttribute(
-                                                    slide.bannerLink
-                                                )}"
-                                            >
-
-                                                ${bannerImage}
-
-                                                ${content}
-
-                                            </a>
-
-                                        </div>
-
-                                    `;
-
-                                }
-
-
-                                /*==================================
-                                    NORMAL BANNER
-                                ==================================*/
-
-                                return `
-
-                                    <div
-                                        class="
-                                            banner-slide
-                                            ${
-                                                index === 0
-                                                ? "active"
-                                                : ""
-                                            }
-                                        "
-                                        data-index="${index}"
-                                    >
-
-                                        ${bannerImage}
-
-                                        ${content}
-
-                                    </div>
-
-                                `;
-
-                            }
-                        ).join("")
-                    }
-
-                </div>
-
-
-                ${
-                    slides.length > 1
-                    ?
-                    `
-
-                    <button
-                        class="banner-prev"
-                        type="button"
-                        aria-label="Previous banner"
-                    >
-
-                        ‹
-
-                    </button>
-
-
-                    <button
-                        class="banner-next"
-                        type="button"
-                        aria-label="Next banner"
-                    >
-
-                        ›
-
-                    </button>
-
-
-                    <div class="banner-dots">
-
-                        ${
-                            slides.map(
-                                (
-                                    _,
-                                    index
-                                ) => `
-
-                                <button
-                                    class="
-                                        banner-dot
-                                        ${
-                                            index === 0
-                                            ? "active"
-                                            : ""
-                                        }
-                                    "
-                                    data-index="${index}"
-                                    type="button"
-                                ></button>
-
-                            `
-                            ).join("")
-                        }
-
-                    </div>
-
-                    `
-                    :
-                    ""
-                }
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    initBannerSlider(
-        container,
-        section
-    );
+initBannerSlider(  
+    container,  
+    section  
+);
 
 }
 
-
-
-/*==================================================
-    BANNER SLIDER
-==================================================*/
+/==================================================
+BANNER SLIDER
+==================================================/
 
 function initBannerSlider(
-    container,
-    section
+container,
+section
 ){
 
-    const slides =
-        container.querySelectorAll(
-            ".banner-slide"
-        );
+const slides =  
+    container.querySelectorAll(  
+        ".banner-slide"  
+    );  
 
 
-    if(
-        slides.length <= 1
-    ){
+if(  
+    slides.length <= 1  
+){  
 
-        return;
+    return;  
 
-    }
+}  
 
 
-    const dots =
-        container.querySelectorAll(
-            ".banner-dot"
-        );
+const dots =  
+    container.querySelectorAll(  
+        ".banner-dot"  
+    );  
 
 
-    let current =
-        0;
+let current =  
+    0;  
 
 
-    let timer =
-        null;
+let timer =  
+    null;  
 
 
-    /*==================================================
-        SHOW SLIDE
-    ==================================================*/
+/*==================================================  
+    SHOW SLIDE  
+==================================================*/  
 
-    function showSlide(
-        index
-    ){
+function showSlide(  
+    index  
+){  
 
-        current =
-            (
-                index +
-                slides.length
-            )
-            %
-            slides.length;
+    current =  
+        (  
+            index +  
+            slides.length  
+        )  
+        %  
+        slides.length;  
 
 
-        slides.forEach(
-            (
-                slide,
-                i
-            ) => {
+    slides.forEach(  
+        (  
+            slide,  
+            i  
+        ) => {  
 
-                slide.classList.toggle(
-                    "active",
-                    i === current
-                );
+            slide.classList.toggle(  
+                "active",  
+                i === current  
+            );  
 
-            }
-        );
+        }  
+    );  
 
 
-        dots.forEach(
-            (
-                dot,
-                i
-            ) => {
+    dots.forEach(  
+        (  
+            dot,  
+            i  
+        ) => {  
 
-                dot.classList.toggle(
-                    "active",
-                    i === current
-                );
+            dot.classList.toggle(  
+                "active",  
+                i === current  
+            );  
 
-            }
-        );
+        }  
+    );  
 
-    }
+}  
 
 
-    /*==================================================
-        START
-    ==================================================*/
+/*==================================================  
+    START  
+==================================================*/  
 
-    function start(){
+function start(){  
 
-        if(
-            section.autoPlay === false
-        ){
+    if(  
+        section.autoPlay === false  
+    ){  
 
-            return;
+        return;  
 
-        }
+    }  
 
 
-        const interval =
-            Number(
-                section.interval ||
-                5000
-            );
+    const interval =  
+        Number(  
+            section.interval ||  
+            5000  
+        );  
 
 
-        timer =
-            setInterval(
-                () => {
+    timer =  
+        setInterval(  
+            () => {  
 
-                    showSlide(
-                        current + 1
-                    );
+                showSlide(  
+                    current + 1  
+                );  
 
-                },
-                interval
-            );
+            },  
+            interval  
+        );  
 
-    }
+}  
 
 
-    /*==================================================
-        STOP
-    ==================================================*/
+/*==================================================  
+    STOP  
+==================================================*/  
 
-    function stop(){
+function stop(){  
 
-        if(
-            timer
-        ){
+    if(  
+        timer  
+    ){  
 
-            clearInterval(
-                timer
-            );
+        clearInterval(  
+            timer  
+        );  
 
 
-            timer =
-                null;
+        timer =  
+            null;  
 
-        }
+    }  
 
-    }
+}  
 
 
-    /*==================================================
-        NEXT
-    ==================================================*/
+/*==================================================  
+    NEXT  
+==================================================*/  
 
-    container
-        .querySelector(
-            ".banner-next"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
+container  
+    .querySelector(  
+        ".banner-next"  
+    )  
+    ?.addEventListener(  
+        "click",  
+        () => {  
 
-                stop();
+            stop();  
 
 
-                showSlide(
-                    current + 1
-                );
+            showSlide(  
+                current + 1  
+            );  
 
 
-                start();
+            start();  
 
-            }
-        );
+        }  
+    );  
 
 
-    /*==================================================
-        PREVIOUS
-    ==================================================*/
+/*==================================================  
+    PREVIOUS  
+==================================================*/  
 
-    container
-        .querySelector(
-            ".banner-prev"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
+container  
+    .querySelector(  
+        ".banner-prev"  
+    )  
+    ?.addEventListener(  
+        "click",  
+        () => {  
 
-                stop();
+            stop();  
 
 
-                showSlide(
-                    current - 1
-                );
+            showSlide(  
+                current - 1  
+            );  
 
 
-                start();
+            start();  
 
-            }
-        );
+        }  
+    );  
 
 
-    /*==================================================
-        DOTS
-    ==================================================*/
+/*==================================================  
+    DOTS  
+==================================================*/  
 
-    dots.forEach(
-        dot => {
+dots.forEach(  
+    dot => {  
 
-            dot.addEventListener(
-                "click",
-                () => {
+        dot.addEventListener(  
+            "click",  
+            () => {  
 
-                    stop();
+                stop();  
 
 
-                    showSlide(
-                        Number(
-                            dot.dataset.index
-                        )
-                    );
+                showSlide(  
+                    Number(  
+                        dot.dataset.index  
+                    )  
+                );  
 
 
-                    start();
+                start();  
 
-                }
-            );
+            }  
+        );  
 
-        }
-    );
+    }  
+);  
 
 
-    start();
+start();
 
 }
 
-
-
-/*==================================================
-    PRODUCT CAROUSEL
-==================================================*/
+/==================================================
+PRODUCT CAROUSEL
+==================================================/
 
 async function renderProductCarousel(
-    container,
-    section
+container,
+section
 ){
 
-    const snapshot =
-        await getDocs(
-            collection(
-                db,
-                "products"
-            )
-        );
+const snapshot =  
+    await getDocs(  
+        collection(  
+            db,  
+            "products"  
+        )  
+    );  
 
 
-    let products =
-        snapshot.docs.map(
-            docSnap => ({
+let products =  
+    snapshot.docs.map(  
+        docSnap => ({  
 
-                id:
-                    docSnap.id,
+            id:  
+                docSnap.id,  
 
-                ...docSnap.data()
+            ...docSnap.data()  
 
-            })
-        );
+        })  
+    );  
 
 
-    /*==================================================
-        ONLY ACTIVE / PUBLISHED
-    ==================================================*/
+/*==================================================  
+    CATEGORY FILTER  
+==================================================*/  
 
-    products =
-        products.filter(
-            product =>
+if(  
+    section.categoryId  
+){  
 
-                product.published !== false
-                &&
-                product.active !== false
-        );
+    products =  
+        products.filter(  
+            product => {  
 
+                if(  
+                    section.categoryType ===  
+                    "main"  
+                ){  
 
-    /*==================================================
-        CATEGORY FILTER
-    ==================================================*/
+                    return (  
 
-    if(
-        section.categoryId
-    ){
+                        product.categoryId ===  
+                        section.categoryId  
 
-        products =
-            products.filter(
-                product => {
+                    )  
+                    ||  
+                    (  
 
-                    if(
-                        section.categoryType ===
-                        "main"
-                    ){
+                        product.category?.id ===  
+                        section.categoryId  
 
-                        return (
+                    );  
 
-                            product.categoryId ===
-                            section.categoryId
+                }  
 
-                        )
-                        ||
-                        (
 
-                            product.category?.id ===
-                            section.categoryId
+                if(  
+                    section.categoryType ===  
+                    "sub"  
+                ){  
 
-                        );
+                    return (  
 
-                    }
+                        product.subCategoryId ===  
+                        section.categoryId  
 
+                    )  
+                    ||  
+                    (  
 
-                    if(
-                        section.categoryType ===
-                        "sub"
-                    ){
+                        product.subcategoryId ===  
+                        section.categoryId  
 
-                        return (
+                    )  
+                    ||  
+                    (  
 
-                            product.subCategoryId ===
-                            section.categoryId
+                        product.subCategory?.id ===  
+                        section.categoryId  
 
-                        )
-                        ||
-                        (
+                    );  
 
-                            product.subcategoryId ===
-                            section.categoryId
+                }  
 
-                        )
-                        ||
-                        (
 
-                            product.subCategory?.id ===
-                            section.categoryId
+                return (  
 
-                        );
+                    product.categoryId ===  
+                    section.categoryId  
 
-                    }
+                );  
 
+            }  
+        );  
 
-                    return (
+}  
 
-                        product.categoryId ===
-                        section.categoryId
 
-                    );
+/*==================================================  
+    TAG FILTER  
+==================================================*/  
+
+if(  
+    Array.isArray(  
+        section.tags  
+    )  
+    &&  
+    section.tags.length  
+){  
+
+    products =  
+        products.filter(  
+            product => {  
+
+                const tags =  
+                    getProductTags(  
+                        product  
+                    );  
+
+
+                return section.tags.some(  
+                    selectedTag =>  
+                        tags.includes(  
+                            String(  
+                                selectedTag  
+                            ).toLowerCase()  
+                        )  
+                );  
+
+            }  
+        );  
+
+}  
+
 
-                }
-            );
+/*==================================================  
+    SPECIFIC PRODUCTS  
+==================================================*/  
 
-    }
+if(  
+    Array.isArray(  
+        section.productIds  
+    )  
+    &&  
+    section.productIds.length  
+){  
 
+    const ids =  
+        new Set(  
+            section.productIds  
+        );  
 
-    /*==================================================
-        TAG FILTER
-    ==================================================*/
 
-    if(
-        Array.isArray(
-            section.tags
-        )
-        &&
-        section.tags.length
-    ){
+    products =  
+        products.filter(  
+            product =>  
+                ids.has(  
+                    product.id  
+                )  
+        );  
 
-        products =
-            products.filter(
-                product => {
+}  
 
-                    const tags =
-                        getProductTags(
-                            product
-                        );
 
+/*==================================================  
+    LATEST  
+==================================================*/  
 
-                    return section.tags.some(
-                        selectedTag =>
-                            tags.includes(
-                                String(
-                                    selectedTag
-                                ).toLowerCase()
-                            )
-                    );
+if(  
+    section.filterType ===  
+    "latest"  
+){  
 
-                }
-            );
+    products.sort(  
+        (  
+            a,  
+            b  
+        ) =>  
+            getTimestamp(  
+                b.createdAt  
+            )  
+            -  
+            getTimestamp(  
+                a.createdAt  
+            )  
+    );  
 
-    }
+}  
 
 
-    /*==================================================
-        SPECIFIC PRODUCTS
-    ==================================================*/
+/*==================================================  
+    RANDOM  
+==================================================*/  
 
-    if(
-        Array.isArray(
-            section.productIds
-        )
-        &&
-        section.productIds.length
-    ){
+if(  
+    section.filterType ===  
+    "random"  
+){  
 
-        const ids =
-            new Set(
-                section.productIds
-            );
+    products.sort(  
+        () =>  
+            Math.random() -  
+            0.5  
+    );  
 
+}  
 
-        products =
-            products.filter(
-                product =>
-                    ids.has(
-                        product.id
-                    )
-            );
 
-    }
+/*==================================================  
+    LIMIT  
+==================================================*/  
 
+const limit =  
+    Number(  
+        section.limit ||  
+        10  
+    );  
 
-    /*==================================================
-        LATEST
-    ==================================================*/
 
-    if(
-        section.filterType ===
-        "latest"
-    ){
+products =  
+    products.slice(  
+        0,  
+        limit  
+    );  
 
-        products.sort(
-            (
-                a,
-                b
-            ) =>
-                getTimestamp(
-                    b.createdAt
-                )
-                -
-                getTimestamp(
-                    a.createdAt
-                )
-        );
 
-    }
+/*==================================================  
+    HTML  
+==================================================*/  
 
+container.innerHTML = `  
 
-    /*==================================================
-        RANDOM
-    ==================================================*/
+    <div class="home-container">  
 
-    if(
-        section.filterType ===
-        "random"
-    ){
+        ${renderSectionHeading(  
+            section  
+        )}  
 
-        products.sort(
-            () =>
-                Math.random() -
-                0.5
-        );
 
-    }
+        ${  
+            products.length  
+            ?  
+            `  
 
+            <div class="product-carousel">  
 
-    /*==================================================
-        LIMIT
-    ==================================================*/
+                ${  
+                    products.map(  
+                        product =>  
+                            createProductCard(  
+                                product  
+                            )  
+                    ).join("")  
+                }  
 
-    const limit =
-        Number(
-            section.limit ||
-            10
-        );
+            </div>  
 
 
-    products =
-        products.slice(
-            0,
-            limit
-        );
+            <div class="carousel-dots product-dots">  
 
+                <span class="active"></span>  
 
-    /*==================================================
-        HTML
-    ==================================================*/
+                <span></span>  
 
-    container.innerHTML = `
+                <span></span>  
 
-        <div class="home-container">
+            </div>  
 
-            ${renderSectionHeading(
-                section
-            )}
+            `  
+            :  
+            `  
 
+            <div class="carousel-empty">  
 
-            ${
-                products.length
-                ?
-                `
+                No products found.  
 
-                <div class="product-carousel">
+            </div>  
 
-                    ${
-                        products.map(
-                            product =>
-                                createProductCard(
-                                    product
-                                )
-                        ).join("")
-                    }
+            `  
+        }  
 
-                </div>
+    </div>  
 
+`;  
 
-                <div class="carousel-dots product-dots">
 
-                    <span class="active"></span>
-
-                    <span></span>
-
-                    <span></span>
-
-                </div>
-
-                `
-                :
-                `
-
-                <div class="carousel-empty">
-
-                    No products found.
-
-                </div>
-
-                `
-            }
-
-        </div>
-
-    `;
-
-
-    initHorizontalCarousel(
-        container,
-        ".product-carousel"
-    );
+initHorizontalCarousel(  
+    container,  
+    ".product-carousel"  
+);
 
 }
 
-
-
-/*==================================================
-    PRODUCT CARD
-==================================================*/
+/==================================================
+PRODUCT CARD
+==================================================/
 
 function createProductCard(
-    product
+product
 ){
 
-    const image =
-        getProductImage(
-            product
-        );
-
-
-    const name =
-        product.name ||
-        product.title ||
-        "Product";
-
-
-    /*==================================================
-        SALE PRICE
-    ==================================================*/
+const image =  
+    getProductImage(  
+        product  
+    );  
+
+
+const name =  
+    product.name ||  
+    product.title ||  
+    "Product";  
+
+
+/*==================================================  
+    SALE PRICE  
+==================================================*/  
 
-    const salePrice =
-        product.salePrice ??
-        product.price ??
-        product.pricing?.salePrice ??
-        product.pricing?.price ??
-        "";
+const salePrice =  
+    product.salePrice ??  
+    product.price ??  
+    product.pricing?.salePrice ??  
+    product.pricing?.price ??  
+    "";  
 
 
-    /*==================================================
-        BASE PRICE
-    ==================================================*/
+/*==================================================  
+    BASE PRICE  
+==================================================*/  
 
-    const basePrice =
-        product.basePrice ??
-        product.originalPrice ??
-        product.mrp ??
-        product.pricing?.basePrice ??
-        product.pricing?.mrp ??
-        "";
+const basePrice =  
+    product.basePrice ??  
+    product.originalPrice ??  
+    product.mrp ??  
+    product.pricing?.basePrice ??  
+    product.pricing?.mrp ??  
+    "";  
 
 
-    /*==================================================
-        DISCOUNT
-    ==================================================*/
+/*==================================================  
+    DISCOUNT  
+==================================================*/  
 
-    let discount =
-        "";
+let discount =  
+    "";  
 
 
-    if(
-        basePrice !== "" &&
-        salePrice !== "" &&
-        Number(basePrice) >
-        Number(salePrice)
-    ){
+if(  
+    basePrice !== "" &&  
+    salePrice !== "" &&  
+    Number(basePrice) >  
+    Number(salePrice)  
+){  
 
-        discount =
-            Math.round(
-                (
-                    (
-                        Number(basePrice) -
-                        Number(salePrice)
-                    )
-                    /
-                    Number(basePrice)
-                )
-                *
-                100
-            );
+    discount =  
+        Math.round(  
+            (  
+                (  
+                    Number(basePrice) -  
+                    Number(salePrice)  
+                )  
+                /  
+                Number(basePrice)  
+            )  
+            *  
+            100  
+        );  
 
-    }
+}  
 
 
-    /*==================================================
-        BESTSELLER
-    ==================================================*/
+/*==================================================  
+    BESTSELLER  
+==================================================*/  
 
-    const bestseller =
-        product.bestseller === true ||
-        product.isBestseller === true ||
-        product.bestSeller === true;
+const bestseller =  
+    product.bestseller === true ||  
+    product.isBestseller === true ||  
+    product.bestSeller === true;  
 
 
-    return `
+return `  
 
-        <a
-            class="product-card"
-            href="${getProductLink(
-                product
-            )}"
-        >
+    <a  
+        class="product-card"  
+        href="${getProductLink(  
+            product  
+        )}"  
+    >  
 
-            <div class="product-image">
+        <div class="product-image">  
 
-                ${
-                    image
-                    ?
-                    `
+            ${  
+                image  
+                ?  
+                `  
 
-                    <img
-                        src="${escapeAttribute(
-                            image
-                        )}"
-                        alt="${escapeAttribute(
-                            name
-                        )}"
-                        loading="lazy"
-                    >
+                <img  
+                    src="${escapeAttribute(  
+                        image  
+                    )}"  
+                    alt="${escapeAttribute(  
+                        name  
+                    )}"  
+                    loading="lazy"  
+                >  
 
-                    `
-                    :
-                    `
+                `  
+                :  
+                `  
 
-                    <div class="product-image-empty">
+                <div class="product-image-empty">  
 
-                        No Image
+                    No Image  
 
-                    </div>
+                </div>  
 
-                    `
-                }
+                `  
+            }  
 
 
-                ${
-                    discount
-                    ?
-                    `
+            ${  
+                discount  
+                ?  
+                `  
 
-                    <div class="product-discount">
+                <div class="product-discount">  
 
-                        -${discount}%
+                    -${discount}%  
 
-                    </div>
+                </div>  
 
-                    `
-                    :
-                    ""
-                }
+                `  
+                :  
+                ""  
+            }  
 
 
-                ${
-                    bestseller
-                    ?
-                    `
+            ${  
+                bestseller  
+                ?  
+                `  
 
-                    <div class="product-bestseller">
+                <div class="product-bestseller">  
 
-                        🔥 Bestseller
+                    🔥 Bestseller  
 
-                    </div>
+                </div>  
 
-                    `
-                    :
-                    ""
-                }
+                `  
+                :  
+                ""  
+            }  
 
 
-                <button
-                    class="product-wishlist"
-                    type="button"
-                    onclick="
-                        event.preventDefault();
-                        event.stopPropagation();
-                    "
-                >
+            <button  
+                class="product-wishlist"  
+                type="button"  
+                onclick="  
+                    event.preventDefault();  
+                    event.stopPropagation();  
+                "  
+            >  
 
-                    ♡
+                ♡  
 
-                </button>
+            </button>  
 
-            </div>
+        </div>  
 
 
-            <div class="product-info">
+        <div class="product-info">  
 
-                <h3>
+            <h3>  
 
-                    ${escapeHtml(
-                        name
-                    )}
+                ${escapeHtml(  
+                    name  
+                )}  
 
-                </h3>
+            </h3>  
 
 
-                ${
-                    salePrice !== "" ||
-                    basePrice !== ""
-                    ?
-                    `
+            ${  
+                salePrice !== "" ||  
+                basePrice !== ""  
+                ?  
+                `  
 
-                    <div class="product-prices">
+                <div class="product-prices">  
 
-                        ${
-                            salePrice !== ""
-                            ?
-                            `
+                    ${  
+                        salePrice !== ""  
+                        ?  
+                        `  
 
-                            <span
-                                class="
-                                    product-sale-price
-                                "
-                            >
+                        <span  
+                            class="  
+                                product-sale-price  
+                            "  
+                        >  
 
-                                ₹${escapeHtml(
-                                    String(
-                                        salePrice
-                                    )
-                                )}
+                            ₹${escapeHtml(  
+                                String(  
+                                    salePrice  
+                                )  
+                            )}  
 
-                            </span>
+                        </span>  
 
-                            `
-                            :
-                            ""
-                        }
+                        `  
+                        :  
+                        ""  
+                    }  
 
 
-                        ${
-                            basePrice !== "" &&
-                            Number(basePrice) >
-                            Number(salePrice)
-                            ?
-                            `
+                    ${  
+                        basePrice !== "" &&  
+                        Number(basePrice) >  
+                        Number(salePrice)  
+                        ?  
+                        `  
 
-                            <span
-                                class="
-                                    product-old-price
-                                "
-                            >
+                        <span  
+                            class="  
+                                product-old-price  
+                            "  
+                        >  
 
-                                ₹${escapeHtml(
-                                    String(
-                                        basePrice
-                                    )
-                                )}
+                            ₹${escapeHtml(  
+                                String(  
+                                    basePrice  
+                                )  
+                            )}  
 
-                            </span>
+                        </span>  
 
-                            `
-                            :
-                            ""
-                        }
+                        `  
+                        :  
+                        ""  
+                    }  
 
-                    </div>
+                </div>  
 
-                    `
-                    :
-                    ""
-                }
+                `  
+                :  
+                ""  
+            }  
 
 
-                <div class="product-button">
+            <div class="product-button">  
 
-                    ${
-                        product.customOptions ||
-                        product.options ||
-                        product.variants
-                        ?
-                        "SELECT OPTIONS"
-                        :
-                        "ADD TO CART"
-                    }
+                ${  
+                    product.customOptions ||  
+                    product.options ||  
+                    product.variants  
+                    ?  
+                    "SELECT OPTIONS"  
+                    :  
+                    "ADD TO CART"  
+                }  
 
-                </div>
+            </div>  
 
-            </div>
+        </div>  
 
-        </a>
+    </a>  
 
-    `;
+`;
 
 }
 
-
-
-/*==================================================
-    PRODUCT IMAGE
-==================================================*/
+/==================================================
+PRODUCT IMAGE
+==================================================/
 
 function getProductImage(
-    product
+product
 ){
 
-    if(
-        Array.isArray(
-            product.images
-        )
-        &&
-        product.images.length
-    ){
+if(  
+    Array.isArray(  
+        product.images  
+    )  
+    &&  
+    product.images.length  
+){  
 
-        const first =
-            product.images[0];
-
-
-        if(
-            typeof first ===
-            "string"
-        ){
-
-            return first;
-
-        }
+    const first =  
+        product.images[0];  
 
 
-        return (
-            first?.url ||
-            first?.src ||
-            ""
-        );
+    if(  
+        typeof first ===  
+        "string"  
+    ){  
 
-    }
+        return first;  
+
+    }  
 
 
-    return (
-        product.image ||
-        product.imageUrl ||
-        product.thumbnail ||
-        ""
-    );
+    return (  
+        first?.url ||  
+        first?.src ||  
+        ""  
+    );  
+
+}  
+
+
+return (  
+    product.image ||  
+    product.imageUrl ||  
+    product.thumbnail ||  
+    ""  
+);
 
 }
 
-
-
-/*==================================================
-    PRODUCT PRICE
-==================================================*/
+/==================================================
+PRODUCT PRICE
+==================================================/
 
 function getProductPrice(
-    product
+product
 ){
 
-    if(
-        product.price !== undefined &&
-        product.price !== null
-    ){
+if(  
+    product.price !== undefined &&  
+    product.price !== null  
+){  
 
-        return product.price;
+    return product.price;  
 
-    }
-
-
-    if(
-        product.basePrice !== undefined &&
-        product.basePrice !== null
-    ){
-
-        return product.basePrice;
-
-    }
+}  
 
 
-    if(
-        product.pricing?.price !== undefined
-    ){
+if(  
+    product.basePrice !== undefined &&  
+    product.basePrice !== null  
+){  
 
-        return product.pricing.price;
+    return product.basePrice;  
 
-    }
+}  
 
 
-    return "";
+if(  
+    product.pricing?.price !== undefined  
+){  
+
+    return product.pricing.price;  
+
+}  
+
+
+return "";
 
 }
 
-
-
-/*==================================================
-    PRODUCT OLD PRICE
-==================================================*/
+/==================================================
+PRODUCT OLD PRICE
+==================================================/
 
 function getProductOldPrice(
-    product
+product
 ){
 
-    return (
-        product.comparePrice ??
-        product.mrp ??
-        product.originalPrice ??
-        ""
-    );
+return (  
+    product.comparePrice ??  
+    product.mrp ??  
+    product.originalPrice ??  
+    ""  
+);
 
 }
 
-
-
-/*==================================================
-    PRODUCT LINK
-==================================================*/
+/==================================================
+PRODUCT LINK
+==================================================/
 
 function getProductLink(
-    product
+product
 ){
 
-    if(
-        product.link
-    ){
+if(  
+    product.link  
+){  
 
-        return product.link;
+    return product.link;  
 
-    }
+}  
 
 
-    return `product.html?id=${encodeURIComponent(
-        product.id
-    )}`;
+return `product.html?id=${encodeURIComponent(  
+    product.id  
+)}`;
 
 }
 
-
-
-/*==================================================
-    PRODUCT TAGS
-==================================================*/
+/==================================================
+PRODUCT TAGS
+==================================================/
 
 function getProductTags(
-    product
+product
 ){
 
-    let tags =
-        [];
+let tags =  
+    [];  
 
 
-    if(
-        Array.isArray(
-            product.tags
-        )
-    ){
+if(  
+    Array.isArray(  
+        product.tags  
+    )  
+){  
 
-        tags.push(
-            ...product.tags
-        );
+    tags.push(  
+        ...product.tags  
+    );  
 
-    }
-
-
-    if(
-        product.tag
-    ){
-
-        if(
-            Array.isArray(
-                product.tag
-            )
-        ){
-
-            tags.push(
-                ...product.tag
-            );
-
-        }
-        else{
-
-            tags.push(
-                product.tag
-            );
-
-        }
-
-    }
+}  
 
 
-    return tags.map(
-        tag => {
+if(  
+    product.tag  
+){  
 
-            if(
-                typeof tag ===
-                "object"
-            ){
+    if(  
+        Array.isArray(  
+            product.tag  
+        )  
+    ){  
 
-                return String(
-                    tag.slug ||
-                    tag.name ||
-                    ""
-                ).toLowerCase();
+        tags.push(  
+            ...product.tag  
+        );  
 
-            }
+    }  
+    else{  
+
+        tags.push(  
+            product.tag  
+        );  
+
+    }  
+
+}  
 
 
-            return String(
-                tag
-            ).toLowerCase();
+return tags.map(  
+    tag => {  
 
-        }
-    );
+        if(  
+            typeof tag ===  
+            "object"  
+        ){  
+
+            return String(  
+                tag.slug ||  
+                tag.name ||  
+                ""  
+            ).toLowerCase();  
+
+        }  
+
+
+        return String(  
+            tag  
+        ).toLowerCase();  
+
+    }  
+);
 
 }
 
-
-
-/*==================================================
-    IMAGE CAROUSEL
-==================================================*/
+/==================================================
+IMAGE CAROUSEL
+==================================================/
 
 function renderImageCarousel(
-    container,
-    section
+container,
+section
 ){
 
-    const images =
-        Array.isArray(
-            section.images
-        )
-        ?
-        section.images
-        :
-        [];
+const images =  
+    Array.isArray(  
+        section.images  
+    )  
+    ?  
+    section.images  
+    :  
+    [];  
 
 
-    if(
-        !images.length
-    ){
+if(  
+    !images.length  
+){  
 
-        container.remove();
+    container.remove();  
 
-        return;
+    return;  
 
-    }
-
-
-    container.innerHTML = `
-
-        <div class="home-container">
-
-            ${renderSectionHeading(
-                section
-            )}
+}  
 
 
-            <div class="image-carousel">
+container.innerHTML = `  
 
-                ${
-                    images.map(
-                        image => {
+    <div class="home-container">  
 
-                            const html = `
-
-                                <div class="image-box">
-
-                                    <img
-                                        src="${escapeAttribute(
-                                            image.src ||
-                                            ""
-                                        )}"
-                                        alt="${escapeAttribute(
-                                            image.title ||
-                                            ""
-                                        )}"
-                                        loading="lazy"
-                                    >
-
-                                </div>
+        ${renderSectionHeading(  
+            section  
+        )}  
 
 
-                                ${
-                                    image.title
-                                    ?
-                                    `
+        <div class="image-carousel">  
 
-                                    <div
-                                        class="
-                                            image-carousel-title
-                                        "
-                                    >
+            ${  
+                images.map(  
+                    image => {  
 
-                                        ${escapeHtml(
-                                            image.title
-                                        )}
+                        const html = `  
 
-                                    </div>
+                            <div class="image-box">  
 
-                                    `
-                                    :
-                                    ""
-                                }
+                                <img  
+                                    src="${escapeAttribute(  
+                                        image.src ||  
+                                        ""  
+                                    )}"  
+                                    alt="${escapeAttribute(  
+                                        image.title ||  
+                                        ""  
+                                    )}"  
+                                    loading="lazy"  
+                                >  
 
-                            `;
-
-
-                            if(
-                                image.link
-                            ){
-
-                                return `
-
-                                    <a
-                                        class="
-                                            image-carousel-item
-                                        "
-                                        href="${escapeAttribute(
-                                            image.link
-                                        )}"
-                                    >
-
-                                        ${html}
-
-                                    </a>
-
-                                `;
-
-                            }
+                            </div>  
 
 
-                            return `
+                            ${  
+                                image.title  
+                                ?  
+                                `  
 
-                                <div
-                                    class="
-                                        image-carousel-item
-                                    "
-                                >
+                                <div  
+                                    class="  
+                                        image-carousel-title  
+                                    "  
+                                >  
 
-                                    ${html}
+                                    ${escapeHtml(  
+                                        image.title  
+                                    )}  
 
-                                </div>
+                                </div>  
 
-                            `;
+                                `  
+                                :  
+                                ""  
+                            }  
 
-                        }
-                    ).join("")
-                }
-
-            </div>
-
-
-            <div class="carousel-dots">
-
-                <span class="active"></span>
-
-                <span></span>
-
-                <span></span>
-
-            </div>
-
-        </div>
-
-    `;
+                        `;  
 
 
-    initHorizontalCarousel(
-        container,
-        ".image-carousel"
-    );
+                        if(  
+                            image.link  
+                        ){  
+
+                            return `  
+
+                                <a  
+                                    class="  
+                                        image-carousel-item  
+                                    "  
+                                    href="${escapeAttribute(  
+                                        image.link  
+                                    )}"  
+                                >  
+
+                                    ${html}  
+
+                                </a>  
+
+                            `;  
+
+                        }  
+
+
+                        return `  
+
+                            <div  
+                                class="  
+                                    image-carousel-item  
+                                "  
+                            >  
+
+                                ${html}  
+
+                            </div>  
+
+                        `;  
+
+                    }  
+                ).join("")  
+            }  
+
+        </div>  
+
+
+        <div class="carousel-dots">  
+
+            <span class="active"></span>  
+
+            <span></span>  
+
+            <span></span>  
+
+        </div>  
+
+    </div>  
+
+`;  
+
+
+initHorizontalCarousel(  
+    container,  
+    ".image-carousel"  
+);
 
 }
 
+/==================================================
+REVIEW CAROUSEL
+==================================================/
+
+async function renderReviewCarousel(
+container,
+section
+){
+
+try{  
+
+    /*==================================================  
+        LOAD REVIEWS  
+    ==================================================*/  
+
+    const snapshot =  
+        await getDocs(  
+            collection(  
+                db,  
+                "reviews"  
+            )  
+        );  
 
 
-/*==================================================
-    STARS
-==================================================*/
+    let reviews =  
+        snapshot.docs.map(  
+            docSnap => ({  
+
+                id:  
+                    docSnap.id,  
+
+                ...docSnap.data()  
+
+            })  
+        );  
+
+
+    /*==================================================  
+        ONLY APPROVED + PUBLISHED  
+    ==================================================*/  
+
+    reviews =  
+        reviews.filter(  
+            review =>  
+
+                review.approved === true  
+                &&  
+                review.published === true  
+                &&  
+                review.rejected !== true  
+
+        );  
+
+
+    /*==================================================  
+        NEWEST FIRST  
+    ==================================================*/  
+
+    reviews.sort(  
+        (  
+            a,  
+            b  
+        ) =>  
+
+            getTimestamp(  
+                b.createdAt  
+            )  
+            -  
+            getTimestamp(  
+                a.createdAt  
+            )  
+
+    );  
+
+
+    /*==================================================  
+        LIMIT  
+    ==================================================*/  
+
+    const limit =  
+        Number(  
+            section.limit ||  
+            10  
+        );  
+
+
+    reviews =  
+        reviews.slice(  
+            0,  
+            limit  
+        );  
+
+
+    console.log(  
+        "Published homepage reviews:",  
+        reviews  
+    );  
+
+
+    /*==================================================  
+        NO REVIEWS  
+    ==================================================*/  
+
+    if(  
+        !reviews.length  
+    ){  
+
+        container.remove();  
+
+        return;  
+
+    }  
+
+
+    /*==================================================  
+        HTML  
+    ==================================================*/  
+
+    container.innerHTML = `  
+
+        <div class="home-container">  
+
+            ${renderSectionHeading(  
+                section  
+            )}  
+
+
+            <div class="review-carousel">  
+
+                ${  
+                    reviews.map(  
+                        review => {  
+
+                            /*==================================  
+                                CUSTOMER NAME  
+                            ==================================*/  
+
+                            const name =  
+                                review.customerName ||  
+                                review.name ||  
+                                "Customer";  
+
+
+                            /*==================================  
+                                CUSTOMER IMAGE  
+                            ==================================*/  
+
+                            const customerImage =  
+                                review.customerPhoto ||  
+                                review.customerImage ||  
+                                review.image ||  
+                                review.userPhoto ||  
+                                "";  
+
+
+                            /*==================================  
+                                CUSTOMER UPLOADED PRODUCT PHOTO  
+                                  
+                                IMPORTANT:  
+                                Do NOT use productImage here.  
+                            ==================================*/  
+
+                            const customerProductImage =  
+                                review.customerProductImage ||  
+                                review.reviewProductImage ||  
+                                review.productPhoto ||  
+                                "";  
+
+
+                            /*==================================  
+                                PRODUCT NAME  
+                            ==================================*/  
+
+                            const productName =  
+                                review.productName ||  
+                                review.product ||  
+                                "";  
+
+
+                            /*==================================  
+                                REVIEW TEXT  
+                            ==================================*/  
+
+                            const reviewText =  
+                                review.review ||  
+                                review.text ||  
+                                review.comment ||  
+                                "";  
+
+
+                            /*==================================  
+                                RATING  
+                            ==================================*/  
+
+                            const rating =  
+                                Number(  
+                                    review.rating ??  
+                                    review.stars ??  
+                                    5  
+                                );  
+
+
+                            return `  
+
+                                <article  
+                                    class="review-card"  
+                                >  
+
+
+                                    <!-- CUSTOMER -->  
+
+                                    <div  
+                                        class="  
+                                            review-customer  
+                                        "  
+                                    >  
+
+                                        ${  
+                                            customerImage  
+                                            ?  
+
+                                            `  
+
+                                            <img  
+                                                class="  
+                                                    review-avatar  
+                                                "  
+                                                src="${escapeAttribute(  
+                                                    customerImage  
+                                                )}"  
+                                                alt="${escapeAttribute(  
+                                                    name  
+                                                )}"  
+                                                loading="lazy"  
+                                                onerror="  
+                                                    this.style.display='none';  
+                                                    this.nextElementSibling.style.display='flex';  
+                                                "  
+                                            >  
+
+                                            <div  
+                                                class="  
+                                                    review-avatar  
+                                                    review-avatar-empty  
+                                                "  
+                                                style="  
+                                                    display:none;  
+                                                "  
+                                            >  
+
+                                                ${escapeHtml(  
+                                                    name  
+                                                        .charAt(  
+                                                            0  
+                                                        )  
+                                                        .toUpperCase()  
+                                                )}  
+
+                                            </div>  
+
+                                            `  
+
+                                            :  
+
+                                            `  
+
+                                            <div  
+                                                class="  
+                                                    review-avatar  
+                                                    review-avatar-empty  
+                                                "  
+                                            >  
+
+                                                ${escapeHtml(  
+                                                    name  
+                                                        .charAt(  
+                                                            0  
+                                                        )  
+                                                        .toUpperCase()  
+                                                )}  
+
+                                            </div>  
+
+                                            `  
+                                        }  
+
+
+                                        <div  
+                                            class="  
+                                                review-customer-info  
+                                            "  
+                                        >  
+
+                                            <h3  
+                                                class="review-name"  
+                                            >  
+
+                                                ${escapeHtml(  
+                                                    name  
+                                                )}  
+
+                                            </h3>  
+
+
+                                            <div  
+                                                class="  
+                                                    review-stars  
+                                                "  
+                                            >  
+
+                                                ${renderStars(  
+                                                    rating  
+                                                )}  
+
+                                            </div>  
+
+                                        </div>  
+
+                                    </div>  
+
+
+                                    <!-- REVIEW TEXT -->  
+
+                                    <p  
+                                        class="  
+                                            review-text  
+                                        "  
+                                    >  
+
+                                        ${escapeHtml(  
+                                            reviewText  
+                                        )}  
+
+                                    </p>  
+
+
+                                    <!-- CUSTOMER PRODUCT PHOTO -->  
+
+                                    ${  
+                                        customerProductImage  
+                                        ?  
+
+                                        `  
+
+                                        <div  
+                                            class="  
+                                                review-product-image  
+                                            "  
+                                        >  
+
+                                            <img  
+                                                src="${escapeAttribute(  
+                                                    customerProductImage  
+                                                )}"  
+                                                alt="Customer product photo"  
+                                                loading="lazy"  
+                                                onerror="  
+                                                    this.parentElement.style.display='none';  
+                                                "  
+                                            >  
+
+                                        </div>  
+
+                                        `  
+
+                                        :  
+
+                                        ""  
+                                    }  
+
+
+                                    <!-- PRODUCT NAME -->  
+
+                                    ${  
+                                        productName  
+                                        ?  
+
+                                        `  
+
+                                        <div  
+                                            class="  
+                                                review-product-name  
+                                            "  
+                                        >  
+
+                                            ${escapeHtml(  
+                                                productName  
+                                            )}  
+
+                                        </div>  
+
+                                        `  
+
+                                        :  
+
+                                        ""  
+                                    }  
+
+                                </article>  
+
+                            `;  
+
+                        }  
+                    ).join("")  
+                }  
+
+            </div>  
+
+
+            ${  
+                reviews.length > 1  
+                ?  
+
+                `  
+
+                <div  
+                    class="  
+                        carousel-dots  
+                        review-dots  
+                    "  
+                >  
+
+                    ${  
+                        reviews.map(  
+                            (  
+                                _,  
+                                index  
+                            ) => `  
+
+                                <span  
+                                    class="${  
+                                        index === 0  
+                                        ? "active"  
+                                        : ""  
+                                    }"  
+                                ></span>  
+
+                            `  
+                        ).join("")  
+                    }  
+
+                </div>  
+
+                `  
+
+                :  
+
+                ""  
+            }  
+
+        </div>  
+
+    `;  
+
+
+    initHorizontalCarousel(  
+        container,  
+        ".review-carousel"  
+    );  
+
+}  
+
+catch(error){  
+
+    console.error(  
+        "Review carousel error:",  
+        error  
+    );  
+
+
+    container.remove();  
+
+}
+
+}
+/==================================================
+STARS
+==================================================/
 
 function renderStars(
-    stars
+stars
 ){
 
-    const rating =
-        Math.max(
-            0,
-            Math.min(
-                5,
-                Number(
-                    stars
-                ) || 0
-            )
-        );
+const rating =  
+    Math.max(  
+        0,  
+        Math.min(  
+            5,  
+            Number(  
+                stars  
+            ) || 0  
+        )  
+    );  
 
 
-    return (
-        "★".repeat(
-            rating
-        )
-        +
-        "☆".repeat(
-            5 - rating
-        )
-    );
+return (  
+    "★".repeat(  
+        rating  
+    )  
+    +  
+    "☆".repeat(  
+        5 - rating  
+    )  
+);
 
 }
 
-
-
-/*==================================================
-    SPACER
-==================================================*/
+/==================================================
+SPACER
+==================================================/
 
 function renderSpacer(
-    container,
-    section
+container,
+section
 ){
 
-    container.style.height =
-        `${Number(
-            section.height ||
-            40
-        )}px`;
+container.style.height =  
+    `${Number(  
+        section.height ||  
+        40  
+    )}px`;  
 
 
-    if(
-        section.background
-    ){
+if(  
+    section.background  
+){  
 
-        container.style.background =
-            section.background;
+    container.style.background =  
+        section.background;  
 
-    }
+}  
 
 
-    if(
-        section.backgroundColor
-    ){
+if(  
+    section.backgroundColor  
+){  
 
-        container.style.backgroundColor =
-            section.backgroundColor;
-
-    }
+    container.style.backgroundColor =  
+        section.backgroundColor;  
 
 }
 
+}
 
-
-/*==================================================
-    HORIZONTAL CAROUSEL
-==================================================*/
+/==================================================
+HORIZONTAL CAROUSEL
+==================================================/
 
 function initHorizontalCarousel(
-    container,
-    selector
+container,
+selector
 ){
 
-    const carousel =
-        container.querySelector(
-            selector
-        );
+const carousel =  
+    container.querySelector(  
+        selector  
+    );  
 
 
-    if(!carousel){
+if(!carousel){  
 
-        return;
+    return;  
 
-    }
+}  
 
 
-    carousel.addEventListener(
-        "scroll",
-        () => {
+carousel.addEventListener(  
+    "scroll",  
+    () => {  
 
-            updateCarouselDots(
-                carousel,
-                container
-            );
+        updateCarouselDots(  
+            carousel,  
+            container  
+        );  
 
-        },
-        {
-            passive:true
-        }
-    );
+    },  
+    {  
+        passive:true  
+    }  
+);
 
 }
 
-
-
-/*==================================================
-    CAROUSEL DOTS
-==================================================*/
+/==================================================
+CAROUSEL DOTS
+==================================================/
 
 function updateCarouselDots(
-    carousel,
-    container
+carousel,
+container
 ){
 
-    const dots =
-        container.querySelectorAll(
-            ".carousel-dots span"
-        );
+const dots =  
+    container.querySelectorAll(  
+        ".carousel-dots span"  
+    );  
 
 
-    if(
-        !dots.length
-    ){
+if(  
+    !dots.length  
+){  
 
-        return;
+    return;  
 
-    }
-
-
-    const max =
-        carousel.scrollWidth -
-        carousel.clientWidth;
+}  
 
 
-    if(
-        max <= 0
-    ){
-
-        return;
-
-    }
+const max =  
+    carousel.scrollWidth -  
+    carousel.clientWidth;  
 
 
-    const progress =
-        carousel.scrollLeft /
-        max;
+if(  
+    max <= 0  
+){  
+
+    return;  
+
+}  
 
 
-    const index =
-        Math.round(
-            progress *
-            (
-                dots.length -
-                1
-            )
-        );
+const progress =  
+    carousel.scrollLeft /  
+    max;  
 
 
-    dots.forEach(
-        (
-            dot,
-            i
-        ) => {
+const index =  
+    Math.round(  
+        progress *  
+        (  
+            dots.length -  
+            1  
+        )  
+    );  
 
-            dot.classList.toggle(
-                "active",
-                i === index
-            );
 
-        }
-    );
+dots.forEach(  
+    (  
+        dot,  
+        i  
+    ) => {  
+
+        dot.classList.toggle(  
+            "active",  
+            i === index  
+        );  
+
+    }  
+);
 
 }
 
-
-
-/*==================================================
-    TIMESTAMP
-==================================================*/
+/==================================================
+TIMESTAMP
+==================================================/
 
 function getTimestamp(
-    value
+value
 ){
 
-    if(
-        !value
-    ){
+if(  
+    !value  
+){  
 
-        return 0;
+    return 0;  
 
-    }
-
-
-    if(
-        typeof value.toMillis ===
-        "function"
-    ){
-
-        return value.toMillis();
-
-    }
+}  
 
 
-    if(
-        typeof value ===
-        "number"
-    ){
+if(  
+    typeof value.toMillis ===  
+    "function"  
+){  
 
-        return value;
+    return value.toMillis();  
 
-    }
+}  
 
 
-    return 0;
+if(  
+    typeof value ===  
+    "number"  
+){  
+
+    return value;  
+
+}  
+
+
+return 0;
 
 }
 
-
-
-/*==================================================
-    LOADER
-==================================================*/
+/==================================================
+LOADER
+==================================================/
 
 function showLoader(){
 
-    if(
-        loader
-    ){
+if(  
+    loader  
+){  
 
-        loader.classList.remove(
-            "hidden"
-        );
-
-    }
+    loader.classList.remove(  
+        "hidden"  
+    );  
 
 }
 
+}
 
 function hideLoader(){
 
-    if(
-        loader
-    ){
+if(  
+    loader  
+){  
 
-        loader.classList.add(
-            "hidden"
-        );
-
-    }
+    loader.classList.add(  
+        "hidden"  
+    );  
 
 }
 
+}
 
-
-/*==================================================
-    ESCAPE HTML
-==================================================*/
+/==================================================
+ESCAPE HTML
+==================================================/
 
 function escapeHtml(
-    value
+value
 ){
 
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+return String(  
+    value ?? ""  
+)  
+.replace(  
+    /&/g,  
+    "&amp;"  
+)  
+.replace(  
+    /</g,  
+    "&lt;"  
+)  
+.replace(  
+    />/g,  
+    "&gt;"  
+)  
+.replace(  
+    /"/g,  
+    "&quot;"  
+)  
+.replace(  
+    /'/g,  
+    "&#039;"  
+);
 
 }
 
-
-
-/*==================================================
-    ESCAPE ATTRIBUTE
-==================================================*/
+/==================================================
+ESCAPE ATTRIBUTE
+==================================================/
 
 function escapeAttribute(
-    value
+value
 ){
 
-    return escapeHtml(
-        value
-    );
+return escapeHtml(  
+    value  
+);
 
 }
 
 
 
-/*==================================================
-    EXPORT
-==================================================*/
+/==================================================
+EXPORT
+==================================================/
 
 export {
 
-    loadHomepage,
+loadHomepage,  
 
-    renderSection
+renderSection
 
 };
