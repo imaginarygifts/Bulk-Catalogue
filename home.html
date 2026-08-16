@@ -95,100 +95,117 @@
 
 <body>
 
+<!-- ==================================================
+     TOPBAR
+================================================== -->
 
-    <!-- ==================================================
-         TOP BAR
-    ================================================== -->
+<header class="site-topbar">
 
-    <header class="topbar">
+    <!-- MENU BUTTON -->
+
+    <button
+        type="button"
+        class="topbar-button menu-button"
+        id="menuButton"
+        aria-label="Open menu"
+        aria-expanded="false"
+    >
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
 
-        <!-- MENU -->
+    <!-- LOGO -->
 
-        <button
-            class="menu-btn"
-            id="menuButton"
-            type="button"
-            aria-label="Open menu"
+    <div class="topbar-logo">
+
+        <a
+            href="index"
+            id="logoLink"
+            data-logo-link
+            aria-label="Home"
         >
 
-            <i class="fa-solid fa-bars"></i>
-
-        </button>
-
-
-
-        <!-- LOGO -->
-
-        <div class="logo">
-
-            <a
-                id="logoLink"
-                data-logo-link
-                href="index"
-                aria-label="Home"
+            <img
+                id="siteLogo"
+                data-site-logo
+                src=""
+                alt="Company Logo"
             >
 
-                <img
-                    id="siteLogo"
-                    data-site-logo
-                    src=""
-                    alt="Company Logo"
-                >
+        </a>
 
-            </a>
+    </div>
+
+
+    <!-- SEARCH BUTTON -->
+
+    <button
+        type="button"
+        class="topbar-button search-button"
+        id="searchButton"
+        aria-label="Search"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+</header>
+
+
+
+<!-- ==================================================
+     SEARCH OVERLAY
+     HIDDEN UNTIL SEARCH BUTTON IS CLICKED
+================================================== -->
+
+<div
+    id="searchOverlay"
+    class="search-overlay"
+    aria-hidden="true"
+>
+
+    <div class="search-panel">
+
+        <!-- SEARCH HEADER -->
+
+        <div class="search-header">
+
+            <div class="search-title">
+                Search Products
+            </div>
+
+            <button
+                type="button"
+                class="search-close-button"
+                id="closeSearchButton"
+                aria-label="Close search"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
         </div>
 
 
+        <!-- SEARCH INPUT -->
 
-        <!-- SEARCH -->
+        <div class="search-input-wrapper">
 
-        <button
-            class="search-icon"
-            id="searchButton"
-            type="button"
-            aria-label="Search"
-        >
-
-            <i class="fa-solid fa-magnifying-glass"></i>
-
-        </button>
-
-    </header>
-
-
-
-    <!-- ==================================================
-         SEARCH OVERLAY
-         
-         Search functionality is handled separately.
-         It is NOT inside homepage.js.
-    ================================================== -->
-
-    <div
-        id="searchOverlay"
-        class="search-overlay"
-        aria-hidden="true"
-    >
-
-        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
 
             <input
                 type="search"
                 id="searchInput"
+                class="search-input"
                 placeholder="Search for products..."
                 autocomplete="off"
             >
 
             <button
                 type="button"
-                id="closeSearchButton"
-                aria-label="Close search"
+                id="clearSearchButton"
+                class="clear-search-button"
+                aria-label="Clear search"
             >
-
                 <i class="fa-solid fa-xmark"></i>
-
             </button>
 
         </div>
@@ -199,243 +216,253 @@
         <div
             id="searchResults"
             class="search-results"
-        ></div>
+        >
+
+            <div class="search-message">
+                Search for a product
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     SIDEBAR OVERLAY
+================================================== -->
+
+<div
+    id="sidebarOverlay"
+    class="sidebar-overlay"
+    aria-hidden="true"
+></div>
+
+
+
+<!-- ==================================================
+     SIDEBAR
+================================================== -->
+
+<aside
+    id="sidebar"
+    class="site-sidebar"
+    aria-hidden="true"
+>
+
+    <!-- SIDEBAR HEADER -->
+
+    <div class="sidebar-header">
+
+        <strong data-company-name>
+            Company Name
+        </strong>
+
+        <button
+            type="button"
+            class="sidebar-close-button"
+            id="closeSidebarButton"
+            aria-label="Close menu"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
 
     </div>
 
 
+    <!-- HOME -->
 
-    <!-- ==================================================
-         SIDEBAR
-    ================================================== -->
-
-    <aside
-        id="sidebar"
-        class="sidebar"
+    <a
+        href="index"
+        class="sidebar-link"
+        data-home-link
     >
 
+        <i class="fa-solid fa-house"></i>
 
-        <!-- SIDEBAR HEADER -->
+        <span>
+            Home
+        </span>
 
-        <div class="sidebar-header">
-
-            <strong data-company-name>
-
-                Company Name
-
-            </strong>
+    </a>
 
 
-            <button
-                type="button"
-                id="closeSidebarButton"
-                aria-label="Close menu"
-            >
+    <!-- CATEGORIES -->
 
-                <i class="fa-solid fa-xmark"></i>
+    <div class="sidebar-expandable">
 
-            </button>
-
-        </div>
-
-
-
-        <!-- HOME -->
-
-        <a
-            href="index"
-            data-home-link
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="categoriesToggle"
+            aria-expanded="false"
         >
 
-            <i class="fa-solid fa-house"></i>
-
             <span>
-                Home
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                Categories
+
             </span>
 
-        </a>
+            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
+
+        </button>
 
 
+        <div
+            id="sidebarCategories"
+            class="sidebar-submenu"
+        >
 
-        <!-- CATEGORIES -->
-
-        <div class="sidebar-expandable">
-
-            <button
-                type="button"
-                class="sidebar-expand-button"
-                id="categoriesToggle"
-            >
-
-                <span>
-
-                    <i class="fa-solid fa-layer-group"></i>
-
-                    Categories
-
-                </span>
-
-                <i
-                    class="fa-solid fa-chevron-down sidebar-chevron"
-                ></i>
-
-            </button>
-
-
-            <div
-                id="sidebarCategories"
-                class="sidebar-submenu"
-            >
-
-                <div class="sidebar-loading">
-
-                    Loading categories...
-
-                </div>
-
+            <div class="sidebar-loading">
+                Loading categories...
             </div>
 
         </div>
 
+    </div>
 
 
-        <!-- TAGS -->
+    <!-- TAGS -->
 
-        <div class="sidebar-expandable">
+    <div class="sidebar-expandable">
 
-            <button
-                type="button"
-                class="sidebar-expand-button"
-                id="tagsToggle"
-            >
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="tagsToggle"
+            aria-expanded="false"
+        >
 
-                <span>
+            <span>
 
-                    <i class="fa-solid fa-tags"></i>
+                <i class="fa-solid fa-tags"></i>
 
-                    Tags
+                Tags
 
-                </span>
+            </span>
 
-                <i
-                    class="fa-solid fa-chevron-down sidebar-chevron"
-                ></i>
+            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
 
-            </button>
+        </button>
 
 
-            <div
-                id="sidebarTags"
-                class="sidebar-submenu"
-            >
+        <div
+            id="sidebarTags"
+            class="sidebar-submenu"
+        >
 
-                <div class="sidebar-loading">
-
-                    Loading tags...
-
-                </div>
-
+            <div class="sidebar-loading">
+                Loading tags...
             </div>
 
         </div>
 
+    </div>
 
 
-        <!-- ABOUT -->
+    <!-- ABOUT -->
 
-        <a href="aboutus">
+    <a
+        href="aboutus"
+        class="sidebar-link"
+    >
 
-            <i class="fa-solid fa-circle-info"></i>
+        <i class="fa-solid fa-circle-info"></i>
 
-            <span>
-                About Us
-            </span>
+        <span>
+            About Us
+        </span>
 
-        </a>
-
-
-
-        <!-- CONTACT -->
-
-        <a href="contact-us">
-
-            <i class="fa-solid fa-phone"></i>
-
-            <span>
-                Contact Us
-            </span>
-
-        </a>
+    </a>
 
 
+    <!-- CONTACT -->
 
-        <!-- TERMS -->
+    <a
+        href="contact-us"
+        class="sidebar-link"
+    >
 
-        <a href="t&c">
+        <i class="fa-solid fa-phone"></i>
 
-            <i class="fa-solid fa-file-contract"></i>
+        <span>
+            Contact Us
+        </span>
 
-            <span>
-                Terms & Conditions
-            </span>
-
-        </a>
-
-
-
-        <!-- PRIVACY -->
-
-        <a href="privacy-policy">
-
-            <i class="fa-solid fa-lock"></i>
-
-            <span>
-                Privacy Policy
-            </span>
-
-        </a>
+    </a>
 
 
+    <!-- TERMS -->
 
-        <!-- REFUND -->
+    <a
+        href="t&c"
+        class="sidebar-link"
+    >
 
-        <a href="refund">
+        <i class="fa-solid fa-file-contract"></i>
 
-            <i class="fa-solid fa-money-bill-transfer"></i>
+        <span>
+            Terms & Conditions
+        </span>
 
-            <span>
-                Refund Policy
-            </span>
-
-        </a>
-
-
-
-        <!-- SHIPPING -->
-
-        <a href="shipping">
-
-            <i class="fa-solid fa-truck"></i>
-
-            <span>
-                Shipping Policy
-            </span>
-
-        </a>
-
-    </aside>
+    </a>
 
 
+    <!-- PRIVACY -->
 
-    <!-- ==================================================
-         SIDEBAR OVERLAY
-    ================================================== -->
+    <a
+        href="privacy-policy"
+        class="sidebar-link"
+    >
 
-    <div
-        id="overlay"
-        class="overlay"
-    ></div>
+        <i class="fa-solid fa-lock"></i>
 
+        <span>
+            Privacy Policy
+        </span>
+
+    </a>
+
+
+    <!-- REFUND -->
+
+    <a
+        href="refund"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-money-bill-transfer"></i>
+
+        <span>
+            Refund Policy
+        </span>
+
+    </a>
+
+
+    <!-- SHIPPING -->
+
+    <a
+        href="shipping"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-truck"></i>
+
+        <span>
+            Shipping Policy
+        </span>
+
+    </a>
+
+</aside>
 
 
     <!-- ==================================================
