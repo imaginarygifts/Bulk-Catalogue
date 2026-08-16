@@ -394,3 +394,102 @@ body{
     }
 
 }
+
+/* ==================================================
+   ORDER BUTTON DROPDOWN
+================================================== */
+
+#orderButton {
+
+    width: 100%;
+
+    min-height: 48px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    border-radius: 12px;
+
+    background: #24242a;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    outline: none;
+
+    cursor: pointer;
+
+    appearance: none;
+
+    -webkit-appearance: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+
+    /* Custom arrow */
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, #ffffff 50%),
+        linear-gradient(135deg, #ffffff 50%, transparent 50%);
+
+    background-position:
+        calc(100% - 18px) 21px,
+        calc(100% - 13px) 21px;
+
+    background-size:
+        6px 6px,
+        6px 6px;
+
+    background-repeat: no-repeat;
+
+}
+
+
+/* Hover */
+
+#orderButton:hover {
+
+    background-color: #2b2b32;
+
+    border-color:
+        rgba(255,255,255,0.20);
+
+}
+
+
+/* Focus */
+
+#orderButton:focus {
+
+    border-color: #ff3c91;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255,60,145,0.12);
+
+}
+
+
+/* Dropdown options */
+
+#orderButton option {
+
+    background: #24242a;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+}
