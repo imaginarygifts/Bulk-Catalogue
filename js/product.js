@@ -31,7 +31,7 @@ import {
 
 let siteSettings = {
 
-    companyName: "Imaginary Gifts",
+    companyName: "",
 
     whatsapp: "",
 
@@ -65,7 +65,6 @@ let siteSettings = {
 
     orderButton: "buyNow"
 
-
 };
 
 
@@ -84,10 +83,12 @@ async function loadSiteSettings() {
                 "general"
             );
 
+
         const snapshot =
             await getDoc(
                 settingsRef
             );
+
 
         if (
             snapshot.exists()
@@ -103,15 +104,20 @@ async function loadSiteSettings() {
 
         }
 
+
         console.log(
-            "✅ Product site settings loaded",
+            "Product site settings loaded:",
             siteSettings
         );
+
 
         window.siteSettings =
             siteSettings;
 
+
         applySiteSettings();
+
+        return siteSettings;
 
     }
 
@@ -121,6 +127,18 @@ async function loadSiteSettings() {
             "Site settings error:",
             error
         );
+
+
+        /*
+            Keep default settings so
+            product page can continue loading.
+        */
+
+        window.siteSettings =
+            siteSettings;
+
+
+        return siteSettings;
 
     }
 
@@ -209,6 +227,7 @@ function applySiteSettings() {
                 'link[rel="icon"]'
             );
 
+
         if (!favicon) {
 
             favicon =
@@ -224,6 +243,7 @@ function applySiteSettings() {
             );
 
         }
+
 
         favicon.href =
             siteSettings.faviconUrl;
@@ -241,6 +261,7 @@ function applySiteSettings() {
             document.querySelector(
                 'meta[name="description"]'
             );
+
 
         if (meta) {
 
@@ -494,237 +515,416 @@ function validateRequiredSelections() {
 
 
 /* ==================================================
-PRODUCT META
+   PRODUCT META
 ================================================== */
 
 function updatePageMeta() {
 
-if (!product) {  
+    if (!product) {
 
-    return;  
+        return;
 
-}  
-
-
-const companyName =  
-    siteSettings.companyName ||  
-    "Imaginary Gifts";  
+    }
 
 
-const title =  
-    product.seoTitle ||  
-    product.metaTitle ||  
-    product.name ||  
-    companyName;  
+    const companyName =
+        siteSettings.companyName ||
+        "";
 
 
-const description =  
-    product.seoDescription ||  
-    product.metaDescription ||  
-    product.description ||  
-    siteSettings.metaDescription ||  
-    `Buy ${product.name} from ${companyName}`;  
+    /* ==================================================
+       PRODUCT NAME = META TITLE
+    ================================================== */
+
+    const title =
+        String(
+            product.name ||
+            companyName
+        ).trim();
 
 
-const image =  
-    product.images?.[0] ||  
-    siteSettings.logoUrl ||  
-    "";  
+    /* ==================================================
+       PRODUCT DESCRIPTION = META DESCRIPTION
+
+       Safely handles:
+       - normal string
+       - null
+       - undefined
+       - array
+    ================================================== */
+
+    let description = "";
 
 
-const url =  
-    window.location.href;  
+    if (
+        typeof product.description ===
+        "string"
+    ) {
+
+        description =
+            product.description.trim();
+
+    }
+
+    else if (
+        Array.isArray(
+            product.description
+        )
+    ) {
+
+        description =
+            product.description
+                .map(
+                    item =>
+                        String(
+                            item ?? ""
+                        )
+                )
+                .join(" ")
+                .trim();
+
+    }
+
+    else if (
+        product.description !==
+        null &&
+        product.description !==
+        undefined
+    ) {
+
+        description =
+            String(
+                product.description
+            ).trim();
+
+    }
 
 
-/* TITLE */  
+    if (!description) {
 
-document.title =  
-    title;  
+        description =
+            `Buy ${product.name || "this product"} from ${companyName}`;
 
-
-/* DESCRIPTION */  
-
-let metaDesc =  
-    document.querySelector(  
-        'meta[name="description"]'  
-    );  
+    }
 
 
-if (!metaDesc) {  
+    /* ==================================================
+       PRODUCT IMAGE = OG IMAGE
+    ================================================== */
 
-    metaDesc =  
-        document.createElement(  
-            "meta"  
-        );  
-
-    metaDesc.name =  
-        "description";  
-
-    document.head.appendChild(  
-        metaDesc  
-    );  
-
-}  
+    let image = "";
 
 
-metaDesc.content =  
-    description;  
+    if (
+        Array.isArray(
+            product.images
+        ) &&
+        product.images.length
+    ) {
+
+        image =
+            product.images[0] ||
+            "";
+
+    }
 
 
-/* KEYWORDS */  
+    if (
+        !image &&
+        siteSettings.logoUrl
+    ) {
 
-if (  
-    product.seoKeywords ||  
-    product.metaKeywords ||  
-    siteSettings.metaKeywords  
-) {  
+        image =
+            siteSettings.logoUrl;
 
-    let keywords =  
-        document.querySelector(  
-            'meta[name="keywords"]'  
-        );  
+    }
 
 
-    if (!keywords) {  
+    /* ==================================================
+       CURRENT URL
+    ================================================== */
 
-        keywords =  
-            document.createElement(  
-                "meta"  
-            );  
-
-        keywords.name =  
-            "keywords";  
-
-        document.head.appendChild(  
-            keywords  
-        );  
-
-    }  
+    const url =
+        window.location.href;
 
 
-    keywords.content =  
-        product.seoKeywords ||  
-        product.metaKeywords ||  
-        siteSettings.metaKeywords;  
+    /* ==================================================
+       DOCUMENT TITLE
+    ================================================== */
 
-}  
-
-
-/* OG TITLE */  
-
-setMeta(  
-    "property",  
-    "og:title",  
-    title  
-);  
+    document.title =
+        title;
 
 
-/* OG DESCRIPTION */  
+    /* ==================================================
+       META DESCRIPTION
+    ================================================== */
 
-setMeta(  
-    "property",  
-    "og:description",  
-    description  
-);  
-
-
-/* OG IMAGE */  
-
-setMeta(  
-    "property",  
-    "og:image",  
-    image  
-);  
+    let metaDesc =
+        document.querySelector(
+            'meta[name="description"]'
+        );
 
 
-/* OG URL */  
+    if (!metaDesc) {
 
-setMeta(  
-    "property",  
-    "og:url",  
-    url  
-);  
+        metaDesc =
+            document.createElement(
+                "meta"
+            );
 
+        metaDesc.name =
+            "description";
 
-/* OG TYPE */  
+        document.head.appendChild(
+            metaDesc
+        );
 
-setMeta(  
-    "property",  
-    "og:type",  
-    "product"  
-);  
-
-
-/* TWITTER TITLE */  
-
-setMeta(  
-    "name",  
-    "twitter:title",  
-    title  
-);  
+    }
 
 
-/* TWITTER DESCRIPTION */  
-
-setMeta(  
-    "name",  
-    "twitter:description",  
-    description  
-);  
+    metaDesc.setAttribute(
+        "content",
+        description
+    );
 
 
-/* TWITTER IMAGE */  
+    /* ==================================================
+       PRODUCT KEYWORDS
+    ================================================== */
 
-setMeta(  
-    "name",  
-    "twitter:image",  
-    image  
-);
+    let keywords = "";
+
+
+    /*
+       Supports:
+
+       seoKeywords: "gift, personalized gift"
+
+       OR
+
+       seoKeywords: [
+           ""
+       ]
+    */
+
+
+    if (
+        Array.isArray(
+            product.seoKeywords
+        )
+    ) {
+
+        keywords =
+            product.seoKeywords
+                .map(
+                    keyword =>
+                        String(
+                            keyword ?? ""
+                        ).trim()
+                )
+                .filter(
+                    keyword =>
+                        keyword.length > 0
+                )
+                .join(", ");
+
+    }
+
+    else if (
+        typeof product.seoKeywords ===
+        "string"
+    ) {
+
+        keywords =
+            product.seoKeywords.trim();
+
+    }
+
+
+    /*
+       Backward compatibility
+    */
+
+    if (
+        !keywords &&
+        typeof product.metaKeywords ===
+        "string"
+    ) {
+
+        keywords =
+            product.metaKeywords.trim();
+
+    }
+
+
+    /*
+       Create / update keywords meta
+    */
+
+    if (keywords) {
+
+        let metaKeywords =
+            document.querySelector(
+                'meta[name="keywords"]'
+            );
+
+
+        if (!metaKeywords) {
+
+            metaKeywords =
+                document.createElement(
+                    "meta"
+                );
+
+            metaKeywords.name =
+                "keywords";
+
+            document.head.appendChild(
+                metaKeywords
+            );
+
+        }
+
+
+        metaKeywords.setAttribute(
+            "content",
+            keywords
+        );
+
+    }
+
+
+    /* ==================================================
+       OPEN GRAPH TITLE
+    ================================================== */
+
+    setMeta(
+        "property",
+        "og:title",
+        title
+    );
+
+
+    /* ==================================================
+       OPEN GRAPH DESCRIPTION
+    ================================================== */
+
+    setMeta(
+        "property",
+        "og:description",
+        description
+    );
+
+
+    /* ==================================================
+       OPEN GRAPH IMAGE
+    ================================================== */
+
+    setMeta(
+        "property",
+        "og:image",
+        image
+    );
+
+
+    /* ==================================================
+       OPEN GRAPH URL
+    ================================================== */
+
+    setMeta(
+        "property",
+        "og:url",
+        url
+    );
+
+
+    /* ==================================================
+       OPEN GRAPH TYPE
+    ================================================== */
+
+    setMeta(
+        "property",
+        "og:type",
+        "product"
+    );
+
+
+    /* ==================================================
+       TWITTER CARD
+    ================================================== */
+
+    setMeta(
+        "name",
+        "twitter:card",
+        "summary_large_image"
+    );
+
+
+    setMeta(
+        "name",
+        "twitter:title",
+        title
+    );
+
+
+    setMeta(
+        "name",
+        "twitter:description",
+        description
+    );
+
+
+    setMeta(
+        "name",
+        "twitter:image",
+        image
+    );
 
 }
 
+
 /* ==================================================
-META HELPER
+   META HELPER
 ================================================== */
 
 function setMeta(
-attribute,
-name,
-content
+    attribute,
+    name,
+    content
 ) {
 
-let meta =  
-    document.querySelector(  
-        `meta[${attribute}="${name}"]`  
-    );  
+    let meta =
+        document.querySelector(
+            `meta[${attribute}="${name}"]`
+        );
 
 
-if (!meta) {  
+    if (!meta) {
 
-    meta =  
-        document.createElement(  
-            "meta"  
-        );  
+        meta =
+            document.createElement(
+                "meta"
+            );
 
-    meta.setAttribute(  
-        attribute,  
-        name  
-    );  
+        meta.setAttribute(
+            attribute,
+            name
+        );
 
-    document.head.appendChild(  
-        meta  
-    );  
+        document.head.appendChild(
+            meta
+        );
 
-}  
+    }
 
 
-meta.setAttribute(  
-    "content",  
-    content || ""  
-);
+    meta.setAttribute(
+        "content",
+        content || ""
+    );
 
 }
-
 
 
 /* ==================================================
@@ -745,7 +945,7 @@ async function loadProduct() {
         if (!id) {
 
             console.error(
-                "❌ Product ID missing"
+                "Product ID missing"
             );
 
             showProductError(
@@ -774,7 +974,7 @@ async function loadProduct() {
         ) {
 
             console.error(
-                "❌ Product not found"
+                "Product not found"
             );
 
             showProductError(
@@ -809,7 +1009,13 @@ async function loadProduct() {
         /* SLIDER */
 
         renderSlider(
-            product.images || []
+            Array.isArray(
+                product.images
+            )
+            ?
+            product.images
+            :
+            []
         );
 
 
@@ -821,11 +1027,13 @@ async function loadProduct() {
         /* MAIN UI */
 
         render();
+
+
         updateStickyOrderButton();
 
 
         console.log(
-            "✅ Product loaded",
+            "Product loaded successfully:",
             product
         );
 
@@ -834,7 +1042,7 @@ async function loadProduct() {
     catch (error) {
 
         console.error(
-            "❌ Product loading error:",
+            "Product loading error:",
             error
         );
 
@@ -924,13 +1132,6 @@ function getBasePrice() {
 
 
 /* ==================================================
-   START LOAD
-================================================== */
-
-loadProduct();
-
-
-/* ==================================================
    RELATED PRODUCTS
 ================================================== */
 
@@ -941,6 +1142,9 @@ async function loadRelatedDesigns() {
 
     if (
         !product.relatedDesigns ||
+        !Array.isArray(
+            product.relatedDesigns
+        ) ||
         !product.relatedDesigns.length
     ) {
 
@@ -1045,9 +1249,7 @@ function render() {
 
     /* ==================================================
        PRICE
-
-       Sale price + old price are kept.
-       Discount badge is removed.
+       Discount badge removed
     ================================================== */
 
     const priceHTML = `
@@ -1103,10 +1305,6 @@ function render() {
     `;
 
 
-    
-
-
-
     /* ==================================================
        PRODUCT HEADER
     ================================================== */
@@ -1114,8 +1312,6 @@ function render() {
     let html = `
 
         <div class="product-header">
-
-            
 
             <h2>
 
@@ -1384,11 +1580,11 @@ function render() {
 }
 
 
-/*==================================================
-    STICKY ORDER BUTTON
-==================================================*/
+/* ==================================================
+   STICKY ORDER BUTTON
+================================================== */
 
-function updateStickyOrderButton(){
+function updateStickyOrderButton() {
 
     const button =
         document.getElementById(
@@ -1396,21 +1592,22 @@ function updateStickyOrderButton(){
         );
 
 
-    if(!button){
+    if (!button) {
 
         return;
 
     }
 
 
-    /*================================================
-        OUT OF STOCK
-        Always overrides the Site Settings
-    ================================================*/
+    /* ==================================================
+       OUT OF STOCK
 
-    if(
+       ALWAYS OVERRIDES ORDER BUTTON
+    ================================================== */
+
+    if (
         product?.inStock === false
-    ){
+    ) {
 
         button.className =
             "order-btn out-of-stock-sticky";
@@ -1440,17 +1637,17 @@ function updateStickyOrderButton(){
     }
 
 
-    /*================================================
-        ORDER ON WHATSAPP
-    ================================================*/
+    /* ==================================================
+       WHATSAPP
+    ================================================== */
 
-    if(
+    if (
         siteSettings.orderButton ===
         "whatsapp"
-    ){
+    ) {
 
         button.className =
-            "order-btn";
+            "order-btn whatsapp-order-btn";
 
 
         button.innerHTML =
@@ -1471,17 +1668,17 @@ function updateStickyOrderButton(){
     }
 
 
-    /*================================================
-        BUY NOW
-    ================================================*/
+    /* ==================================================
+       BUY NOW
+    ================================================== */
 
-    if(
+    if (
         siteSettings.orderButton ===
         "buyNow"
-    ){
+    ) {
 
         button.className =
-            "buy-now-btn";
+            "order-btn buy-now-btn";
 
 
         button.innerHTML =
@@ -1502,13 +1699,12 @@ function updateStickyOrderButton(){
     }
 
 
-    /*================================================
-        FALLBACK
-        If Firestore has an unexpected value
-    ================================================*/
+    /* ==================================================
+       FALLBACK
+    ================================================== */
 
     button.className =
-        "order-btn";
+        "order-btn whatsapp-order-btn";
 
 
     button.innerHTML =
@@ -1519,6 +1715,7 @@ function updateStickyOrderButton(){
         window.orderNow;
 
 }
+
 
 /* ==================================================
    RELATED DESIGN NAVIGATION
@@ -1581,6 +1778,7 @@ function renderSlider(
 
 
     if (
+        !images ||
         !images.length
     ) {
 
@@ -1644,6 +1842,15 @@ function renderSlider(
     slider.onscroll =
     function() {
 
+        if (
+            !slider.clientWidth
+        ) {
+
+            return;
+
+        }
+
+
         const i =
             Math.round(
                 slider.scrollLeft /
@@ -1704,7 +1911,7 @@ function(index) {
 
 
     selected.color =
-        product.variants.colors[index] ||
+        product?.variants?.colors?.[index] ||
         null;
 
 
@@ -1748,7 +1955,7 @@ function(index) {
 
 
     selected.size =
-        product.variants.sizes[index] ||
+        product?.variants?.sizes?.[index] ||
         null;
 
 
@@ -3265,6 +3472,13 @@ function() {
         );
 
 };
+
+
+/* ==================================================
+   START PRODUCT LOAD
+================================================== */
+
+loadProduct();
 
 
 /* ==================================================
