@@ -86,7 +86,6 @@ async function loadSiteSettings() {
                 settingsRef
             );
 
-
         if (
             snapshot.exists()
         ) {
@@ -101,24 +100,15 @@ async function loadSiteSettings() {
 
         }
 
-
         console.log(
             "✅ Product site settings loaded",
             siteSettings
         );
 
-
-        /*
-            Make available globally
-            AFTER loading.
-        */
-
         window.siteSettings =
             siteSettings;
 
-
         applySiteSettings();
-
 
     }
 
@@ -145,9 +135,7 @@ function applySiteSettings() {
         "Imaginary Gifts";
 
 
-    /*
-        PAGE TITLE
-    */
+    /* PAGE TITLE */
 
     if (
         siteSettings.websiteTitle
@@ -157,6 +145,7 @@ function applySiteSettings() {
             siteSettings.websiteTitle;
 
     }
+
     else {
 
         document.title =
@@ -165,9 +154,7 @@ function applySiteSettings() {
     }
 
 
-    /*
-        LOGO
-    */
+    /* LOGO */
 
     document
         .querySelectorAll(
@@ -192,9 +179,7 @@ function applySiteSettings() {
         );
 
 
-    /*
-        COMPANY NAME
-    */
+    /* COMPANY NAME */
 
     document
         .querySelectorAll(
@@ -210,9 +195,7 @@ function applySiteSettings() {
         );
 
 
-    /*
-        FAVICON
-    */
+    /* FAVICON */
 
     if (
         siteSettings.faviconUrl
@@ -222,7 +205,6 @@ function applySiteSettings() {
             document.querySelector(
                 'link[rel="icon"]'
             );
-
 
         if (!favicon) {
 
@@ -240,16 +222,13 @@ function applySiteSettings() {
 
         }
 
-
         favicon.href =
             siteSettings.faviconUrl;
 
     }
 
 
-    /*
-        DEFAULT META DESCRIPTION
-    */
+    /* DEFAULT META DESCRIPTION */
 
     if (
         siteSettings.metaDescription
@@ -259,7 +238,6 @@ function applySiteSettings() {
             document.querySelector(
                 'meta[name="description"]'
             );
-
 
         if (meta) {
 
@@ -384,9 +362,7 @@ function validateRequiredSelections() {
         );
 
 
-    /* ==============================================
-       COLOR
-    ============================================== */
+    /* COLOR */
 
     if (
         product?.variants?.colors?.some(
@@ -407,9 +383,7 @@ function validateRequiredSelections() {
     }
 
 
-    /* ==============================================
-       SIZE
-    ============================================== */
+    /* SIZE */
 
     if (
         product?.variants?.sizes?.some(
@@ -430,9 +404,7 @@ function validateRequiredSelections() {
     }
 
 
-    /* ==============================================
-       CUSTOM OPTIONS
-    ============================================== */
+    /* CUSTOM OPTIONS */
 
     if (
         product?.customOptions?.length
@@ -450,10 +422,7 @@ function validateRequiredSelections() {
                 }
 
 
-                /*
-                    TEXT
-                    DROPDOWN
-                */
+                /* TEXT / DROPDOWN */
 
                 if (
                     option.type === "text" ||
@@ -473,9 +442,7 @@ function validateRequiredSelections() {
                 }
 
 
-                /*
-                    CHECKBOX
-                */
+                /* CHECKBOX */
 
                 if (
                     option.type === "checkbox"
@@ -494,9 +461,7 @@ function validateRequiredSelections() {
                 }
 
 
-                /*
-                    IMAGE
-                */
+                /* IMAGE */
 
                 if (
                     option.type === "image"
@@ -568,17 +533,13 @@ function updatePageMeta() {
         window.location.href;
 
 
-    /*
-        TITLE
-    */
+    /* TITLE */
 
     document.title =
         title;
 
 
-    /*
-        DESCRIPTION
-    */
+    /* DESCRIPTION */
 
     let metaDesc =
         document.querySelector(
@@ -607,9 +568,7 @@ function updatePageMeta() {
         description;
 
 
-    /*
-        KEYWORDS
-    */
+    /* KEYWORDS */
 
     if (
         product.seoKeywords ||
@@ -648,9 +607,7 @@ function updatePageMeta() {
     }
 
 
-    /*
-        OG TITLE
-    */
+    /* OG TITLE */
 
     setMeta(
         "property",
@@ -659,9 +616,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        OG DESCRIPTION
-    */
+    /* OG DESCRIPTION */
 
     setMeta(
         "property",
@@ -670,9 +625,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        OG IMAGE
-    */
+    /* OG IMAGE */
 
     setMeta(
         "property",
@@ -681,9 +634,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        OG URL
-    */
+    /* OG URL */
 
     setMeta(
         "property",
@@ -692,9 +643,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        OG TYPE
-    */
+    /* OG TYPE */
 
     setMeta(
         "property",
@@ -703,9 +652,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        TWITTER TITLE
-    */
+    /* TWITTER TITLE */
 
     setMeta(
         "name",
@@ -714,9 +661,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        TWITTER DESCRIPTION
-    */
+    /* TWITTER DESCRIPTION */
 
     setMeta(
         "name",
@@ -725,9 +670,7 @@ function updatePageMeta() {
     );
 
 
-    /*
-        TWITTER IMAGE
-    */
+    /* TWITTER IMAGE */
 
     setMeta(
         "name",
@@ -789,16 +732,12 @@ async function loadProduct() {
 
     try {
 
-        /*
-            SETTINGS FIRST
-        */
+        /* SETTINGS FIRST */
 
         await loadSiteSettings();
 
 
-        /*
-            PRODUCT ID
-        */
+        /* PRODUCT ID */
 
         if (!id) {
 
@@ -815,9 +754,7 @@ async function loadProduct() {
         }
 
 
-        /*
-            GET PRODUCT
-        */
+        /* GET PRODUCT */
 
         const snap =
             await getDoc(
@@ -855,40 +792,30 @@ async function loadProduct() {
         };
 
 
-        /*
-            FINAL PRICE
-        */
+        /* FINAL PRICE */
 
         finalPrice =
             getBasePrice();
 
 
-        /*
-            META
-        */
+        /* META */
 
         updatePageMeta();
 
 
-        /*
-            SLIDER
-        */
+        /* SLIDER */
 
         renderSlider(
             product.images || []
         );
 
 
-        /*
-            RELATED
-        */
+        /* RELATED */
 
         await loadRelatedDesigns();
 
 
-        /*
-            MAIN UI
-        */
+        /* MAIN UI */
 
         render();
 
@@ -993,7 +920,7 @@ function getBasePrice() {
 
 
 /* ==================================================
-   LOAD PRODUCT
+   START LOAD
 ================================================== */
 
 loadProduct();
@@ -1112,9 +1039,12 @@ function render() {
     }
 
 
-    /* ==============================================
+    /* ==================================================
        PRICE
-    ============================================== */
+
+       Sale price + old price are kept.
+       Discount badge is removed.
+    ================================================== */
 
     const priceHTML = `
 
@@ -1169,47 +1099,17 @@ function render() {
     `;
 
 
-    /* ==============================================
+    /* ==================================================
        BADGES
-    ============================================== */
+
+       ONLY OUT OF STOCK IS DISPLAYED.
+
+       Bestseller badge removed.
+       Discount badge removed.
+    ================================================== */
 
     let badgeHTML =
         "";
-
-
-    if (
-        product.isBestseller === true ||
-        product.tags?.includes("bestseller")
-    ) {
-
-        badgeHTML += `
-
-            <span class="badge bestseller">
-
-                🔥 Bestseller
-
-            </span>
-
-        `;
-
-    }
-
-
-    if (
-        discount > 0
-    ) {
-
-        badgeHTML += `
-
-            <span class="badge discount">
-
-                -${discount}%
-
-            </span>
-
-        `;
-
-    }
 
 
     if (
@@ -1229,9 +1129,9 @@ function render() {
     }
 
 
-    /* ==============================================
-       HEADER
-    ============================================== */
+    /* ==================================================
+       PRODUCT HEADER
+    ================================================== */
 
     let html = `
 
@@ -1266,9 +1166,9 @@ function render() {
     `;
 
 
-    /* ==============================================
+    /* ==================================================
        COLORS
-    ============================================== */
+    ================================================== */
 
     if (
         product.variants?.colors?.length
@@ -1323,9 +1223,9 @@ function render() {
     }
 
 
-    /* ==============================================
+    /* ==================================================
        SIZES
-    ============================================== */
+    ================================================== */
 
     if (
         product.variants?.sizes?.length
@@ -1380,9 +1280,9 @@ function render() {
     }
 
 
-    /* ==============================================
+    /* ==================================================
        RELATED DESIGNS
-    ============================================== */
+    ================================================== */
 
     if (
         relatedProducts.length > 1
@@ -1626,11 +1526,6 @@ function renderSlider(
         }
     );
 
-
-    /*
-        Avoid adding multiple
-        scroll listeners.
-    */
 
     slider.onscroll =
     function() {
@@ -1885,10 +1780,13 @@ async function(
             <div class="uploading">
 
                 ⏳ Uploading
+
                 <b>
+
                     ${escapeHtml(
                         file.name
                     )}
+
                 </b>...
 
             </div>
@@ -2009,9 +1907,7 @@ function recalcPrice() {
         );
 
 
-    /*
-        COLOR
-    */
+    /* COLOR */
 
     if (
         selected.color
@@ -2026,9 +1922,7 @@ function recalcPrice() {
     }
 
 
-    /*
-        SIZE
-    */
+    /* SIZE */
 
     if (
         selected.size
@@ -2043,9 +1937,7 @@ function recalcPrice() {
     }
 
 
-    /*
-        CUSTOM OPTIONS
-    */
+    /* CUSTOM OPTIONS */
 
     Object
         .values(
@@ -2063,9 +1955,7 @@ function recalcPrice() {
         );
 
 
-    /*
-        PAGE PRICE
-    */
+    /* PAGE PRICE */
 
     const pagePrice =
         document.getElementById(
@@ -2081,9 +1971,7 @@ function recalcPrice() {
     }
 
 
-    /*
-        POPUP PRICE
-    */
+    /* POPUP PRICE */
 
     const popupPrice =
         document.getElementById(
@@ -2162,9 +2050,7 @@ function renderCustomizePopup() {
                 "custom-option";
 
 
-            /*
-                LABEL
-            */
+            /* LABEL */
 
             const label =
                 document.createElement(
@@ -2190,9 +2076,7 @@ function renderCustomizePopup() {
             );
 
 
-            /*
-                TEXT
-            */
+            /* TEXT */
 
             if (
                 option.type === "text"
@@ -2229,9 +2113,7 @@ function renderCustomizePopup() {
             }
 
 
-            /*
-                CHECKBOX
-            */
+            /* CHECKBOX */
 
             else if (
                 option.type === "checkbox"
@@ -2294,9 +2176,7 @@ function renderCustomizePopup() {
             }
 
 
-            /*
-                DROPDOWN
-            */
+            /* DROPDOWN */
 
             else if (
                 option.type === "dropdown"
@@ -2381,9 +2261,7 @@ function renderCustomizePopup() {
             }
 
 
-            /*
-                IMAGE
-            */
+            /* IMAGE */
 
             else if (
                 option.type === "image"
@@ -2623,9 +2501,7 @@ async function() {
             .trim();
 
 
-    /*
-        VALIDATION
-    */
+    /* VALIDATION */
 
     if (
         !name ||
@@ -2673,9 +2549,7 @@ async function() {
     }
 
 
-    /*
-        WHATSAPP FROM SITE SETTINGS
-    */
+    /* WHATSAPP FROM SITE SETTINGS */
 
     const whatsappNumber =
         String(
@@ -2703,9 +2577,7 @@ async function() {
 
     try {
 
-        /*
-            ORDER NUMBER
-        */
+        /* ORDER NUMBER */
 
         const counterRef =
             doc(
@@ -2775,9 +2647,7 @@ async function() {
             `${prefix}-${nextNumber}`;
 
 
-        /*
-            SAVE ORDER
-        */
+        /* SAVE ORDER */
 
         const orderData = {
 
@@ -2848,10 +2718,12 @@ async function() {
                                     ?.label ||
                                 "",
 
+
                             value:
                                 selected
                                     .optionValues?.[index] ||
                                 "",
+
 
                             image:
                                 selected
@@ -2918,9 +2790,7 @@ async function() {
         );
 
 
-        /*
-            WHATSAPP MESSAGE
-        */
+        /* WHATSAPP MESSAGE */
 
         const companyName =
             siteSettings.companyName ||
@@ -2955,9 +2825,7 @@ async function() {
             `📦 *Product:* ${product.name}\n`;
 
 
-        /*
-            COLOR
-        */
+        /* COLOR */
 
         if (
             selected.color
@@ -2969,9 +2837,7 @@ async function() {
         }
 
 
-        /*
-            SIZE
-        */
+        /* SIZE */
 
         if (
             selected.size
@@ -2983,9 +2849,7 @@ async function() {
         }
 
 
-        /*
-            OPTIONS
-        */
+        /* OPTIONS */
 
         if (
             Object.keys(
@@ -3035,17 +2899,19 @@ async function() {
         }
 
 
+        /* TOTAL */
+
         message +=
             `\n💰 *Total:* ₹${finalPrice}\n`;
 
+
+        /* PRODUCT LINK */
 
         message +=
             `🔗 Product Link:\n${location.href}`;
 
 
-        /*
-            WHATSAPP URL
-        */
+        /* WHATSAPP URL */
 
         const whatsappUrl =
             `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
@@ -3059,9 +2925,7 @@ async function() {
         );
 
 
-        /*
-            CLOSE FORM
-        */
+        /* CLOSE FORM */
 
         document
             .getElementById(
@@ -3119,9 +2983,7 @@ function() {
 window.buyNow =
 function() {
 
-    /*
-        Validate first
-    */
+    /* VALIDATE */
 
     const errors =
         validateRequiredSelections();
@@ -3140,9 +3002,7 @@ function() {
     }
 
 
-    /*
-        SAVE COMPLETE CHECKOUT DATA
-    */
+    /* SAVE COMPLETE CHECKOUT DATA */
 
     const checkoutData = {
 
@@ -3166,10 +3026,7 @@ function() {
             selected.imageLinks,
 
 
-        /*
-            SITE SETTINGS
-            Needed by order/payment page
-        */
+        /* SITE SETTINGS */
 
         site: {
 
@@ -3202,9 +3059,7 @@ function() {
     );
 
 
-    /*
-        GO TO CHECKOUT
-    */
+    /* GO TO CHECKOUT */
 
     location.href =
         "order";
