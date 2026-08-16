@@ -315,10 +315,11 @@ img {
 
     font-size: 15px;
 
-    line-height: 1.55;
+    line-height: 1.65;
+
+    white-space: pre-line;
 
 }
-
 
 
 /* ==================================================
