@@ -1,6 +1,15 @@
 /*==================================================
     HOMEPAGE
     MOBILE FIRST
+
+    IMPORTANT:
+    Topbar / Menu / Logo / Search are NOT handled here.
+
+    Those features will be handled separately by:
+        js/topbar.js
+
+    Sidebar will be handled separately by:
+        js/sidebar.js
 ==================================================*/
 
 import { db } from "./firebase.js";
@@ -43,6 +52,17 @@ document.addEventListener(
 
 async function loadHomepage(){
 
+    if(!homepage){
+
+        console.warn(
+            "Homepage container #homepage not found."
+        );
+
+        return;
+
+    }
+
+
     try{
 
         showLoader();
@@ -61,7 +81,8 @@ async function loadHomepage(){
             snapshot.docs.map(
                 docSnap => ({
 
-                    id: docSnap.id,
+                    id:
+                        docSnap.id,
 
                     ...docSnap.data()
 
@@ -85,9 +106,17 @@ async function loadHomepage(){
         ==================================================*/
 
         sections.sort(
-            (a,b) =>
-                Number(a.order || 0) -
-                Number(b.order || 0)
+            (
+                a,
+                b
+            ) =>
+                Number(
+                    a.order || 0
+                )
+                -
+                Number(
+                    b.order || 0
+                )
         );
 
 
@@ -189,6 +218,16 @@ async function renderSection(
     section
 ){
 
+    if(
+        !parent ||
+        !section
+    ){
+
+        return;
+
+    }
+
+
     const wrapper =
         document.createElement(
             "section"
@@ -288,9 +327,6 @@ async function renderSection(
 
         /*==============================================
             YOUTUBE CAROUSEL
-
-            This component is now loaded
-            from youtube-carousel.js
         ==============================================*/
 
         case "youtubeCarousel":
@@ -309,7 +345,7 @@ async function renderSection(
 
         case "reviewCarousel":
 
-            renderReviewCarousel(
+            await renderReviewCarousel(
                 wrapper,
                 section
             );
@@ -347,9 +383,35 @@ async function renderSection(
     }
 
 
-    parent.appendChild(
-        wrapper
-    );
+    /*
+        Some render functions can remove the wrapper
+        when there is no content.
+    */
+
+    if(
+        wrapper.isConnected === false &&
+        section.type !== "reviewCarousel"
+    ){
+
+        return;
+
+    }
+
+
+    /*
+        Only append if it has not already been
+        removed by the renderer.
+    */
+
+    if(
+        !wrapper.parentElement
+    ){
+
+        parent.appendChild(
+            wrapper
+        );
+
+    }
 
 }
 
@@ -405,6 +467,7 @@ function renderSectionHeading(
                     hasTitle
                     ?
                     `
+
                     <h2
                         style="
                             color:${escapeAttribute(
@@ -418,6 +481,7 @@ function renderSectionHeading(
                         )}
 
                     </h2>
+
                     `
                     :
                     ""
@@ -428,6 +492,7 @@ function renderSectionHeading(
                     hasSubtitle
                     ?
                     `
+
                     <p
                         style="
                             color:${escapeAttribute(
@@ -441,6 +506,7 @@ function renderSectionHeading(
                         )}
 
                     </p>
+
                     `
                     :
                     ""
@@ -474,6 +540,7 @@ function renderHeading(
                     section.badge
                     ?
                     `
+
                     <div class="heading-badge">
 
                         ${escapeHtml(
@@ -481,6 +548,7 @@ function renderHeading(
                         )}
 
                     </div>
+
                     `
                     :
                     ""
@@ -491,6 +559,7 @@ function renderHeading(
                     section.title
                     ?
                     `
+
                     <h2
                         style="
                             color:${escapeAttribute(
@@ -505,6 +574,7 @@ function renderHeading(
                         )}
 
                     </h2>
+
                     `
                     :
                     ""
@@ -515,6 +585,7 @@ function renderHeading(
                     section.subtitle
                     ?
                     `
+
                     <p
                         style="
                             color:${escapeAttribute(
@@ -529,6 +600,7 @@ function renderHeading(
                         )}
 
                     </p>
+
                     `
                     :
                     ""
@@ -556,8 +628,10 @@ function renderBanner(
         Array.isArray(
             section.slides
         )
-            ? section.slides
-            : [];
+        ?
+        section.slides
+        :
+        [];
 
 
     if(
@@ -608,6 +682,7 @@ function renderBanner(
                                     slide.image
                                     ?
                                     `
+
                                     <img
                                         src="${escapeAttribute(
                                             slide.image
@@ -617,14 +692,17 @@ function renderBanner(
                                             "Banner"
                                         )}"
                                     >
+
                                     `
                                     :
                                     `
+
                                     <div class="banner-no-image">
 
                                         Banner
 
                                     </div>
+
                                     `;
 
 
@@ -632,6 +710,7 @@ function renderBanner(
                                     slideContent
                                     ?
                                     `
+
                                     <div
                                         class="
                                             banner-content
@@ -646,6 +725,7 @@ function renderBanner(
                                             slide.title
                                             ?
                                             `
+
                                             <h2
                                                 style="
                                                     color:${escapeAttribute(
@@ -659,6 +739,7 @@ function renderBanner(
                                                 )}
 
                                             </h2>
+
                                             `
                                             :
                                             ""
@@ -669,6 +750,7 @@ function renderBanner(
                                             slide.subtitle
                                             ?
                                             `
+
                                             <p
                                                 style="
                                                     color:${escapeAttribute(
@@ -682,6 +764,7 @@ function renderBanner(
                                                 )}
 
                                             </p>
+
                                             `
                                             :
                                             ""
@@ -692,6 +775,7 @@ function renderBanner(
                                             slide.buttonText
                                             ?
                                             `
+
                                             <a
                                                 class="banner-button"
                                                 href="${escapeAttribute(
@@ -705,12 +789,14 @@ function renderBanner(
                                                 )}
 
                                             </a>
+
                                             `
                                             :
                                             ""
                                         }
 
                                     </div>
+
                                     `
                                     :
                                     "";
@@ -840,7 +926,7 @@ function renderBanner(
                                     type="button"
                                 ></button>
 
-                            `
+                                `
                             ).join("")
                         }
 
@@ -2060,10 +2146,6 @@ async function renderReviewCarousel(
 
     try{
 
-        /*==================================================
-            LOAD REVIEWS
-        ==================================================*/
-
         const snapshot =
             await getDocs(
                 collection(
@@ -2206,7 +2288,7 @@ async function renderReviewCarousel(
 
                                 /*==================================
                                     CUSTOMER UPLOADED PRODUCT PHOTO
-                                    
+
                                     IMPORTANT:
                                     Do NOT use productImage here.
                                 ==================================*/
@@ -2256,9 +2338,6 @@ async function renderReviewCarousel(
                                     <article
                                         class="review-card"
                                     >
-
-
-                                        <!-- CUSTOMER -->
 
                                         <div
                                             class="
@@ -2370,8 +2449,6 @@ async function renderReviewCarousel(
                                         </div>
 
 
-                                        <!-- REVIEW TEXT -->
-
                                         <p
                                             class="
                                                 review-text
@@ -2384,8 +2461,6 @@ async function renderReviewCarousel(
 
                                         </p>
 
-
-                                        <!-- CUSTOMER PRODUCT PHOTO -->
 
                                         ${
                                             customerProductImage
@@ -2419,8 +2494,6 @@ async function renderReviewCarousel(
                                             ""
                                         }
 
-
-                                        <!-- PRODUCT NAME -->
 
                                         ${
                                             productName
@@ -2524,6 +2597,8 @@ async function renderReviewCarousel(
     }
 
 }
+
+
 /*==================================================
     STARS
 ==================================================*/
@@ -2832,923 +2907,6 @@ function escapeAttribute(
 
 
 /*==================================================
-    SIDEBAR
-==================================================*/
-
-window.toggleSidebar =
-function(){
-
-    const sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-
-    const overlay =
-        document.getElementById(
-            "overlay"
-        );
-
-
-    if(
-        !sidebar ||
-        !overlay
-    ){
-
-        return;
-
-    }
-
-
-    sidebar.classList.toggle(
-        "open"
-    );
-
-
-    overlay.classList.toggle(
-        "show"
-    );
-
-};
-
-
-/*==================================================
-    SEARCH SYSTEM
-==================================================*/
-
-let searchProducts = [];
-let searchProductsLoaded = false;
-let searchLoading = false;
-
-
-/*==================================================
-    CREATE SEARCH OVERLAY
-==================================================*/
-
-function createSearchOverlay(){
-
-    let overlay =
-        document.getElementById(
-            "searchOverlay"
-        );
-
-
-    /*==================================================
-        ALREADY EXISTS
-    ==================================================*/
-
-    if(overlay){
-
-        return overlay;
-
-    }
-
-
-    /*==================================================
-        CREATE OVERLAY
-    ==================================================*/
-
-    overlay =
-        document.createElement(
-            "div"
-        );
-
-
-    overlay.id =
-        "searchOverlay";
-
-
-    overlay.className =
-        "search-overlay";
-
-
-    overlay.innerHTML = `
-
-        <div class="search-panel">
-
-            <div class="search-header">
-
-                <div class="search-title">
-
-                    Search Products
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="search-close"
-                    id="searchCloseButton"
-                    aria-label="Close search"
-                >
-
-                    ×
-
-                </button>
-
-            </div>
-
-
-            <div class="search-input-wrap">
-
-                <span class="search-input-icon">
-
-                    🔍
-
-                </span>
-
-
-                <input
-                    type="search"
-                    id="searchInput"
-                    class="search-input"
-                    placeholder="Search products..."
-                    autocomplete="off"
-                >
-
-
-                <button
-                    type="button"
-                    id="clearSearchButton"
-                    class="clear-search-button"
-                    aria-label="Clear search"
-                >
-
-                    ×
-
-                </button>
-
-            </div>
-
-
-            <div
-                id="searchResults"
-                class="search-results"
-            >
-
-                <div class="search-empty">
-
-                    Type to search products
-
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    /*==================================================
-        CLOSE
-    ==================================================*/
-
-    document
-        .getElementById(
-            "searchCloseButton"
-        )
-        ?.addEventListener(
-            "click",
-            closeSearch
-        );
-
-
-    /*==================================================
-        OUTSIDE CLICK
-    ==================================================*/
-
-    overlay.addEventListener(
-        "click",
-        event => {
-
-            if(
-                event.target ===
-                overlay
-            ){
-
-                closeSearch();
-
-            }
-
-        }
-    );
-
-
-    /*==================================================
-        ESCAPE
-    ==================================================*/
-
-    overlay.addEventListener(
-        "keydown",
-        event => {
-
-            if(
-                event.key ===
-                "Escape"
-            ){
-
-                closeSearch();
-
-            }
-
-        }
-    );
-
-
-    /*==================================================
-        SEARCH INPUT
-    ==================================================*/
-
-    document
-        .getElementById(
-            "searchInput"
-        )
-        ?.addEventListener(
-            "input",
-            handleSearchInput
-        );
-
-
-    /*==================================================
-        CLEAR
-    ==================================================*/
-
-    document
-        .getElementById(
-            "clearSearchButton"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
-
-                const input =
-                    document.getElementById(
-                        "searchInput"
-                    );
-
-
-                if(input){
-
-                    input.value =
-                        "";
-
-                    input.focus();
-
-                }
-
-
-                renderSearchResults(
-                    []
-                );
-
-            }
-        );
-
-
-    return overlay;
-
-}
-
-
-/*==================================================
-    OPEN SEARCH
-==================================================*/
-
-window.openSearch =
-function(){
-
-    const overlay =
-        createSearchOverlay();
-
-
-    overlay.classList.add(
-        "open"
-    );
-
-
-    document.body.classList.add(
-        "search-open"
-    );
-
-
-    const input =
-        document.getElementById(
-            "searchInput"
-        );
-
-
-    setTimeout(
-        () => {
-
-            input?.focus();
-
-        },
-        100
-    );
-
-
-    /*==================================================
-        LOAD PRODUCTS
-    ==================================================*/
-
-    if(
-        !searchProductsLoaded
-    ){
-
-        loadSearchProducts();
-
-    }
-
-};
-
-
-/*==================================================
-    CLOSE SEARCH
-==================================================*/
-
-window.closeSearch =
-function(){
-
-    const overlay =
-        document.getElementById(
-            "searchOverlay"
-        );
-
-
-    if(!overlay){
-
-        return;
-
-    }
-
-
-    overlay.classList.remove(
-        "open"
-    );
-
-
-    document.body.classList.remove(
-        "search-open"
-    );
-
-};
-
-
-/*==================================================
-    LOAD SEARCH PRODUCTS
-==================================================*/
-
-async function loadSearchProducts(){
-
-    if(
-        searchLoading ||
-        searchProductsLoaded
-    ){
-
-        return;
-
-    }
-
-
-    searchLoading =
-        true;
-
-
-    const results =
-        document.getElementById(
-            "searchResults"
-        );
-
-
-    if(results){
-
-        results.innerHTML = `
-
-            <div class="search-loading">
-
-                Loading products...
-
-            </div>
-
-        `;
-
-    }
-
-
-    try{
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "products"
-                )
-            );
-
-
-        searchProducts =
-            snapshot.docs
-                .map(
-                    docSnap => ({
-
-                        id:
-                            docSnap.id,
-
-                        ...docSnap.data()
-
-                    })
-                )
-                .filter(
-                    product =>
-
-                        product.published !== false
-                        &&
-                        product.active !== false
-
-                );
-
-
-        searchProductsLoaded =
-            true;
-
-
-        const input =
-            document.getElementById(
-                "searchInput"
-            );
-
-
-        if(
-            input &&
-            input.value.trim()
-        ){
-
-            handleSearchInput({
-                target: input
-            });
-
-        }
-        else if(results){
-
-            results.innerHTML = `
-
-                <div class="search-empty">
-
-                    Type to search products
-
-                </div>
-
-            `;
-
-        }
-
-    }
-
-    catch(error){
-
-        console.error(
-            "Search products error:",
-            error
-        );
-
-
-        if(results){
-
-            results.innerHTML = `
-
-                <div class="search-error">
-
-                    Unable to load products.
-
-                </div>
-
-            `;
-
-        }
-
-    }
-
-    finally{
-
-        searchLoading =
-            false;
-
-    }
-
-}
-
-
-/*==================================================
-    SEARCH INPUT
-==================================================*/
-
-function handleSearchInput(
-    event
-){
-
-    const query =
-        String(
-            event.target.value ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    const clearButton =
-        document.getElementById(
-            "clearSearchButton"
-        );
-
-
-    if(clearButton){
-
-        clearButton.style.display =
-            query
-            ?
-            "flex"
-            :
-            "none";
-
-    }
-
-
-    if(!query){
-
-        renderSearchResults(
-            []
-        );
-
-        return;
-
-    }
-
-
-    if(!searchProductsLoaded){
-
-        const results =
-            document.getElementById(
-                "searchResults"
-            );
-
-
-        if(results){
-
-            results.innerHTML = `
-
-                <div class="search-loading">
-
-                    Loading products...
-
-                </div>
-
-            `;
-
-        }
-
-
-        return;
-
-    }
-
-
-    const matched =
-        searchProducts
-            .filter(
-                product =>
-                    productMatchesSearch(
-                        product,
-                        query
-                    )
-            )
-            .slice(
-                0,
-                20
-            );
-
-
-    renderSearchResults(
-        matched
-    );
-
-}
-
-
-/*==================================================
-    PRODUCT MATCH
-==================================================*/
-
-function productMatchesSearch(
-    product,
-    query
-){
-
-    const name =
-        String(
-            product.name ||
-            product.title ||
-            product.productName ||
-            ""
-        )
-        .toLowerCase();
-
-
-    const description =
-        String(
-            product.description ||
-            ""
-        )
-        .toLowerCase();
-
-
-    const category =
-        String(
-            product.categoryName ||
-            product.category ||
-            ""
-        )
-        .toLowerCase();
-
-
-    const tags =
-        getProductTags(
-            product
-        )
-        .join(
-            " "
-        )
-        .toLowerCase();
-
-
-    return (
-        name.includes(query)
-        ||
-        description.includes(query)
-        ||
-        category.includes(query)
-        ||
-        tags.includes(query)
-    );
-
-}
-
-
-/*==================================================
-    RENDER SEARCH RESULTS
-==================================================*/
-
-function renderSearchResults(
-    products
-){
-
-    const results =
-        document.getElementById(
-            "searchResults"
-        );
-
-
-    if(!results){
-
-        return;
-
-    }
-
-
-    if(!products.length){
-
-        const input =
-            document.getElementById(
-                "searchInput"
-            );
-
-
-        const query =
-            input?.value.trim();
-
-
-        results.innerHTML = `
-
-            <div class="search-empty">
-
-                ${
-                    query
-                    ?
-                    "No products found."
-                    :
-                    "Type to search products"
-                }
-
-            </div>
-
-        `;
-
-
-        return;
-
-    }
-
-
-    results.innerHTML =
-        products
-            .map(
-                product =>
-                    createSearchResult(
-                        product
-                    )
-            )
-            .join(
-                ""
-            );
-
-
-    results
-        .querySelectorAll(
-            ".search-result"
-        )
-        .forEach(
-            item => {
-
-                item.addEventListener(
-                    "click",
-                    () => {
-
-                        const productId =
-                            item.dataset.productId;
-
-
-                        const product =
-                            searchProducts.find(
-                                product =>
-                                    product.id ===
-                                    productId
-                            );
-
-
-                        if(!product){
-
-                            return;
-
-                        }
-
-
-                        window.location.href =
-                            getProductLink(
-                                product
-                            );
-
-                    }
-                );
-
-            }
-        );
-
-}
-
-
-/*==================================================
-    SEARCH RESULT CARD
-==================================================*/
-
-function createSearchResult(
-    product
-){
-
-    const image =
-        getProductImage(
-            product
-        );
-
-
-    const name =
-        product.name ||
-        product.title ||
-        product.productName ||
-        "Product";
-
-
-    const price =
-        product.salePrice ??
-        product.price ??
-        product.pricing?.salePrice ??
-        product.pricing?.price ??
-        "";
-
-
-    return `
-
-        <button
-            type="button"
-            class="search-result"
-            data-product-id="${escapeAttribute(
-                product.id
-            )}"
-        >
-
-            <div class="search-result-image">
-
-                ${
-                    image
-                    ?
-
-                    `
-
-                    <img
-                        src="${escapeAttribute(
-                            image
-                        )}"
-                        alt="${escapeAttribute(
-                            name
-                        )}"
-                        loading="lazy"
-                    >
-
-                    `
-
-                    :
-
-                    `
-
-                    <div
-                        class="
-                            search-result-no-image
-                        "
-                    >
-
-                        No Image
-
-                    </div>
-
-                    `
-                }
-
-            </div>
-
-
-            <div class="search-result-info">
-
-                <div
-                    class="search-result-name"
-                >
-
-                    ${escapeHtml(
-                        name
-                    )}
-
-                </div>
-
-
-                ${
-                    price !== ""
-                    ?
-
-                    `
-
-                    <div
-                        class="
-                            search-result-price
-                        "
-                    >
-
-                        ₹${escapeHtml(
-                            String(
-                                price
-                            )
-                        )}
-
-                    </div>
-
-                    `
-
-                    :
-
-                    ""
-
-                }
-
-            </div>
-
-
-            <span
-                class="search-result-arrow"
-            >
-
-                ›
-
-            </span>
-
-        </button>
-
-    `;
-
-}
-
-
-/*==================================================
     EXPORT
 ==================================================*/
 
@@ -3756,6 +2914,24 @@ export {
 
     loadHomepage,
 
-    renderSection
+    renderSection,
+
+    renderProductCarousel,
+
+    renderImageCarousel,
+
+    renderReviewCarousel,
+
+    renderHeading,
+
+    renderBanner,
+
+    renderSpacer,
+
+    getProductImage,
+
+    getProductLink,
+
+    getProductTags
 
 };
