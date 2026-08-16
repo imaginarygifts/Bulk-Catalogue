@@ -63,7 +63,7 @@ let siteSettings = {
 
     orderPrefix: "IG",
 
-    orderButton: ""
+    orderButton: "buyNow"
 
 
 };
