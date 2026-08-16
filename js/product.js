@@ -1099,34 +1099,8 @@ function render() {
     `;
 
 
-    /* ==================================================
-       BADGES
+    
 
-       ONLY OUT OF STOCK IS DISPLAYED.
-
-       Bestseller badge removed.
-       Discount badge removed.
-    ================================================== */
-
-    let badgeHTML =
-        "";
-
-
-    if (
-        product.inStock === false
-    ) {
-
-        badgeHTML += `
-
-            <span class="badge stock">
-
-                Out of Stock
-
-            </span>
-
-        `;
-
-    }
 
 
     /* ==================================================
@@ -1137,7 +1111,7 @@ function render() {
 
         <div class="product-header">
 
-            ${badgeHTML}
+            
 
             <h2>
 
