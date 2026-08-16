@@ -2873,34 +2873,273 @@ function(){
 
 
 /*==================================================
-    SEARCH
+    SEARCH SYSTEM
+==================================================*/
+
+let searchProducts = [];
+let searchProductsLoaded = false;
+let searchLoading = false;
+
+
+/*==================================================
+    CREATE SEARCH OVERLAY
+==================================================*/
+
+function createSearchOverlay(){
+
+    let overlay =
+        document.getElementById(
+            "searchOverlay"
+        );
+
+
+    /*==================================================
+        ALREADY EXISTS
+    ==================================================*/
+
+    if(overlay){
+
+        return overlay;
+
+    }
+
+
+    /*==================================================
+        CREATE OVERLAY
+    ==================================================*/
+
+    overlay =
+        document.createElement(
+            "div"
+        );
+
+
+    overlay.id =
+        "searchOverlay";
+
+
+    overlay.className =
+        "search-overlay";
+
+
+    overlay.innerHTML = `
+
+        <div class="search-panel">
+
+            <div class="search-header">
+
+                <div class="search-title">
+
+                    Search Products
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="search-close"
+                    id="searchCloseButton"
+                    aria-label="Close search"
+                >
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="search-input-wrap">
+
+                <span class="search-input-icon">
+
+                    🔍
+
+                </span>
+
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Search products..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    type="button"
+                    id="clearSearchButton"
+                    class="clear-search-button"
+                    aria-label="Clear search"
+                >
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="searchResults"
+                class="search-results"
+            >
+
+                <div class="search-empty">
+
+                    Type to search products
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    /*==================================================
+        CLOSE
+    ==================================================*/
+
+    document
+        .getElementById(
+            "searchCloseButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeSearch
+        );
+
+
+    /*==================================================
+        OUTSIDE CLICK
+    ==================================================*/
+
+    overlay.addEventListener(
+        "click",
+        event => {
+
+            if(
+                event.target ===
+                overlay
+            ){
+
+                closeSearch();
+
+            }
+
+        }
+    );
+
+
+    /*==================================================
+        ESCAPE
+    ==================================================*/
+
+    overlay.addEventListener(
+        "keydown",
+        event => {
+
+            if(
+                event.key ===
+                "Escape"
+            ){
+
+                closeSearch();
+
+            }
+
+        }
+    );
+
+
+    /*==================================================
+        SEARCH INPUT
+    ==================================================*/
+
+    document
+        .getElementById(
+            "searchInput"
+        )
+        ?.addEventListener(
+            "input",
+            handleSearchInput
+        );
+
+
+    /*==================================================
+        CLEAR
+    ==================================================*/
+
+    document
+        .getElementById(
+            "clearSearchButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                const input =
+                    document.getElementById(
+                        "searchInput"
+                    );
+
+
+                if(input){
+
+                    input.value =
+                        "";
+
+                    input.focus();
+
+                }
+
+
+                renderSearchResults(
+                    []
+                );
+
+            }
+        );
+
+
+    return overlay;
+
+}
+
+
+/*==================================================
+    OPEN SEARCH
 ==================================================*/
 
 window.openSearch =
 function(){
 
-    const search =
-        document.getElementById(
-            "searchOverlay"
-        );
+    const overlay =
+        createSearchOverlay();
+
+
+    overlay.classList.add(
+        "open"
+    );
+
+
+    document.body.classList.add(
+        "search-open"
+    );
 
 
     const input =
         document.getElementById(
             "searchInput"
         );
-
-
-    if(!search){
-
-        return;
-
-    }
-
-
-    search.classList.add(
-        "open"
-    );
 
 
     setTimeout(
@@ -2912,30 +3151,601 @@ function(){
         100
     );
 
+
+    /*==================================================
+        LOAD PRODUCTS
+    ==================================================*/
+
+    if(
+        !searchProductsLoaded
+    ){
+
+        loadSearchProducts();
+
+    }
+
 };
 
+
+/*==================================================
+    CLOSE SEARCH
+==================================================*/
 
 window.closeSearch =
 function(){
 
-    const search =
+    const overlay =
         document.getElementById(
             "searchOverlay"
         );
 
 
-    if(!search){
+    if(!overlay){
 
         return;
 
     }
 
 
-    search.classList.remove(
+    overlay.classList.remove(
         "open"
     );
 
+
+    document.body.classList.remove(
+        "search-open"
+    );
+
 };
+
+
+/*==================================================
+    LOAD SEARCH PRODUCTS
+==================================================*/
+
+async function loadSearchProducts(){
+
+    if(
+        searchLoading ||
+        searchProductsLoaded
+    ){
+
+        return;
+
+    }
+
+
+    searchLoading =
+        true;
+
+
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    if(results){
+
+        results.innerHTML = `
+
+            <div class="search-loading">
+
+                Loading products...
+
+            </div>
+
+        `;
+
+    }
+
+
+    try{
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "products"
+                )
+            );
+
+
+        searchProducts =
+            snapshot.docs
+                .map(
+                    docSnap => ({
+
+                        id:
+                            docSnap.id,
+
+                        ...docSnap.data()
+
+                    })
+                )
+                .filter(
+                    product =>
+
+                        product.published !== false
+                        &&
+                        product.active !== false
+
+                );
+
+
+        searchProductsLoaded =
+            true;
+
+
+        const input =
+            document.getElementById(
+                "searchInput"
+            );
+
+
+        if(
+            input &&
+            input.value.trim()
+        ){
+
+            handleSearchInput({
+                target: input
+            });
+
+        }
+        else if(results){
+
+            results.innerHTML = `
+
+                <div class="search-empty">
+
+                    Type to search products
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Search products error:",
+            error
+        );
+
+
+        if(results){
+
+            results.innerHTML = `
+
+                <div class="search-error">
+
+                    Unable to load products.
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+    finally{
+
+        searchLoading =
+            false;
+
+    }
+
+}
+
+
+/*==================================================
+    SEARCH INPUT
+==================================================*/
+
+function handleSearchInput(
+    event
+){
+
+    const query =
+        String(
+            event.target.value ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const clearButton =
+        document.getElementById(
+            "clearSearchButton"
+        );
+
+
+    if(clearButton){
+
+        clearButton.style.display =
+            query
+            ?
+            "flex"
+            :
+            "none";
+
+    }
+
+
+    if(!query){
+
+        renderSearchResults(
+            []
+        );
+
+        return;
+
+    }
+
+
+    if(!searchProductsLoaded){
+
+        const results =
+            document.getElementById(
+                "searchResults"
+            );
+
+
+        if(results){
+
+            results.innerHTML = `
+
+                <div class="search-loading">
+
+                    Loading products...
+
+                </div>
+
+            `;
+
+        }
+
+
+        return;
+
+    }
+
+
+    const matched =
+        searchProducts
+            .filter(
+                product =>
+                    productMatchesSearch(
+                        product,
+                        query
+                    )
+            )
+            .slice(
+                0,
+                20
+            );
+
+
+    renderSearchResults(
+        matched
+    );
+
+}
+
+
+/*==================================================
+    PRODUCT MATCH
+==================================================*/
+
+function productMatchesSearch(
+    product,
+    query
+){
+
+    const name =
+        String(
+            product.name ||
+            product.title ||
+            product.productName ||
+            ""
+        )
+        .toLowerCase();
+
+
+    const description =
+        String(
+            product.description ||
+            ""
+        )
+        .toLowerCase();
+
+
+    const category =
+        String(
+            product.categoryName ||
+            product.category ||
+            ""
+        )
+        .toLowerCase();
+
+
+    const tags =
+        getProductTags(
+            product
+        )
+        .join(
+            " "
+        )
+        .toLowerCase();
+
+
+    return (
+        name.includes(query)
+        ||
+        description.includes(query)
+        ||
+        category.includes(query)
+        ||
+        tags.includes(query)
+    );
+
+}
+
+
+/*==================================================
+    RENDER SEARCH RESULTS
+==================================================*/
+
+function renderSearchResults(
+    products
+){
+
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    if(!results){
+
+        return;
+
+    }
+
+
+    if(!products.length){
+
+        const input =
+            document.getElementById(
+                "searchInput"
+            );
+
+
+        const query =
+            input?.value.trim();
+
+
+        results.innerHTML = `
+
+            <div class="search-empty">
+
+                ${
+                    query
+                    ?
+                    "No products found."
+                    :
+                    "Type to search products"
+                }
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    results.innerHTML =
+        products
+            .map(
+                product =>
+                    createSearchResult(
+                        product
+                    )
+            )
+            .join(
+                ""
+            );
+
+
+    results
+        .querySelectorAll(
+            ".search-result"
+        )
+        .forEach(
+            item => {
+
+                item.addEventListener(
+                    "click",
+                    () => {
+
+                        const productId =
+                            item.dataset.productId;
+
+
+                        const product =
+                            searchProducts.find(
+                                product =>
+                                    product.id ===
+                                    productId
+                            );
+
+
+                        if(!product){
+
+                            return;
+
+                        }
+
+
+                        window.location.href =
+                            getProductLink(
+                                product
+                            );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/*==================================================
+    SEARCH RESULT CARD
+==================================================*/
+
+function createSearchResult(
+    product
+){
+
+    const image =
+        getProductImage(
+            product
+        );
+
+
+    const name =
+        product.name ||
+        product.title ||
+        product.productName ||
+        "Product";
+
+
+    const price =
+        product.salePrice ??
+        product.price ??
+        product.pricing?.salePrice ??
+        product.pricing?.price ??
+        "";
+
+
+    return `
+
+        <button
+            type="button"
+            class="search-result"
+            data-product-id="${escapeAttribute(
+                product.id
+            )}"
+        >
+
+            <div class="search-result-image">
+
+                ${
+                    image
+                    ?
+
+                    `
+
+                    <img
+                        src="${escapeAttribute(
+                            image
+                        )}"
+                        alt="${escapeAttribute(
+                            name
+                        )}"
+                        loading="lazy"
+                    >
+
+                    `
+
+                    :
+
+                    `
+
+                    <div
+                        class="
+                            search-result-no-image
+                        "
+                    >
+
+                        No Image
+
+                    </div>
+
+                    `
+                }
+
+            </div>
+
+
+            <div class="search-result-info">
+
+                <div
+                    class="search-result-name"
+                >
+
+                    ${escapeHtml(
+                        name
+                    )}
+
+                </div>
+
+
+                ${
+                    price !== ""
+                    ?
+
+                    `
+
+                    <div
+                        class="
+                            search-result-price
+                        "
+                    >
+
+                        ₹${escapeHtml(
+                            String(
+                                price
+                            )
+                        )}
+
+                    </div>
+
+                    `
+
+                    :
+
+                    ""
+
+                }
+
+            </div>
+
+
+            <span
+                class="search-result-arrow"
+            >
+
+                ›
+
+            </span>
+
+        </button>
+
+    `;
+
+}
 
 
 /*==================================================
