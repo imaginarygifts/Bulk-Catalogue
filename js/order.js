@@ -46,7 +46,6 @@ let siteSettings = {
 
 };
 
-
 let subTotal = 0;
 
 let discount = 0;
@@ -60,6 +59,8 @@ let selectedPaymentMode = "online";
 let availableCoupons = [];
 
 let orderNumber = null;
+
+let orderSubmitting = false;
 
 
 /* ======================================================
@@ -296,7 +297,7 @@ async function loadOrder() {
 
 
             location.href =
-                "";
+                "website/shop.html";
 
 
             return;
@@ -321,7 +322,7 @@ async function loadOrder() {
 
 
             location.href =
-                "";
+                "website/shop.html";
 
 
             return;
@@ -364,8 +365,10 @@ async function loadOrder() {
         );
 
 
-        alert(
-            "Unable to load order."
+        showOrderPopup(
+            false,
+            "Unable to Load Order",
+            "We could not load your order details. Please try again."
         );
 
     }
@@ -452,11 +455,10 @@ async function generateOrderNumber() {
     catch (error) {
 
         /*
-           Counter may be blocked for
-           non-admin customers by Firestore rules.
+            Counter can be blocked for
+            customers by Firestore rules.
 
-           Use a unique fallback number so
-           customer checkout does not completely fail.
+            Use fallback order number.
         */
 
         console.warn(
@@ -501,6 +503,14 @@ function renderSummary() {
         orderData.product;
 
 
+    const productPrice =
+        Number(
+            product.salePrice ||
+            product.basePrice ||
+            0
+        );
+
+
     let html = `
 
         <div>
@@ -517,9 +527,7 @@ function renderSummary() {
         <div>
 
             Sale Price:
-            ₹${Number(
-                product.salePrice || 0
-            )}
+            ₹${productPrice}
 
         </div>
 
@@ -779,7 +787,9 @@ function setupPaymentModes() {
 
                         removeCoupon();
 
+
                         loadCoupons();
+
 
                         recalcPrice();
 
@@ -1174,7 +1184,8 @@ function(id) {
 
         discount =
             Number(
-                coupon.value || 0
+                coupon.value ||
+                0
             );
 
     }
@@ -1509,11 +1520,268 @@ async function saveOrder(
 
 
 /* ======================================================
+   ORDER SUCCESS POPUP
+====================================================== */
+
+function showOrderSuccess(
+    order
+) {
+
+    showOrderPopup(
+        true,
+
+        "Order Placed Successfully!",
+
+        "Thank you! Your order has been received successfully.",
+
+        order?.orderNumber ||
+        ""
+    );
+
+}
+
+
+/* ======================================================
+   ORDER FAILED POPUP
+====================================================== */
+
+function showOrderFailed(
+    message
+) {
+
+    showOrderPopup(
+        false,
+
+        "Order Failed",
+
+        message ||
+        "Something went wrong. Please try again."
+    );
+
+}
+
+
+/* ======================================================
+   ORDER RESULT POPUP
+====================================================== */
+
+function showOrderPopup(
+    success,
+    title,
+    message,
+    orderNo = ""
+) {
+
+    const overlay =
+        document.getElementById(
+            "orderResultPopup"
+        );
+
+
+    const popup =
+        overlay?.querySelector(
+            ".order-popup"
+        );
+
+
+    const icon =
+        document.getElementById(
+            "orderPopupIcon"
+        );
+
+
+    const titleElement =
+        document.getElementById(
+            "orderPopupTitle"
+        );
+
+
+    const messageElement =
+        document.getElementById(
+            "orderPopupMessage"
+        );
+
+
+    const orderNoElement =
+        document.getElementById(
+            "orderPopupOrderNo"
+        );
+
+
+    const button =
+        document.getElementById(
+            "orderPopupButton"
+        );
+
+
+    /*
+       If popup HTML is not present,
+       use alert instead.
+    */
+
+    if (!overlay) {
+
+        alert(
+            title +
+            "\n\n" +
+            message +
+            (
+                orderNo
+                    ?
+                    `\n\nOrder No: ${orderNo}`
+                    :
+                    ""
+            )
+        );
+
+
+        if (success) {
+
+            setTimeout(
+                () => {
+
+                    window.location.href =
+                        "shop";
+
+                },
+                1000
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    if (popup) {
+
+        popup.classList.toggle(
+            "failed",
+            !success
+        );
+
+    }
+
+
+    if (icon) {
+
+        icon.innerText =
+            success
+                ?
+                "✓"
+                :
+                "×";
+
+    }
+
+
+    if (titleElement) {
+
+        titleElement.innerText =
+            title;
+
+    }
+
+
+    if (messageElement) {
+
+        messageElement.innerText =
+            message;
+
+    }
+
+
+    if (orderNoElement) {
+
+        orderNoElement.innerText =
+            orderNo
+                ?
+                `Order No: ${orderNo}`
+                :
+                "";
+
+    }
+
+
+    if (button) {
+
+        button.innerText =
+            success
+                ?
+                "Continue Shopping"
+                :
+                "Try Again";
+
+
+        button.onclick =
+            success
+
+                ?
+
+                function() {
+
+                    window.location.href =
+                        "/shop";
+
+                }
+
+                :
+
+                function() {
+
+                    closeOrderPopup();
+
+                };
+
+    }
+
+
+    overlay.classList.add(
+        "show"
+    );
+
+}
+
+
+/* ======================================================
+   CLOSE ORDER POPUP
+====================================================== */
+
+window.closeOrderPopup =
+function() {
+
+    document
+        .getElementById(
+            "orderResultPopup"
+        )
+        ?.classList.remove(
+            "show"
+        );
+
+};
+
+
+/* ======================================================
    PLACE ORDER
 ====================================================== */
 
 window.placeOrder =
 async function() {
+
+    /*
+       Prevent double click
+    */
+
+    if (
+        orderSubmitting
+    ) {
+
+        return;
+
+    }
+
 
     try {
 
@@ -1528,7 +1796,13 @@ async function() {
         }
 
 
-        /* COD */
+        orderSubmitting =
+            true;
+
+
+        /*
+           COD
+        */
 
         if (
             selectedPaymentMode ===
@@ -1544,18 +1818,31 @@ async function() {
 
             if (!order) {
 
+                orderSubmitting =
+                    false;
+
                 return;
 
             }
 
+
+            /*
+               Send WhatsApp but do not
+               make the order fail if
+               WhatsApp is unavailable.
+            */
 
             sendWhatsApp(
                 order
             );
 
 
-            alert(
-                "Order placed successfully"
+            orderSubmitting =
+                false;
+
+
+            showOrderSuccess(
+                order
             );
 
 
@@ -1564,17 +1851,23 @@ async function() {
         }
 
 
-        /* ADVANCE */
+        /*
+           ADVANCE
+        */
 
         if (
             selectedPaymentMode ===
             "advance"
         ) {
 
-            startPayment(
+            await startPayment(
                 customer,
                 "advance"
             );
+
+
+            orderSubmitting =
+                false;
 
 
             return;
@@ -1582,12 +1875,18 @@ async function() {
         }
 
 
-        /* ONLINE */
+        /*
+           ONLINE
+        */
 
-        startPayment(
+        await startPayment(
             customer,
             "online"
         );
+
+
+        orderSubmitting =
+            false;
 
     }
 
@@ -1599,12 +1898,13 @@ async function() {
         );
 
 
-        alert(
-            "Order failed: " +
-            (
-                error.message ||
-                "Unknown error"
-            )
+        orderSubmitting =
+            false;
+
+
+        showOrderFailed(
+            error.message ||
+            "Unable to place order."
         );
 
     }
@@ -1633,24 +1933,19 @@ function sendWhatsApp(
 
     if (!whatsappNumber) {
 
-        console.error(
-            "WhatsApp number missing in Site Settings"
-        );
-
-
-        alert(
+        console.warn(
             "WhatsApp number is not configured in Site Settings."
         );
 
 
-        return;
+        return false;
 
     }
 
 
     const companyName =
         siteSettings.companyName ||
-        "";
+        "Store";
 
 
     let message =
@@ -1777,10 +2072,27 @@ function sendWhatsApp(
         )}`;
 
 
-    window.open(
-        whatsappUrl,
-        "_blank"
-    );
+    try {
+
+        window.open(
+            whatsappUrl,
+            "_blank"
+        );
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "WhatsApp open error:",
+            error
+        );
+
+        return false;
+
+    }
 
 }
 
@@ -1819,13 +2131,19 @@ function loadRazorpayScript() {
 
                 existing.addEventListener(
                     "load",
-                    resolve
+                    resolve,
+                    {
+                        once: true
+                    }
                 );
 
 
                 existing.addEventListener(
                     "error",
-                    reject
+                    reject,
+                    {
+                        once: true
+                    }
                 );
 
 
@@ -1882,12 +2200,17 @@ async function startPayment(
             String(
                 siteSettings.razorpayKeyId ||
                 ""
-            ).trim();
+            )
+                .trim();
 
+
+        /*
+           CHECK RAZORPAY KEY
+        */
 
         if (!razorpayKey) {
 
-            alert(
+            showOrderFailed(
                 "Razorpay Key ID is not configured in Site Settings."
             );
 
@@ -1897,11 +2220,15 @@ async function startPayment(
         }
 
 
+        /*
+           CHECK AMOUNT
+        */
+
         if (
             finalAmount <= 0
         ) {
 
-            alert(
+            showOrderFailed(
                 "Invalid order amount."
             );
 
@@ -1911,12 +2238,16 @@ async function startPayment(
         }
 
 
+        /*
+           LOAD RAZORPAY
+        */
+
         await loadRazorpayScript();
 
 
         const companyName =
             siteSettings.companyName ||
-            "";
+            "Store";
 
 
         const options = {
@@ -1927,7 +2258,8 @@ async function startPayment(
 
             amount:
                 Math.round(
-                    finalAmount * 100
+                    finalAmount *
+                    100
                 ),
 
 
@@ -1950,6 +2282,11 @@ async function startPayment(
 
                     try {
 
+                        /*
+                           Save order only after
+                           successful payment.
+                        */
+
                         const order =
                             await saveOrder(
                                 paymentMode,
@@ -1961,18 +2298,31 @@ async function startPayment(
 
                         if (!order) {
 
+                            showOrderFailed(
+                                "Payment was successful, but the order could not be saved. Please contact us."
+                            );
+
+
                             return;
 
                         }
 
+
+                        /*
+                           Send WhatsApp
+                        */
 
                         sendWhatsApp(
                             order
                         );
 
 
-                        alert(
-                            "Payment successful"
+                        /*
+                           SUCCESS POPUP
+                        */
+
+                        showOrderSuccess(
+                            order
                         );
 
                     }
@@ -1985,9 +2335,16 @@ async function startPayment(
                         );
 
 
-                        alert(
+                        showOrderFailed(
                             "Payment was successful, but order saving failed. Please contact us."
                         );
+
+                    }
+
+                    finally {
+
+                        orderSubmitting =
+                            false;
 
                     }
 
@@ -2032,6 +2389,10 @@ async function startPayment(
             );
 
 
+        /*
+           PAYMENT FAILED
+        */
+
         rzp.on(
             "payment.failed",
             function(response) {
@@ -2042,9 +2403,35 @@ async function startPayment(
                 );
 
 
-                alert(
-                    "Payment failed. Please try again."
+                orderSubmitting =
+                    false;
+
+
+                const reason =
+                    response
+                        ?.error
+                        ?.description ||
+                    "Payment could not be completed. Please try again.";
+
+
+                showOrderFailed(
+                    reason
                 );
+
+            }
+        );
+
+
+        /*
+           PAYMENT MODAL CLOSED
+        */
+
+        rzp.on(
+            "modal.ondismiss",
+            function() {
+
+                orderSubmitting =
+                    false;
 
             }
         );
@@ -2062,7 +2449,11 @@ async function startPayment(
         );
 
 
-        alert(
+        orderSubmitting =
+            false;
+
+
+        showOrderFailed(
             error.message ||
             "Unable to start payment."
         );
