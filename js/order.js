@@ -1,6 +1,7 @@
 /* ======================================================
    ORDER PAGE
-   SITE SETTINGS CONNECTED VERSION
+   SITE SETTINGS + PAYMENT DISCOUNTS + ADVANCE PAYMENT
+   + SINGLE ORDER COUNTER
 ====================================================== */
 
 import { db } from "./firebase.js";
@@ -12,7 +13,8 @@ import {
     getDoc,
     setDoc,
     updateDoc,
-    getDocs
+    getDocs,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
@@ -48,8 +50,13 @@ let siteSettings = {
 
 let subTotal = 0;
 
+/* Product payment-mode discount */
+let paymentDiscount = 0;
+
+/* Coupon discount */
 let discount = 0;
 
+/* Final order total */
 let finalAmount = 0;
 
 let appliedCoupon = null;
@@ -78,16 +85,12 @@ async function loadSiteSettings() {
                 "general"
             );
 
-
         const snapshot =
             await getDoc(
                 settingsRef
             );
 
-
-        if (
-            snapshot.exists()
-        ) {
+        if (snapshot.exists()) {
 
             siteSettings = {
 
@@ -99,19 +102,15 @@ async function loadSiteSettings() {
 
         }
 
-
         window.siteSettings =
             siteSettings;
-
 
         console.log(
             "Order page site settings:",
             siteSettings
         );
 
-
         applySiteSettings();
-
 
         return siteSettings;
 
@@ -124,10 +123,8 @@ async function loadSiteSettings() {
             error
         );
 
-
         window.siteSettings =
             siteSettings;
-
 
         return siteSettings;
 
@@ -188,7 +185,6 @@ function applySiteSettings() {
 
                 }
 
-
                 image.alt =
                     companyName;
 
@@ -207,7 +203,6 @@ function applySiteSettings() {
                 'link[rel="icon"]'
             );
 
-
         if (!favicon) {
 
             favicon =
@@ -223,7 +218,6 @@ function applySiteSettings() {
             );
 
         }
-
 
         favicon.href =
             siteSettings.faviconUrl;
@@ -242,7 +236,6 @@ function applySiteSettings() {
                 'meta[name="description"]'
             );
 
-
         if (!meta) {
 
             meta =
@@ -258,7 +251,6 @@ function applySiteSettings() {
             );
 
         }
-
 
         meta.content =
             siteSettings.metaDescription;
@@ -295,10 +287,8 @@ async function loadOrder() {
                 "No product selected"
             );
 
-
             location.href =
                 "website/shop.html";
-
 
             return;
 
@@ -320,15 +310,19 @@ async function loadOrder() {
                 "Invalid checkout data"
             );
 
-
             location.href =
                 "website/shop.html";
-
 
             return;
 
         }
 
+
+        /*
+           finalPrice from checkout already
+           contains selected variant/custom option
+           pricing.
+        */
 
         subTotal =
             Number(
@@ -349,7 +343,7 @@ async function loadOrder() {
 
         recalcPrice();
 
-       updateAdvancePaymentInfo();
+        updateAdvancePaymentInfo();
 
 
         console.log(
@@ -366,7 +360,6 @@ async function loadOrder() {
             error
         );
 
-
         showOrderPopup(
             false,
             "Unable to Load Order",
@@ -379,7 +372,8 @@ async function loadOrder() {
 
 
 /* ======================================================
-   ORDER NUMBER
+   GENERATE ORDER NUMBER
+   SINGLE COUNTER FOR ALL PAYMENT MODES
 ====================================================== */
 
 async function generateOrderNumber() {
@@ -389,6 +383,7 @@ async function generateOrderNumber() {
             siteSettings.orderPrefix ||
             "IG"
         )
+            .trim()
             .replace(
                 /\s+/g,
                 ""
@@ -396,58 +391,90 @@ async function generateOrderNumber() {
             .toUpperCase();
 
 
+    if (!prefix) {
+
+        throw new Error(
+            "Order prefix is not configured in Site Settings."
+        );
+
+    }
+
+
+    const counterRef =
+        doc(
+            db,
+            "counters",
+            "orders"
+        );
+
+
+    /*
+       IMPORTANT:
+
+       We use a Firestore transaction.
+
+       COD
+       ONLINE
+       ADVANCE
+
+       ALL use this exact same counter.
+
+       There is intentionally NO timestamp
+       fallback. A fallback creates different
+       order-number formats.
+    */
+
     try {
 
-        const counterRef =
-            doc(
+        const next =
+            await runTransaction(
                 db,
-                "counters",
-                "orders"
-            );
+                async transaction => {
+
+                    const snapshot =
+                        await transaction.get(
+                            counterRef
+                        );
 
 
-        const snap =
-            await getDoc(
-                counterRef
-            );
+                    let current =
+                        1000;
 
 
-        let next =
-            1001;
+                    if (
+                        snapshot.exists()
+                    ) {
+
+                        current =
+                            Number(
+                                snapshot.data().current ||
+                                1000
+                            );
+
+                    }
 
 
-        if (
-            snap.exists()
-        ) {
-
-            next =
-                Number(
-                    snap.data().current ||
-                    1000
-                ) + 1;
+                    const nextNumber =
+                        current + 1;
 
 
-            await updateDoc(
-                counterRef,
-                {
-                    current:
-                        next
+                    transaction.set(
+                        counterRef,
+                        {
+                            current:
+                                nextNumber
+                        },
+                        {
+                            merge:
+                                true
+                        }
+                    );
+
+
+                    return nextNumber;
+
                 }
             );
-
-        }
-
-        else {
-
-            await setDoc(
-                counterRef,
-                {
-                    current:
-                        next
-                }
-            );
-
-        }
 
 
         return `${prefix}-${next}`;
@@ -456,26 +483,23 @@ async function generateOrderNumber() {
 
     catch (error) {
 
-        /*
-            Counter can be blocked for
-            customers by Firestore rules.
-
-            Use fallback order number.
-        */
-
-        console.warn(
-            "Counter unavailable. Using fallback order number.",
+        console.error(
+            "ORDER COUNTER ERROR:",
             error
         );
 
 
-        const timestamp =
-            Date.now()
-                .toString()
-                .slice(-8);
+        /*
+           DO NOT create timestamp IDs.
 
+           If this happens, Firestore rules are
+           probably blocking the customer from
+           reading/updating counters/orders.
+        */
 
-        return `${prefix}-${timestamp}`;
+        throw new Error(
+            "Unable to generate order number. Please try again."
+        );
 
     }
 
@@ -780,27 +804,167 @@ function setupPaymentModes() {
             radio => {
 
                 radio.addEventListener(
-    "change",
-    async () => {
+                    "change",
+                    async () => {
 
-        selectedPaymentMode =
-            radio.value;
+                        selectedPaymentMode =
+                            radio.value;
 
-        removeCoupon();
 
-        await loadCoupons();
+                        /*
+                           Coupon is reset because
+                           allowed payment modes may
+                           change.
+                        */
 
-        recalcPrice();
+                        removeCoupon();
 
-        updateAdvancePaymentInfo();
 
-    }
-);
+                        await loadCoupons();
 
-                   
+
+                        recalcPrice();
+
+
+                        updateAdvancePaymentInfo();
+
+                    }
+                );
 
             }
         );
+
+
+    /*
+       Calculate initial payment discount
+       immediately.
+    */
+
+    recalcPrice();
+
+}
+
+
+/* ======================================================
+   PAYMENT MODE DISCOUNT
+====================================================== */
+
+function getPaymentModeDiscount() {
+
+    const paymentSettings =
+        orderData
+            ?.product
+            ?.paymentSettings ||
+        {};
+
+
+    const settings =
+        paymentSettings[
+            selectedPaymentMode
+        ] ||
+        {};
+
+
+    if (
+        !settings.enabled
+    ) {
+
+        return 0;
+
+    }
+
+
+    const type =
+        String(
+            settings.discountType ||
+            "none"
+        )
+            .toLowerCase()
+            .trim();
+
+
+    const value =
+        Number(
+            settings.discountValue ||
+            0
+        );
+
+
+    if (
+        !value ||
+        value <= 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    let result =
+        0;
+
+
+    /* PERCENT */
+
+    if (
+        type === "percent" ||
+        type === "%" ||
+        type === "percentage"
+    ) {
+
+        result =
+            Math.round(
+                subTotal *
+                (
+                    value /
+                    100
+                )
+            );
+
+    }
+
+
+    /* FLAT */
+
+    else if (
+        type === "flat" ||
+        type === "amount" ||
+        type === "fixed"
+    ) {
+
+        result =
+            value;
+
+    }
+
+
+    /*
+       Safety
+    */
+
+    if (
+        result < 0
+    ) {
+
+        result =
+            0;
+
+    }
+
+
+    if (
+        result > subTotal
+    ) {
+
+        result =
+            subTotal;
+
+    }
+
+
+    return Math.round(
+        result
+    );
 
 }
 
@@ -811,13 +975,39 @@ function setupPaymentModes() {
 
 function recalcPrice() {
 
+    /*
+       PRODUCT PAYMENT DISCOUNT
+    */
+
+    paymentDiscount =
+        getPaymentModeDiscount();
+
+
+    /*
+       TOTAL DISCOUNT
+
+       Payment discount
+       +
+       Coupon discount
+    */
+
+    const totalDiscount =
+        Math.min(
+            subTotal,
+            Number(
+                paymentDiscount
+            ) +
+            Number(
+                discount
+            )
+        );
+
+
     finalAmount =
         Number(
             subTotal
         ) -
-        Number(
-            discount
-        );
+        totalDiscount;
 
 
     if (
@@ -861,7 +1051,7 @@ function recalcPrice() {
 
         discountElement.innerText =
             "-₹" +
-            discount;
+            totalDiscount;
 
     }
 
@@ -873,6 +1063,48 @@ function recalcPrice() {
             finalAmount;
 
     }
+
+
+    /*
+       Optional dedicated payment discount
+       element if you add it to HTML.
+    */
+
+    const paymentDiscountElement =
+        document.getElementById(
+            "paymentDiscountAmount"
+        );
+
+
+    if (paymentDiscountElement) {
+
+        paymentDiscountElement.innerText =
+            "-₹" +
+            paymentDiscount;
+
+    }
+
+
+    /*
+       Optional coupon discount element.
+    */
+
+    const couponDiscountElement =
+        document.getElementById(
+            "couponDiscountAmount"
+        );
+
+
+    if (couponDiscountElement) {
+
+        couponDiscountElement.innerText =
+            "-₹" +
+            discount;
+
+    }
+
+
+    updateAdvancePaymentInfo();
 
 }
 
@@ -920,9 +1152,7 @@ function getAdvancePaymentAmount() {
         0;
 
 
-    /* ==========================================
-       FLAT ADVANCE
-    ========================================== */
+    /* FLAT ADVANCE */
 
     if (
         type === "flat" ||
@@ -936,27 +1166,23 @@ function getAdvancePaymentAmount() {
     }
 
 
-    /* ==========================================
-       PERCENTAGE ADVANCE
-    ========================================== */
+    /* PERCENT ADVANCE */
 
     else {
 
         advanceAmount =
-            Math.round(
-                finalAmount *
-                (
-                    value /
-                    100
-                )
+            finalAmount *
+            (
+                value /
+                100
             );
 
     }
 
 
-    /* ==========================================
-       SAFETY LIMITS
-    ========================================== */
+    /*
+       Safety limits
+    */
 
     if (
         advanceAmount < 0
@@ -979,11 +1205,19 @@ function getAdvancePaymentAmount() {
     }
 
 
+    /*
+       Keep paise/decimal amounts.
+       Razorpay supports smallest currency
+       units, so ₹427.50 becomes 42750 paise.
+    */
+
     return Math.round(
-        advanceAmount
-    );
+        advanceAmount *
+        100
+    ) / 100;
 
 }
+
 
 /* ======================================================
    ADVANCE PAYMENT INFO
@@ -996,18 +1230,25 @@ function updateAdvancePaymentInfo() {
             "advancePaymentInfo"
         );
 
+
     if (!box) {
+
         return;
+
     }
 
-    /* Hide for non-advance payment */
 
     if (
-        selectedPaymentMode !== "advance"
+        selectedPaymentMode !==
+        "advance"
     ) {
 
-        box.classList.remove("show");
-        box.innerHTML = "";
+        box.classList.remove(
+            "show"
+        );
+
+        box.innerHTML =
+            "";
 
         return;
 
@@ -1020,8 +1261,12 @@ function updateAdvancePaymentInfo() {
 
     const balance =
         Math.max(
-            Number(finalAmount) -
-            Number(advanceAmount),
+            Number(
+                finalAmount
+            ) -
+            Number(
+                advanceAmount
+            ),
             0
         );
 
@@ -1029,25 +1274,43 @@ function updateAdvancePaymentInfo() {
     box.innerHTML = `
 
         <span>
+
             ℹ️
+
             Pay Advance
+
             <span class="advance-amount">
-                ₹${advanceAmount}
+
+                ₹${formatMoney(
+                    advanceAmount
+                )}
+
             </span>
-            now and
-            Balance
+
+            now and Balance
+
             <span class="balance-amount">
-                ₹${balance}
+
+                ₹${formatMoney(
+                    balance
+                )}
+
             </span>
+
             on COD.
+
         </span>
 
     `;
 
 
-    box.classList.add("show");
+    box.classList.add(
+        "show"
+    );
 
 }
+
+
 /* ======================================================
    COUPONS
 ====================================================== */
@@ -1065,7 +1328,8 @@ async function loadCoupons() {
             );
 
 
-        availableCoupons = [];
+        availableCoupons =
+            [];
 
 
         const now =
@@ -1212,7 +1476,6 @@ function renderCoupons() {
             </p>
 
         `;
-
 
         return;
 
@@ -1383,6 +1646,8 @@ function(id) {
 
     recalcPrice();
 
+    updateAdvancePaymentInfo();
+
 };
 
 
@@ -1404,6 +1669,8 @@ function() {
     renderCoupons();
 
     recalcPrice();
+
+    updateAdvancePaymentInfo();
 
 };
 
@@ -1461,7 +1728,6 @@ function validateForm() {
             "Please fill all fields"
         );
 
-
         return null;
 
     }
@@ -1477,7 +1743,6 @@ function validateForm() {
             "Please enter a valid 10-digit mobile number"
         );
 
-
         return null;
 
     }
@@ -1492,7 +1757,6 @@ function validateForm() {
         alert(
             "Please enter a valid 6-digit pincode"
         );
-
 
         return null;
 
@@ -1535,15 +1799,19 @@ async function saveOrder(
     }
 
 
+    /*
+       Generate ONE order number.
+
+       This is called exactly once for
+       each successful order.
+    */
+
     orderNumber =
         await generateOrderNumber();
 
 
     /*
-       FULL ORDER TOTAL
-
-       This always remains the actual
-       order total, even for advance payment.
+       FINAL ORDER TOTAL
     */
 
     const orderTotal =
@@ -1554,10 +1822,6 @@ async function saveOrder(
 
     /*
        ACTUAL AMOUNT PAID
-
-       COD = 0
-       Online = full order total
-       Advance = configured advance amount
     */
 
     let paidAmount =
@@ -1587,6 +1851,22 @@ async function saveOrder(
     }
 
 
+    /*
+       BALANCE
+    */
+
+    const balanceAmount =
+        Math.max(
+            orderTotal -
+            paidAmount,
+            0
+        );
+
+
+    /*
+       ADVANCE SETTINGS
+    */
+
     const advanceSettings =
         orderData
             ?.product
@@ -1595,9 +1875,24 @@ async function saveOrder(
         {};
 
 
+    /*
+       PAYMENT MODE DISCOUNT SETTINGS
+    */
+
+    const paymentSettings =
+        orderData
+            ?.product
+            ?.paymentSettings
+            ?.[paymentMode] ||
+        {};
+
+
     const order = {
 
-        orderNumber,
+        orderNumber:
+
+
+            orderNumber,
 
 
         productId:
@@ -1678,17 +1973,44 @@ async function saveOrder(
                     subTotal
                 ),
 
-            discount:
+
+            /*
+               Product payment discount
+            */
+
+            paymentDiscount:
+                Number(
+                    paymentDiscount
+                ),
+
+
+            /*
+               Coupon discount
+            */
+
+            couponDiscount:
                 Number(
                     discount
                 ),
 
+
+            /*
+               Combined discount
+            */
+
+            discount:
+                Number(
+                    Math.min(
+                        subTotal,
+                        paymentDiscount +
+                        discount
+                    )
+                ),
+
+
             finalAmount:
                 orderTotal,
 
-            /*
-               Alias for clarity
-            */
 
             totalAmount:
                 orderTotal
@@ -1704,21 +2026,40 @@ async function saveOrder(
             mode:
                 paymentMode,
 
+
             status:
                 paymentStatus,
 
+
             paymentId:
                 paymentId,
+
 
             paidAmount:
                 Number(
                     paidAmount
                 ),
 
-            /*
-               Store advance configuration
-               used for this order.
-            */
+
+            balanceAmount:
+                Number(
+                    balanceAmount
+                ),
+
+
+            paymentDiscountType:
+                paymentSettings
+                    ?.discountType ||
+                null,
+
+
+            paymentDiscountValue:
+                Number(
+                    paymentSettings
+                        ?.discountValue ||
+                    0
+                ),
+
 
             advanceType:
                 paymentMode === "advance"
@@ -1729,6 +2070,7 @@ async function saveOrder(
                     )
                     :
                     null,
+
 
             advanceValue:
                 paymentMode === "advance"
@@ -1756,6 +2098,11 @@ async function saveOrder(
             "",
 
 
+        orderPrefix:
+            siteSettings.orderPrefix ||
+            "IG",
+
+
         productLink:
             window.location.origin +
             "/product?id=" +
@@ -1769,6 +2116,10 @@ async function saveOrder(
 
     };
 
+
+    /*
+       SAVE FIRESTORE ORDER
+    */
 
     await addDoc(
         collection(
@@ -1792,12 +2143,29 @@ function showOrderSuccess(
     order
 ) {
 
+    let message =
+        "Thank you! Your order has been received successfully.";
+
+
+    if (
+        order?.payment?.mode ===
+        "advance"
+    ) {
+
+        message =
+            `Your advance payment was received successfully. Balance ₹${formatMoney(
+                order.payment.balanceAmount
+            )} will be payable on COD.`;
+
+    }
+
+
     showOrderPopup(
         true,
 
         "Order Placed Successfully!",
 
-        "Thank you! Your order has been received successfully.",
+        message,
 
         order?.orderNumber ||
         ""
@@ -1881,7 +2249,7 @@ function showOrderPopup(
 
     /*
        If popup HTML is not present,
-       use alert instead.
+       use alert.
     */
 
     if (!overlay) {
@@ -1906,14 +2274,13 @@ function showOrderPopup(
                 () => {
 
                     window.location.href =
-                        "website/shop.html";
+                        "shop";
 
                 },
                 1000
             );
 
         }
-
 
         return;
 
@@ -1988,7 +2355,7 @@ function showOrderPopup(
                 function() {
 
                     window.location.href =
-                        "website/shop.html";
+                        "shop";
 
                 }
 
@@ -2035,10 +2402,6 @@ function() {
 window.placeOrder =
 async function() {
 
-    /*
-       Prevent double click
-    */
-
     if (
         orderSubmitting
     ) {
@@ -2065,9 +2428,9 @@ async function() {
             true;
 
 
-        /*
+        /* ==============================================
            COD
-        */
+        ============================================== */
 
         if (
             selectedPaymentMode ===
@@ -2091,12 +2454,6 @@ async function() {
             }
 
 
-            /*
-               Send WhatsApp but do not
-               make order fail if
-               WhatsApp is unavailable.
-            */
-
             sendWhatsApp(
                 order
             );
@@ -2116,9 +2473,9 @@ async function() {
         }
 
 
-        /*
+        /* ==============================================
            ADVANCE
-        */
+        ============================================== */
 
         if (
             selectedPaymentMode ===
@@ -2131,27 +2488,19 @@ async function() {
             );
 
 
-            orderSubmitting =
-                false;
-
-
             return;
 
         }
 
 
-        /*
+        /* ==============================================
            ONLINE
-        */
+        ============================================== */
 
         await startPayment(
             customer,
             "online"
         );
-
-
-        orderSubmitting =
-            false;
 
     }
 
@@ -2201,7 +2550,6 @@ function sendWhatsApp(
         console.warn(
             "WhatsApp number is not configured in Site Settings."
         );
-
 
         return false;
 
@@ -2300,7 +2648,33 @@ function sendWhatsApp(
     /* PRICE */
 
     message +=
-        `\n💰 *Subtotal:* ₹${order.pricing.subTotal}\n`;
+        `\n💰 *Subtotal:* ₹${formatMoney(
+            order.pricing.subTotal
+        )}\n`;
+
+
+    if (
+        order.pricing.paymentDiscount > 0
+    ) {
+
+        message +=
+            `💳 *Payment Discount:* ₹${formatMoney(
+                order.pricing.paymentDiscount
+            )}\n`;
+
+    }
+
+
+    if (
+        order.pricing.couponDiscount > 0
+    ) {
+
+        message +=
+            `🏷 *Coupon Discount:* ₹${formatMoney(
+                order.pricing.couponDiscount
+            )}\n`;
+
+    }
 
 
     if (
@@ -2308,21 +2682,24 @@ function sendWhatsApp(
     ) {
 
         message +=
-            `🏷 *Discount:* ₹${order.pricing.discount}\n`;
+            `🎁 *Total Discount:* ₹${formatMoney(
+                order.pricing.discount
+            )}\n`;
 
     }
 
 
     message +=
-        `💵 *Total:* ₹${order.pricing.finalAmount}\n`;
+        `💵 *Order Total:* ₹${formatMoney(
+            order.pricing.finalAmount
+        )}\n`;
 
 
-    /*
-       SHOW PAID / BALANCE FOR ADVANCE
-    */
+    /* ADVANCE */
 
     if (
-        order.payment.mode === "advance"
+        order.payment.mode ===
+        "advance"
     ) {
 
         const paid =
@@ -2333,29 +2710,35 @@ function sendWhatsApp(
 
 
         const balance =
-            Math.max(
-                Number(
-                    order.pricing.finalAmount ||
-                    0
-                ) -
-                paid,
+            Number(
+                order.payment.balanceAmount ||
                 0
             );
 
 
         message +=
-            `💳 *Advance Paid:* ₹${paid}\n`;
+            `\n💳 *Advance Paid:* ₹${formatMoney(
+                paid
+            )}\n`;
 
 
         message +=
-            `💰 *Balance Due:* ₹${balance}\n`;
+            `💰 *Balance on COD:* ₹${formatMoney(
+                balance
+            )}\n`;
 
     }
 
 
-    message +=
-        `💳 *Payment:* ${order.payment.mode}\n`;
+    /* PAYMENT */
 
+    message +=
+        `💳 *Payment:* ${String(
+            order.payment.mode
+        ).toUpperCase()}\n`;
+
+
+    /* PRODUCT LINK */
 
     message +=
         `\n🔗 Product Link:\n`;
@@ -2434,7 +2817,8 @@ function loadRazorpayScript() {
                     "load",
                     resolve,
                     {
-                        once: true
+                        once:
+                            true
                     }
                 );
 
@@ -2443,7 +2827,8 @@ function loadRazorpayScript() {
                     "error",
                     reject,
                     {
-                        once: true
+                        once:
+                            true
                     }
                 );
 
@@ -2505,9 +2890,7 @@ async function startPayment(
                 .trim();
 
 
-        /*
-           CHECK RAZORPAY KEY
-        */
+        /* CHECK KEY */
 
         if (!razorpayKey) {
 
@@ -2515,6 +2898,8 @@ async function startPayment(
                 "Razorpay Key ID is not configured in Site Settings."
             );
 
+            orderSubmitting =
+                false;
 
             return;
 
@@ -2522,13 +2907,11 @@ async function startPayment(
 
 
         /*
-           ==========================================
-           CALCULATE ACTUAL PAYMENT AMOUNT
-           ==========================================
+           ONLINE
+           = final order amount
 
-           ONLINE  = FULL ORDER AMOUNT
-
-           ADVANCE = ADVANCE FLAT / PERCENT
+           ADVANCE
+           = configured advance amount
         */
 
         const paymentAmount =
@@ -2537,6 +2920,22 @@ async function startPayment(
                 getAdvancePaymentAmount()
                 :
                 finalAmount;
+
+
+        if (
+            paymentAmount <= 0
+        ) {
+
+            showOrderFailed(
+                "Invalid payment amount."
+            );
+
+            orderSubmitting =
+                false;
+
+            return;
+
+        }
 
 
         console.log(
@@ -2552,32 +2951,10 @@ async function startPayment(
 
 
         console.log(
-            "Actual Razorpay amount:",
+            "Payment amount:",
             paymentAmount
         );
 
-
-        /*
-           CHECK AMOUNT
-        */
-
-        if (
-            paymentAmount <= 0
-        ) {
-
-            showOrderFailed(
-                "Invalid payment amount."
-            );
-
-
-            return;
-
-        }
-
-
-        /*
-           LOAD RAZORPAY
-        */
 
         await loadRazorpayScript();
 
@@ -2594,10 +2971,7 @@ async function startPayment(
 
 
             /*
-               THIS IS THE IMPORTANT FIX
-
-               Razorpay gets advance amount
-               when Advance is selected.
+               Razorpay expects INR in paise.
             */
 
             amount:
@@ -2635,8 +3009,15 @@ async function startPayment(
                     try {
 
                         /*
-                           Save order only after
-                           successful payment.
+                           IMPORTANT:
+
+                           Order number is generated
+                           only after successful
+                           payment.
+
+                           This means failed payment
+                           does not consume an order
+                           number.
                         */
 
                         const order =
@@ -2654,24 +3035,15 @@ async function startPayment(
                                 "Payment was successful, but the order could not be saved. Please contact us."
                             );
 
-
                             return;
 
                         }
 
 
-                        /*
-                           Send WhatsApp
-                        */
-
                         sendWhatsApp(
                             order
                         );
 
-
-                        /*
-                           SUCCESS POPUP
-                        */
 
                         showOrderSuccess(
                             order
@@ -2688,7 +3060,8 @@ async function startPayment(
 
 
                         showOrderFailed(
-                            "Payment was successful, but order saving failed. Please contact us."
+                            error.message ||
+                            "Payment was successful, but order saving failed."
                         );
 
                     }
@@ -2733,6 +3106,12 @@ async function startPayment(
                 paymentAmount:
                     String(
                         paymentAmount
+                    ),
+
+                orderPrefix:
+                    String(
+                        siteSettings.orderPrefix ||
+                        "IG"
                     )
 
             },
@@ -2754,9 +3133,7 @@ async function startPayment(
             );
 
 
-        /*
-           PAYMENT FAILED
-        */
+        /* PAYMENT FAILED */
 
         rzp.on(
             "payment.failed",
@@ -2787,9 +3164,7 @@ async function startPayment(
         );
 
 
-        /*
-           PAYMENT MODAL CLOSED
-        */
+        /* MODAL CLOSED */
 
         rzp.on(
             "modal.ondismiss",
@@ -2824,6 +3199,43 @@ async function startPayment(
         );
 
     }
+
+}
+
+
+/* ======================================================
+   FORMAT MONEY
+====================================================== */
+
+function formatMoney(
+    value
+) {
+
+    const number =
+        Number(
+            value || 0
+        );
+
+
+    /*
+       Remove unnecessary .00
+
+       1500
+       427.5
+       427.50
+    */
+
+    return Number.isInteger(
+        number
+    )
+
+        ?
+
+        number.toString()
+
+        :
+
+        number.toFixed(2);
 
 }
 
