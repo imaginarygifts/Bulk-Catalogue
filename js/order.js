@@ -24,7 +24,7 @@ let orderData = null;
 
 let siteSettings = {
 
-    companyName: "Imaginary Gifts",
+    companyName: "",
 
     whatsapp: "",
 
@@ -143,7 +143,7 @@ function applySiteSettings() {
 
     const companyName =
         siteSettings.companyName ||
-        "Imaginary Gifts";
+        "";
 
 
     /* PAGE TITLE */
@@ -296,7 +296,7 @@ async function loadOrder() {
 
 
             location.href =
-                "index.html";
+                "";
 
 
             return;
@@ -321,7 +321,7 @@ async function loadOrder() {
 
 
             location.href =
-                "index.html";
+                "";
 
 
             return;
@@ -1650,7 +1650,7 @@ function sendWhatsApp(
 
     const companyName =
         siteSettings.companyName ||
-        "Imaginary Gifts";
+        "";
 
 
     let message =
@@ -1916,7 +1916,7 @@ async function startPayment(
 
         const companyName =
             siteSettings.companyName ||
-            "Imaginary Gifts";
+            "";
 
 
         const options = {
