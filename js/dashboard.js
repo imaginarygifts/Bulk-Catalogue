@@ -248,22 +248,3 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCustomImages(); 
 }); 
  
-document.addEventListener("DOMContentLoaded", () => { 
-  loadStats(); 
-  loadCustomImages(); 
-  initNotifications(); 
-}); 
- 
-async function initNotifications(){ 
- 
-  const permission = await Notification.requestPermission(); 
- 
-  if(permission !== "granted") return; 
- 
-  const token = await getToken(messaging,{ 
-    vapidKey:"BDgddR6q2vIsMwUfya-PuyOOK1Qu270SvhGMN-fJgOVIyiJx2OP9QzjQcP_cJ9syip_TayZ_fn8rHcVN3gAgrW0" 
-  }); 
- 
-  console.log("Admin notification token:",token); 
- 
-}
