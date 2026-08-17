@@ -349,6 +349,8 @@ async function loadOrder() {
 
         recalcPrice();
 
+       updateAdvancePaymentInfo();
+
 
         console.log(
             "Order data loaded:",
@@ -778,23 +780,24 @@ function setupPaymentModes() {
             radio => {
 
                 radio.addEventListener(
-                    "change",
-                    () => {
+    "change",
+    async () => {
 
-                        selectedPaymentMode =
-                            radio.value;
+        selectedPaymentMode =
+            radio.value;
 
+        removeCoupon();
 
-                        removeCoupon();
+        await loadCoupons();
 
+        recalcPrice();
 
-                        loadCoupons();
+        updateAdvancePaymentInfo();
 
+    }
+);
 
-                        recalcPrice();
-
-                    }
-                );
+                   
 
             }
         );
@@ -982,7 +985,69 @@ function getAdvancePaymentAmount() {
 
 }
 
+/* ======================================================
+   ADVANCE PAYMENT INFO
+====================================================== */
 
+function updateAdvancePaymentInfo() {
+
+    const box =
+        document.getElementById(
+            "advancePaymentInfo"
+        );
+
+    if (!box) {
+        return;
+    }
+
+    /* Hide for non-advance payment */
+
+    if (
+        selectedPaymentMode !== "advance"
+    ) {
+
+        box.classList.remove("show");
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const advanceAmount =
+        getAdvancePaymentAmount();
+
+
+    const balance =
+        Math.max(
+            Number(finalAmount) -
+            Number(advanceAmount),
+            0
+        );
+
+
+    box.innerHTML = `
+
+        <span>
+            ℹ️
+            Pay Advance
+            <span class="advance-amount">
+                ₹${advanceAmount}
+            </span>
+            now and
+            Balance
+            <span class="balance-amount">
+                ₹${balance}
+            </span>
+            on COD.
+        </span>
+
+    `;
+
+
+    box.classList.add("show");
+
+}
 /* ======================================================
    COUPONS
 ====================================================== */
