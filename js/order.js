@@ -875,6 +875,115 @@ function recalcPrice() {
 
 
 /* ======================================================
+   ADVANCE PAYMENT AMOUNT
+====================================================== */
+
+function getAdvancePaymentAmount() {
+
+    const advanceSettings =
+        orderData
+            ?.product
+            ?.paymentSettings
+            ?.advance ||
+        {};
+
+
+    if (
+        !advanceSettings.enabled
+    ) {
+
+        return finalAmount;
+
+    }
+
+
+    const type =
+        String(
+            advanceSettings.type ||
+            "percent"
+        )
+            .toLowerCase()
+            .trim();
+
+
+    const value =
+        Number(
+            advanceSettings.value ||
+            0
+        );
+
+
+    let advanceAmount =
+        0;
+
+
+    /* ==========================================
+       FLAT ADVANCE
+    ========================================== */
+
+    if (
+        type === "flat" ||
+        type === "amount" ||
+        type === "fixed"
+    ) {
+
+        advanceAmount =
+            value;
+
+    }
+
+
+    /* ==========================================
+       PERCENTAGE ADVANCE
+    ========================================== */
+
+    else {
+
+        advanceAmount =
+            Math.round(
+                finalAmount *
+                (
+                    value /
+                    100
+                )
+            );
+
+    }
+
+
+    /* ==========================================
+       SAFETY LIMITS
+    ========================================== */
+
+    if (
+        advanceAmount < 0
+    ) {
+
+        advanceAmount =
+            0;
+
+    }
+
+
+    if (
+        advanceAmount >
+        finalAmount
+    ) {
+
+        advanceAmount =
+            finalAmount;
+
+    }
+
+
+    return Math.round(
+        advanceAmount
+    );
+
+}
+
+
+/* ======================================================
    COUPONS
 ====================================================== */
 
@@ -1365,6 +1474,62 @@ async function saveOrder(
         await generateOrderNumber();
 
 
+    /*
+       FULL ORDER TOTAL
+
+       This always remains the actual
+       order total, even for advance payment.
+    */
+
+    const orderTotal =
+        Number(
+            finalAmount
+        );
+
+
+    /*
+       ACTUAL AMOUNT PAID
+
+       COD = 0
+       Online = full order total
+       Advance = configured advance amount
+    */
+
+    let paidAmount =
+        0;
+
+
+    if (
+        paymentStatus === "paid"
+    ) {
+
+        if (
+            paymentMode === "advance"
+        ) {
+
+            paidAmount =
+                getAdvancePaymentAmount();
+
+        }
+
+        else {
+
+            paidAmount =
+                orderTotal;
+
+        }
+
+    }
+
+
+    const advanceSettings =
+        orderData
+            ?.product
+            ?.paymentSettings
+            ?.advance ||
+        {};
+
+
     const order = {
 
         orderNumber,
@@ -1454,9 +1619,14 @@ async function saveOrder(
                 ),
 
             finalAmount:
-                Number(
-                    finalAmount
-                )
+                orderTotal,
+
+            /*
+               Alias for clarity
+            */
+
+            totalAmount:
+                orderTotal
 
         },
 
@@ -1473,7 +1643,37 @@ async function saveOrder(
                 paymentStatus,
 
             paymentId:
-                paymentId
+                paymentId,
+
+            paidAmount:
+                Number(
+                    paidAmount
+                ),
+
+            /*
+               Store advance configuration
+               used for this order.
+            */
+
+            advanceType:
+                paymentMode === "advance"
+                    ?
+                    (
+                        advanceSettings.type ||
+                        null
+                    )
+                    :
+                    null,
+
+            advanceValue:
+                paymentMode === "advance"
+                    ?
+                    Number(
+                        advanceSettings.value ||
+                        0
+                    )
+                    :
+                    0
 
         },
 
@@ -1641,7 +1841,7 @@ function showOrderPopup(
                 () => {
 
                     window.location.href =
-                        "shop";
+                        "website/shop.html";
 
                 },
                 1000
@@ -1723,7 +1923,7 @@ function showOrderPopup(
                 function() {
 
                     window.location.href =
-                        "/shop";
+                        "website/shop.html";
 
                 }
 
@@ -1828,7 +2028,7 @@ async function() {
 
             /*
                Send WhatsApp but do not
-               make the order fail if
+               make order fail if
                WhatsApp is unavailable.
             */
 
@@ -2052,6 +2252,42 @@ function sendWhatsApp(
         `💵 *Total:* ₹${order.pricing.finalAmount}\n`;
 
 
+    /*
+       SHOW PAID / BALANCE FOR ADVANCE
+    */
+
+    if (
+        order.payment.mode === "advance"
+    ) {
+
+        const paid =
+            Number(
+                order.payment.paidAmount ||
+                0
+            );
+
+
+        const balance =
+            Math.max(
+                Number(
+                    order.pricing.finalAmount ||
+                    0
+                ) -
+                paid,
+                0
+            );
+
+
+        message +=
+            `💳 *Advance Paid:* ₹${paid}\n`;
+
+
+        message +=
+            `💰 *Balance Due:* ₹${balance}\n`;
+
+    }
+
+
     message +=
         `💳 *Payment:* ${order.payment.mode}\n`;
 
@@ -2221,15 +2457,51 @@ async function startPayment(
 
 
         /*
+           ==========================================
+           CALCULATE ACTUAL PAYMENT AMOUNT
+           ==========================================
+
+           ONLINE  = FULL ORDER AMOUNT
+
+           ADVANCE = ADVANCE FLAT / PERCENT
+        */
+
+        const paymentAmount =
+            paymentMode === "advance"
+                ?
+                getAdvancePaymentAmount()
+                :
+                finalAmount;
+
+
+        console.log(
+            "Order total:",
+            finalAmount
+        );
+
+
+        console.log(
+            "Payment mode:",
+            paymentMode
+        );
+
+
+        console.log(
+            "Actual Razorpay amount:",
+            paymentAmount
+        );
+
+
+        /*
            CHECK AMOUNT
         */
 
         if (
-            finalAmount <= 0
+            paymentAmount <= 0
         ) {
 
             showOrderFailed(
-                "Invalid order amount."
+                "Invalid payment amount."
             );
 
 
@@ -2256,9 +2528,16 @@ async function startPayment(
                 razorpayKey,
 
 
+            /*
+               THIS IS THE IMPORTANT FIX
+
+               Razorpay gets advance amount
+               when Advance is selected.
+            */
+
             amount:
                 Math.round(
-                    finalAmount *
+                    paymentAmount *
                     100
                 ),
 
@@ -2272,7 +2551,15 @@ async function startPayment(
 
 
             description:
-                `Order from ${companyName}`,
+                paymentMode === "advance"
+
+                    ?
+
+                    `Advance payment for order from ${companyName}`
+
+                    :
+
+                    `Order from ${companyName}`,
 
 
             handler:
@@ -2368,7 +2655,20 @@ async function startPayment(
                     orderData.product.name,
 
                 company:
-                    companyName
+                    companyName,
+
+                paymentMode:
+                    paymentMode,
+
+                orderTotal:
+                    String(
+                        finalAmount
+                    ),
+
+                paymentAmount:
+                    String(
+                        paymentAmount
+                    )
 
             },
 
