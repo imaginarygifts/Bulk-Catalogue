@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+       
+    </title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content=""
+    >
+
+
+    <!-- ==========================================
+         OPEN GRAPH
+    =========================================== -->
+
+    <meta
+        property="og:title"
+        content=""
+    >
+
+    <meta
+        property="og:description"
+        content=""
+    >
+
+    <meta
+        property="og:image"
+        content=""
+    >
+
+    <meta
+        property="og:url"
+        content=""
+    >
+
+    <meta
+        property="og:type"
+        content="website"
+    >
+
+
+    <!-- ==========================================
+         FONT AWESOME
+    =========================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- ==========================================
+         STORE CSS
+         ONLY STORE PAGE
+    =========================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/shop.css"
+    >
+
+
+    <!-- ==========================================
+         TOPBAR CSS
+         TOPBAR + SIDEBAR + SEARCH
+    =========================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/topbar.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- ==================================================
+     TOPBAR
+================================================== -->
+
+<header class="site-topbar">
+
+    <!-- MENU BUTTON -->
+
+    <button
+        type="button"
+        class="topbar-button menu-button"
+        id="menuButton"
+        aria-label="Open menu"
+        aria-expanded="false"
+    >
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+
+    <!-- LOGO -->
+
+    <div class="topbar-logo">
+
+        <a
+            href=""
+            id="logoLink"
+            data-logo-link
+            aria-label="Home"
+        >
+
+            <img
+                id="siteLogo"
+                data-site-logo
+                src=""
+                alt="Company Logo"
+            >
+
+        </a>
+
+    </div>
+
+
+    <!-- SEARCH BUTTON -->
+
+    <button
+        type="button"
+        class="topbar-button search-button"
+        id="searchButton"
+        aria-label="Search"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+</header>
+
+
+
+<!-- ==================================================
+     SEARCH OVERLAY
+     HIDDEN UNTIL SEARCH BUTTON IS CLICKED
+================================================== -->
+
+<div
+    id="searchOverlay"
+    class="search-overlay"
+    aria-hidden="true"
+>
+
+    <div class="search-panel">
+
+        <!-- SEARCH HEADER -->
+
+        <div class="search-header">
+
+            <div class="search-title">
+                Search Products
+            </div>
+
+            <button
+                type="button"
+                class="search-close-button"
+                id="closeSearchButton"
+                aria-label="Close search"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH INPUT -->
+
+        <div class="search-input-wrapper">
+
+            <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+
+            <input
+                type="search"
+                id="searchInput"
+                class="search-input"
+                placeholder="Search for products..."
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="clearSearchButton"
+                class="clear-search-button"
+                aria-label="Clear search"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH RESULTS -->
+
+        <div
+            id="searchResults"
+            class="search-results"
+        >
+
+            <div class="search-message">
+                Search for a product
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     SIDEBAR OVERLAY
+================================================== -->
+
+<div
+    id="sidebarOverlay"
+    class="sidebar-overlay"
+    aria-hidden="true"
+></div>
+
+
+
+<!-- ==================================================
+     SIDEBAR
+================================================== -->
+
+<aside
+    id="sidebar"
+    class="site-sidebar"
+    aria-hidden="true"
+>
+
+    <!-- SIDEBAR HEADER -->
+
+    <div class="sidebar-header">
+
+        <strong data-company-name>
+            Company Name
+        </strong>
+
+        <button
+            type="button"
+            class="sidebar-close-button"
+            id="closeSidebarButton"
+            aria-label="Close menu"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+
+    <!-- HOME -->
+
+    <a
+        href=""
+        class="sidebar-link"
+        data-home-link
+    >
+
+        <i class="fa-solid fa-house"></i>
+
+        <span>
+            Home
+        </span>
+
+    </a>
+
+    <!-- Shop -->
+
+    <a
+        href="shop"
+        class="sidebar-link"
+        data-home-link
+    >
+
+        <i class="fa-solid fa-house"></i>
+
+        <span>
+           Shop
+        </span>
+
+    </a>
+
+    <!-- CATEGORIES -->
+
+    <div class="sidebar-expandable">
+
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="categoriesToggle"
+            aria-expanded="false"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                Categories
+
+            </span>
+
+            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
+
+        </button>
+
+
+        <div
+            id="sidebarCategories"
+            class="sidebar-submenu"
+        >
+
+            <div class="sidebar-loading">
+                Loading categories...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TAGS -->
+
+    <div class="sidebar-expandable">
+
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="tagsToggle"
+            aria-expanded="false"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-tags"></i>
+
+                Tags
+
+            </span>
+
+            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
+
+        </button>
+
+
+        <div
+            id="sidebarTags"
+            class="sidebar-submenu"
+        >
+
+            <div class="sidebar-loading">
+                Loading tags...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ABOUT -->
+
+    <a
+        href="aboutus"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <span>
+            About Us
+        </span>
+
+    </a>
+
+
+    <!-- CONTACT -->
+
+    <a
+        href="contact-us"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-phone"></i>
+
+        <span>
+            Contact Us
+        </span>
+
+    </a>
+
+
+    <!-- TERMS -->
+
+    <a
+        href="t&c"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-file-contract"></i>
+
+        <span>
+            Terms & Conditions
+        </span>
+
+    </a>
+
+
+    <!-- PRIVACY -->
+
+    <a
+        href="privacy-policy"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-lock"></i>
+
+        <span>
+            Privacy Policy
+        </span>
+
+    </a>
+
+
+    <!-- REFUND -->
+
+    <a
+        href="refund"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-money-bill-transfer"></i>
+
+        <span>
+            Refund Policy
+        </span>
+
+    </a>
+
+
+    <!-- SHIPPING -->
+
+    <a
+        href="shipping"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-truck"></i>
+
+        <span>
+            Shipping Policy
+        </span>
+
+    </a>
+
+</aside>
+
+
+
+<!-- ==================================================
+     STORE PAGE
+     
+     EVERYTHING BELOW HERE IS STORE CONTENT.
+     
+     Controlled by:
+     store.js
+     store.css
+================================================== -->
+
+
+<!-- ==========================================
+     MAIN CATEGORY BAR
+=========================================== -->
+
+<div
+    id="categoryBar"
+    class="category-scroll"
+></div>
+
+
+
+<!-- ==========================================
+     SUBCATEGORY BAR
+=========================================== -->
+
+<div
+    id="subCategoryBar"
+    class="subcategory-row"
+></div>
+
+
+
+<!-- ==========================================
+     TAG FILTER
+=========================================== -->
+
+<div
+    id="tagFilterRow"
+    class="tag-filter-row"
+></div>
+
+
+
+<!-- ==========================================
+     PRODUCTS
+=========================================== -->
+
+<main
+    class="store-main"
+>
+
+    <div
+        id="productGrid"
+        class="product-grid"
+    ></div>
+
+</main>
+
+
+
+<!-- ==================================================
+     SHARE BUTTON
+================================================== -->
+
+<div
+    id="shareBtn"
+    class="share-button"
+    onclick="sharePage()"
+    aria-label="Share this page"
+>
+
+    <i class="fa-solid fa-share-nodes"></i>
+
+</div>
+
+
+
+<!-- ==================================================
+     JAVASCRIPT
+================================================== -->
+
+
+<!-- SITE SETTINGS -->
+
+<script
+    type="module"
+    src="js/site-settings.js"
+></script>
+
+
+
+<!-- TOPBAR
+
+     Handles:
+     - menu
+     - sidebar
+     - logo
+     - search
+     - sidebar categories
+     - sidebar tags
+-->
+
+<script
+    type="module"
+    src="js/topbar.js"
+></script>
+
+
+
+<!-- STORE
+
+     Handles:
+     - products
+     - categories
+     - subcategories
+     - tags
+     - filtering
+     - load more
+-->
+
+<script
+    type="module"
+    src="js/store.js"
+></script>
+
+
+
+<!-- SHARE -->
+
+<script
+    src="js/share.js"
+></script>
+
+
+</body>
+
+</html>
