@@ -321,7 +321,10 @@ textarea {
   cursor: pointer;
 }
 
+
+
 /* Remove Coupon Button */
+
 .remove-coupon-btn {
   background: transparent;
   color: #ff4d4d;
@@ -402,4 +405,33 @@ textarea {
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+}
+
+
+/* Advance Payment Info */
+
+.advance-payment-info {
+    display: none;
+    margin: 10px 0 20px;
+    padding: 14px 16px;
+    border: 1px solid #159ed1;
+    border-radius: 14px;
+    background: #151a23;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.advance-payment-info.show {
+    display: block;
+}
+
+.advance-payment-info .advance-amount {
+    color: #9cff00;
+    font-weight: 700;
+}
+
+.advance-payment-info .balance-amount {
+    color: #ffc400;
+    font-weight: 700;
 }
