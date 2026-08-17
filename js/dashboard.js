@@ -58,84 +58,311 @@ function getCreatedAt(o) {
 
 /* ================== STATS ================== */
 async function loadStats() {
-  const productsSnap = await getDocs(collection(db, "products"));
-  const catsSnap = await getDocs(collection(db, "categories"));
-  const ordersSnap = await getDocs(collection(db, "orders"));
 
-  let pendingOrders = 0;
-  let todayOrders = 0;
-  let todaySale = 0;
-  let totalBalance = 0;
+    console.log("===== DASHBOARD STATS START =====");
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayTs = todayStart.getTime();
+    try {
 
-  ordersSnap.forEach(doc => {
-    const o = doc.data();
+        console.log("Testing PRODUCTS...");
 
-    const createdAt = normalizeTimestamp(o.createdAt);
+        const productsSnap =
+            await getDocs(
+                collection(
+                    db,
+                    "products"
+                )
+            );
 
-    const amount =
-      o.finalAmount ||
-      o.pricing?.finalAmount ||
-      o.price ||
-      0;
+        console.log(
+            "PRODUCTS SUCCESS:",
+            productsSnap.size
+        );
 
-    if (o.orderStatus === "pending") {
-      pendingOrders++;
+
+        console.log("Testing CATEGORIES...");
+
+        const catsSnap =
+            await getDocs(
+                collection(
+                    db,
+                    "categories"
+                )
+            );
+
+        console.log(
+            "CATEGORIES SUCCESS:",
+            catsSnap.size
+        );
+
+
+        console.log("Testing ORDERS...");
+
+        const ordersSnap =
+            await getDocs(
+                collection(
+                    db,
+                    "orders"
+                )
+            );
+
+        console.log(
+            "ORDERS SUCCESS:",
+            ordersSnap.size
+        );
+
+
+        let pendingOrders = 0;
+        let todayOrders = 0;
+        let todaySale = 0;
+        let totalBalance = 0;
+
+
+        const todayStart =
+            new Date();
+
+        todayStart.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+
+        const todayTs =
+            todayStart.getTime();
+
+
+        ordersSnap.forEach(
+            orderDoc => {
+
+                const o =
+                    orderDoc.data();
+
+
+                console.log(
+                    "ORDER:",
+                    orderDoc.id,
+                    o
+                );
+
+
+                const createdAt =
+                    normalizeTimestamp(
+                        o.createdAt
+                    );
+
+
+                const amount =
+                    Number(
+                        o.finalAmount ||
+                        o.pricing?.finalAmount ||
+                        o.price ||
+                        0
+                    );
+
+
+                if (
+                    o.orderStatus ===
+                    "pending"
+                ) {
+
+                    pendingOrders++;
+
+                }
+
+
+                if (
+                    createdAt >=
+                    todayTs
+                ) {
+
+                    todayOrders++;
+
+                    todaySale +=
+                        amount;
+
+                }
+
+
+                const paid =
+                    Number(
+                        o.payment?.paidAmount ||
+                        (
+                            o.payment?.status ===
+                            "paid"
+                            ?
+                            amount
+                            :
+                            0
+                        )
+                    );
+
+
+                const balance =
+                    Math.max(
+                        amount - paid,
+                        0
+                    );
+
+
+                totalBalance +=
+                    balance;
+
+            }
+        );
+
+
+        console.log(
+            "FINAL STATS:",
+            {
+                products:
+                    productsSnap.size,
+
+                categories:
+                    catsSnap.size,
+
+                orders:
+                    ordersSnap.size,
+
+                pendingOrders,
+
+                todayOrders,
+
+                todaySale,
+
+                totalBalance
+            }
+        );
+
+
+        statsBox.innerHTML = `
+
+            <div
+                class="card clickable"
+                onclick="location.href='products.html'"
+            >
+
+                <b>
+                    ${productsSnap.size}
+                </b>
+
+                <small>
+                    Total Products
+                </small>
+
+            </div>
+
+
+            <div
+                class="card clickable"
+                onclick="location.href='products.html'"
+            >
+
+                <b>
+                    ${catsSnap.size}
+                </b>
+
+                <small>
+                    Total Categories
+                </small>
+
+            </div>
+
+
+            <div
+                class="card clickable"
+                onclick="location.href='orders.html?status=pending'"
+            >
+
+                <b>
+                    ${pendingOrders}
+                </b>
+
+                <small>
+                    Pending Orders
+                </small>
+
+            </div>
+
+
+            <div
+                class="card clickable"
+                onclick="location.href='orders.html?range=today'"
+            >
+
+                <b>
+                    ${todayOrders}
+                </b>
+
+                <small>
+                    Today Orders
+                </small>
+
+            </div>
+
+
+            <div
+                class="card clickable"
+                onclick="location.href='orders.html?range=today&paymentStatus=paid'"
+            >
+
+                <b>
+                    ₹${todaySale}
+                </b>
+
+                <small>
+                    Today Sale
+                </small>
+
+            </div>
+
+
+            <div
+                class="card clickable"
+                onclick="location.href='orders.html?balance=due'"
+            >
+
+                <b>
+                    ₹${totalBalance}
+                </b>
+
+                <small>
+                    Total Balance
+                </small>
+
+            </div>
+
+        `;
+
+
+        console.log(
+            "===== DASHBOARD STATS SUCCESS ====="
+        );
+
     }
 
-    if (createdAt >= todayTs) {
-      todayOrders++;
-      todaySale += amount;
+    catch(error) {
+
+        console.error(
+            "===== DASHBOARD STATS ERROR ====="
+        );
+
+        console.error(
+            error
+        );
+
+        console.error(
+            "CODE:",
+            error?.code
+        );
+
+        console.error(
+            "MESSAGE:",
+            error?.message
+        );
+
     }
 
-    const paid =
-  o.payment?.paidAmount ||
-  (o.payment?.status === "paid" ? amount : 0);
-
-const balance = Math.max(amount - paid, 0);
-
-totalBalance += balance;
-  });
-
-  statsBox.innerHTML = `
-      
-      <div class="card clickable" onclick="location.href='products.html'">
-      <b>${productsSnap.size}</b>
-      <small>Total Products</small>
-    </div>
-    
-    <div class="card clickable" onclick="location.href='products.html'">
-      <b>${catsSnap.size}</b>
-      <small>Total Categories</small>
-    </div>
-    
-    <div class="card clickable"
-     onclick="location.href='orders.html?status=pending'">
-  <b>${pendingOrders}</b>
-  <small>Pending Orders</small>
-</div>
-
-<div class="card clickable"
-     onclick="location.href='orders.html?range=today'">
-  <b>${todayOrders}</b>
-  <small>Today Orders</small>
-</div>
-
-<div class="card clickable"
-     onclick="location.href='orders.html?range=today&paymentStatus=paid'">
-  <b>₹${todaySale}</b>
-  <small>Today Sale</small>
-</div>
-
-<div class="card clickable"
-     onclick="location.href='orders.html?balance=due'">
-  <b>₹${totalBalance}</b>
-  <small>Total Balance</small>
-</div>
-  `;
 }
 /* ================== CUSTOM IMAGES ================== */
 async function loadCustomImages() {
