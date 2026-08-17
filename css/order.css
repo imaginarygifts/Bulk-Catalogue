@@ -330,3 +330,76 @@ textarea {
   cursor: pointer;
   margin-top: 4px;
 }
+
+
+/* Order Popup */
+.order-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+}
+
+.order-popup-overlay.show {
+    display: flex;
+}
+
+.order-popup {
+    width: 100%;
+    max-width: 380px;
+    background: #18181d;
+    color: #fff;
+    border-radius: 20px;
+    padding: 30px 22px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+
+.order-popup-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #20d879;
+    color: #fff;
+    font-size: 42px;
+    line-height: 70px;
+    font-weight: bold;
+}
+
+.order-popup.failed .order-popup-icon {
+    background: #ff4757;
+}
+
+.order-popup h2 {
+    margin: 0 0 10px;
+    font-size: 23px;
+}
+
+.order-popup p {
+    margin: 0 0 15px;
+    color: #bbb;
+    line-height: 1.5;
+}
+
+.order-popup-order {
+    margin: 12px 0 20px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.order-popup button {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px;
+    background: #20d879;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
