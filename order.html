@@ -90,6 +90,34 @@
     <button class="pay-btn" onclick="placeOrder()">Continue to Payment</button>
   </div>
 
+
+  <div id="orderResultPopup" class="order-popup-overlay">
+    <div class="order-popup">
+
+        <div id="orderPopupIcon" class="order-popup-icon">✓</div>
+
+        <h2 id="orderPopupTitle">
+            Order Placed Successfully!
+        </h2>
+
+        <p id="orderPopupMessage">
+            Your order has been placed successfully.
+        </p>
+
+        <div id="orderPopupOrderNo" class="order-popup-order"></div>
+
+        <button
+            id="orderPopupButton"
+            type="button"
+            onclick="closeOrderPopup()"
+        >
+            Continue Shopping
+        </button>
+
+    </div>
+</div>
+
+  
   <script type="module" src="js/order.js"></script>
   
   <script>
