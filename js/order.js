@@ -516,9 +516,9 @@ function renderSummary() {
 
         <div>
 
-            Base Price:
+            Sale Price:
             ₹${Number(
-                product.basePrice || 0
+                product.salePrice || 0
             )}
 
         </div>
