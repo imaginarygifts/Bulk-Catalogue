@@ -11,7 +11,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
-
 /*==================================================
     DOM
 ==================================================*/
@@ -47,7 +46,6 @@ const searchResults =
     document.getElementById("searchResults");
 
 
-
 /*==================================================
     SEARCH STATE
 ==================================================*/
@@ -61,7 +59,6 @@ let searchLoading =
     false;
 
 
-
 /*==================================================
     INITIALIZE
 ==================================================*/
@@ -72,15 +69,26 @@ document.addEventListener(
 );
 
 
+async function initializeTopbar(){
 
-function initializeTopbar(){
+    /* SIDEBAR */
 
     initializeSidebar();
 
+
+    /* SEARCH */
+
     initializeSearch();
 
-}
 
+    /* LOAD SIDEBAR DATA */
+
+    await Promise.all([
+        loadSidebarCategories(),
+        loadSidebarTags()
+    ]);
+
+}
 
 
 /*==================================================
@@ -188,7 +196,6 @@ function initializeSidebar(){
 }
 
 
-
 /*==================================================
     OPEN SIDEBAR
 ==================================================*/
@@ -229,7 +236,6 @@ function openSidebar(){
     );
 
 }
-
 
 
 /*==================================================
@@ -274,7 +280,6 @@ function closeSidebar(){
 }
 
 
-
 /*==================================================
     SIDEBAR SECTION TOGGLE
 ==================================================*/
@@ -288,6 +293,7 @@ function toggleSidebarSection(
         document.getElementById(
             buttonId
         );
+
 
     const submenu =
         document.getElementById(
@@ -324,6 +330,707 @@ function toggleSidebarSection(
 
 }
 
+
+/*==================================================
+    LOAD SIDEBAR CATEGORIES
+==================================================*/
+
+async function loadSidebarCategories(){
+
+    const container =
+        document.getElementById(
+            "sidebarCategories"
+        );
+
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    try{
+
+        /*------------------------------------------
+            GET ALL CATEGORIES
+        ------------------------------------------*/
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "categories"
+                )
+            );
+
+
+        const categories =
+            snapshot.docs.map(
+                docSnap => ({
+
+                    id:
+                        docSnap.id,
+
+                    ...docSnap.data()
+
+                })
+            );
+
+
+        /*------------------------------------------
+            SORT CATEGORIES
+        ------------------------------------------*/
+
+        categories.sort(
+            (a, b) => {
+
+                const orderA =
+                    Number(
+                        a.order ??
+                        999999
+                    );
+
+
+                const orderB =
+                    Number(
+                        b.order ??
+                        999999
+                    );
+
+
+                if(
+                    orderA !==
+                    orderB
+                ){
+
+                    return (
+                        orderA -
+                        orderB
+                    );
+
+                }
+
+
+                const nameA =
+                    String(
+                        a.name ||
+                        ""
+                    ).toLowerCase();
+
+
+                const nameB =
+                    String(
+                        b.name ||
+                        ""
+                    ).toLowerCase();
+
+
+                return nameA.localeCompare(
+                    nameB
+                );
+
+            }
+        );
+
+
+        /*------------------------------------------
+            MAIN CATEGORIES
+        ------------------------------------------*/
+
+        const mainCategories =
+            categories.filter(
+                category =>
+                    !category.parentId
+            );
+
+
+        if(
+            !mainCategories.length
+        ){
+
+            container.innerHTML = `
+
+                <div class="sidebar-empty">
+
+                    No categories found.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            "";
+
+
+        /*------------------------------------------
+            CREATE CATEGORIES
+        ------------------------------------------*/
+
+        mainCategories.forEach(
+            category => {
+
+                const children =
+                    categories.filter(
+                        child =>
+
+                            child.parentId ===
+                            category.id
+
+                    );
+
+
+                const item =
+                    createCategoryItem(
+                        category,
+                        children
+                    );
+
+
+                container.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Sidebar category loading error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="sidebar-error">
+
+                Unable to load categories.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*==================================================
+    CREATE CATEGORY ITEM
+==================================================*/
+
+function createCategoryItem(
+    category,
+    children
+){
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    wrapper.className =
+        "sidebar-category-item";
+
+
+    /*----------------------------------------------
+        MAIN ROW
+    ----------------------------------------------*/
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.className =
+        "sidebar-category-row";
+
+
+    /*----------------------------------------------
+        CATEGORY LINK
+    ----------------------------------------------*/
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        buildCategoryUrl(
+            category.id
+        );
+
+
+    link.innerHTML = `
+
+        <i class="fa-solid fa-folder"></i>
+
+        <span>
+
+            ${escapeHtml(
+                category.name ||
+                "Category"
+            )}
+
+        </span>
+
+    `;
+
+
+    row.appendChild(
+        link
+    );
+
+
+    /*----------------------------------------------
+        CHILDREN
+    ----------------------------------------------*/
+
+    if(
+        children.length
+    ){
+
+        /*------------------------------------------
+            SORT CHILDREN
+        ------------------------------------------*/
+
+        children.sort(
+            (a, b) => {
+
+                const orderA =
+                    Number(
+                        a.order ??
+                        999999
+                    );
+
+
+                const orderB =
+                    Number(
+                        b.order ??
+                        999999
+                    );
+
+
+                if(
+                    orderA !==
+                    orderB
+                ){
+
+                    return (
+                        orderA -
+                        orderB
+                    );
+
+                }
+
+
+                const nameA =
+                    String(
+                        a.name ||
+                        ""
+                    ).toLowerCase();
+
+
+                const nameB =
+                    String(
+                        b.name ||
+                        ""
+                    ).toLowerCase();
+
+
+                return nameA.localeCompare(
+                    nameB
+                );
+
+            }
+        );
+
+
+        /*------------------------------------------
+            TOGGLE BUTTON
+        ------------------------------------------*/
+
+        const toggle =
+            document.createElement(
+                "button"
+            );
+
+
+        toggle.type =
+            "button";
+
+
+        toggle.className =
+            "sidebar-category-toggle";
+
+
+        toggle.setAttribute(
+            "aria-label",
+            "Show subcategories"
+        );
+
+
+        toggle.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+
+        toggle.innerHTML = `
+
+            <i class="
+                fa-solid
+                fa-chevron-down
+            "></i>
+
+        `;
+
+
+        row.appendChild(
+            toggle
+        );
+
+
+        /*------------------------------------------
+            SUBMENU
+        ------------------------------------------*/
+
+        const submenu =
+            document.createElement(
+                "div"
+            );
+
+
+        submenu.className =
+            "sidebar-category-children";
+
+
+        children.forEach(
+            child => {
+
+                const childLink =
+                    document.createElement(
+                        "a"
+                    );
+
+
+                childLink.href =
+                    buildCategoryUrl(
+                        child.id
+                    );
+
+
+                childLink.innerHTML = `
+
+                    <i class="
+                        fa-solid
+                        fa-angle-right
+                    "></i>
+
+                    <span>
+
+                        ${escapeHtml(
+                            child.name ||
+                            "Subcategory"
+                        )}
+
+                    </span>
+
+                `;
+
+
+                submenu.appendChild(
+                    childLink
+                );
+
+            }
+        );
+
+
+        /*------------------------------------------
+            CHILDREN TOGGLE
+        ------------------------------------------*/
+
+        toggle.addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+
+                const isOpen =
+                    submenu.classList.toggle(
+                        "open"
+                    );
+
+
+                toggle.classList.toggle(
+                    "open",
+                    isOpen
+                );
+
+
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
+
+            }
+        );
+
+
+        wrapper.appendChild(
+            row
+        );
+
+
+        wrapper.appendChild(
+            submenu
+        );
+
+    }
+
+    else{
+
+        wrapper.appendChild(
+            row
+        );
+
+    }
+
+
+    return wrapper;
+
+}
+
+
+/*==================================================
+    CATEGORY URL
+==================================================*/
+
+function buildCategoryUrl(
+    categoryId
+){
+
+    return `/?category=${encodeURIComponent(
+        categoryId
+    )}`;
+
+}
+
+
+/*==================================================
+    LOAD SIDEBAR TAGS
+==================================================*/
+
+async function loadSidebarTags(){
+
+    const container =
+        document.getElementById(
+            "sidebarTags"
+        );
+
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    try{
+
+        /*------------------------------------------
+            GET TAGS
+        ------------------------------------------*/
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "tags"
+                )
+            );
+
+
+        const tags =
+            snapshot.docs.map(
+                docSnap => ({
+
+                    id:
+                        docSnap.id,
+
+                    ...docSnap.data()
+
+                })
+            );
+
+
+        /*------------------------------------------
+            SORT TAGS
+        ------------------------------------------*/
+
+        tags.sort(
+            (a, b) => {
+
+                const nameA =
+                    String(
+                        a.name ||
+                        a.slug ||
+                        ""
+                    ).toLowerCase();
+
+
+                const nameB =
+                    String(
+                        b.name ||
+                        b.slug ||
+                        ""
+                    ).toLowerCase();
+
+
+                return nameA.localeCompare(
+                    nameB
+                );
+
+            }
+        );
+
+
+        /*------------------------------------------
+            EMPTY
+        ------------------------------------------*/
+
+        if(
+            !tags.length
+        ){
+
+            container.innerHTML = `
+
+                <div class="sidebar-empty">
+
+                    No tags found.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            "";
+
+
+        /*------------------------------------------
+            CREATE TAG LINKS
+        ------------------------------------------*/
+
+        tags.forEach(
+            tag => {
+
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+
+                link.className =
+                    "sidebar-tag-link";
+
+
+                const tagSlug =
+                    tag.slug ||
+                    tag.id;
+
+
+                link.href =
+                    buildTagUrl(
+                        tagSlug
+                    );
+
+
+                link.innerHTML = `
+
+                    <i class="
+                        fa-solid
+                        fa-tag
+                    "></i>
+
+                    <span>
+
+                        ${escapeHtml(
+                            tag.name ||
+                            tag.slug ||
+                            "Tag"
+                        )}
+
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    link
+                );
+
+            }
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Sidebar tag loading error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="sidebar-error">
+
+                Unable to load tags.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*==================================================
+    TAG URL
+==================================================*/
+
+function buildTagUrl(
+    slug
+){
+
+    return `/?tag=${encodeURIComponent(
+        slug
+    )}`;
+
+}
 
 
 /*==================================================
@@ -405,7 +1112,6 @@ function initializeSearch(){
 }
 
 
-
 /*==================================================
     OPEN SEARCH
 ==================================================*/
@@ -420,7 +1126,7 @@ function openSearch(){
 
 
     /*----------------------------------------------
-        CLOSE SIDEBAR IF OPEN
+        CLOSE SIDEBAR
     ----------------------------------------------*/
 
     closeSidebar();
@@ -491,7 +1197,6 @@ function openSearch(){
 }
 
 
-
 /*==================================================
     CLOSE SEARCH
 ==================================================*/
@@ -521,14 +1226,19 @@ function closeSearch(){
     );
 
 
-    if(searchInput){
+    if(
+        searchInput
+    ){
 
-        searchInput.value = "";
+        searchInput.value =
+            "";
 
     }
 
 
-    if(clearSearchButton){
+    if(
+        clearSearchButton
+    ){
 
         clearSearchButton.classList.remove(
             "show"
@@ -544,16 +1254,18 @@ function closeSearch(){
 }
 
 
-
 /*==================================================
     CLEAR SEARCH
 ==================================================*/
 
 function clearSearch(){
 
-    if(searchInput){
+    if(
+        searchInput
+    ){
 
-        searchInput.value = "";
+        searchInput.value =
+            "";
 
         searchInput.focus();
 
@@ -572,7 +1284,6 @@ function clearSearch(){
 }
 
 
-
 /*==================================================
     LOAD SEARCH PRODUCTS
 ==================================================*/
@@ -589,7 +1300,8 @@ async function loadSearchProducts(){
     }
 
 
-    searchLoading = true;
+    searchLoading =
+        true;
 
 
     renderSearchMessage(
@@ -635,7 +1347,7 @@ async function loadSearchProducts(){
 
 
         /*------------------------------------------
-            SEARCH AGAIN IF USER TYPED
+            SEARCH AGAIN
         ------------------------------------------*/
 
         if(
@@ -644,10 +1356,12 @@ async function loadSearchProducts(){
         ){
 
             handleSearchInput({
-                target: searchInput
+                target:
+                    searchInput
             });
 
         }
+
         else{
 
             renderSearchMessage(
@@ -682,16 +1396,18 @@ async function loadSearchProducts(){
 }
 
 
-
 /*==================================================
     SEARCH INPUT
 ==================================================*/
 
-function handleSearchInput(event){
+function handleSearchInput(
+    event
+){
 
     const query =
         String(
-            event.target.value || ""
+            event.target.value ||
+            ""
         )
         .trim()
         .toLowerCase();
@@ -701,7 +1417,9 @@ function handleSearchInput(event){
         CLEAR BUTTON
     ----------------------------------------------*/
 
-    if(clearSearchButton){
+    if(
+        clearSearchButton
+    ){
 
         clearSearchButton.classList.toggle(
             "show",
@@ -730,7 +1448,9 @@ function handleSearchInput(event){
         LOADING
     ----------------------------------------------*/
 
-    if(!searchProductsLoaded){
+    if(
+        !searchProductsLoaded
+    ){
 
         renderSearchMessage(
             "Loading products..."
@@ -767,7 +1487,6 @@ function handleSearchInput(event){
 }
 
 
-
 /*==================================================
     PRODUCT SEARCH MATCH
 ==================================================*/
@@ -799,7 +1518,6 @@ function productMatchesSearch(
         String(
             product.categoryName ||
             product.category ||
-            product.category?.name ||
             ""
         )
         .toLowerCase();
@@ -834,7 +1552,6 @@ function productMatchesSearch(
 }
 
 
-
 /*==================================================
     RENDER SEARCH RESULTS
 ==================================================*/
@@ -843,14 +1560,18 @@ function renderSearchResults(
     products
 ){
 
-    if(!searchResults){
+    if(
+        !searchResults
+    ){
 
         return;
 
     }
 
 
-    if(!products.length){
+    if(
+        !products.length
+    ){
 
         const query =
             searchInput?.value.trim();
@@ -858,8 +1579,10 @@ function renderSearchResults(
 
         renderSearchMessage(
             query
-                ? "No products found."
-                : "Search for a product"
+                ?
+                "No products found."
+                :
+                "Search for a product"
         );
 
 
@@ -900,13 +1623,15 @@ function renderSearchResults(
 
                         const product =
                             searchProducts.find(
-                                item =>
-                                    item.id ===
+                                productItem =>
+                                    productItem.id ===
                                     productId
                             );
 
 
-                        if(!product){
+                        if(
+                            !product
+                        ){
 
                             return;
 
@@ -927,7 +1652,6 @@ function renderSearchResults(
 }
 
 
-
 /*==================================================
     SEARCH MESSAGE
 ==================================================*/
@@ -936,7 +1660,9 @@ function renderSearchMessage(
     message
 ){
 
-    if(!searchResults){
+    if(
+        !searchResults
+    ){
 
         return;
 
@@ -947,14 +1673,15 @@ function renderSearchMessage(
 
         <div class="search-message">
 
-            ${escapeHtml(message)}
+            ${escapeHtml(
+                message
+            )}
 
         </div>
 
     `;
 
 }
-
 
 
 /*==================================================
@@ -1021,7 +1748,9 @@ function createSearchResult(
                     <div
                         class="search-result-no-image"
                     >
+
                         No Image
+
                     </div>
                     `
                 }
@@ -1035,7 +1764,9 @@ function createSearchResult(
                     class="search-result-name"
                 >
 
-                    ${escapeHtml(name)}
+                    ${escapeHtml(
+                        name
+                    )}
 
                 </div>
 
@@ -1066,7 +1797,11 @@ function createSearchResult(
 
 
             <i
-                class="fa-solid fa-chevron-right search-result-arrow"
+                class="
+                    fa-solid
+                    fa-chevron-right
+                    search-result-arrow
+                "
             ></i>
 
         </button>
@@ -1074,7 +1809,6 @@ function createSearchResult(
     `;
 
 }
-
 
 
 /*==================================================
@@ -1128,7 +1862,6 @@ function getProductImage(
 }
 
 
-
 /*==================================================
     PRODUCT LINK
 ==================================================*/
@@ -1137,7 +1870,9 @@ function getProductLink(
     product
 ){
 
-    if(product.link){
+    if(
+        product.link
+    ){
 
         return product.link;
 
@@ -1149,7 +1884,6 @@ function getProductLink(
     )}`;
 
 }
-
 
 
 /*==================================================
@@ -1176,7 +1910,9 @@ function getProductTags(
     }
 
 
-    if(product.tag){
+    if(
+        product.tag
+    ){
 
         if(
             Array.isArray(
@@ -1189,6 +1925,7 @@ function getProductTags(
             );
 
         }
+
         else{
 
             tags.push(
@@ -1218,14 +1955,15 @@ function getProductTags(
             }
 
 
-            return String(tag)
-                .toLowerCase();
+            return String(
+                tag
+            )
+            .toLowerCase();
 
         }
     );
 
 }
-
 
 
 /*==================================================
@@ -1263,7 +2001,6 @@ function escapeHtml(
 }
 
 
-
 /*==================================================
     ESCAPE ATTRIBUTE
 ==================================================*/
@@ -1272,10 +2009,11 @@ function escapeAttribute(
     value
 ){
 
-    return escapeHtml(value);
+    return escapeHtml(
+        value
+    );
 
 }
-
 
 
 /*==================================================
@@ -1285,8 +2023,10 @@ function escapeAttribute(
 window.openSearch =
     openSearch;
 
+
 window.closeSearch =
     closeSearch;
+
 
 window.toggleSidebar =
     function(){
@@ -1300,6 +2040,7 @@ window.toggleSidebar =
             closeSidebar();
 
         }
+
         else{
 
             openSidebar();
