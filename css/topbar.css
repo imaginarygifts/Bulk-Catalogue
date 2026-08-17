@@ -475,21 +475,29 @@
     text-decoration: none !important;
 }
 
-/* Tags */
+/* Tags dropdown */
 #sidebarTags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 12px 18px;
+    padding: 12px 18px 16px;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-sizing: border-box;
 }
 
 .sidebar-tag-link {
-    color: #fff !important;
-    background: #29292f;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 8px 12px;
+    background: #29292f;
     border-radius: 20px;
+    color: #fff !important;
     text-decoration: none !important;
     font-size: 14px;
+    white-space: nowrap;
 }
 
 
