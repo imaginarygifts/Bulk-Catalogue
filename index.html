@@ -5,41 +5,49 @@
 
     <meta charset="UTF-8">
 
-    <title>
-       
-    </title>
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
+
+    <!-- ==================================================
+         DEFAULT SEO
+    ================================================== -->
+
+    <title>Homepage</title>
+
     <meta
+        id="siteMetaDescription"
         name="description"
         content=""
     >
 
 
-    <!-- ==========================================
+    <!-- ==================================================
          OPEN GRAPH
-    =========================================== -->
+    ================================================== -->
 
     <meta
+        id="ogTitle"
         property="og:title"
         content=""
     >
 
     <meta
+        id="ogDescription"
         property="og:description"
         content=""
     >
 
     <meta
+        id="ogImage"
         property="og:image"
         content=""
     >
 
     <meta
+        id="ogUrl"
         property="og:url"
         content=""
     >
@@ -50,42 +58,42 @@
     >
 
 
-    <!-- ==========================================
-         FONT AWESOME
-    =========================================== -->
+    <!-- ==================================================
+         HOMEPAGE CSS
+    ================================================== -->
 
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        href="css/homepage.css"
     >
 
 
-    <!-- ==========================================
-         STORE CSS
-         ONLY STORE PAGE
-    =========================================== -->
-
-    <link
-        rel="stylesheet"
-        href="css/shop.css"
-    >
-
-
-    <!-- ==========================================
-         TOPBAR CSS
-         TOPBAR + SIDEBAR + SEARCH
-    =========================================== -->
+    <!-- ==================================================
+         SIDEBAR / TOPBAR CSS
+         Keep this if sidebar.css exists.
+         If all styling is already inside homepage.css,
+         this line can be removed.
+    ================================================== -->
 
     <link
         rel="stylesheet"
         href="css/topbar.css"
     >
 
+
+    <!-- ==================================================
+         FONT AWESOME
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
 </head>
 
 
 <body>
-
 
 <!-- ==================================================
      TOPBAR
@@ -282,12 +290,12 @@
 
     </a>
 
-    <!-- Shop -->
+     <!-- Shop -->
 
     <a
         href="shop"
         class="sidebar-link"
-       
+        
     >
 
         <i class="fa-solid fa-house"></i>
@@ -297,6 +305,7 @@
         </span>
 
     </a>
+
 
     <!-- CATEGORIES -->
 
@@ -472,140 +481,453 @@
 </aside>
 
 
+    <!-- ==================================================
+         HOMEPAGE
+         
+         Firestore homepage sections are rendered here
+         by homepage.js.
+    ================================================== -->
 
-<!-- ==================================================
-     STORE PAGE
-     
-     EVERYTHING BELOW HERE IS STORE CONTENT.
-     
-     Controlled by:
-     store.js
-     store.css
-================================================== -->
+    <main id="homepage">
 
+        <!-- Firestore homepage sections load here -->
 
-<!-- ==========================================
-     MAIN CATEGORY BAR
-=========================================== -->
-
-<div
-    id="categoryBar"
-    class="category-scroll"
-></div>
+    </main>
 
 
 
-<!-- ==========================================
-     SUBCATEGORY BAR
-=========================================== -->
-
-<div
-    id="subCategoryBar"
-    class="subcategory-row"
-></div>
-
-
-
-<!-- ==========================================
-     TAG FILTER
-=========================================== -->
-
-<div
-    id="tagFilterRow"
-    class="tag-filter-row"
-></div>
-
-
-
-<!-- ==========================================
-     PRODUCTS
-=========================================== -->
-
-<main
-    class="store-main"
->
+    <!-- ==================================================
+         HOMEPAGE LOADER
+         
+         IMPORTANT:
+         homepage.js looks for #homepageLoader.
+    ================================================== -->
 
     <div
-        id="productGrid"
-        class="product-grid"
-    ></div>
+        id="homepageLoader"
+        class="homepage-loader"
+    >
 
-</main>
+        <div class="homepage-loader-spinner"></div>
 
-
-
-<!-- ==================================================
-     SHARE BUTTON
-================================================== -->
-
-<div
-    id="shareBtn"
-    class="share-button"
-    onclick="sharePage()"
-    aria-label="Share this page"
->
-
-    <i class="fa-solid fa-share-nodes"></i>
-
-</div>
+    </div>
 
 
 
-<!-- ==================================================
-     JAVASCRIPT
-================================================== -->
+    <!-- ==================================================
+         WRITE REVIEW BUTTON
+    ================================================== -->
 
+    <button
+        type="button"
+        id="openReviewButton"
+        class="write-review-btn"
+    >
 
-<!-- SITE SETTINGS -->
+        ⭐ Write a Review
 
-<script
-    type="module"
-    src="js/site-settings.js"
-></script>
-
-
-
-<!-- TOPBAR
-
-     Handles:
-     - menu
-     - sidebar
-     - logo
-     - search
-     - sidebar categories
-     - sidebar tags
--->
-
-<script
-    type="module"
-    src="js/topbar.js"
-></script>
+    </button>
 
 
 
-<!-- STORE
+    <!-- ==================================================
+         CUSTOMER REVIEW POPUP
+    ================================================== -->
 
-     Handles:
-     - products
-     - categories
-     - subcategories
-     - tags
-     - filtering
-     - load more
--->
+    <div
+        id="reviewPopup"
+        class="review-popup hidden"
+        aria-hidden="true"
+    >
 
-<script
-    type="module"
-    src="js/store.js"
-></script>
-
+        <div
+            class="review-popup-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reviewPopupTitle"
+        >
 
 
-<!-- SHARE -->
+            <!-- HEADER -->
 
-<script
-    src="js/share.js"
-></script>
+            <div class="review-popup-header">
+
+                <h2 id="reviewPopupTitle">
+
+                    Write a Review
+
+                </h2>
+
+
+                <button
+                    type="button"
+                    id="closeReviewButton"
+                    class="review-close-btn"
+                    aria-label="Close review form"
+                >
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+
+            <!-- FORM -->
+
+            <form
+                id="customerReviewForm"
+                class="customer-review-form"
+            >
+
+
+                <!-- NAME -->
+
+                <label
+                    for="reviewCustomerName"
+                >
+
+                    Your Name
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="reviewCustomerName"
+                    placeholder="Enter your name"
+                    autocomplete="name"
+                    maxlength="100"
+                    required
+                >
+
+
+
+                <!-- CUSTOMER IMAGE -->
+
+                <label
+                    for="reviewCustomerImage"
+                >
+
+                    Customer Image
+
+                    <span class="optional-label">
+
+                        Optional
+
+                    </span>
+
+                </label>
+
+
+                <input
+                    type="file"
+                    id="reviewCustomerImage"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                >
+
+
+                <div
+                    id="customerImagePreview"
+                    class="customer-image-preview hidden"
+                >
+
+                    <img
+                        id="customerImagePreviewImg"
+                        src=""
+                        alt="Customer preview"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="removeCustomerImageButton"
+                    >
+
+                        Remove
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- PRODUCT SEARCH -->
+
+                <label
+                    for="reviewProductSearch"
+                >
+
+                    Select Product
+
+                </label>
+
+
+                <div class="review-product-search">
+
+                    <input
+                        type="text"
+                        id="reviewProductSearch"
+                        placeholder="Search product..."
+                        autocomplete="off"
+                    >
+
+
+                    <div
+                        id="reviewProductResults"
+                        class="review-product-results hidden"
+                    ></div>
+
+                </div>
+
+
+
+                <!-- SELECTED PRODUCT -->
+
+                <div
+                    id="selectedReviewProduct"
+                    class="selected-review-product hidden"
+                >
+
+                    <img
+                        id="selectedProductImage"
+                        src=""
+                        alt="Selected Product"
+                    >
+
+
+                    <div class="selected-review-product-info">
+
+                        <strong
+                            id="selectedProductName"
+                        ></strong>
+
+
+                        <button
+                            type="button"
+                            id="changeReviewProductButton"
+                        >
+
+                            Change
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- RATING -->
+
+                <label>
+
+                    Rating
+
+                </label>
+
+
+                <div
+                    id="reviewRating"
+                    class="review-rating"
+                    role="radiogroup"
+                    aria-label="Rating"
+                >
+
+                    <button
+                        type="button"
+                        data-rating="1"
+                        aria-label="1 star"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="2"
+                        aria-label="2 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="3"
+                        aria-label="3 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="4"
+                        aria-label="4 stars"
+                    >
+                        ★
+                    </button>
+
+                    <button
+                        type="button"
+                        data-rating="5"
+                        aria-label="5 stars"
+                    >
+                        ★
+                    </button>
+
+                </div>
+
+
+
+                <!-- REVIEW -->
+
+                <label
+                    for="reviewText"
+                >
+
+                    Review
+
+                </label>
+
+
+                <textarea
+                    id="reviewText"
+                    placeholder="Write your experience..."
+                    rows="5"
+                    maxlength="1000"
+                    required
+                ></textarea>
+
+
+
+                <!-- ==================================================
+                     CUSTOMER PRODUCT IMAGE
+                ================================================== -->
+
+                <label
+                    for="reviewProductImage"
+                >
+
+                    Product Image
+
+                    <span class="optional-label">
+
+                        Optional
+
+                    </span>
+
+                </label>
+
+
+                <input
+                    type="file"
+                    id="reviewProductImage"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                >
+
+
+                <div
+                    id="productImagePreview"
+                    class="customer-image-preview hidden"
+                >
+
+                    <img
+                        id="productImagePreviewImg"
+                        src=""
+                        alt="Product image preview"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="removeProductImageButton"
+                    >
+
+                        Remove
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- ERROR -->
+
+                <div
+                    id="reviewFormError"
+                    class="review-form-error hidden"
+                ></div>
+
+
+
+                <!-- SUCCESS -->
+
+                <div
+                    id="reviewFormSuccess"
+                    class="review-form-success hidden"
+                ></div>
+
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    id="submitReviewBtn"
+                    class="submit-review-btn"
+                >
+
+                    Submit Review
+
+                </button>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==================================================
+         JAVASCRIPT
+    ================================================== -->
+
+
+    <!-- SITE SETTINGS -->
+
+    <script
+        type="module"
+        src="js/site-settings.js"
+    ></script>
+
+
+
+    <!-- HOMEPAGE -->
+
+    <script
+        type="module"
+        src="js/homepage.js"
+    ></script>
+
+
+
+    <!-- SIDEBAR -->
+
+    <script
+        type="module"
+        src="js/topbar.js"
+    ></script>
+
+
+
+    <!-- CUSTOMER REVIEW FORM -->
+
+    <script
+        type="module"
+        src="js/customer-review.js"
+    ></script>
 
 
 </body>
