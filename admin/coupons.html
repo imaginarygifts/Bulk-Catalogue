@@ -1,57 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Coupons</title>
-  <link rel="stylesheet" href="../css/coupons.css">
+
+    <meta charset="UTF-8">
+
+    <!-- IMPORTANT: MOBILE VIEWPORT -->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Coupons</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/coupons.css"
+    >
+
 </head>
+
+
 <body>
 
+    <main class="coupon-page">
+
+        <!-- =========================================
+             PAGE TITLE
+        ========================================== -->
+
+        <h2 class="page-title">
+            Coupons
+        </h2>
 
 
+        <!-- =========================================
+             CREATE COUPON
+        ========================================== -->
 
-<h2>Coupons</h2>
+        <section class="card coupon-form">
 
-<div class="card">
-  <input id="code" placeholder="Coupon Code">
-  
-  <select id="type">
-    <option value="percent">Percent</option>
-    <option value="flat">Flat</option>
-  </select>
+            <input
+                id="code"
+                type="text"
+                placeholder="Coupon Code"
+                autocomplete="off"
+            >
 
-  <input id="value" type="number" placeholder="Discount value">
 
-  <input id="minOrder" type="number" placeholder="Minimum order">
+            <select id="type">
 
-  <input id="expiry" type="date">
+                <option value="percent">
+                    Percent
+                </option>
 
-  <select id="scope">
-    <option value="global">Global</option>
-    <option value="product">Product specific</option>
-  </select>
+                <option value="flat">
+                    Flat
+                </option>
 
-  <label>
-    <input type="checkbox" value="online" class="payMode"> Online
-  </label>
-  <label>
-    <input type="checkbox" value="cod" class="payMode"> COD
-  </label>
-  <label>
-    <input type="checkbox" value="advance" class="payMode"> Advance
-  </label>
+            </select>
 
-  <select id="stackRule">
-    <option value="stack">Stack</option>
-    <option value="replace">Replace</option>
-    <option value="best">Best</option>
-  </select>
 
-  <button onclick="saveCoupon()">Save Coupon</button>
-</div>
+            <input
+                id="value"
+                type="number"
+                inputmode="decimal"
+                placeholder="Discount value"
+            >
 
-<h3>All Coupons</h3>
-<div id="couponList"></div>
 
-<script type="module" src="../js/coupons.js"></script>
+            <input
+                id="minOrder"
+                type="number"
+                inputmode="decimal"
+                placeholder="Minimum order"
+            >
+
+
+            <input
+                id="expiry"
+                type="date"
+            >
+
+
+            <select id="scope">
+
+                <option value="global">
+                    Global
+                </option>
+
+                <option value="product">
+                    Product specific
+                </option>
+
+            </select>
+
+
+            <!-- =====================================
+                 PAYMENT MODES
+            ====================================== -->
+
+            <div class="payment-modes">
+
+                <label class="check-row">
+
+                    <input
+                        type="checkbox"
+                        value="online"
+                        class="payMode"
+                    >
+
+                    <span>
+                        Online
+                    </span>
+
+                </label>
+
+
+                <label class="check-row">
+
+                    <input
+                        type="checkbox"
+                        value="cod"
+                        class="payMode"
+                    >
+
+                    <span>
+                        COD
+                    </span>
+
+                </label>
+
+
+                <label class="check-row">
+
+                    <input
+                        type="checkbox"
+                        value="advance"
+                        class="payMode"
+                    >
+
+                    <span>
+                        Advance
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <select id="stackRule">
+
+                <option value="stack">
+                    Stack
+                </option>
+
+                <option value="replace">
+                    Replace
+                </option>
+
+                <option value="best">
+                    Best
+                </option>
+
+            </select>
+
+
+            <!-- =====================================
+                 SAVE
+            ====================================== -->
+
+            <button
+                type="button"
+                id="saveCoupon"
+                onclick="saveCoupon()"
+            >
+                Save Coupon
+            </button>
+
+        </section>
+
+
+        <!-- =========================================
+             ALL COUPONS
+        ========================================== -->
+
+        <h3 class="section-title">
+            All Coupons
+        </h3>
+
+
+        <section
+            id="couponList"
+            class="coupon-list"
+        >
+        </section>
+
+    </main>
+
+
+    <script
+        type="module"
+        src="../js/coupons.js"
+    ></script>
+
 </body>
+
 </html>
