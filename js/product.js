@@ -3299,7 +3299,7 @@ function showWhatsAppOrderSuccess(orderNumber) {
             () => {
 
                 window.location.href =
-                    "/";
+                    "shop";
 
             }
         );
