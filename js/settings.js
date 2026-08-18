@@ -10,7 +10,10 @@ import {
 
 
 import {
-    onAuthStateChanged
+    onAuthStateChanged,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 
