@@ -251,9 +251,23 @@ async function loadSettings(){
             );
 
 
+            /*------------------------------------------
+                DEFAULT RAZORPAY KEY
+            ------------------------------------------*/
+
             setValue(
                 "razorpayKeyId",
                 ""
+            );
+
+
+            /*------------------------------------------
+                DEFAULT ORDER ID PREFIX
+            ------------------------------------------*/
+
+            setValue(
+                "orderPrefix",
+                "IG"
             );
 
 
@@ -315,6 +329,17 @@ async function loadSettings(){
             "razorpayKeyId",
             settings.razorpayKeyId ||
             ""
+        );
+
+
+        /*==============================================
+            ORDER ID PREFIX
+        ==============================================*/
+
+        setValue(
+            "orderPrefix",
+            settings.orderPrefix ||
+            "IG"
         );
 
 
@@ -819,6 +844,89 @@ async function handleSave(
 
 
         /*==============================================
+            ORDER ID PREFIX
+        ==============================================*/
+
+        let orderPrefix =
+            getValue(
+                "orderPrefix"
+            );
+
+
+        /*
+            Default prefix
+        */
+
+        if(
+            !orderPrefix
+        ){
+
+            orderPrefix =
+                "IG";
+
+        }
+
+
+        /*
+            Remove spaces and convert
+            prefix to uppercase.
+
+            Example:
+            "ig"      -> "IG"
+            "IG "     -> "IG"
+            "myshop"  -> "MYSHOP"
+        */
+
+        orderPrefix =
+            orderPrefix
+                .replace(
+                    /\s+/g,
+                    ""
+                )
+                .toUpperCase();
+
+
+        /*
+            Maximum 10 characters
+        */
+
+        orderPrefix =
+            orderPrefix
+                .substring(
+                    0,
+                    10
+                );
+
+
+        /*
+            Only letters and numbers.
+
+            Example:
+            "IG@" -> "IG"
+        */
+
+        orderPrefix =
+            orderPrefix.replace(
+                /[^A-Z0-9]/g,
+                ""
+            );
+
+
+        /*
+            Final fallback
+        */
+
+        if(
+            !orderPrefix
+        ){
+
+            orderPrefix =
+                "IG";
+
+        }
+
+
+        /*==============================================
             COLLECT SETTINGS
         ==============================================*/
 
@@ -856,6 +964,14 @@ async function handleSave(
 
             razorpayKeyId:
                 razorpayKeyId,
+
+
+            /*------------------------------------------
+                ORDER ID SETTINGS
+            ------------------------------------------*/
+
+            orderPrefix:
+                orderPrefix,
 
 
             /*------------------------------------------
