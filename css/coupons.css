@@ -1,32 +1,45 @@
 /* =========================================================
-   COUPON ADMIN PAGE
-   MOBILE-FIRST — MATCH EDIT PRODUCT UI
+   COUPON ADMIN
+   MOBILE FIRST
+========================================================= */
+
+
+/* =========================================================
+   RESET
 ========================================================= */
 
 * {
     box-sizing: border-box;
 }
 
-html,
+
+html {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+
 body {
     width: 100%;
     min-width: 0;
     max-width: 100%;
+
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-}
 
-body {
+    overflow-x: hidden;
+
     background:
         radial-gradient(
             circle at top,
             #15171d 0%,
-            #08090b 38%,
-            #000 100%
+            #08090b 40%,
+            #000000 100%
         );
 
-    color: #fff;
+    color: #ffffff;
 
     font-family:
         system-ui,
@@ -40,81 +53,57 @@ body {
 
 
 /* =========================================================
-   PAGE CONTENT
-   IMPORTANT:
-   REMOVE DESKTOP CENTERING
+   MAIN PAGE
 ========================================================= */
 
-main,
-section,
-.container,
-.content,
-.admin-content,
-.page-content,
-.coupon-page,
-.coupon-container {
+.coupon-page {
+
     width: 100%;
     max-width: none;
-    min-width: 0;
+
+    margin: 0;
+    padding: 0 30px 40px;
+
+    overflow-x: hidden;
 }
 
 
 /* =========================================================
-   HEADINGS
+   PAGE TITLE
 ========================================================= */
 
-h1,
-h2,
-h3 {
-    color: #fff;
-}
+.page-title {
 
-h2 {
-    width: 100%;
+    margin: 16px 0 14px;
 
-    margin:
-        14px 0 14px;
+    padding: 0;
 
-    padding:
-        0 0;
+    font-size: 18px;
+    line-height: 1.3;
 
-    font-size:
-        18px;
+    font-weight: 700;
 
-    line-height:
-        1.3;
-
-    font-weight:
-        700;
-}
-
-h3 {
-    margin:
-        18px 0 10px;
-
-    font-size:
-        16px;
-
-    font-weight:
-        700;
+    color: #ffffff;
 }
 
 
 /* =========================================================
-   MAIN COUPON FORM
+   FORM CARD
 ========================================================= */
 
-.card {
-    display: block;
+.coupon-form {
 
-    width: calc(100% - 60px);
+    width: 100%;
     max-width: none;
 
-    margin:
-        0 30px 20px;
+    margin: 0;
+    padding: 12px;
 
-    padding:
-        14px;
+    border:
+        1px solid
+        rgba(255,255,255,0.09);
+
+    border-radius: 14px;
 
     background:
         linear-gradient(
@@ -123,185 +112,152 @@ h3 {
             rgba(255,255,255,0.025)
         );
 
-    border:
-        1px solid
-        rgba(255,255,255,0.10);
-
-    border-radius:
-        16px;
-
     box-shadow:
         0 10px 35px
         rgba(0,0,0,0.35);
-
-    overflow:
-        visible;
 }
 
 
 /* =========================================================
-   INPUTS + SELECTS
+   INPUTS
 ========================================================= */
 
-.card input:not([type="checkbox"]),
-.card input:not([type="radio"]),
-.card select {
+.coupon-form input:not([type="checkbox"]),
+.coupon-form select {
 
     display: block;
 
     width: 100%;
-    max-width: 100%;
+    height: 46px;
 
-    height: 48px;
-
-    margin:
-        0 0 8px;
-
-    padding:
-        0 13px;
+    margin: 0 0 8px;
+    padding: 0 12px;
 
     border:
         1px solid
-        rgba(255,255,255,0.08);
+        rgba(255,255,255,0.07);
 
-    border-radius:
-        10px;
+    border-radius: 9px;
 
     outline: none;
 
     background:
         rgba(255,255,255,0.055);
 
-    color:
-        #fff;
+    color: #ffffff;
 
-    font-family:
-        inherit;
+    font-family: inherit;
 
-    font-size:
-        13px;
+    font-size: 12px;
 
-    appearance:
-        none;
-
-    -webkit-appearance:
-        none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.card input::placeholder {
+
+.coupon-form input::placeholder {
+
     color:
-        rgba(255,255,255,0.42);
+        rgba(255,255,255,0.38);
 }
 
-.card input:not([type="checkbox"]):focus,
-.card select:focus {
+
+.coupon-form input:not([type="checkbox"]):focus,
+.coupon-form select:focus {
 
     border-color:
-        rgba(0,230,255,0.45);
+        rgba(0,220,255,0.45);
 
     box-shadow:
         0 0 0 2px
-        rgba(0,230,255,0.07);
-}
-
-.card select option {
-    background:
-        #17181c;
-
-    color:
-        #fff;
+        rgba(0,220,255,0.07);
 }
 
 
-/* =========================================================
-   PAYMENT CHECKBOXES
-========================================================= */
+.coupon-form select option {
 
-.card label {
-
-    display:
-        inline-flex;
-
-    width:
-        auto;
-
-    min-height:
-        30px;
-
-    margin:
-        0 10px 5px 0;
-
-    padding:
-        0;
-
-    align-items:
-        center;
-
-    gap:
-        5px;
-
-    color:
-        rgba(255,255,255,0.82);
-
-    font-size:
-        12px;
-
-    white-space:
-        nowrap;
-}
-
-
-.card input[type="checkbox"] {
-
-    width:
-        17px !important;
-
-    min-width:
-        17px !important;
-
-    height:
-        17px !important;
-
-    margin:
-        0 !important;
-
-    padding:
-        0 !important;
-
-    accent-color:
-        #00e6a0;
-
-    flex-shrink:
-        0;
+    background: #17181c;
+    color: #ffffff;
 }
 
 
 /* =========================================================
-   SAVE COUPON
+   PAYMENT MODES
 ========================================================= */
 
-.card button {
+.payment-modes {
 
-    display:
-        block;
+    display: flex;
 
-    width:
-        100%;
+    flex-wrap: wrap;
 
-    height:
-        48px;
+    align-items: center;
 
-    margin:
-        10px 0 0;
+    gap: 8px;
 
-    padding:
-        0 15px;
+    width: 100%;
 
-    border:
-        0;
+    margin: 0 0 7px;
+}
 
-    border-radius:
-        10px;
+
+.check-row {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    width: auto;
+
+    min-height: 26px;
+
+    margin: 0;
+
+    padding: 0;
+
+    color:
+        rgba(255,255,255,0.78);
+
+    font-size: 10px;
+
+    white-space: nowrap;
+}
+
+
+.check-row input[type="checkbox"] {
+
+    width: 15px !important;
+    min-width: 15px !important;
+
+    height: 15px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    accent-color: #00e6a0;
+}
+
+
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+#saveCoupon {
+
+    display: block;
+
+    width: 100%;
+    height: 46px;
+
+    margin: 8px 0 0;
+
+    padding: 0 12px;
+
+    border: none;
+
+    border-radius: 9px;
 
     background:
         linear-gradient(
@@ -311,56 +267,178 @@ h3 {
             #00aaff
         );
 
-    color:
-        #00130e;
+    color: #00130e;
 
-    font-family:
-        inherit;
+    font-family: inherit;
 
-    font-size:
-        12px;
+    font-size: 11px;
 
-    font-weight:
-        800;
+    font-weight: 800;
+
+    cursor: pointer;
 
     box-shadow:
         0 5px 18px
-        rgba(0,220,190,0.16);
+        rgba(0,220,190,0.15);
+}
+
+
+#saveCoupon:active {
+
+    transform: scale(0.98);
 }
 
 
 /* =========================================================
-   PRODUCT SELECTOR
+   ALL COUPONS TITLE
 ========================================================= */
 
-#couponProductSelector,
-.product-selector,
-#productSelector {
+.section-title {
 
-    width:
-        100%;
+    margin: 18px 0 10px;
 
-    max-width:
-        100%;
+    padding: 0;
 
-    margin:
-        12px 0 0;
+    font-size: 15px;
 
-    padding:
-        12px;
+    font-weight: 700;
 
-    background:
-        rgba(255,255,255,0.035);
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   COUPON LIST
+========================================================= */
+
+.coupon-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =========================================================
+   COUPON CARD
+========================================================= */
+
+.coupon-list .coupon-card {
+
+    width: 100%;
+
+    margin: 0;
+    padding: 12px;
 
     border:
         1px solid
         rgba(255,255,255,0.08);
 
-    border-radius:
-        12px;
+    border-radius: 12px;
 
-    overflow:
-        hidden;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.045),
+            rgba(255,255,255,0.018)
+        );
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   COUPON TEXT
+========================================================= */
+
+.coupon-list .coupon-card b {
+
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 800;
+}
+
+
+.coupon-list .coupon-card div {
+
+    margin-top: 3px;
+
+    color:
+        rgba(255,255,255,0.62);
+
+    font-size: 10px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   DELETE BUTTON
+========================================================= */
+
+.coupon-list .coupon-card button {
+
+    display: block;
+
+    width: 100%;
+    height: 36px;
+
+    margin: 10px 0 0;
+
+    padding: 0 10px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    border-radius: 8px;
+
+    background:
+        rgba(255,255,255,0.065);
+
+    color:
+        rgba(255,255,255,0.85);
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   PRODUCT SPECIFIC AREA
+========================================================= */
+
+#productSelector,
+#couponProductSelector {
+
+    width: 100%;
+
+    margin-top: 8px;
+
+    padding: 10px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.07);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,0.03);
 }
 
 
@@ -368,113 +446,29 @@ h3 {
    PRODUCT SEARCH
 ========================================================= */
 
+#productSearch,
 #couponProductSearch {
 
-    width:
-        100% !important;
+    width: 100% !important;
 
-    max-width:
-        100% !important;
+    height: 42px !important;
 
-    height:
-        44px !important;
+    margin: 0 0 7px !important;
 
-    margin:
-        0 0 8px !important;
-
-    padding:
-        0 12px !important;
+    padding: 0 11px !important;
 
     border:
         1px solid
-        rgba(255,255,255,0.08) !important;
+        rgba(255,255,255,0.07) !important;
 
-    border-radius:
-        9px !important;
+    border-radius: 8px !important;
 
     background:
         rgba(255,255,255,0.055) !important;
 
-    color:
-        #fff !important;
+    color: #ffffff !important;
 
-    font-size:
-        12px !important;
-}
-
-
-/* =========================================================
-   PRODUCT ACTION BUTTONS
-========================================================= */
-
-.coupon-product-actions {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap:
-        8px;
-
-    width:
-        100%;
-
-    margin:
-        0 0 8px;
-}
-
-
-.coupon-small-button {
-
-    width:
-        100% !important;
-
-    height:
-        38px !important;
-
-    margin:
-        0 !important;
-
-    padding:
-        0 8px !important;
-
-    border:
-        1px solid
-        rgba(255,255,255,0.08) !important;
-
-    border-radius:
-        8px !important;
-
-    background:
-        rgba(255,255,255,0.06) !important;
-
-    color:
-        #fff !important;
-
-    font-size:
-        11px !important;
-
-    box-shadow:
-        none !important;
-}
-
-
-/* =========================================================
-   SELECTED COUNT
-========================================================= */
-
-.coupon-selected-count {
-
-    margin:
-        5px 0 8px;
-
-    color:
-        rgba(255,255,255,0.45);
-
-    font-size:
-        10px;
+    font-size: 11px !important;
 }
 
 
@@ -484,94 +478,42 @@ h3 {
 
 .coupon-product-list {
 
-    display:
-        flex;
+    display: flex;
 
-    flex-direction:
-        column;
+    flex-direction: column;
 
-    gap:
-        6px;
+    gap: 5px;
 
-    width:
-        100%;
+    width: 100%;
 
-    max-width:
-        100%;
+    max-height: 280px;
 
-    max-height:
-        280px;
-
-    overflow-y:
-        auto;
-
-    overflow-x:
-        hidden;
+    overflow-y: auto;
 }
 
 
-/* =========================================================
-   PRODUCT ROW
-========================================================= */
-
 .coupon-product-row {
 
-    display:
-        flex !important;
+    display: flex;
 
-    width:
-        100%;
+    align-items: center;
 
-    min-width:
-        0;
+    gap: 7px;
 
-    min-height:
-        58px;
+    width: 100%;
 
-    margin:
-        0 !important;
+    min-height: 54px;
 
-    padding:
-        7px;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    background:
-        rgba(255,255,255,0.035);
+    padding: 6px;
 
     border:
         1px solid
         rgba(255,255,255,0.06);
 
-    border-radius:
-        9px;
-}
+    border-radius: 8px;
 
-
-/* =========================================================
-   PRODUCT CHECKBOX
-========================================================= */
-
-.coupon-product-row input[type="checkbox"] {
-
-    width:
-        17px !important;
-
-    min-width:
-        17px !important;
-
-    height:
-        17px !important;
-
-    margin:
-        0 !important;
-
-    flex:
-        0 0 17px;
+    background:
+        rgba(255,255,255,0.035);
 }
 
 
@@ -581,23 +523,14 @@ h3 {
 
 .coupon-product-image {
 
-    width:
-        44px;
+    width: 40px;
+    min-width: 40px;
 
-    min-width:
-        44px;
+    height: 40px;
 
-    height:
-        44px;
+    object-fit: cover;
 
-    object-fit:
-        cover;
-
-    border-radius:
-        7px;
-
-    background:
-        #222;
+    border-radius: 6px;
 }
 
 
@@ -607,388 +540,36 @@ h3 {
 
 .coupon-product-info {
 
-    min-width:
-        0;
+    min-width: 0;
 
-    flex:
-        1;
+    flex: 1;
 }
+
 
 .coupon-product-name {
 
-    overflow:
-        hidden;
+    overflow: hidden;
 
-    text-overflow:
-        ellipsis;
+    text-overflow: ellipsis;
 
-    white-space:
-        nowrap;
+    white-space: nowrap;
 
-    color:
-        #fff;
+    color: #ffffff;
 
-    font-size:
-        12px;
+    font-size: 11px;
 
-    font-weight:
-        600;
+    font-weight: 600;
 }
+
 
 .coupon-product-price {
 
-    margin-top:
-        2px;
+    margin-top: 2px;
 
     color:
         rgba(255,255,255,0.45);
 
-    font-size:
-        10px;
-}
-
-
-/* =========================================================
-   ALL COUPONS
-========================================================= */
-
-#couponList {
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        10px;
-
-    width:
-        calc(100% - 60px);
-
-    max-width:
-        none;
-
-    margin:
-        0 30px;
-
-    padding:
-        0;
-}
-
-
-/* =========================================================
-   COUPON CARD
-========================================================= */
-
-#couponList .coupon-card {
-
-    display:
-        block;
-
-    width:
-        100%;
-
-    max-width:
-        none;
-
-    margin:
-        0;
-
-    padding:
-        13px;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(255,255,255,0.045),
-            rgba(255,255,255,0.025)
-        );
-
-    border:
-        1px solid
-        rgba(255,255,255,0.08);
-
-    border-radius:
-        13px;
-
-    overflow:
-        hidden;
-}
-
-
-/* =========================================================
-   COUPON HEADER
-========================================================= */
-
-.coupon-card-top {
-
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
-
-    gap:
-        8px;
-}
-
-
-.coupon-code {
-
-    overflow:
-        hidden;
-
-    text-overflow:
-        ellipsis;
-
-    white-space:
-        nowrap;
-
-    font-size:
-        14px;
-
-    font-weight:
-        800;
-}
-
-
-.coupon-discount {
-
-    margin-top:
-        2px;
-
-    color:
-        #00e5ff;
-
-    font-size:
-        10px;
-
-    font-weight:
-        700;
-}
-
-
-.coupon-status {
-
-    flex-shrink:
-        0;
-
-    padding:
-        4px 7px;
-
-    border-radius:
-        6px;
-
-    background:
-        rgba(0,255,150,0.10);
-
-    color:
-        #00e89a;
-
-    font-size:
-        9px;
-
-    font-weight:
-        700;
-}
-
-
-/* =========================================================
-   COUPON DETAILS
-========================================================= */
-
-.coupon-details {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap:
-        9px 15px;
-
-    margin-top:
-        10px;
-
-    padding-top:
-        9px;
-
-    border-top:
-        1px solid
-        rgba(255,255,255,0.06);
-}
-
-
-.coupon-detail {
-
-    min-width:
-        0;
-}
-
-
-.coupon-detail span {
-
-    display:
-        block;
-
-    margin-bottom:
-        2px;
-
-    color:
-        rgba(255,255,255,0.35);
-
-    font-size:
-        8px;
-}
-
-
-.coupon-detail b {
-
-    color:
-        rgba(255,255,255,0.78);
-
-    font-size:
-        10px;
-
-    font-weight:
-        600;
-
-    word-break:
-        break-word;
-}
-
-
-/* =========================================================
-   PRODUCTS IN COUPON
-========================================================= */
-
-.coupon-products {
-
-    margin-top:
-        10px;
-
-    padding-top:
-        8px;
-
-    border-top:
-        1px solid
-        rgba(255,255,255,0.06);
-}
-
-
-.coupon-products-title {
-
-    margin-bottom:
-        5px;
-
-    color:
-        rgba(255,255,255,0.40);
-
-    font-size:
-        9px;
-}
-
-
-.coupon-product-tags {
-
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        4px;
-}
-
-
-.coupon-product-tag {
-
-    padding:
-        4px 7px;
-
-    border-radius:
-        5px;
-
-    background:
-        rgba(255,255,255,0.065);
-
-    color:
-        rgba(255,255,255,0.70);
-
-    font-size:
-        9px;
-}
-
-
-/* =========================================================
-   DELETE COUPON
-========================================================= */
-
-.coupon-delete,
-#couponList button {
-
-    display:
-        block;
-
-    width:
-        100%;
-
-    height:
-        38px;
-
-    margin:
-        10px 0 0;
-
-    padding:
-        0 10px;
-
-    border:
-        1px solid
-        rgba(255,255,255,0.07);
-
-    border-radius:
-        8px;
-
-    background:
-        rgba(255,255,255,0.065);
-
-    color:
-        rgba(255,255,255,0.85);
-
-    font-size:
-        10px;
-
-    font-weight:
-        600;
-
-    box-shadow:
-        none;
-}
-
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
-
-.coupon-product-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.coupon-product-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.coupon-product-list::-webkit-scrollbar-thumb {
-    background:
-        rgba(255,255,255,0.15);
-
-    border-radius: 10px;
+    font-size: 9px;
 }
 
 
@@ -998,153 +579,97 @@ h3 {
 
 @media (max-width: 767px) {
 
-    body {
-        padding:
-            0 !important;
-    }
+    .coupon-page {
 
+        width: 100% !important;
 
-    /*
-       EXACTLY LIKE EDIT PRODUCT:
-       30px LEFT + RIGHT
-    */
+        max-width: none !important;
 
-    .card {
-
-        width:
-            calc(100% - 60px) !important;
-
-        max-width:
-            none !important;
-
-        margin-left:
-            30px !important;
-
-        margin-right:
-            30px !important;
+        margin: 0 !important;
 
         padding:
-            12px !important;
+            0 30px 35px !important;
     }
 
 
-    #couponList {
+    .coupon-form {
 
-        width:
-            calc(100% - 60px) !important;
+        width: 100% !important;
 
-        max-width:
-            none !important;
+        max-width: none !important;
 
-        margin-left:
-            30px !important;
-
-        margin-right:
-            30px !important;
+        margin: 0 !important;
     }
 
 
-    h2 {
+    .coupon-list {
 
-        margin-left:
-            10px;
+        width: 100% !important;
 
-        margin-right:
-            10px;
-
-        font-size:
-            17px;
+        max-width: none !important;
     }
 
-
-    h3 {
-
-        margin-left:
-            10px;
-
-        margin-right:
-            10px;
-    }
 }
 
 
 /* =========================================================
-   SMALL MOBILE
+   SMALL PHONES
 ========================================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 400px) {
 
-    .card {
+    .coupon-page {
 
-        width:
-            calc(100% - 60px) !important;
-
-        margin-left:
-            30px !important;
-
-        margin-right:
-            30px !important;
-
-        border-radius:
-            14px;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
     }
 
 
-    #couponList {
+    .coupon-form {
 
-        width:
-            calc(100% - 60px) !important;
-
-        margin-left:
-            30px !important;
-
-        margin-right:
-            30px !important;
+        padding: 11px;
     }
 
 
-    .card input:not([type="checkbox"]),
-    .card select {
+    .coupon-form input:not([type="checkbox"]),
+    .coupon-form select {
 
-        height:
-            46px;
-
-        font-size:
-            12px;
+        height: 45px;
     }
 
 
-    .coupon-details {
+    .payment-modes {
 
-        grid-template-columns:
-            1fr 1fr;
+        gap: 6px;
     }
+
+
+    .check-row {
+
+        font-size: 9px;
+    }
+
 }
 
 
 /* =========================================================
-   VERY SMALL MOBILE
+   PREVENT DESKTOP TABLE-LIKE BEHAVIOR
 ========================================================= */
 
-@media (max-width: 360px) {
+@media (max-width: 767px) {
 
-    .card,
-    #couponList {
+    body,
+    main,
+    section,
+    div,
+    form {
 
-        width:
-            calc(100% - 40px) !important;
-
-        margin-left:
-            20px !important;
-
-        margin-right:
-            20px !important;
+        min-width: 0;
     }
 
 
-    .coupon-details {
+    img {
 
-        grid-template-columns:
-            1fr;
+        max-width: 100%;
     }
 }
