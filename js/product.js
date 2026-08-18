@@ -2934,6 +2934,377 @@ function() {
 
 };
 
+/* ==================================================
+   WHATSAPP ORDER SUCCESS POPUP
+================================================== */
+
+function showWhatsAppOrderSuccess(orderNumber) {
+
+    /* ==================================================
+       REMOVE EXISTING POPUP
+    ================================================== */
+
+    document
+        .getElementById("waSuccessOverlay")
+        ?.remove();
+
+
+    /* ==================================================
+       CREATE OVERLAY
+    ================================================== */
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.id =
+        "waSuccessOverlay";
+
+
+    overlay.innerHTML = `
+
+        <div class="wa-success-box">
+
+            <!-- SUCCESS ICON -->
+
+            <div class="wa-success-icon">
+
+                ✓
+
+            </div>
+
+
+            <!-- TITLE -->
+
+            <h2>
+
+                Order Placed Successfully!
+
+            </h2>
+
+
+            <!-- MESSAGE -->
+
+            <p>
+
+                Thank you! Your order has been received
+                successfully.
+
+            </p>
+
+
+            <!-- ORDER NUMBER -->
+
+            <div class="wa-success-order">
+
+                Order No:
+
+                <strong>
+
+                    ${escapeHtml(orderNumber)}
+
+                </strong>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="button"
+                id="waContinueShopping"
+            >
+
+                Continue Shopping
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    /* ==================================================
+       ADD CSS
+    ================================================== */
+
+    const style =
+        document.createElement("style");
+
+
+    style.id =
+        "waSuccessPopupStyles";
+
+
+    style.textContent = `
+
+        #waSuccessOverlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 999999;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            background:
+                rgba(0, 0, 0, 0.72);
+
+            backdrop-filter:
+                blur(5px);
+
+            -webkit-backdrop-filter:
+                blur(5px);
+
+        }
+
+
+        .wa-success-box {
+
+            width: min(
+                380px,
+                100%
+            );
+
+            padding: 30px 24px;
+
+            border-radius: 20px;
+
+            background:
+                #1b1b1f;
+
+            color: #ffffff;
+
+            text-align: center;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0,0,0,0.45);
+
+            animation:
+                waSuccessPopupIn
+                0.25s
+                ease-out;
+
+        }
+
+
+        .wa-success-icon {
+
+            width: 70px;
+
+            height: 70px;
+
+            margin: 0 auto 18px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background:
+                #20d879;
+
+            color: #ffffff;
+
+            font-size: 48px;
+
+            font-weight: 700;
+
+            line-height: 1;
+
+        }
+
+
+        .wa-success-box h2 {
+
+            margin: 0 0 12px;
+
+            font-size: 23px;
+
+            font-weight: 700;
+
+            color: #ffffff;
+
+        }
+
+
+        .wa-success-box p {
+
+            margin: 0 auto 20px;
+
+            max-width: 300px;
+
+            color: #c9c9ce;
+
+            font-size: 16px;
+
+            line-height: 1.45;
+
+        }
+
+
+        .wa-success-order {
+
+            margin-bottom: 24px;
+
+            font-size: 16px;
+
+            color: #dddddf;
+
+        }
+
+
+        .wa-success-order strong {
+
+            color: #ffffff;
+
+            font-weight: 700;
+
+        }
+
+
+        #waContinueShopping {
+
+            width: 100%;
+
+            height: 48px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                #20d879;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.15s ease,
+                opacity 0.15s ease;
+
+        }
+
+
+        #waContinueShopping:hover {
+
+            opacity: 0.92;
+
+        }
+
+
+        #waContinueShopping:active {
+
+            transform:
+                scale(0.98);
+
+        }
+
+
+        @keyframes waSuccessPopupIn {
+
+            from {
+
+                opacity: 0;
+
+                transform:
+                    scale(0.92)
+                    translateY(10px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform:
+                    scale(1)
+                    translateY(0);
+
+            }
+
+        }
+
+
+        @media (max-width: 480px) {
+
+            .wa-success-box {
+
+                padding:
+                    26px 20px;
+
+                border-radius:
+                    18px;
+
+            }
+
+
+            .wa-success-icon {
+
+                width: 64px;
+
+                height: 64px;
+
+                font-size: 42px;
+
+            }
+
+
+            .wa-success-box h2 {
+
+                font-size: 21px;
+
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        style
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    /* ==================================================
+       CONTINUE SHOPPING
+    ================================================== */
+
+    document
+        .getElementById(
+            "waContinueShopping"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "/";
+
+            }
+        );
+
+}
 
 /* ==================================================
    WHATSAPP ORDER
@@ -3285,7 +3656,7 @@ async function() {
 
         const companyName =
             siteSettings.companyName ||
-            "Imaginary Gifts";
+            "Store";
 
 
         let message =
@@ -3414,21 +3785,36 @@ async function() {
             )}`;
 
 
-        window.open(
-            whatsappUrl,
-            "_blank"
-        );
+        /* ==================================================
+   OPEN WHATSAPP
+================================================== */
+
+window.open(
+    whatsappUrl,
+    "_blank"
+);
 
 
-        /* CLOSE FORM */
+/* ==================================================
+   CLOSE WHATSAPP FORM
+================================================== */
 
-        document
-            .getElementById(
-                "waFormOverlay"
-            )
-            ?.classList.add(
-                "hidden"
-            );
+document
+    .getElementById(
+        "waFormOverlay"
+    )
+    ?.classList.add(
+        "hidden"
+    );
+
+
+/* ==================================================
+   SHOW SUCCESS POPUP
+================================================== */
+
+showWhatsAppOrderSuccess(
+    orderNumber
+);
 
     }
 
