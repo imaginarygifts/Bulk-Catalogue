@@ -103,3 +103,19 @@ export async function loadContentPage(
         content;
 
 }
+
+/* =====================================================
+   AUTO LOAD PAGE CONTENT
+===================================================== */
+
+const field =
+    document.body?.dataset?.contentField;
+
+
+if(field){
+
+    loadContentPage(
+        field
+    );
+
+}
