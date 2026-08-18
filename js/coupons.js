@@ -1,7 +1,7 @@
-/* ==================================================
+/* =========================================================
    COUPON ADMIN
-   MOBILE FRIENDLY + PRODUCT SPECIFIC COUPONS
-================================================== */
+   PRODUCT-SPECIFIC + MOBILE FRIENDLY VERSION
+========================================================= */
 
 import { db } from "./firebase.js";
 
@@ -15,835 +15,515 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
-/* ==================================================
+/* =========================================================
    DOM
-================================================== */
+========================================================= */
 
 const listBox =
     document.getElementById("couponList");
 
-const scopeSelect =
+const codeInput =
+    document.getElementById("code");
+
+const typeInput =
+    document.getElementById("type");
+
+const valueInput =
+    document.getElementById("value");
+
+const minOrderInput =
+    document.getElementById("minOrder");
+
+const expiryInput =
+    document.getElementById("expiry");
+
+const scopeInput =
     document.getElementById("scope");
 
-
-/* ==================================================
-   GLOBAL STATE
-================================================== */
-
-let products = [];
-
-let selectedProductIds = new Set();
+const stackRuleInput =
+    document.getElementById("stackRule");
 
 
-/* ==================================================
-   MOBILE / UI CSS
-================================================== */
+/* =========================================================
+   STATE
+========================================================= */
 
-function injectCouponStyles() {
+let allProducts = [];
 
-    if (
-        document.getElementById(
-            "couponAdminStyles"
-        )
-    ) {
-        return;
+let selectedProductIds = [];
+
+let productSelectorBox = null;
+
+let productSearchInput = null;
+
+let productListBox = null;
+
+let selectedProductCount = null;
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        createProductSelector();
+
+        setupScopeChange();
+
+        await loadProducts();
+
+        await loadCoupons();
+
     }
+);
 
 
-    const style =
-        document.createElement("style");
+/*
+   Important:
+   This also handles module scripts where DOMContentLoaded
+   may already have fired.
+*/
 
-    style.id =
-        "couponAdminStyles";
+if (
+    document.readyState === "interactive" ||
+    document.readyState === "complete"
+) {
 
+    setTimeout(
+        async () => {
 
-    style.textContent = `
+            createProductSelector();
 
-        /* ==========================================
-           MAIN COUPON PAGE
-        ========================================== */
+            setupScopeChange();
 
-        .coupon-page,
-        #couponList {
+            await loadProducts();
 
-            width: 100%;
+            await loadCoupons();
 
-            box-sizing: border-box;
-
-        }
-
-
-        /* ==========================================
-           FORM
-        ========================================== */
-
-        #couponForm,
-        .coupon-form {
-
-            width: 100%;
-
-            max-width: 900px;
-
-            margin: 0 auto;
-
-            box-sizing: border-box;
-
-        }
-
-
-        #couponForm input,
-        #couponForm select,
-        .coupon-form input,
-        .coupon-form select {
-
-            width: 100%;
-
-            min-height: 46px;
-
-            box-sizing: border-box;
-
-            border-radius: 10px;
-
-            padding: 12px 14px;
-
-            font-size: 14px;
-
-        }
-
-
-        /* ==========================================
-           PAYMENT MODES
-        ========================================== */
-
-        .coupon-payment-modes {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 10px;
-
-            margin: 12px 0;
-
-        }
-
-
-        .coupon-payment-mode {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 8px;
-
-            padding: 12px;
-
-            border-radius: 10px;
-
-            border: 1px solid
-                rgba(255,255,255,.10);
-
-            background:
-                rgba(255,255,255,.04);
-
-            cursor: pointer;
-
-        }
-
-
-        .coupon-payment-mode input {
-
-            width: auto !important;
-
-            min-height: auto !important;
-
-        }
-
-
-        /* ==========================================
-           PRODUCT PICKER
-        ========================================== */
-
-        #productSelectorBox {
-
-            display: none;
-
-            margin-top: 12px;
-
-            padding: 14px;
-
-            border-radius: 14px;
-
-            background:
-                rgba(255,255,255,.035);
-
-            border: 1px solid
-                rgba(255,255,255,.08);
-
-            box-sizing: border-box;
-
-        }
-
-
-        #productSelectorBox.show {
-
-            display: block;
-
-        }
-
-
-        .product-selector-title {
-
-            font-size: 15px;
-
-            font-weight: 700;
-
-            margin-bottom: 10px;
-
-        }
-
-
-        #productSearch {
-
-            width: 100%;
-
-            min-height: 44px;
-
-            padding: 11px 13px;
-
-            box-sizing: border-box;
-
-            border-radius: 10px;
-
-            border: 1px solid
-                rgba(255,255,255,.12);
-
-            background:
-                rgba(255,255,255,.06);
-
-            color: inherit;
-
-            outline: none;
-
-        }
-
-
-        .selected-product-count {
-
-            margin-top: 10px;
-
-            margin-bottom: 10px;
-
-            font-size: 13px;
-
-            opacity: .75;
-
-        }
-
-
-        #productList {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-
-            gap: 10px;
-
-            max-height: 360px;
-
-            overflow-y: auto;
-
-            padding-right: 2px;
-
-        }
-
-
-        /* ==========================================
-           PRODUCT ITEM
-        ========================================== */
-
-        .coupon-product-item {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-
-            padding: 10px;
-
-            border-radius: 12px;
-
-            border: 1px solid
-                rgba(255,255,255,.08);
-
-            background:
-                rgba(255,255,255,.035);
-
-            cursor: pointer;
-
-            transition:
-                .15s ease;
-
-        }
-
-
-        .coupon-product-item:hover {
-
-            background:
-                rgba(255,255,255,.07);
-
-        }
-
-
-        .coupon-product-item.selected {
-
-            border-color:
-                #00d9ff;
-
-            background:
-                rgba(0,217,255,.08);
-
-        }
-
-
-        .coupon-product-item input {
-
-            width: auto !important;
-
-            min-height: auto !important;
-
-            flex-shrink: 0;
-
-        }
-
-
-        .coupon-product-image {
-
-            width: 48px;
-
-            height: 48px;
-
-            border-radius: 8px;
-
-            object-fit: cover;
-
-            background: #222;
-
-            flex-shrink: 0;
-
-        }
-
-
-        .coupon-product-info {
-
-            min-width: 0;
-
-            flex: 1;
-
-        }
-
-
-        .coupon-product-name {
-
-            font-size: 13px;
-
-            font-weight: 600;
-
-            line-height: 1.3;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-
-            display: -webkit-box;
-
-            -webkit-line-clamp: 2;
-
-            -webkit-box-orient: vertical;
-
-        }
-
-
-        .coupon-product-price {
-
-            margin-top: 4px;
-
-            font-size: 12px;
-
-            opacity: .7;
-
-        }
-
-
-        /* ==========================================
-           SELECT ALL
-        ========================================== */
-
-        .product-selector-actions {
-
-            display: flex;
-
-            gap: 8px;
-
-            margin: 10px 0;
-
-        }
-
-
-        .product-selector-actions button {
-
-            flex: 1;
-
-            min-height: 40px;
-
-            border: none;
-
-            border-radius: 9px;
-
-            cursor: pointer;
-
-        }
-
-
-        /* ==========================================
-           COUPON CARDS
-        ========================================== */
-
-        .coupon-card {
-
-            width: 100%;
-
-            box-sizing: border-box;
-
-            padding: 16px;
-
-            margin-bottom: 12px;
-
-            border-radius: 14px;
-
-            background:
-                #17181c;
-
-            border: 1px solid
-                rgba(255,255,255,.09);
-
-            overflow: hidden;
-
-        }
-
-
-        .coupon-card-header {
-
-            display: flex;
-
-            align-items: flex-start;
-
-            justify-content: space-between;
-
-            gap: 12px;
-
-        }
-
-
-        .coupon-card-code {
-
-            font-size: 17px;
-
-            font-weight: 800;
-
-            word-break: break-word;
-
-        }
-
-
-        .coupon-card-value {
-
-            padding: 5px 9px;
-
-            border-radius: 7px;
-
-            background:
-                rgba(0,217,255,.12);
-
-            color:
-                #00d9ff;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            white-space: nowrap;
-
-        }
-
-
-        .coupon-card-details {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
-            gap: 7px;
-
-            margin-top: 12px;
-
-            font-size: 13px;
-
-            opacity: .82;
-
-        }
-
-
-        .coupon-detail {
-
-            min-width: 0;
-
-            word-break: break-word;
-
-        }
-
-
-        .coupon-products {
-
-            margin-top: 12px;
-
-            padding-top: 12px;
-
-            border-top: 1px solid
-                rgba(255,255,255,.07);
-
-        }
-
-
-        .coupon-products-title {
-
-            font-size: 12px;
-
-            opacity: .6;
-
-            margin-bottom: 8px;
-
-        }
-
-
-        .coupon-product-tag {
-
-            display: inline-block;
-
-            margin: 3px;
-
-            padding: 5px 8px;
-
-            border-radius: 7px;
-
-            background:
-                rgba(255,255,255,.07);
-
-            font-size: 11px;
-
-        }
-
-
-        .coupon-delete {
-
-            width: 100%;
-
-            min-height: 40px;
-
-            margin-top: 14px;
-
-            border: none;
-
-            border-radius: 9px;
-
-            background:
-                #25262b;
-
-            color: #fff;
-
-            cursor: pointer;
-
-        }
-
-
-        .coupon-delete:hover {
-
-            background:
-                #d83a3a;
-
-        }
-
-
-        /* ==========================================
-           MOBILE
-        ========================================== */
-
-        @media (max-width: 600px) {
-
-            #couponForm,
-            .coupon-form {
-
-                padding:
-                    0 12px;
-
-            }
-
-
-            .coupon-payment-modes {
-
-                grid-template-columns:
-                    1fr;
-
-            }
-
-
-            #productList {
-
-                grid-template-columns:
-                    1fr;
-
-                max-height: 320px;
-
-            }
-
-
-            .coupon-card {
-
-                padding: 14px;
-
-                border-radius: 12px;
-
-            }
-
-
-            .coupon-card-details {
-
-                grid-template-columns:
-                    1fr;
-
-            }
-
-
-            .coupon-card-header {
-
-                align-items:
-                    flex-start;
-
-            }
-
-
-            .coupon-card-code {
-
-                font-size: 16px;
-
-            }
-
-
-            #couponList {
-
-                padding:
-                    0 12px;
-
-            }
-
-        }
-
-    `;
-
-
-    document.head.appendChild(
-        style
+        },
+        0
     );
 
 }
 
 
-/* ==================================================
+/* =========================================================
    CREATE PRODUCT SELECTOR
-================================================== */
+========================================================= */
 
 function createProductSelector() {
 
+    if (!scopeInput) {
+
+        console.warn(
+            "Coupon scope select #scope not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Prevent duplicate selector
+    */
+
     if (
         document.getElementById(
-            "productSelectorBox"
+            "couponProductSelector"
         )
     ) {
+
+        productSelectorBox =
+            document.getElementById(
+                "couponProductSelector"
+            );
+
+        productSearchInput =
+            document.getElementById(
+                "couponProductSearch"
+            );
+
+        productListBox =
+            document.getElementById(
+                "couponProductList"
+            );
+
+        selectedProductCount =
+            document.getElementById(
+                "couponSelectedProductCount"
+            );
+
         return;
+
     }
 
 
-    if (!scopeSelect) {
-        return;
-    }
+    /* =====================================================
+       MAIN WRAPPER
+    ===================================================== */
 
-
-    const box =
+    productSelectorBox =
         document.createElement("div");
 
-    box.id =
-        "productSelectorBox";
+    productSelectorBox.id =
+        "couponProductSelector";
+
+    productSelectorBox.className =
+        "coupon-product-selector";
 
 
-    box.innerHTML = `
+    /* =====================================================
+       TITLE
+    ===================================================== */
 
-        <div class="product-selector-title">
+    const title =
+        document.createElement("div");
 
-            Select Products
+    title.className =
+        "coupon-product-title";
 
-        </div>
-
-
-        <input
-            type="search"
-            id="productSearch"
-            placeholder="Search products..."
-            autocomplete="off"
-        >
+    title.innerText =
+        "Select Products";
 
 
-        <div
-            class="selected-product-count"
-            id="selectedProductCount"
-        >
+    /* =====================================================
+       SEARCH
+    ===================================================== */
 
-            0 products selected
+    productSearchInput =
+        document.createElement("input");
 
-        </div>
+    productSearchInput.id =
+        "couponProductSearch";
 
+    productSearchInput.type =
+        "search";
 
-        <div class="product-selector-actions">
+    productSearchInput.placeholder =
+        "Search product...";
 
-            <button
-                type="button"
-                id="selectAllProducts"
-            >
-
-                Select All
-
-            </button>
+    productSearchInput.autocomplete =
+        "off";
 
 
-            <button
-                type="button"
-                id="clearAllProducts"
-            >
+    productSearchInput.addEventListener(
+        "input",
+        () => {
 
-                Clear All
+            renderProductList(
+                productSearchInput.value
+            );
 
-            </button>
-
-        </div>
-
-
-        <div id="productList">
-
-            Loading products...
-
-        </div>
-
-    `;
-
-
-    scopeSelect.insertAdjacentElement(
-        "afterend",
-        box
+        }
     );
 
 
-    document
-        .getElementById(
-            "productSearch"
-        )
-        ?.addEventListener(
-            "input",
-            renderProductList
-        );
+    /* =====================================================
+       ACTION ROW
+    ===================================================== */
+
+    const actionRow =
+        document.createElement("div");
+
+    actionRow.className =
+        "coupon-product-actions";
 
 
-    document
-        .getElementById(
-            "selectAllProducts"
-        )
-        ?.addEventListener(
-            "click",
-            selectAllProducts
-        );
+    const selectAllButton =
+        document.createElement("button");
+
+    selectAllButton.type =
+        "button";
+
+    selectAllButton.className =
+        "coupon-small-button";
+
+    selectAllButton.innerText =
+        "Select All";
 
 
-    document
-        .getElementById(
-            "clearAllProducts"
-        )
-        ?.addEventListener(
-            "click",
-            clearAllProducts
-        );
+    selectAllButton.onclick =
+        () => {
+
+            const search =
+                productSearchInput.value
+                    .trim()
+                    .toLowerCase();
 
 
-    scopeSelect.addEventListener(
-        "change",
-        handleScopeChange
+            allProducts.forEach(
+                product => {
+
+                    const name =
+                        String(
+                            product.name ||
+                            ""
+                        )
+                            .toLowerCase();
+
+
+                    if (
+                        !search ||
+                        name.includes(search)
+                    ) {
+
+                        if (
+                            !selectedProductIds.includes(
+                                product.id
+                            )
+                        ) {
+
+                            selectedProductIds.push(
+                                product.id
+                            );
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            renderProductList(
+                productSearchInput.value
+            );
+
+        };
+
+
+    const clearButton =
+        document.createElement("button");
+
+    clearButton.type =
+        "button";
+
+    clearButton.className =
+        "coupon-small-button";
+
+    clearButton.innerText =
+        "Clear";
+
+
+    clearButton.onclick =
+        () => {
+
+            selectedProductIds = [];
+
+            renderProductList(
+                productSearchInput.value
+            );
+
+        };
+
+
+    actionRow.appendChild(
+        selectAllButton
+    );
+
+    actionRow.appendChild(
+        clearButton
     );
 
 
-    handleScopeChange();
+    /* =====================================================
+       COUNT
+    ===================================================== */
 
-}
+    selectedProductCount =
+        document.createElement("div");
+
+    selectedProductCount.id =
+        "couponSelectedProductCount";
+
+    selectedProductCount.className =
+        "coupon-selected-count";
+
+    selectedProductCount.innerText =
+        "0 products selected";
 
 
-/* ==================================================
-   SCOPE CHANGE
-================================================== */
+    /* =====================================================
+       PRODUCT LIST
+    ===================================================== */
 
-function handleScopeChange() {
+    productListBox =
+        document.createElement("div");
 
-    const box =
-        document.getElementById(
-            "productSelectorBox"
+    productListBox.id =
+        "couponProductList";
+
+    productListBox.className =
+        "coupon-product-list";
+
+
+    /* =====================================================
+       APPEND
+    ===================================================== */
+
+    productSelectorBox.appendChild(
+        title
+    );
+
+    productSelectorBox.appendChild(
+        productSearchInput
+    );
+
+    productSelectorBox.appendChild(
+        actionRow
+    );
+
+    productSelectorBox.appendChild(
+        selectedProductCount
+    );
+
+    productSelectorBox.appendChild(
+        productListBox
+    );
+
+
+    /*
+       Insert directly after scope select.
+    */
+
+    const parent =
+        scopeInput.parentElement;
+
+
+    if (parent) {
+
+        parent.appendChild(
+            productSelectorBox
         );
-
-
-    if (!box) {
-        return;
-    }
-
-
-    const isProductSpecific =
-        scopeSelect?.value ===
-        "product";
-
-
-    if (
-        isProductSpecific
-    ) {
-
-        box.classList.add(
-            "show"
-        );
-
-        renderProductList();
 
     }
 
     else {
 
-        box.classList.remove(
-            "show"
+        scopeInput.after(
+            productSelectorBox
         );
+
+    }
+
+
+    /*
+       Hidden initially
+    */
+
+    productSelectorBox.style.display =
+        "none";
+
+}
+
+
+/* =========================================================
+   SCOPE CHANGE
+========================================================= */
+
+function setupScopeChange() {
+
+    if (!scopeInput) {
+
+        return;
+
+    }
+
+
+    /*
+       Avoid duplicate listener
+    */
+
+    if (
+        scopeInput.dataset
+            .couponListenerAttached ===
+        "true"
+    ) {
+
+        updateProductSelectorVisibility();
+
+        return;
+
+    }
+
+
+    scopeInput.dataset
+        .couponListenerAttached =
+        "true";
+
+
+    scopeInput.addEventListener(
+        "change",
+        () => {
+
+            updateProductSelectorVisibility();
+
+        }
+    );
+
+
+    updateProductSelectorVisibility();
+
+}
+
+
+/* =========================================================
+   SHOW / HIDE PRODUCT SELECTOR
+========================================================= */
+
+function updateProductSelectorVisibility() {
+
+    if (
+        !productSelectorBox ||
+        !scopeInput
+    ) {
+
+        return;
+
+    }
+
+
+    const scope =
+        String(
+            scopeInput.value ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        scope === "product"
+    ) {
+
+        productSelectorBox.style.display =
+            "block";
+
+
+        renderProductList(
+            productSearchInput?.value ||
+            ""
+        );
+
+    }
+
+    else {
+
+        productSelectorBox.style.display =
+            "none";
 
     }
 
 }
 
 
-/* ==================================================
+/* =========================================================
    LOAD PRODUCTS
-================================================== */
+========================================================= */
 
 async function loadProducts() {
 
@@ -858,7 +538,7 @@ async function loadProducts() {
             );
 
 
-        products = [];
+        allProducts = [];
 
 
         snap.forEach(
@@ -868,7 +548,7 @@ async function loadProducts() {
                     d.data();
 
 
-                products.push({
+                allProducts.push({
 
                     id:
                         d.id,
@@ -881,19 +561,35 @@ async function loadProducts() {
         );
 
 
-        products.sort(
-            (a, b) =>
-                String(
+        /*
+           Sort alphabetically
+        */
+
+        allProducts.sort(
+            (a, b) => {
+
+                return String(
                     a.name || ""
-                ).localeCompare(
-                    String(
-                        b.name || ""
-                    )
                 )
+                    .localeCompare(
+                        String(
+                            b.name || ""
+                        )
+                    );
+
+            }
         );
 
 
-        renderProductList();
+        renderProductList(
+            ""
+        );
+
+
+        console.log(
+            "Coupon products loaded:",
+            allProducts.length
+        );
 
     }
 
@@ -904,22 +600,11 @@ async function loadProducts() {
             error
         );
 
+        if (productListBox) {
 
-        const list =
-            document.getElementById(
-                "productList"
-            );
+            productListBox.innerHTML = `
 
-
-        if (list) {
-
-            list.innerHTML = `
-
-                <div style="
-                    padding:15px;
-                    text-align:center;
-                    opacity:.7;
-                ">
+                <div class="coupon-product-error">
 
                     Unable to load products.
 
@@ -934,79 +619,64 @@ async function loadProducts() {
 }
 
 
-/* ==================================================
-   RENDER PRODUCTS
-================================================== */
+/* =========================================================
+   RENDER PRODUCT LIST
+========================================================= */
 
-function renderProductList() {
+function renderProductList(
+    searchText = ""
+) {
 
-    const list =
-        document.getElementById(
-            "productList"
-        );
+    if (
+        !productListBox
+    ) {
 
-
-    if (!list) {
         return;
+
     }
 
 
     const search =
         String(
-            document
-                .getElementById(
-                    "productSearch"
-                )
-                ?.value ||
-                ""
+            searchText ||
+            ""
         )
-        .trim()
-        .toLowerCase();
+            .trim()
+            .toLowerCase();
 
 
     const filtered =
-        products.filter(
+        allProducts.filter(
             product => {
-
-                if (!search) {
-                    return true;
-                }
-
 
                 const name =
                     String(
                         product.name ||
                         ""
                     )
-                    .toLowerCase();
-
-
-                const id =
-                    String(
-                        product.id ||
-                        ""
-                    )
-                    .toLowerCase();
+                        .toLowerCase();
 
 
                 return (
-                    name.includes(search) ||
-                    id.includes(search)
+                    !search ||
+                    name.includes(search)
                 );
 
             }
         );
 
 
-    if (!filtered.length) {
+    productListBox.innerHTML =
+        "";
 
-        list.innerHTML = `
 
-            <div style="
-                padding:15px;
-                text-align:center;
-                opacity:.6;
-            ">
+    if (
+        !filtered.length
+    ) {
+
+        productListBox.innerHTML = `
+
+            <div class="coupon-no-products">
 
                 No products found.
 
@@ -1022,90 +692,45 @@ function renderProductList() {
     }
 
 
-    list.innerHTML = "";
-
-
     filtered.forEach(
         product => {
 
-            const selected =
-                selectedProductIds.has(
-                    product.id
-                );
-
-
-            const item =
+            const row =
                 document.createElement(
                     "label"
                 );
 
 
-            item.className =
-                "coupon-product-item" +
-                (
-                    selected
-                        ?
-                        " selected"
-                        :
-                        ""
+            row.className =
+                "coupon-product-row";
+
+
+            if (
+                selectedProductIds.includes(
+                    product.id
+                )
+            ) {
+
+                row.classList.add(
+                    "selected"
                 );
 
-
-            const price =
-                Number(
-                    product.salePrice ||
-                    product.basePrice ||
-                    0
-                );
-
-
-            item.innerHTML = `
-
-                <input
-                    type="checkbox"
-                    ${selected ? "checked" : ""}
-                >
-
-
-                <img
-                    class="coupon-product-image"
-                    src="${escapeAttribute(
-                        product.images?.[0] ||
-                        ""
-                    )}"
-                    alt="${escapeAttribute(
-                        product.name ||
-                        "Product"
-                    )}"
-                >
-
-
-                <div class="coupon-product-info">
-
-                    <div class="coupon-product-name">
-
-                        ${escapeHtml(
-                            product.name ||
-                            "Unnamed Product"
-                        )}
-
-                    </div>
-
-
-                    <div class="coupon-product-price">
-
-                        ₹${price}
-
-                    </div>
-
-                </div>
-
-            `;
+            }
 
 
             const checkbox =
-                item.querySelector(
+                document.createElement(
                     "input"
+                );
+
+
+            checkbox.type =
+                "checkbox";
+
+
+            checkbox.checked =
+                selectedProductIds.includes(
+                    product.id
                 );
 
 
@@ -1117,22 +742,33 @@ function renderProductList() {
                         checkbox.checked
                     ) {
 
-                        selectedProductIds.add(
-                            product.id
-                        );
+                        if (
+                            !selectedProductIds.includes(
+                                product.id
+                            )
+                        ) {
+
+                            selectedProductIds.push(
+                                product.id
+                            );
+
+                        }
 
                     }
 
                     else {
 
-                        selectedProductIds.delete(
-                            product.id
-                        );
+                        selectedProductIds =
+                            selectedProductIds.filter(
+                                id =>
+                                    id !==
+                                    product.id
+                            );
 
                     }
 
 
-                    item.classList.toggle(
+                    row.classList.toggle(
                         "selected",
                         checkbox.checked
                     );
@@ -1144,8 +780,119 @@ function renderProductList() {
             );
 
 
-            list.appendChild(
-                item
+            /* =================================================
+               IMAGE
+            ================================================= */
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.className =
+                "coupon-product-image";
+
+
+            image.src =
+                product.images?.[0] ||
+                product.image ||
+                "";
+
+
+            image.alt =
+                product.name ||
+                "Product";
+
+
+            image.onerror =
+                () => {
+
+                    image.style.display =
+                        "none";
+
+                };
+
+
+            /* =================================================
+               INFO
+            ================================================= */
+
+            const info =
+                document.createElement(
+                    "div"
+                );
+
+
+            info.className =
+                "coupon-product-info";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+
+            name.className =
+                "coupon-product-name";
+
+
+            name.innerText =
+                product.name ||
+                "Unnamed Product";
+
+
+            const price =
+                document.createElement(
+                    "div"
+                );
+
+
+            price.className =
+                "coupon-product-price";
+
+
+            const productPrice =
+                Number(
+                    product.salePrice ??
+                    product.basePrice ??
+                    0
+                );
+
+
+            price.innerText =
+                productPrice > 0
+                    ?
+                    `₹${productPrice}`
+                    :
+                    "";
+
+
+            info.appendChild(
+                name
+            );
+
+            info.appendChild(
+                price
+            );
+
+
+            row.appendChild(
+                checkbox
+            );
+
+            row.appendChild(
+                image
+            );
+
+            row.appendChild(
+                info
+            );
+
+
+            productListBox.appendChild(
+                row
             );
 
         }
@@ -1157,255 +904,146 @@ function renderProductList() {
 }
 
 
-/* ==================================================
-   SELECT ALL
-================================================== */
-
-function selectAllProducts() {
-
-    const search =
-        String(
-            document
-                .getElementById(
-                    "productSearch"
-                )
-                ?.value ||
-                ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    products.forEach(
-        product => {
-
-            const name =
-                String(
-                    product.name ||
-                    ""
-                )
-                .toLowerCase();
-
-
-            const id =
-                String(
-                    product.id ||
-                    ""
-                )
-                .toLowerCase();
-
-
-            if (
-                !search ||
-                name.includes(search) ||
-                id.includes(search)
-            ) {
-
-                selectedProductIds.add(
-                    product.id
-                );
-
-            }
-
-        }
-    );
-
-
-    renderProductList();
-
-}
-
-
-/* ==================================================
-   CLEAR ALL
-================================================== */
-
-function clearAllProducts() {
-
-    selectedProductIds.clear();
-
-    renderProductList();
-
-}
-
-
-/* ==================================================
+/* =========================================================
    SELECTED COUNT
-================================================== */
+========================================================= */
 
 function updateSelectedCount() {
 
-    const count =
-        document.getElementById(
-            "selectedProductCount"
-        );
+    if (
+        selectedProductCount
+    ) {
 
+        selectedProductCount.innerText =
+            `${selectedProductIds.length} product${
+                selectedProductIds.length === 1
+                    ? ""
+                    : "s"
+            } selected`;
 
-    if (!count) {
-        return;
     }
-
-
-    const total =
-        selectedProductIds.size;
-
-
-    count.textContent =
-        `${total} product${total === 1 ? "" : "s"} selected`;
 
 }
 
 
-/* ==================================================
+/* =========================================================
    SAVE COUPON
-================================================== */
+========================================================= */
 
 window.saveCoupon =
 async function () {
 
-    const code =
-        document
-            .getElementById(
-                "code"
-            )
-            ?.value
-            .trim()
-            .toUpperCase();
+    try {
+
+        const code =
+            codeInput?.value
+                ?.trim()
+                .toUpperCase() ||
+            "";
 
 
-    const type =
-        document
-            .getElementById(
-                "type"
-            )
-            ?.value;
+        const type =
+            typeInput?.value ||
+            "percent";
 
 
-    const value =
-        Number(
-            document
-                .getElementById(
-                    "value"
-                )
-                ?.value ||
+        const value =
+            Number(
+                valueInput?.value ||
                 0
-        );
+            );
 
 
-    const minOrder =
-        Number(
-            document
-                .getElementById(
-                    "minOrder"
-                )
-                ?.value ||
+        const minOrder =
+            Number(
+                minOrderInput?.value ||
                 0
-        );
+            );
 
 
-    const expiryRaw =
-        document
-            .getElementById(
-                "expiry"
-            )
-            ?.value;
+        const expiryRaw =
+            expiryInput?.value ||
+            "";
 
 
-    const scope =
-        document
-            .getElementById(
-                "scope"
-            )
-            ?.value;
+        const scope =
+            scopeInput?.value ||
+            "global";
 
 
-    const stackRule =
-        document
-            .getElementById(
-                "stackRule"
-            )
-            ?.value;
+        const stackRule =
+            stackRuleInput?.value ||
+            "stack";
 
 
-    const modes =
-        [
-            ...document.querySelectorAll(
-                ".payMode:checked"
-            )
-        ]
-        .map(
-            x => x.value
-        );
+        /* =====================================================
+           PAYMENT MODES
+        ===================================================== */
 
-
-    /* ==================================================
-       BASIC VALIDATION
-    ================================================== */
-
-    if (
-        !code ||
-        !value ||
-        !expiryRaw
-    ) {
-
-        alert(
-            "Please fill all required fields."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        value <= 0
-    ) {
-
-        alert(
-            "Discount value must be greater than 0."
-        );
-
-        return;
-
-    }
-
-
-    /* ==================================================
-       PAYMENT MODE
-    ================================================== */
-
-    if (
-        !modes.length
-    ) {
-
-        alert(
-            "Please select at least one payment mode."
-        );
-
-        return;
-
-    }
-
-
-    /* ==================================================
-       PRODUCT VALIDATION
-    ================================================== */
-
-    let productIds = [];
-
-
-    if (
-        scope === "product"
-    ) {
-
-        productIds =
+        const modes =
             [
-                ...selectedProductIds
-            ];
+                ...document.querySelectorAll(
+                    ".payMode:checked"
+                )
+            ]
+                .map(
+                    x =>
+                        x.value
+                );
+
+
+        /* =====================================================
+           VALIDATION
+        ===================================================== */
+
+        if (
+            !code ||
+            !value ||
+            !expiryRaw
+        ) {
+
+            alert(
+                "Please fill all required fields."
+            );
+
+            return;
+
+        }
 
 
         if (
-            !productIds.length
+            value < 0
+        ) {
+
+            alert(
+                "Discount value cannot be negative."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !modes.length
+        ) {
+
+            alert(
+                "Please select at least one payment mode."
+            );
+
+            return;
+
+        }
+
+
+        /* =====================================================
+           PRODUCT SPECIFIC VALIDATION
+        ===================================================== */
+
+        if (
+            scope === "product" &&
+            !selectedProductIds.length
         ) {
 
             alert(
@@ -1416,78 +1054,92 @@ async function () {
 
         }
 
-    }
+
+        const expiry =
+            new Date(
+                expiryRaw
+            );
 
 
-    /* ==================================================
-       EXPIRY
-    ================================================== */
+        if (
+            Number.isNaN(
+                expiry.getTime()
+            )
+        ) {
 
-    const expiry =
-        new Date(
-            expiryRaw
+            alert(
+                "Please select a valid expiry date."
+            );
+
+            return;
+
+        }
+
+
+        /* =====================================================
+           FIRESTORE DATA
+        ===================================================== */
+
+        const couponData = {
+
+            code,
+
+            type,
+
+            value,
+
+            minOrder,
+
+            expiry:
+                Timestamp.fromDate(
+                    expiry
+                ),
+
+            scope,
+
+            allowedModes:
+                modes,
+
+            stackRule,
+
+            /*
+               VERY IMPORTANT:
+               Only store product IDs for
+               product-specific coupons.
+            */
+
+            productIds:
+                scope === "product"
+                    ?
+                    [...selectedProductIds]
+                    :
+                    [],
+
+            createdAt:
+                Date.now(),
+
+            active:
+                true
+
+        };
+
+
+        console.log(
+            "Saving coupon:",
+            couponData
         );
 
 
-    if (
-        isNaN(
-            expiry.getTime()
-        )
-    ) {
-
-        alert(
-            "Please enter a valid expiry date."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        /* ==========================================
+        /* =====================================================
            SAVE
-        ========================================== */
+        ===================================================== */
 
         await addDoc(
             collection(
                 db,
                 "coupons"
             ),
-            {
-
-                code,
-
-                type,
-
-                value,
-
-                minOrder,
-
-                expiry:
-                    Timestamp.fromDate(
-                        expiry
-                    ),
-
-                scope,
-
-                /* IMPORTANT */
-
-                productIds,
-
-                allowedModes:
-                    modes,
-
-                stackRule,
-
-                createdAt:
-                    Date.now(),
-
-                active:
-                    true
-
-            }
+            couponData
         );
 
 
@@ -1498,23 +1150,24 @@ async function () {
 
         clearForm();
 
-        loadCoupons();
+
+        await loadCoupons();
 
     }
 
-    catch (err) {
+    catch (error) {
 
         console.error(
             "Coupon save error:",
-            err
+            error
         );
 
 
         alert(
-            "Error: " +
+            "Error saving coupon: " +
             (
-                err.message ||
-                "Unable to save coupon."
+                error?.message ||
+                "Unknown error"
             )
         );
 
@@ -1523,19 +1176,32 @@ async function () {
 };
 
 
-/* ==================================================
+/* =========================================================
    LOAD COUPONS
-================================================== */
+========================================================= */
 
 async function loadCoupons() {
 
     if (!listBox) {
+
+        console.error(
+            "Element #couponList not found."
+        );
+
         return;
+
     }
 
 
-    listBox.innerHTML =
-        "Loading...";
+    listBox.innerHTML = `
+
+        <div class="coupon-loading">
+
+            Loading coupons...
+
+        </div>
+
+    `;
 
 
     try {
@@ -1559,11 +1225,7 @@ async function loadCoupons() {
 
             listBox.innerHTML = `
 
-                <div style="
-                    padding:20px;
-                    text-align:center;
-                    opacity:.6;
-                ">
+                <div class="coupon-empty">
 
                     No coupons created yet.
 
@@ -1576,248 +1238,47 @@ async function loadCoupons() {
         }
 
 
+        const coupons = [];
+
+
         snap.forEach(
             d => {
 
-                const c =
-                    d.data();
+                coupons.push({
 
+                    id:
+                        d.id,
 
-                const exp =
-                    c.expiry?.toDate
+                    ...d.data()
 
-                        ?
+                });
 
-                        c.expiry
-                            .toDate()
-                            .toLocaleDateString()
+            }
+        );
 
-                        :
 
-                        "N/A";
+        /*
+           Newest first
+        */
 
+        coupons.sort(
+            (a, b) =>
+                Number(
+                    b.createdAt ||
+                    0
+                ) -
+                Number(
+                    a.createdAt ||
+                    0
+                )
+        );
 
-                const productIds =
-                    Array.isArray(
-                        c.productIds
-                    )
-                        ?
-                        c.productIds
-                        :
-                        [];
 
+        coupons.forEach(
+            coupon => {
 
-                const productNames =
-                    productIds
-                        .map(
-                            pid => {
-
-                                const product =
-                                    products.find(
-                                        p =>
-                                            p.id ===
-                                            pid
-                                    );
-
-
-                                return product
-                                    ?.name ||
-                                    pid;
-
-                            }
-                        );
-
-
-                const div =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                div.className =
-                    "coupon-card";
-
-
-                const valueText =
-                    c.type === "percent"
-
-                        ?
-
-                        `${c.value}% OFF`
-
-                        :
-
-                        `₹${c.value} OFF`;
-
-
-                div.innerHTML = `
-
-                    <div class="coupon-card-header">
-
-                        <div class="coupon-card-code">
-
-                            ${escapeHtml(
-                                c.code ||
-                                ""
-                            )}
-
-                        </div>
-
-
-                        <div class="coupon-card-value">
-
-                            ${escapeHtml(
-                                valueText
-                            )}
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="coupon-card-details">
-
-                        <div class="coupon-detail">
-
-                            <b>Min order:</b>
-                            ₹${Number(
-                                c.minOrder ||
-                                0
-                            )}
-
-                        </div>
-
-
-                        <div class="coupon-detail">
-
-                            <b>Expiry:</b>
-                            ${escapeHtml(
-                                exp
-                            )}
-
-                        </div>
-
-
-                        <div class="coupon-detail">
-
-                            <b>Modes:</b>
-                            ${escapeHtml(
-                                (
-                                    c.allowedModes ||
-                                    []
-                                ).join(", ") ||
-                                "None"
-                            )}
-
-                        </div>
-
-
-                        <div class="coupon-detail">
-
-                            <b>Scope:</b>
-                            ${escapeHtml(
-                                c.scope ||
-                                "global"
-                            )}
-
-                        </div>
-
-
-                        <div class="coupon-detail">
-
-                            <b>Rule:</b>
-                            ${escapeHtml(
-                                c.stackRule ||
-                                "replace"
-                            )}
-
-                        </div>
-
-                    </div>
-
-
-                    ${
-                        c.scope === "product"
-
-                        ?
-
-                        `
-
-                        <div class="coupon-products">
-
-                            <div class="coupon-products-title">
-
-                                Applies to:
-
-                            </div>
-
-
-                            ${
-                                productNames.length
-
-                                ?
-
-                                productNames
-                                    .map(
-                                        name => `
-
-                                            <span
-                                                class="coupon-product-tag"
-                                            >
-
-                                                ${escapeHtml(
-                                                    name
-                                                )}
-
-                                            </span>
-
-                                        `
-                                    )
-                                    .join("")
-
-                                :
-
-                                `
-
-                                    <span
-                                        style="opacity:.6;font-size:12px"
-                                    >
-
-                                        No products selected
-
-                                    </span>
-
-                                `
-                            }
-
-                        </div>
-
-                        `
-
-                        :
-
-                        ""
-
-                    }
-
-
-                    <button
-                        type="button"
-                        class="coupon-delete"
-                        onclick="deleteCoupon('${escapeAttribute(
-                            d.id
-                        )}')"
-                    >
-
-                        Delete Coupon
-
-                    </button>
-
-                `;
-
-
-                listBox.appendChild(
-                    div
+                renderCouponCard(
+                    coupon
                 );
 
             }
@@ -1835,13 +1296,16 @@ async function loadCoupons() {
 
         listBox.innerHTML = `
 
-            <div style="
-                padding:20px;
-                text-align:center;
-                color:#ff7070;
-            ">
+            <div class="coupon-error">
 
-                Unable to load coupons.
+                <b>Unable to load coupons.</b>
+
+                <small>
+                    ${escapeHtml(
+                        error?.message ||
+                        ""
+                    )}
+                </small>
 
             </div>
 
@@ -1852,12 +1316,324 @@ async function loadCoupons() {
 }
 
 
-/* ==================================================
+/* =========================================================
+   RENDER COUPON
+========================================================= */
+
+function renderCouponCard(
+    coupon
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "coupon-card";
+
+
+    const expiry =
+        coupon.expiry?.toDate
+            ?
+            coupon.expiry
+                .toDate()
+                .toLocaleDateString(
+                    "en-IN"
+                )
+            :
+            "N/A";
+
+
+    const discountText =
+        coupon.type === "percent"
+            ?
+            `${coupon.value}% OFF`
+            :
+            `₹${coupon.value} OFF`;
+
+
+    const modes =
+        Array.isArray(
+            coupon.allowedModes
+        )
+            ?
+            coupon.allowedModes
+                .map(
+                    mode =>
+                        formatPaymentMode(
+                            mode
+                        )
+                )
+                .join(", ")
+            :
+            "All";
+
+
+    const productIds =
+        Array.isArray(
+            coupon.productIds
+        )
+            ?
+            coupon.productIds
+            :
+            [];
+
+
+    /* =====================================================
+       PRODUCT NAMES
+    ===================================================== */
+
+    const productNames =
+        productIds
+            .map(
+                id => {
+
+                    const product =
+                        allProducts.find(
+                            p =>
+                                p.id === id
+                        );
+
+
+                    return product?.name ||
+                        id;
+
+                }
+            );
+
+
+    let productHTML =
+        "";
+
+
+    if (
+        coupon.scope ===
+        "product"
+    ) {
+
+        if (
+            productNames.length
+        ) {
+
+            productHTML = `
+
+                <div class="coupon-products">
+
+                    <div class="coupon-products-title">
+
+                        Products:
+
+                    </div>
+
+                    <div class="coupon-product-tags">
+
+                        ${productNames
+                            .map(
+                                name => `
+
+                                    <span class="coupon-product-tag">
+
+                                        ${escapeHtml(
+                                            name
+                                        )}
+
+                                    </span>
+
+                                `
+                            )
+                            .join("")
+                        }
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+        else {
+
+            productHTML = `
+
+                <div class="coupon-products warning">
+
+                    Product-specific coupon
+                    <br>
+
+                    <small>
+                        No products assigned
+                    </small>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+
+    card.innerHTML = `
+
+        <div class="coupon-card-top">
+
+            <div>
+
+                <div class="coupon-code">
+
+                    ${escapeHtml(
+                        coupon.code ||
+                        ""
+                    )}
+
+                </div>
+
+                <div class="coupon-discount">
+
+                    ${escapeHtml(
+                        discountText
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <span class="coupon-status">
+
+                ${
+                    coupon.active
+                        ?
+                        "Active"
+                        :
+                        "Inactive"
+                }
+
+            </span>
+
+        </div>
+
+
+        <div class="coupon-details">
+
+            <div class="coupon-detail">
+
+                <span>
+                    Minimum Order
+                </span>
+
+                <b>
+                    ₹${Number(
+                        coupon.minOrder ||
+                        0
+                    )}
+                </b>
+
+            </div>
+
+
+            <div class="coupon-detail">
+
+                <span>
+                    Expiry
+                </span>
+
+                <b>
+                    ${escapeHtml(
+                        expiry
+                    )}
+                </b>
+
+            </div>
+
+
+            <div class="coupon-detail">
+
+                <span>
+                    Payment Modes
+                </span>
+
+                <b>
+                    ${escapeHtml(
+                        modes
+                    )}
+                </b>
+
+            </div>
+
+
+            <div class="coupon-detail">
+
+                <span>
+                    Scope
+                </span>
+
+                <b>
+                    ${
+                        coupon.scope ===
+                        "product"
+                            ?
+                            "Product Specific"
+                            :
+                            "Global"
+                    }
+                </b>
+
+            </div>
+
+
+            <div class="coupon-detail">
+
+                <span>
+                    Rule
+                </span>
+
+                <b>
+                    ${escapeHtml(
+                        coupon.stackRule ||
+                        "stack"
+                    )}
+                </b>
+
+            </div>
+
+        </div>
+
+
+        ${productHTML}
+
+
+        <button
+            type="button"
+            class="coupon-delete"
+            onclick="deleteCoupon('${escapeAttribute(
+                coupon.id
+            )}')"
+        >
+
+            Delete Coupon
+
+        </button>
+
+    `;
+
+
+    listBox.appendChild(
+        card
+    );
+
+}
+
+
+/* =========================================================
    DELETE COUPON
-================================================== */
+========================================================= */
 
 window.deleteCoupon =
-async function (id) {
+async function(id) {
 
     if (
         !confirm(
@@ -1881,20 +1657,24 @@ async function (id) {
         );
 
 
-        loadCoupons();
+        await loadCoupons();
 
     }
 
     catch (error) {
 
         console.error(
-            "Coupon delete error:",
+            "Delete coupon error:",
             error
         );
 
 
         alert(
-            "Unable to delete coupon."
+            "Unable to delete coupon: " +
+            (
+                error?.message ||
+                ""
+            )
         );
 
     }
@@ -1902,116 +1682,187 @@ async function (id) {
 };
 
 
-/* ==================================================
+/* =========================================================
    CLEAR FORM
-================================================== */
+========================================================= */
 
 function clearForm() {
 
-    document
-        .getElementById(
-            "code"
-        )
-        ?.value = "";
+    if (codeInput) {
+
+        codeInput.value =
+            "";
+
+    }
 
 
-    document
-        .getElementById(
-            "value"
-        )
-        ?.value = "";
+    if (valueInput) {
+
+        valueInput.value =
+            "";
+
+    }
 
 
-    document
-        .getElementById(
-            "minOrder"
-        )
-        ?.value = "";
+    if (minOrderInput) {
+
+        minOrderInput.value =
+            "";
+
+    }
 
 
-    document
-        .getElementById(
-            "expiry"
-        )
-        ?.value = "";
+    if (expiryInput) {
 
+        expiryInput.value =
+            "";
+
+    }
+
+
+    /*
+       Reset payment modes
+    */
 
     document
         .querySelectorAll(
             ".payMode"
         )
         .forEach(
-            x => {
+            checkbox => {
 
-                x.checked =
+                checkbox.checked =
                     false;
 
             }
         );
 
 
-    /* RESET PRODUCTS */
+    /*
+       Reset scope
+    */
 
-    selectedProductIds.clear();
+    if (scopeInput) {
+
+        scopeInput.value =
+            "global";
+
+    }
 
 
-    const search =
-        document.getElementById(
-            "productSearch"
-        );
+    /*
+       Reset product selection
+    */
+
+    selectedProductIds =
+        [];
 
 
-    if (search) {
+    if (productSearchInput) {
 
-        search.value =
+        productSearchInput.value =
             "";
 
     }
 
 
-    renderProductList();
+    updateSelectedCount();
 
-}
+    updateProductSelectorVisibility();
 
-
-/* ==================================================
-   ESCAPE HTML
-================================================== */
-
-function escapeHtml(value) {
-
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
+    renderProductList(
+        ""
     );
 
 }
 
 
-/* ==================================================
-   ESCAPE ATTRIBUTE
-================================================== */
+/* =========================================================
+   FORMAT PAYMENT MODE
+========================================================= */
 
-function escapeAttribute(value) {
+function formatPaymentMode(
+    mode
+) {
+
+    switch (
+        String(
+            mode ||
+            ""
+        )
+            .toLowerCase()
+    ) {
+
+        case "online":
+
+            return "Online";
+
+        case "cod":
+
+            return "COD";
+
+        case "advance":
+
+            return "Advance";
+
+        default:
+
+            return mode ||
+                "";
+
+    }
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ??
+        ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   ESCAPE ATTRIBUTE
+========================================================= */
+
+function escapeAttribute(
+    value
+) {
 
     return escapeHtml(
         value
@@ -2020,31 +1871,31 @@ function escapeAttribute(value) {
 }
 
 
-/* ==================================================
-   INIT
-================================================== */
+/* =========================================================
+   MANUAL GLOBAL START
+========================================================= */
 
-async function initCoupons() {
+(async function startCouponAdmin() {
 
-    injectCouponStyles();
+    try {
 
-    createProductSelector();
+        createProductSelector();
 
-    /*
-       Load products first so
-       existing product-specific
-       coupons can display names.
-    */
+        setupScopeChange();
 
-    await loadProducts();
+        await loadProducts();
 
-    await loadCoupons();
+        await loadCoupons();
 
-}
+    }
 
+    catch (error) {
 
-/* ==================================================
-   START
-================================================== */
+        console.error(
+            "Coupon admin initialization error:",
+            error
+        );
 
-initCoupons();
+    }
+
+})();
