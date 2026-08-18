@@ -99,7 +99,7 @@ export async function loadContentPage(
     }
 
 
-    contentElement.innerHTML =
+    contentElement.textContent =
         content;
 
 }
