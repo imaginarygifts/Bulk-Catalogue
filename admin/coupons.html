@@ -85,18 +85,77 @@
             >
 
 
-            <select id="scope">
+           <select id="scope">
 
-                <option value="global">
-                    Global
-                </option>
+    <option value="global">
+        Global
+    </option>
 
-                <option value="product">
-                    Product specific
-                </option>
+    <option value="product">
+        Product specific
+    </option>
 
-            </select>
+</select>
 
+
+<!-- =========================================
+     PRODUCT SELECTION
+========================================== -->
+
+<div
+    id="productSelector"
+    class="product-selector"
+    style="display:none;"
+>
+
+    <div class="product-selector-title">
+        Select Products
+    </div>
+
+
+    <input
+        type="search"
+        id="productSearch"
+        placeholder="Search product..."
+        autocomplete="off"
+    >
+
+
+    <div class="product-actions">
+
+        <button
+            type="button"
+            id="selectAllProducts"
+        >
+            Select All
+        </button>
+
+        <button
+            type="button"
+            id="clearProducts"
+        >
+            Clear
+        </button>
+
+    </div>
+
+
+    <div
+        id="selectedProductCount"
+        class="selected-product-count"
+    >
+        0 products selected
+    </div>
+
+
+    <div
+        id="productList"
+        class="product-list"
+    >
+        Loading products...
+    </div>
+
+</div>
 
             <!-- =====================================
                  PAYMENT MODES
