@@ -1,98 +1,1431 @@
-/* ===== Coupon Admin UI ===== */
+/* =========================================================
+   COUPON ADMIN UI
+   Premium Dark + Mobile Friendly
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+}
 
 body {
-  background: radial-gradient(circle at top, #0a0a0a, #000);
-  color: white;
-  font-family: system-ui, sans-serif;
-  padding: 16px;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at top,
+      #101116 0%,
+      #070707 45%,
+      #000000 100%
+    );
+
+  color: #ffffff;
+
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  overflow-x: hidden;
 }
 
-h2, h3 {
-  margin-bottom: 12px;
-  font-weight: 600;
+
+/* =========================================================
+   HEADINGS
+========================================================= */
+
+h1,
+h2,
+h3,
+h4 {
+  color: #ffffff;
+  margin-top: 0;
 }
+
+h2 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+h3 {
+  margin-top: 22px;
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MAIN CARD
+========================================================= */
 
 .card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 30px rgba(0,0,0,0.4);
+  width: 100%;
+  max-width: 900px;
+
+  margin: 0 auto 18px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.055),
+      rgba(255,255,255,0.025)
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,0.09);
+
+  border-radius: 18px;
+
+  backdrop-filter:
+    blur(16px);
+
+  -webkit-backdrop-filter:
+    blur(16px);
+
+  box-shadow:
+    0 15px 45px
+    rgba(0,0,0,0.45);
 }
+
+
+/* =========================================================
+   FORM INPUTS
+========================================================= */
 
 .card input,
 .card select {
+
   width: 100%;
-  padding: 12px;
-  margin: 6px 0;
-  border-radius: 10px;
-  border: none;
+
+  min-height: 46px;
+
+  padding:
+    12px 14px;
+
+  margin:
+    6px 0;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.07);
+
+  border-radius: 11px;
+
   outline: none;
-  background: rgba(255,255,255,0.06);
-  color: white;
+
+  background:
+    rgba(255,255,255,0.055);
+
+  color: #ffffff;
+
   font-size: 14px;
+
+  transition:
+    border-color .2s ease,
+    background .2s ease,
+    box-shadow .2s ease;
 }
+
+
+/* Focus */
+
+.card input:focus,
+.card select:focus {
+
+  border-color:
+    rgba(0,220,255,0.7);
+
+  background:
+    rgba(255,255,255,0.075);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(0,220,255,0.08);
+}
+
+
+/* Placeholder */
 
 .card input::placeholder {
-  color: #aaa;
+
+  color:
+    rgba(255,255,255,0.48);
+
 }
 
+
+/* Select */
+
+.card select {
+
+  cursor: pointer;
+
+  appearance: auto;
+}
+
+
+/* Select options */
+
+.card select option {
+
+  background:
+    #17181c;
+
+  color:
+    #ffffff;
+
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.card > label {
+
+  display: block;
+
+  margin-top: 12px;
+
+  margin-bottom: 4px;
+
+  color:
+    rgba(255,255,255,0.78);
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   CHECKBOX LABELS
+========================================================= */
+
 .card label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0;
+
+  color:
+    rgba(255,255,255,0.82);
+
   font-size: 14px;
 }
 
+
 .card input[type="checkbox"] {
-  width: auto;
-  accent-color: #00ff9c;
+
+  width: 17px !important;
+
+  height: 17px;
+
+  min-height: 17px !important;
+
+  padding: 0;
+
+  margin: 0;
+
+  accent-color:
+    #00f5a0;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
 }
+
+
+/* =========================================================
+   PAYMENT MODE AREA
+========================================================= */
+
+.card .payMode {
+
+  width: 17px !important;
+
+  height: 17px;
+
+  min-height: 17px !important;
+}
+
+
+/* =========================================================
+   PAYMENT MODE LABELS
+========================================================= */
+
+.coupon-payment-modes {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 10px;
+
+  margin-bottom: 14px;
+}
+
+
+.coupon-payment-mode {
+
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 0 !important;
+
+  padding: 12px;
+
+  min-height: 46px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255,255,255,0.035);
+
+  cursor: pointer;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+
+.coupon-payment-mode:hover {
+
+  background:
+    rgba(255,255,255,0.065);
+
+  border-color:
+    rgba(0,220,255,0.3);
+}
+
+
+/* =========================================================
+   MAIN SAVE BUTTON
+========================================================= */
 
 .card button {
-  margin-top: 12px;
-  padding: 12px;
+
   width: 100%;
-  border-radius: 10px;
+
+  min-height: 46px;
+
+  margin-top: 14px;
+
+  padding:
+    12px 16px;
+
   border: none;
-  background: linear-gradient(135deg, #00ff9c, #00c3ff);
-  color: black;
-  font-weight: 700;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #00ff9c,
+      #00c3ff
+    );
+
+  color:
+    #00120c;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    opacity .2s ease;
 }
+
 
 .card button:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(0,255,180,0.3);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 8px 25px
+    rgba(0,255,180,0.25);
 }
+
+
+.card button:active {
+
+  transform:
+    translateY(0);
+}
+
+
+.card button:disabled {
+
+  opacity: .5;
+
+  cursor:
+    not-allowed;
+
+  transform:
+    none;
+}
+
+
+/* =========================================================
+   PRODUCT SELECTOR
+========================================================= */
+
+#productSelectorBox {
+
+  display: none;
+
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 14px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.09);
+
+  border-radius: 15px;
+
+  background:
+    rgba(255,255,255,0.035);
+}
+
+
+#productSelectorBox.show {
+
+  display: block;
+}
+
+
+/* =========================================================
+   PRODUCT SELECTOR TITLE
+========================================================= */
+
+.product-selector-title {
+
+  margin-bottom: 10px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color:
+    #ffffff;
+}
+
+
+/* =========================================================
+   PRODUCT SEARCH
+========================================================= */
+
+#productSearch {
+
+  width: 100%;
+
+  min-height: 45px;
+
+  margin: 0;
+
+  padding:
+    11px 13px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background:
+    rgba(255,255,255,0.055);
+
+  color:
+    #ffffff;
+
+  font-size: 14px;
+}
+
+
+#productSearch:focus {
+
+  border-color:
+    rgba(0,220,255,0.65);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(0,220,255,0.08);
+}
+
+
+#productSearch::placeholder {
+
+  color:
+    rgba(255,255,255,0.45);
+}
+
+
+/* =========================================================
+   SELECTED PRODUCT COUNT
+========================================================= */
+
+.selected-product-count {
+
+  margin:
+    10px 0;
+
+  color:
+    rgba(255,255,255,0.55);
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   PRODUCT SELECTOR ACTIONS
+========================================================= */
+
+.product-selector-actions {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 11px;
+}
+
+
+.product-selector-actions button {
+
+  width: auto;
+
+  flex: 1;
+
+  min-height: 40px;
+
+  margin: 0;
+
+  padding:
+    9px 12px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.09);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  color:
+    #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  box-shadow: none;
+}
+
+
+.product-selector-actions button:hover {
+
+  background:
+    rgba(255,255,255,0.1);
+
+  box-shadow: none;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   PRODUCT LIST
+========================================================= */
+
+#productList {
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  max-height: 370px;
+
+  overflow-y: auto;
+
+  padding: 2px;
+
+  scrollbar-width: thin;
+}
+
+
+/* =========================================================
+   PRODUCT SELECTOR ITEM
+========================================================= */
+
+.coupon-product-item {
+
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 10px;
+
+  width: 100%;
+
+  min-width: 0;
+
+  margin: 0 !important;
+
+  padding: 10px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,255,255,0.035);
+
+  cursor: pointer;
+
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
+}
+
+
+.coupon-product-item:hover {
+
+  background:
+    rgba(255,255,255,0.065);
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* Selected product */
+
+.coupon-product-item.selected {
+
+  border-color:
+    rgba(0,220,255,0.7);
+
+  background:
+    rgba(0,220,255,0.08);
+
+  box-shadow:
+    0 0 15px
+    rgba(0,220,255,0.06);
+}
+
+
+/* Checkbox */
+
+.coupon-product-item input[type="checkbox"] {
+
+  width: 17px !important;
+
+  height: 17px;
+
+  min-width: 17px;
+
+  min-height: 17px !important;
+
+  margin: 0;
+
+  padding: 0;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   PRODUCT IMAGE
+========================================================= */
+
+.coupon-product-image {
+
+  width: 52px;
+
+  height: 52px;
+
+  min-width: 52px;
+
+  border-radius: 9px;
+
+  object-fit: cover;
+
+  background:
+    #202126;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.07);
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   PRODUCT INFO
+========================================================= */
+
+.coupon-product-info {
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+
+.coupon-product-name {
+
+  color:
+    #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 650;
+
+  line-height: 1.3;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  display:
+    -webkit-box;
+
+  -webkit-line-clamp: 2;
+
+  -webkit-box-orient:
+    vertical;
+}
+
+
+.coupon-product-price {
+
+  margin-top: 4px;
+
+  color:
+    rgba(255,255,255,0.55);
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   COUPON LIST
+========================================================= */
+
+#couponList {
+
+  width: 100%;
+
+  max-width: 900px;
+
+  margin:
+    0 auto;
+
+}
+
+
+/* =========================================================
+   COUPON LIST CARD
+========================================================= */
+
+#couponList .coupon-card {
+
+  width: 100%;
+
+  padding: 16px;
+
+  margin-bottom: 12px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.1);
+
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.055),
+      rgba(255,255,255,0.025)
+    );
+
+  box-shadow:
+    0 8px 25px
+    rgba(0,0,0,0.25);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   COUPON HEADER
+========================================================= */
+
+.coupon-card-header {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+
+.coupon-card-code {
+
+  min-width: 0;
+
+  color:
+    #ffffff;
+
+  font-size: 17px;
+
+  font-weight: 800;
+
+  word-break: break-word;
+}
+
+
+.coupon-card-value {
+
+  flex-shrink: 0;
+
+  padding:
+    6px 9px;
+
+  border-radius: 7px;
+
+  background:
+    rgba(0,220,255,0.1);
+
+  color:
+    #00ddff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   COUPON DETAILS
+========================================================= */
+
+.coupon-card-details {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 13px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,0.07);
+}
+
+
+.coupon-detail {
+
+  min-width: 0;
+
+  color:
+    rgba(255,255,255,0.68);
+
+  font-size: 12px;
+
+  line-height: 1.45;
+
+  word-break: break-word;
+}
+
+
+.coupon-detail b {
+
+  color:
+    rgba(255,255,255,0.9);
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   COUPON PRODUCT SECTION
+========================================================= */
+
+.coupon-products {
+
+  margin-top: 13px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,0.07);
+}
+
+
+.coupon-products-title {
+
+  margin-bottom: 7px;
+
+  color:
+    rgba(255,255,255,0.55);
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   PRODUCT TAG
+========================================================= */
+
+.coupon-product-tag {
+
+  display: inline-block;
+
+  max-width: 100%;
+
+  margin:
+    3px 3px 3px 0;
+
+  padding:
+    5px 8px;
+
+  border-radius: 7px;
+
+  background:
+    rgba(255,255,255,0.07);
+
+  color:
+    rgba(255,255,255,0.78);
+
+  font-size: 11px;
+
+  line-height: 1.3;
+
+  word-break: break-word;
+}
+
+
+/* =========================================================
+   DELETE COUPON BUTTON
+========================================================= */
+
+#couponList .coupon-delete {
+
+  width: 100%;
+
+  min-height: 40px;
+
+  margin-top: 14px;
+
+  padding:
+    9px 12px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  border-radius: 9px;
+
+  background:
+    #222329;
+
+  color:
+    #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow: none;
+}
+
+
+#couponList .coupon-delete:hover {
+
+  background:
+    #b83232;
+
+  border-color:
+    #d84b4b;
+
+  box-shadow:
+    0 5px 18px
+    rgba(200,50,50,0.18);
+
+  transform: none;
+}
+
+
+/* =========================================================
+   OLD .CARD COUPON COMPATIBILITY
+========================================================= */
 
 #couponList .card {
-  border: 1px solid rgba(255,255,255,0.12);
+
+  width: 100%;
+
+  margin-bottom: 12px;
+
+  padding: 16px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.1);
+
+  border-radius: 15px;
+
+  background:
+    rgba(255,255,255,0.04);
 }
 
-#couponList button {
-  background: #222;
-  color: white;
-  width: auto;
-  padding: 8px 12px;
-  font-size: 13px;
-  margin-right: 6px;
+
+/* =========================================================
+   SCROLLBARS
+========================================================= */
+
+#productList::-webkit-scrollbar {
+
+  width: 6px;
 }
 
-#couponList button:hover {
-  background: #333;
+
+#productList::-webkit-scrollbar-track {
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border-radius: 10px;
 }
+
+
+#productList::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,0.18);
+
+  border-radius: 10px;
+}
+
+
+#productList::-webkit-scrollbar-thumb:hover {
+
+  background:
+    rgba(255,255,255,0.28);
+}
+
+
+/* =========================================================
+   MOBILE — 600PX
+========================================================= */
 
 @media (max-width: 600px) {
+
   body {
-    padding: 12px;
+
+    padding:
+      12px;
+
   }
 
-  .card {
-    padding: 14px;
+
+  h2 {
+
+    font-size: 20px;
+
+    margin-bottom: 13px;
+
   }
+
+
+  h3 {
+
+    font-size: 16px;
+
+  }
+
+
+  .card {
+
+    width: 100%;
+
+    padding:
+      14px;
+
+    margin-bottom:
+      14px;
+
+    border-radius:
+      14px;
+
+  }
+
+
+  .card input,
+  .card select {
+
+    min-height:
+      45px;
+
+    padding:
+      11px 12px;
+
+    font-size:
+      14px;
+
+  }
+
+
+  /* Payment modes */
+
+  .coupon-payment-modes {
+
+    grid-template-columns:
+      1fr;
+
+    gap:
+      8px;
+
+  }
+
+
+  .coupon-payment-mode {
+
+    min-height:
+      44px;
+
+    padding:
+      11px;
+
+  }
+
+
+  /* Product selector */
+
+  #productSelectorBox {
+
+    padding:
+      12px;
+
+    border-radius:
+      13px;
+
+  }
+
+
+  #productList {
+
+    grid-template-columns:
+      1fr;
+
+    max-height:
+      330px;
+
+    gap:
+      8px;
+
+  }
+
+
+  .coupon-product-item {
+
+    min-height:
+      68px;
+
+  }
+
+
+  .coupon-product-image {
+
+    width:
+      48px;
+
+    height:
+      48px;
+
+    min-width:
+      48px;
+
+  }
+
+
+  /* Coupon cards */
+
+  #couponList {
+
+    width:
+      100%;
+
+  }
+
+
+  #couponList .coupon-card {
+
+    padding:
+      14px;
+
+    border-radius:
+      13px;
+
+  }
+
+
+  .coupon-card-header {
+
+    gap:
+      8px;
+
+  }
+
+
+  .coupon-card-code {
+
+    font-size:
+      16px;
+
+  }
+
+
+  .coupon-card-value {
+
+    font-size:
+      11px;
+
+    padding:
+      5px 7px;
+
+  }
+
+
+  .coupon-card-details {
+
+    grid-template-columns:
+      1fr;
+
+    gap:
+      6px;
+
+  }
+
+
+  .coupon-detail {
+
+    font-size:
+      12px;
+
+  }
+
+
+  #couponList .coupon-delete {
+
+    min-height:
+      42px;
+
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES — 380PX
+========================================================= */
+
+@media (max-width: 380px) {
+
+  body {
+
+    padding:
+      9px;
+
+  }
+
+
+  .card {
+
+    padding:
+      12px;
+
+  }
+
+
+  .coupon-card-header {
+
+    flex-direction:
+      column;
+
+    align-items:
+      flex-start;
+
+  }
+
+
+  .coupon-card-value {
+
+    align-self:
+      flex-start;
+
+  }
+
+
+  .product-selector-actions {
+
+    flex-direction:
+      column;
+
+  }
+
+
+  .product-selector-actions button {
+
+    width:
+      100%;
+
+  }
+
+}
+
+
+/* =========================================================
+   TABLET / DESKTOP
+========================================================= */
+
+@media (min-width: 601px) {
+
+  body {
+
+    padding:
+      24px;
+
+  }
+
+
+  .card {
+
+    padding:
+      22px;
+
+  }
+
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button,
+input,
+select {
+
+  -webkit-tap-highlight-color:
+    transparent;
+
+}
+
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+
+  outline:
+    2px solid
+    rgba(0,220,255,0.7);
+
+  outline-offset:
+    2px;
+
+}
+
+
+/* =========================================================
+   NO COUPONS / LOADING
+========================================================= */
+
+#couponList > div:not(.coupon-card):not(.card) {
+
+  color:
+    rgba(255,255,255,0.6);
+
+  text-align:
+    center;
+
+  padding:
+    20px 10px;
+
+}
+
+
+/* =========================================================
+   PREVENT HORIZONTAL OVERFLOW
+========================================================= */
+
+.card,
+.coupon-card,
+#productSelectorBox,
+#productList,
+.coupon-product-item,
+.coupon-card-details {
+
+  max-width:
+    100%;
+
+  overflow-wrap:
+    anywhere;
+
 }
