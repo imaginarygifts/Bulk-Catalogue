@@ -1,6 +1,7 @@
 /* =========================================================
    COUPON ADMIN
-   PRODUCT-SPECIFIC + MOBILE FRIENDLY VERSION
+   PRODUCT-SPECIFIC + MOBILE FRIENDLY
+   USES EXISTING PRODUCT SELECTOR HTML
 ========================================================= */
 
 import { db } from "./firebase.js";
@@ -45,6 +46,29 @@ const stackRuleInput =
 
 
 /* =========================================================
+   EXISTING PRODUCT SELECTOR HTML
+========================================================= */
+
+const productSelectorBox =
+    document.getElementById("productSelector");
+
+const productSearchInput =
+    document.getElementById("productSearch");
+
+const selectAllProductsButton =
+    document.getElementById("selectAllProducts");
+
+const clearProductsButton =
+    document.getElementById("clearProducts");
+
+const selectedProductCount =
+    document.getElementById("selectedProductCount");
+
+const productListBox =
+    document.getElementById("productList");
+
+
+/* =========================================================
    STATE
 ========================================================= */
 
@@ -52,74 +76,58 @@ let allProducts = [];
 
 let selectedProductIds = [];
 
-let productSelectorBox = null;
-
-let productSearchInput = null;
-
-let productListBox = null;
-
-let selectedProductCount = null;
-
 
 /* =========================================================
    INITIALIZE
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
+async function initCouponAdmin() {
 
-        createProductSelector();
+    try {
+
+        /*
+           Make sure product selector is hidden/shown
+           according to current scope.
+        */
 
         setupScopeChange();
 
+        /*
+           Load products first.
+        */
+
         await loadProducts();
+
+        /*
+           Then load existing coupons.
+        */
 
         await loadCoupons();
 
     }
-);
 
+    catch (error) {
 
-/*
-   Important:
-   This also handles module scripts where DOMContentLoaded
-   may already have fired.
-*/
+        console.error(
+            "Coupon admin initialization error:",
+            error
+        );
 
-if (
-    document.readyState === "interactive" ||
-    document.readyState === "complete"
-) {
-
-    setTimeout(
-        async () => {
-
-            createProductSelector();
-
-            setupScopeChange();
-
-            await loadProducts();
-
-            await loadCoupons();
-
-        },
-        0
-    );
+    }
 
 }
 
 
 /* =========================================================
-   CREATE PRODUCT SELECTOR
+   SCOPE CHANGE
 ========================================================= */
 
-function createProductSelector() {
+function setupScopeChange() {
 
     if (!scopeInput) {
 
         console.warn(
-            "Coupon scope select #scope not found."
+            "#scope not found."
         );
 
         return;
@@ -128,87 +136,106 @@ function createProductSelector() {
 
 
     /*
-       Prevent duplicate selector
+       Attach listener only once.
     */
 
     if (
-        document.getElementById(
-            "couponProductSelector"
-        )
+        scopeInput.dataset
+            .couponScopeListener === "true"
     ) {
 
-        productSelectorBox =
-            document.getElementById(
-                "couponProductSelector"
-            );
-
-        productSearchInput =
-            document.getElementById(
-                "couponProductSearch"
-            );
-
-        productListBox =
-            document.getElementById(
-                "couponProductList"
-            );
-
-        selectedProductCount =
-            document.getElementById(
-                "couponSelectedProductCount"
-            );
+        updateProductSelectorVisibility();
 
         return;
 
     }
 
 
-    /* =====================================================
-       MAIN WRAPPER
-    ===================================================== */
-
-    productSelectorBox =
-        document.createElement("div");
-
-    productSelectorBox.id =
-        "couponProductSelector";
-
-    productSelectorBox.className =
-        "coupon-product-selector";
+    scopeInput.dataset
+        .couponScopeListener = "true";
 
 
-    /* =====================================================
-       TITLE
-    ===================================================== */
+    scopeInput.addEventListener(
+        "change",
+        () => {
 
-    const title =
-        document.createElement("div");
+            updateProductSelectorVisibility();
 
-    title.className =
-        "coupon-product-title";
-
-    title.innerText =
-        "Select Products";
+        }
+    );
 
 
-    /* =====================================================
-       SEARCH
-    ===================================================== */
+    /*
+       Set initial state.
+    */
 
-    productSearchInput =
-        document.createElement("input");
+    updateProductSelectorVisibility();
 
-    productSearchInput.id =
-        "couponProductSearch";
+}
 
-    productSearchInput.type =
-        "search";
 
-    productSearchInput.placeholder =
-        "Search product...";
+/* =========================================================
+   SHOW / HIDE PRODUCT SELECTOR
+========================================================= */
 
-    productSearchInput.autocomplete =
-        "off";
+function updateProductSelectorVisibility() {
 
+    if (
+        !productSelectorBox ||
+        !scopeInput
+    ) {
+
+        return;
+
+    }
+
+
+    const scope =
+        String(
+            scopeInput.value || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        scope === "product"
+    ) {
+
+        /*
+           Show product selector
+           directly below scope.
+        */
+
+        productSelectorBox.style.display =
+            "block";
+
+
+        renderProductList(
+            productSearchInput?.value || ""
+        );
+
+    }
+
+    else {
+
+        /*
+           Hide for global coupon.
+        */
+
+        productSelectorBox.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   PRODUCT SEARCH
+========================================================= */
+
+if (productSearchInput) {
 
     productSearchInput.addEventListener(
         "input",
@@ -221,36 +248,24 @@ function createProductSelector() {
         }
     );
 
-
-    /* =====================================================
-       ACTION ROW
-    ===================================================== */
-
-    const actionRow =
-        document.createElement("div");
-
-    actionRow.className =
-        "coupon-product-actions";
+}
 
 
-    const selectAllButton =
-        document.createElement("button");
+/* =========================================================
+   SELECT ALL PRODUCTS
+========================================================= */
 
-    selectAllButton.type =
-        "button";
+if (selectAllProductsButton) {
 
-    selectAllButton.className =
-        "coupon-small-button";
-
-    selectAllButton.innerText =
-        "Select All";
-
-
-    selectAllButton.onclick =
+    selectAllProductsButton.addEventListener(
+        "click",
         () => {
 
             const search =
-                productSearchInput.value
+                String(
+                    productSearchInput?.value ||
+                    ""
+                )
                     .trim()
                     .toLowerCase();
 
@@ -265,6 +280,14 @@ function createProductSelector() {
                         )
                             .toLowerCase();
 
+
+                    /*
+                       If search is empty:
+                       select everything.
+
+                       If search exists:
+                       select only matching products.
+                    */
 
                     if (
                         !search ||
@@ -290,233 +313,36 @@ function createProductSelector() {
 
 
             renderProductList(
-                productSearchInput.value
+                productSearchInput?.value ||
+                ""
             );
-
-        };
-
-
-    const clearButton =
-        document.createElement("button");
-
-    clearButton.type =
-        "button";
-
-    clearButton.className =
-        "coupon-small-button";
-
-    clearButton.innerText =
-        "Clear";
-
-
-    clearButton.onclick =
-        () => {
-
-            selectedProductIds = [];
-
-            renderProductList(
-                productSearchInput.value
-            );
-
-        };
-
-
-    actionRow.appendChild(
-        selectAllButton
-    );
-
-    actionRow.appendChild(
-        clearButton
-    );
-
-
-    /* =====================================================
-       COUNT
-    ===================================================== */
-
-    selectedProductCount =
-        document.createElement("div");
-
-    selectedProductCount.id =
-        "couponSelectedProductCount";
-
-    selectedProductCount.className =
-        "coupon-selected-count";
-
-    selectedProductCount.innerText =
-        "0 products selected";
-
-
-    /* =====================================================
-       PRODUCT LIST
-    ===================================================== */
-
-    productListBox =
-        document.createElement("div");
-
-    productListBox.id =
-        "couponProductList";
-
-    productListBox.className =
-        "coupon-product-list";
-
-
-    /* =====================================================
-       APPEND
-    ===================================================== */
-
-    productSelectorBox.appendChild(
-        title
-    );
-
-    productSelectorBox.appendChild(
-        productSearchInput
-    );
-
-    productSelectorBox.appendChild(
-        actionRow
-    );
-
-    productSelectorBox.appendChild(
-        selectedProductCount
-    );
-
-    productSelectorBox.appendChild(
-        productListBox
-    );
-
-
-    /*
-       Insert directly after scope select.
-    */
-
-    const parent =
-        scopeInput.parentElement;
-
-
-    if (parent) {
-
-        parent.appendChild(
-            productSelectorBox
-        );
-
-    }
-
-    else {
-
-        scopeInput.after(
-            productSelectorBox
-        );
-
-    }
-
-
-    /*
-       Hidden initially
-    */
-
-    productSelectorBox.style.display =
-        "none";
-
-}
-
-
-/* =========================================================
-   SCOPE CHANGE
-========================================================= */
-
-function setupScopeChange() {
-
-    if (!scopeInput) {
-
-        return;
-
-    }
-
-
-    /*
-       Avoid duplicate listener
-    */
-
-    if (
-        scopeInput.dataset
-            .couponListenerAttached ===
-        "true"
-    ) {
-
-        updateProductSelectorVisibility();
-
-        return;
-
-    }
-
-
-    scopeInput.dataset
-        .couponListenerAttached =
-        "true";
-
-
-    scopeInput.addEventListener(
-        "change",
-        () => {
-
-            updateProductSelectorVisibility();
 
         }
     );
 
-
-    updateProductSelectorVisibility();
-
 }
 
 
 /* =========================================================
-   SHOW / HIDE PRODUCT SELECTOR
+   CLEAR PRODUCTS
 ========================================================= */
 
-function updateProductSelectorVisibility() {
+if (clearProductsButton) {
 
-    if (
-        !productSelectorBox ||
-        !scopeInput
-    ) {
+    clearProductsButton.addEventListener(
+        "click",
+        () => {
 
-        return;
-
-    }
+            selectedProductIds = [];
 
 
-    const scope =
-        String(
-            scopeInput.value ||
-            ""
-        )
-            .trim()
-            .toLowerCase();
+            renderProductList(
+                productSearchInput?.value ||
+                ""
+            );
 
-
-    if (
-        scope === "product"
-    ) {
-
-        productSelectorBox.style.display =
-            "block";
-
-
-        renderProductList(
-            productSearchInput?.value ||
-            ""
-        );
-
-    }
-
-    else {
-
-        productSelectorBox.style.display =
-            "none";
-
-    }
+        }
+    );
 
 }
 
@@ -526,6 +352,28 @@ function updateProductSelectorVisibility() {
 ========================================================= */
 
 async function loadProducts() {
+
+    if (!productListBox) {
+
+        console.warn(
+            "#productList not found."
+        );
+
+        return;
+
+    }
+
+
+    productListBox.innerHTML = `
+
+        <div class="coupon-loading-products">
+
+            Loading products...
+
+        </div>
+
+    `;
+
 
     try {
 
@@ -562,7 +410,7 @@ async function loadProducts() {
 
 
         /*
-           Sort alphabetically
+           Sort products alphabetically.
         */
 
         allProducts.sort(
@@ -581,14 +429,15 @@ async function loadProducts() {
         );
 
 
-        renderProductList(
-            ""
-        );
-
-
         console.log(
             "Coupon products loaded:",
             allProducts.length
+        );
+
+
+        renderProductList(
+            productSearchInput?.value ||
+            ""
         );
 
     }
@@ -600,19 +449,16 @@ async function loadProducts() {
             error
         );
 
-        if (productListBox) {
 
-            productListBox.innerHTML = `
+        productListBox.innerHTML = `
 
-                <div class="coupon-product-error">
+            <div class="coupon-product-error">
 
-                    Unable to load products.
+                Unable to load products.
 
-                </div>
+            </div>
 
-            `;
-
-        }
+        `;
 
     }
 
@@ -627,9 +473,7 @@ function renderProductList(
     searchText = ""
 ) {
 
-    if (
-        !productListBox
-    ) {
+    if (!productListBox) {
 
         return;
 
@@ -638,14 +482,13 @@ function renderProductList(
 
     const search =
         String(
-            searchText ||
-            ""
+            searchText || ""
         )
             .trim()
             .toLowerCase();
 
 
-    const filtered =
+    const filteredProducts =
         allProducts.filter(
             product => {
 
@@ -670,9 +513,35 @@ function renderProductList(
         "";
 
 
-    if (
-        !filtered.length
-    ) {
+    /*
+       No products at all.
+    */
+
+    if (!allProducts.length) {
+
+        productListBox.innerHTML = `
+
+            <div class="coupon-no-products">
+
+                No products available.
+
+            </div>
+
+        `;
+
+
+        updateSelectedProductCount();
+
+        return;
+
+    }
+
+
+    /*
+       Search returned nothing.
+    */
+
+    if (!filteredProducts.length) {
 
         productListBox.innerHTML = `
 
@@ -685,14 +554,18 @@ function renderProductList(
         `;
 
 
-        updateSelectedCount();
+        updateSelectedProductCount();
 
         return;
 
     }
 
 
-    filtered.forEach(
+    /*
+       Render products.
+    */
+
+    filteredProducts.forEach(
         product => {
 
             const row =
@@ -702,14 +575,16 @@ function renderProductList(
 
 
             row.className =
-                "coupon-product-row";
+                "product-row";
 
 
-            if (
+            const isSelected =
                 selectedProductIds.includes(
                     product.id
-                )
-            ) {
+                );
+
+
+            if (isSelected) {
 
                 row.classList.add(
                     "selected"
@@ -717,6 +592,10 @@ function renderProductList(
 
             }
 
+
+            /* =================================================
+               CHECKBOX
+            ================================================= */
 
             const checkbox =
                 document.createElement(
@@ -728,10 +607,12 @@ function renderProductList(
                 "checkbox";
 
 
+            checkbox.value =
+                product.id;
+
+
             checkbox.checked =
-                selectedProductIds.includes(
-                    product.id
-                );
+                isSelected;
 
 
             checkbox.addEventListener(
@@ -774,14 +655,14 @@ function renderProductList(
                     );
 
 
-                    updateSelectedCount();
+                    updateSelectedProductCount();
 
                 }
             );
 
 
             /* =================================================
-               IMAGE
+               PRODUCT IMAGE
             ================================================= */
 
             const image =
@@ -791,7 +672,7 @@ function renderProductList(
 
 
             image.className =
-                "coupon-product-image";
+                "product-image";
 
 
             image.src =
@@ -805,8 +686,17 @@ function renderProductList(
                 "Product";
 
 
+            image.loading =
+                "lazy";
+
+
             image.onerror =
                 () => {
+
+                    /*
+                       Hide broken image instead
+                       of showing broken icon.
+                    */
 
                     image.style.display =
                         "none";
@@ -815,7 +705,7 @@ function renderProductList(
 
 
             /* =================================================
-               INFO
+               PRODUCT INFO
             ================================================= */
 
             const info =
@@ -825,7 +715,7 @@ function renderProductList(
 
 
             info.className =
-                "coupon-product-info";
+                "product-info";
 
 
             const name =
@@ -835,10 +725,10 @@ function renderProductList(
 
 
             name.className =
-                "coupon-product-name";
+                "product-name";
 
 
-            name.innerText =
+            name.textContent =
                 product.name ||
                 "Unnamed Product";
 
@@ -850,7 +740,7 @@ function renderProductList(
 
 
             price.className =
-                "coupon-product-price";
+                "product-price";
 
 
             const productPrice =
@@ -861,7 +751,7 @@ function renderProductList(
                 );
 
 
-            price.innerText =
+            price.textContent =
                 productPrice > 0
                     ?
                     `₹${productPrice}`
@@ -873,18 +763,25 @@ function renderProductList(
                 name
             );
 
+
             info.appendChild(
                 price
             );
 
 
+            /* =================================================
+               APPEND ROW
+            ================================================= */
+
             row.appendChild(
                 checkbox
             );
 
+
             row.appendChild(
                 image
             );
+
 
             row.appendChild(
                 info
@@ -899,29 +796,36 @@ function renderProductList(
     );
 
 
-    updateSelectedCount();
+    updateSelectedProductCount();
 
 }
 
 
 /* =========================================================
-   SELECTED COUNT
+   UPDATE SELECTED PRODUCT COUNT
 ========================================================= */
 
-function updateSelectedCount() {
+function updateSelectedProductCount() {
 
     if (
-        selectedProductCount
+        !selectedProductCount
     ) {
 
-        selectedProductCount.innerText =
-            `${selectedProductIds.length} product${
-                selectedProductIds.length === 1
-                    ? ""
-                    : "s"
-            } selected`;
+        return;
 
     }
+
+
+    const count =
+        selectedProductIds.length;
+
+
+    selectedProductCount.textContent =
+        `${count} product${
+            count === 1
+                ? ""
+                : "s"
+        } selected`;
 
 }
 
@@ -934,6 +838,10 @@ window.saveCoupon =
 async function () {
 
     try {
+
+        /* =====================================================
+           BASIC VALUES
+        ===================================================== */
 
         const code =
             codeInput?.value
@@ -987,8 +895,8 @@ async function () {
                 )
             ]
                 .map(
-                    x =>
-                        x.value
+                    checkbox =>
+                        checkbox.value
                 );
 
 
@@ -996,15 +904,13 @@ async function () {
            VALIDATION
         ===================================================== */
 
-        if (
-            !code ||
-            !value ||
-            !expiryRaw
-        ) {
+        if (!code) {
 
             alert(
-                "Please fill all required fields."
+                "Please enter coupon code."
             );
+
+            codeInput?.focus();
 
             return;
 
@@ -1012,21 +918,34 @@ async function () {
 
 
         if (
-            value < 0
+            value <= 0
         ) {
 
             alert(
-                "Discount value cannot be negative."
+                "Please enter a valid discount value."
             );
+
+            valueInput?.focus();
 
             return;
 
         }
 
 
-        if (
-            !modes.length
-        ) {
+        if (!expiryRaw) {
+
+            alert(
+                "Please select expiry date."
+            );
+
+            expiryInput?.focus();
+
+            return;
+
+        }
+
+
+        if (!modes.length) {
 
             alert(
                 "Please select at least one payment mode."
@@ -1038,22 +957,31 @@ async function () {
 
 
         /* =====================================================
-           PRODUCT SPECIFIC VALIDATION
+           PRODUCT-SPECIFIC VALIDATION
         ===================================================== */
 
         if (
-            scope === "product" &&
-            !selectedProductIds.length
+            scope === "product"
         ) {
 
-            alert(
-                "Please select at least one product for this coupon."
-            );
+            if (
+                !selectedProductIds.length
+            ) {
 
-            return;
+                alert(
+                    "Please select at least one product."
+                );
+
+                return;
+
+            }
 
         }
 
+
+        /* =====================================================
+           EXPIRY
+        ===================================================== */
 
         const expiry =
             new Date(
@@ -1077,7 +1005,19 @@ async function () {
 
 
         /* =====================================================
-           FIRESTORE DATA
+           PRODUCT IDS
+        ===================================================== */
+
+        const productIds =
+            scope === "product"
+                ?
+                [...selectedProductIds]
+                :
+                [];
+
+
+        /* =====================================================
+           COUPON DATA
         ===================================================== */
 
         const couponData = {
@@ -1097,23 +1037,19 @@ async function () {
 
             scope,
 
+            /*
+               Product-specific coupons contain
+               selected product IDs.
+
+               Global coupons contain [].
+            */
+
+            productIds,
+
             allowedModes:
                 modes,
 
             stackRule,
-
-            /*
-               VERY IMPORTANT:
-               Only store product IDs for
-               product-specific coupons.
-            */
-
-            productIds:
-                scope === "product"
-                    ?
-                    [...selectedProductIds]
-                    :
-                    [],
 
             createdAt:
                 Date.now(),
@@ -1131,7 +1067,7 @@ async function () {
 
 
         /* =====================================================
-           SAVE
+           SAVE FIRESTORE
         ===================================================== */
 
         await addDoc(
@@ -1148,8 +1084,16 @@ async function () {
         );
 
 
+        /* =====================================================
+           RESET FORM
+        ===================================================== */
+
         clearForm();
 
+
+        /* =====================================================
+           RELOAD COUPONS
+        ===================================================== */
 
         await loadCoupons();
 
@@ -1185,7 +1129,7 @@ async function loadCoupons() {
     if (!listBox) {
 
         console.error(
-            "Element #couponList not found."
+            "#couponList not found."
         );
 
         return;
@@ -1258,19 +1202,22 @@ async function loadCoupons() {
 
 
         /*
-           Newest first
+           Newest first.
         */
 
         coupons.sort(
-            (a, b) =>
-                Number(
+            (a, b) => {
+
+                return Number(
                     b.createdAt ||
                     0
                 ) -
                 Number(
                     a.createdAt ||
                     0
-                )
+                );
+
+            }
         );
 
 
@@ -1298,7 +1245,9 @@ async function loadCoupons() {
 
             <div class="coupon-error">
 
-                <b>Unable to load coupons.</b>
+                <b>
+                    Unable to load coupons.
+                </b>
 
                 <small>
                     ${escapeHtml(
@@ -1317,7 +1266,7 @@ async function loadCoupons() {
 
 
 /* =========================================================
-   RENDER COUPON
+   RENDER COUPON CARD
 ========================================================= */
 
 function renderCouponCard(
@@ -1334,6 +1283,10 @@ function renderCouponCard(
         "coupon-card";
 
 
+    /* =====================================================
+       EXPIRY
+    ===================================================== */
+
     const expiry =
         coupon.expiry?.toDate
             ?
@@ -1346,6 +1299,10 @@ function renderCouponCard(
             "N/A";
 
 
+    /* =====================================================
+       DISCOUNT
+    ===================================================== */
+
     const discountText =
         coupon.type === "percent"
             ?
@@ -1353,6 +1310,10 @@ function renderCouponCard(
             :
             `₹${coupon.value} OFF`;
 
+
+    /* =====================================================
+       PAYMENT MODES
+    ===================================================== */
 
     const modes =
         Array.isArray(
@@ -1371,6 +1332,10 @@ function renderCouponCard(
             "All";
 
 
+    /* =====================================================
+       PRODUCT IDS
+    ===================================================== */
+
     const productIds =
         Array.isArray(
             coupon.productIds
@@ -1386,31 +1351,33 @@ function renderCouponCard(
     ===================================================== */
 
     const productNames =
-        productIds
-            .map(
-                id => {
+        productIds.map(
+            id => {
 
-                    const product =
-                        allProducts.find(
-                            p =>
-                                p.id === id
-                        );
+                const product =
+                    allProducts.find(
+                        item =>
+                            item.id === id
+                    );
 
 
-                    return product?.name ||
-                        id;
+                return product?.name ||
+                    id;
 
-                }
-            );
+            }
+        );
 
+
+    /* =====================================================
+       PRODUCT HTML
+    ===================================================== */
 
     let productHTML =
         "";
 
 
     if (
-        coupon.scope ===
-        "product"
+        coupon.scope === "product"
     ) {
 
         if (
@@ -1423,27 +1390,28 @@ function renderCouponCard(
 
                     <div class="coupon-products-title">
 
-                        Products:
+                        Products
 
                     </div>
 
                     <div class="coupon-product-tags">
 
-                        ${productNames
-                            .map(
-                                name => `
+                        ${
+                            productNames
+                                .map(
+                                    name => `
 
-                                    <span class="coupon-product-tag">
+                                        <span class="coupon-product-tag">
 
-                                        ${escapeHtml(
-                                            name
-                                        )}
+                                            ${escapeHtml(
+                                                name
+                                            )}
 
-                                    </span>
+                                        </span>
 
-                                `
-                            )
-                            .join("")
+                                    `
+                                )
+                                .join("")
                         }
 
                     </div>
@@ -1461,7 +1429,6 @@ function renderCouponCard(
                 <div class="coupon-products warning">
 
                     Product-specific coupon
-                    <br>
 
                     <small>
                         No products assigned
@@ -1475,6 +1442,10 @@ function renderCouponCard(
 
     }
 
+
+    /* =====================================================
+       CARD HTML
+    ===================================================== */
 
     card.innerHTML = `
 
@@ -1720,9 +1691,9 @@ function clearForm() {
     }
 
 
-    /*
-       Reset payment modes
-    */
+    /* =====================================================
+       PAYMENT MODES
+    ===================================================== */
 
     document
         .querySelectorAll(
@@ -1738,9 +1709,9 @@ function clearForm() {
         );
 
 
-    /*
-       Reset scope
-    */
+    /* =====================================================
+       SCOPE
+    ===================================================== */
 
     if (scopeInput) {
 
@@ -1750,9 +1721,9 @@ function clearForm() {
     }
 
 
-    /*
-       Reset product selection
-    */
+    /* =====================================================
+       PRODUCTS
+    ===================================================== */
 
     selectedProductIds =
         [];
@@ -1766,9 +1737,11 @@ function clearForm() {
     }
 
 
-    updateSelectedCount();
+    updateSelectedProductCount();
+
 
     updateProductSelectorVisibility();
+
 
     renderProductList(
         ""
@@ -1787,8 +1760,7 @@ function formatPaymentMode(
 
     switch (
         String(
-            mode ||
-            ""
+            mode || ""
         )
             .toLowerCase()
     ) {
@@ -1797,13 +1769,16 @@ function formatPaymentMode(
 
             return "Online";
 
+
         case "cod":
 
             return "COD";
 
+
         case "advance":
 
             return "Advance";
+
 
         default:
 
@@ -1824,8 +1799,7 @@ function escapeHtml(
 ) {
 
     return String(
-        value ??
-        ""
+        value ?? ""
     )
 
         .replace(
@@ -1872,30 +1846,7 @@ function escapeAttribute(
 
 
 /* =========================================================
-   MANUAL GLOBAL START
+   START
 ========================================================= */
 
-(async function startCouponAdmin() {
-
-    try {
-
-        createProductSelector();
-
-        setupScopeChange();
-
-        await loadProducts();
-
-        await loadCoupons();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Coupon admin initialization error:",
-            error
-        );
-
-    }
-
-})();
+initCouponAdmin();
