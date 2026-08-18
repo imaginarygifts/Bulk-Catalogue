@@ -335,13 +335,21 @@
 
     <h3>Admin Account</h3>
 
+    <!-- CURRENT ADMIN -->
     <div class="admin-current-user">
+
         <span>Logged in as</span>
-        <strong id="currentAdminEmail">Loading...</strong>
+
+        <strong id="currentAdminEmail">
+            Loading...
+        </strong>
+
     </div>
 
 
-    <!-- ================= CHANGE PASSWORD ================= -->
+    <!-- =================================================
+         CHANGE PASSWORD
+    ================================================== -->
 
     <div class="admin-section">
 
@@ -377,48 +385,6 @@
 
         <div
             id="passwordMessage"
-            class="admin-account-message"
-        ></div>
-
-    </div>
-
-
-    <!-- ================= ADD ADMIN ================= -->
-
-    <div class="admin-section">
-
-        <h4>Add Admin</h4>
-
-        <input
-            type="email"
-            id="newAdminEmail"
-            placeholder="Admin email"
-            autocomplete="off"
-        >
-
-        <input
-            type="password"
-            id="newAdminPassword"
-            placeholder="Temporary password"
-            autocomplete="new-password"
-        >
-
-        <input
-            type="password"
-            id="confirmAdminPassword"
-            placeholder="Confirm password"
-            autocomplete="new-password"
-        >
-
-        <button
-            type="button"
-            id="addAdminButton"
-        >
-            Add Admin
-        </button>
-
-        <div
-            id="adminMessage"
             class="admin-account-message"
         ></div>
 
