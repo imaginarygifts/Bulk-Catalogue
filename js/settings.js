@@ -10,7 +10,10 @@ import {
 
 
 import {
-    onAuthStateChanged
+    onAuthStateChanged,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 
@@ -183,6 +186,9 @@ function initSettings(){
 
                 adminVerified =
                     true;
+
+loadCurrentAdminAccount();
+
 
 
                 /*======================================
@@ -1400,7 +1406,669 @@ function showMessage(
         `settings-message ${type}`;
 
 }
+/*==================================================
+    ADMIN ACCOUNT
+==================================================*/
 
+
+/*==================================================
+    SHOW CURRENT ADMIN EMAIL
+==================================================*/
+
+function loadCurrentAdminAccount(){
+
+    const emailElement =
+        document.getElementById(
+            "currentAdminEmail"
+        );
+
+
+    if(
+        !emailElement
+    ){
+
+        return;
+
+    }
+
+
+    const user =
+        auth.currentUser;
+
+
+    if(
+        user
+    ){
+
+        emailElement.textContent =
+            user.email ||
+            "Admin";
+
+    }
+
+}
+
+
+/*==================================================
+    CHANGE PASSWORD
+==================================================*/
+
+const changePasswordButton =
+    document.getElementById(
+        "changePasswordButton"
+    );
+
+
+if(
+    changePasswordButton
+){
+
+    changePasswordButton.addEventListener(
+        "click",
+        changeAdminPassword
+    );
+
+}
+
+
+async function changeAdminPassword(){
+
+    const currentPassword =
+        document
+            .getElementById(
+                "currentPassword"
+            )
+            ?.value
+            .trim();
+
+
+    const newPassword =
+        document
+            .getElementById(
+                "newPassword"
+            )
+            ?.value
+            .trim();
+
+
+    const confirmPassword =
+        document
+            .getElementById(
+                "confirmPassword"
+            )
+            ?.value
+            .trim();
+
+
+    const passwordMessage =
+        document.getElementById(
+            "passwordMessage"
+        );
+
+
+    /*==============================================
+        VALIDATION
+    ==============================================*/
+
+    if(
+        !currentPassword ||
+        !newPassword ||
+        !confirmPassword
+    ){
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "Please fill all password fields.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        newPassword.length < 6
+    ){
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "New password must be at least 6 characters.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        newPassword !==
+        confirmPassword
+    ){
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "New passwords do not match.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        currentPassword ===
+        newPassword
+    ){
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "New password must be different from current password.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const user =
+        auth.currentUser;
+
+
+    if(
+        !user ||
+        !user.email
+    ){
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "Admin authentication session not found.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        changePasswordButton.disabled =
+            true;
+
+
+        changePasswordButton.textContent =
+            "Changing...";
+
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "Verifying current password...",
+            "info"
+        );
+
+
+        /*==========================================
+            RE-AUTHENTICATE
+        ==========================================*/
+
+        const credential =
+            EmailAuthProvider.credential(
+                user.email,
+                currentPassword
+            );
+
+
+        await reauthenticateWithCredential(
+            user,
+            credential
+        );
+
+
+        /*==========================================
+            UPDATE PASSWORD
+        ==========================================*/
+
+        await updatePassword(
+            user,
+            newPassword
+        );
+
+
+        /*==========================================
+            SUCCESS
+        ==========================================*/
+
+        showAdminAccountMessage(
+            passwordMessage,
+            "Password changed successfully.",
+            "success"
+        );
+
+
+        document.getElementById(
+            "currentPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "newPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "confirmPassword"
+        ).value = "";
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Change password error:",
+            error
+        );
+
+
+        let errorMessage =
+            "Unable to change password.";
+
+
+        if(
+            error?.code ===
+            "auth/invalid-credential"
+        ){
+
+            errorMessage =
+                "Current password is incorrect.";
+
+        }
+
+        else if(
+            error?.code ===
+            "auth/wrong-password"
+        ){
+
+            errorMessage =
+                "Current password is incorrect.";
+
+        }
+
+        else if(
+            error?.code ===
+            "auth/requires-recent-login"
+        ){
+
+            errorMessage =
+                "Please log out and log in again, then change your password.";
+
+        }
+
+        else if(
+            error?.code ===
+            "auth/weak-password"
+        ){
+
+            errorMessage =
+                "New password is too weak.";
+
+        }
+
+        else if(
+            error?.message
+        ){
+
+            errorMessage =
+                error.message;
+
+        }
+
+
+        showAdminAccountMessage(
+            passwordMessage,
+            errorMessage,
+            "error"
+        );
+
+    }
+
+    finally{
+
+        changePasswordButton.disabled =
+            false;
+
+
+        changePasswordButton.textContent =
+            "Change Password";
+
+    }
+
+}
+
+
+/*==================================================
+    ADD ADMIN
+==================================================*/
+
+const addAdminButton =
+    document.getElementById(
+        "addAdminButton"
+    );
+
+
+if(
+    addAdminButton
+){
+
+    addAdminButton.addEventListener(
+        "click",
+        addAdmin
+    );
+
+}
+
+
+async function addAdmin(){
+
+    const email =
+        document
+            .getElementById(
+                "newAdminEmail"
+            )
+            ?.value
+            .trim()
+            .toLowerCase();
+
+
+    const password =
+        document
+            .getElementById(
+                "newAdminPassword"
+            )
+            ?.value
+            .trim();
+
+
+    const confirmPassword =
+        document
+            .getElementById(
+                "confirmAdminPassword"
+            )
+            ?.value
+            .trim();
+
+
+    const adminMessage =
+        document.getElementById(
+            "adminMessage"
+        );
+
+
+    /*==============================================
+        VALIDATION
+    ==============================================*/
+
+    if(
+        !email ||
+        !password ||
+        !confirmPassword
+    ){
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Please fill all admin fields.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            email
+        )
+    ){
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Please enter a valid email address.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        password.length < 6
+    ){
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Password must be at least 6 characters.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        password !==
+        confirmPassword
+    ){
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Passwords do not match.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        auth.currentUser
+            ?.email
+            ?.toLowerCase() ===
+        email
+    ){
+
+        showAdminAccountMessage(
+            adminMessage,
+            "This is already the current admin account.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        addAdminButton.disabled =
+            true;
+
+
+        addAdminButton.textContent =
+            "Creating...";
+
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Creating admin account...",
+            "info"
+        );
+
+
+        /*
+           IMPORTANT:
+
+           We intentionally DO NOT use:
+
+           createUserWithEmailAndPassword(
+               auth,
+               email,
+               password
+           );
+
+           on the current auth instance.
+
+           Firebase signs the current Auth instance
+           into the newly created account.
+
+           Instead this function calls your
+           secure backend / Cloud Function.
+        */
+
+
+        const response =
+            await fetch(
+                "/api/create-admin",
+                {
+                    method:
+                        "POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            email,
+
+                            password
+
+                        })
+
+                }
+            );
+
+
+        let result =
+            {};
+
+
+        try{
+
+            result =
+                await response.json();
+
+        }
+
+        catch{
+
+            result =
+                {};
+
+        }
+
+
+        if(
+            !response.ok
+        ){
+
+            throw new Error(
+                result.message ||
+                "Unable to create admin."
+            );
+
+        }
+
+
+        showAdminAccountMessage(
+            adminMessage,
+            "Admin account created successfully.",
+            "success"
+        );
+
+
+        document.getElementById(
+            "newAdminEmail"
+        ).value = "";
+
+
+        document.getElementById(
+            "newAdminPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "confirmAdminPassword"
+        ).value = "";
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Add admin error:",
+            error
+        );
+
+
+        showAdminAccountMessage(
+            adminMessage,
+            error?.message ||
+            "Unable to create admin account.",
+            "error"
+        );
+
+    }
+
+    finally{
+
+        addAdminButton.disabled =
+            false;
+
+
+        addAdminButton.textContent =
+            "Add Admin";
+
+    }
+
+}
+
+
+/*==================================================
+    ADMIN MESSAGE
+==================================================*/
+
+function showAdminAccountMessage(
+    element,
+    text,
+    type = "info"
+){
+
+    if(
+        !element
+    ){
+
+        return;
+
+    }
+
+
+    element.textContent =
+        text;
+
+
+    element.className =
+        `admin-account-message ${type}`;
+
+}
 
 /*==================================================
     EXPORT
