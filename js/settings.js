@@ -10,10 +10,7 @@ import {
 
 
 import {
-    onAuthStateChanged,
-    EmailAuthProvider,
-    reauthenticateWithCredential,
-    updatePassword
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 
@@ -1450,7 +1447,7 @@ function loadCurrentAdminAccount(){
 
 
 /*==================================================
-    CHANGE PASSWORD
+    CHANGE PASSWORD BUTTON
 ==================================================*/
 
 const changePasswordButton =
@@ -1470,6 +1467,10 @@ if(
 
 }
 
+
+/*==================================================
+    CHANGE ADMIN PASSWORD
+==================================================*/
 
 async function changeAdminPassword(){
 
@@ -1574,6 +1575,10 @@ async function changeAdminPassword(){
     }
 
 
+    /*==============================================
+        CURRENT USER
+    ==============================================*/
+
     const user =
         auth.currentUser;
 
@@ -1649,19 +1654,50 @@ async function changeAdminPassword(){
         );
 
 
-        document.getElementById(
-            "currentPassword"
-        ).value = "";
+        /*==========================================
+            CLEAR FIELDS
+        ==========================================*/
+
+        const currentInput =
+            document.getElementById(
+                "currentPassword"
+            );
 
 
-        document.getElementById(
-            "newPassword"
-        ).value = "";
+        const newInput =
+            document.getElementById(
+                "newPassword"
+            );
 
 
-        document.getElementById(
-            "confirmPassword"
-        ).value = "";
+        const confirmInput =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+
+        if(currentInput){
+
+            currentInput.value =
+                "";
+
+        }
+
+
+        if(newInput){
+
+            newInput.value =
+                "";
+
+        }
+
+
+        if(confirmInput){
+
+            confirmInput.value =
+                "";
+
+        }
 
     }
 
@@ -1677,9 +1713,17 @@ async function changeAdminPassword(){
             "Unable to change password.";
 
 
+        /*==========================================
+            WRONG PASSWORD
+        ==========================================*/
+
         if(
             error?.code ===
-            "auth/invalid-credential"
+            "auth/wrong-password" ||
+            error?.code ===
+            "auth/invalid-credential" ||
+            error?.code ===
+            "auth/invalid-login-credentials"
         ){
 
             errorMessage =
@@ -1687,25 +1731,10 @@ async function changeAdminPassword(){
 
         }
 
-        else if(
-            error?.code ===
-            "auth/wrong-password"
-        ){
 
-            errorMessage =
-                "Current password is incorrect.";
-
-        }
-
-        else if(
-            error?.code ===
-            "auth/requires-recent-login"
-        ){
-
-            errorMessage =
-                "Please log out and log in again, then change your password.";
-
-        }
+        /*==========================================
+            WEAK PASSWORD
+        ==========================================*/
 
         else if(
             error?.code ===
@@ -1713,9 +1742,44 @@ async function changeAdminPassword(){
         ){
 
             errorMessage =
-                "New password is too weak.";
+                "New password is too weak. Use at least 6 characters.";
 
         }
+
+
+        /*==========================================
+            RECENT LOGIN
+        ==========================================*/
+
+        else if(
+            error?.code ===
+            "auth/requires-recent-login"
+        ){
+
+            errorMessage =
+                "For security, please log out and log in again before changing your password.";
+
+        }
+
+
+        /*==========================================
+            TOO MANY REQUESTS
+        ==========================================*/
+
+        else if(
+            error?.code ===
+            "auth/too-many-requests"
+        ){
+
+            errorMessage =
+                "Too many attempts. Please try again later.";
+
+        }
+
+
+        /*==========================================
+            GENERIC FIREBASE ERROR
+        ==========================================*/
 
         else if(
             error?.message
@@ -1743,299 +1807,6 @@ async function changeAdminPassword(){
 
         changePasswordButton.textContent =
             "Change Password";
-
-    }
-
-}
-
-
-/*==================================================
-    ADD ADMIN
-==================================================*/
-
-const addAdminButton =
-    document.getElementById(
-        "addAdminButton"
-    );
-
-
-if(
-    addAdminButton
-){
-
-    addAdminButton.addEventListener(
-        "click",
-        addAdmin
-    );
-
-}
-
-
-async function addAdmin(){
-
-    const email =
-        document
-            .getElementById(
-                "newAdminEmail"
-            )
-            ?.value
-            .trim()
-            .toLowerCase();
-
-
-    const password =
-        document
-            .getElementById(
-                "newAdminPassword"
-            )
-            ?.value
-            .trim();
-
-
-    const confirmPassword =
-        document
-            .getElementById(
-                "confirmAdminPassword"
-            )
-            ?.value
-            .trim();
-
-
-    const adminMessage =
-        document.getElementById(
-            "adminMessage"
-        );
-
-
-    /*==============================================
-        VALIDATION
-    ==============================================*/
-
-    if(
-        !email ||
-        !password ||
-        !confirmPassword
-    ){
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Please fill all admin fields.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if(
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-            email
-        )
-    ){
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Please enter a valid email address.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if(
-        password.length < 6
-    ){
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Password must be at least 6 characters.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if(
-        password !==
-        confirmPassword
-    ){
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Passwords do not match.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if(
-        auth.currentUser
-            ?.email
-            ?.toLowerCase() ===
-        email
-    ){
-
-        showAdminAccountMessage(
-            adminMessage,
-            "This is already the current admin account.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    try{
-
-        addAdminButton.disabled =
-            true;
-
-
-        addAdminButton.textContent =
-            "Creating...";
-
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Creating admin account...",
-            "info"
-        );
-
-
-        /*
-           IMPORTANT:
-
-           We intentionally DO NOT use:
-
-           createUserWithEmailAndPassword(
-               auth,
-               email,
-               password
-           );
-
-           on the current auth instance.
-
-           Firebase signs the current Auth instance
-           into the newly created account.
-
-           Instead this function calls your
-           secure backend / Cloud Function.
-        */
-
-
-        const response =
-            await fetch(
-                "/api/create-admin",
-                {
-                    method:
-                        "POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-
-                            email,
-
-                            password
-
-                        })
-
-                }
-            );
-
-
-        let result =
-            {};
-
-
-        try{
-
-            result =
-                await response.json();
-
-        }
-
-        catch{
-
-            result =
-                {};
-
-        }
-
-
-        if(
-            !response.ok
-        ){
-
-            throw new Error(
-                result.message ||
-                "Unable to create admin."
-            );
-
-        }
-
-
-        showAdminAccountMessage(
-            adminMessage,
-            "Admin account created successfully.",
-            "success"
-        );
-
-
-        document.getElementById(
-            "newAdminEmail"
-        ).value = "";
-
-
-        document.getElementById(
-            "newAdminPassword"
-        ).value = "";
-
-
-        document.getElementById(
-            "confirmAdminPassword"
-        ).value = "";
-
-    }
-
-    catch(error){
-
-        console.error(
-            "Add admin error:",
-            error
-        );
-
-
-        showAdminAccountMessage(
-            adminMessage,
-            error?.message ||
-            "Unable to create admin account.",
-            "error"
-        );
-
-    }
-
-    finally{
-
-        addAdminButton.disabled =
-            false;
-
-
-        addAdminButton.textContent =
-            "Add Admin";
 
     }
 
