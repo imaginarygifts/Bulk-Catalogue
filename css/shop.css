@@ -850,7 +850,14 @@ main {
     transform: scale(0.92);
 }
 
+.shop-filter-label {
+    margin: 0 0 10px;
+    padding: 0 12px;
 
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+}
 
 /* ==================================================
    HORIZONTAL SCROLLBARS
