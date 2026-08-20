@@ -648,7 +648,7 @@ button{
 
     overscroll-behavior-x:contain;
 
-    touch-action:pan-x;
+    touch-action:auto;
 
 }
 
@@ -1230,7 +1230,7 @@ button{
 
     overscroll-behavior-x:contain;
 
-    touch-action:pan-x;
+    touch-action:auto;
 
 }
 
@@ -1453,7 +1453,7 @@ button{
 
     overscroll-behavior-x:contain;
 
-    touch-action:pan-x;
+    touch-action:auto;
 
 }
 
