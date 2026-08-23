@@ -1,7 +1,8 @@
 /* =========================================================
    COUPON ADMIN
-   PRODUCT-SPECIFIC + MOBILE FRIENDLY
-   USES EXISTING PRODUCT SELECTOR HTML
+   PRODUCT-SPECIFIC + FREE SHIPPING
+   MOBILE FRIENDLY
+   FIREBASE FIRESTORE
 ========================================================= */
 
 import { db } from "./firebase.js";
@@ -23,49 +24,93 @@ import {
 const listBox =
     document.getElementById("couponList");
 
+
 const codeInput =
     document.getElementById("code");
+
 
 const typeInput =
     document.getElementById("type");
 
+
 const valueInput =
     document.getElementById("value");
+
+
+const discountValueBox =
+    document.getElementById(
+        "discountValueBox"
+    );
+
 
 const minOrderInput =
     document.getElementById("minOrder");
 
+
 const expiryInput =
     document.getElementById("expiry");
+
+
+const freeShippingInput =
+    document.getElementById(
+        "freeShipping"
+    );
+
+
+const freeShippingBox =
+    document.getElementById(
+        "freeShippingBox"
+    );
+
 
 const scopeInput =
     document.getElementById("scope");
 
+
 const stackRuleInput =
-    document.getElementById("stackRule");
+    document.getElementById(
+        "stackRule"
+    );
 
 
 /* =========================================================
-   EXISTING PRODUCT SELECTOR HTML
+   PRODUCT SELECTOR
 ========================================================= */
 
 const productSelectorBox =
-    document.getElementById("productSelector");
+    document.getElementById(
+        "productSelector"
+    );
+
 
 const productSearchInput =
-    document.getElementById("productSearch");
+    document.getElementById(
+        "productSearch"
+    );
+
 
 const selectAllProductsButton =
-    document.getElementById("selectAllProducts");
+    document.getElementById(
+        "selectAllProducts"
+    );
+
 
 const clearProductsButton =
-    document.getElementById("clearProducts");
+    document.getElementById(
+        "clearProducts"
+    );
+
 
 const selectedProductCount =
-    document.getElementById("selectedProductCount");
+    document.getElementById(
+        "selectedProductCount"
+    );
+
 
 const productListBox =
-    document.getElementById("productList");
+    document.getElementById(
+        "productList"
+    );
 
 
 /* =========================================================
@@ -85,22 +130,11 @@ async function initCouponAdmin() {
 
     try {
 
-        /*
-           Make sure product selector is hidden/shown
-           according to current scope.
-        */
+        setupCouponType();
 
         setupScopeChange();
 
-        /*
-           Load products first.
-        */
-
         await loadProducts();
-
-        /*
-           Then load existing coupons.
-        */
 
         await loadCoupons();
 
@@ -112,6 +146,126 @@ async function initCouponAdmin() {
             "Coupon admin initialization error:",
             error
         );
+
+    }
+
+}
+
+
+/* =========================================================
+   COUPON TYPE CHANGE
+========================================================= */
+
+function setupCouponType() {
+
+    if (!typeInput) {
+
+        return;
+
+    }
+
+
+    typeInput.addEventListener(
+        "change",
+        updateCouponTypeUI
+    );
+
+
+    updateCouponTypeUI();
+
+}
+
+
+/* =========================================================
+   UPDATE COUPON TYPE UI
+========================================================= */
+
+function updateCouponTypeUI() {
+
+    if (!typeInput) {
+
+        return;
+
+    }
+
+
+    const type =
+        typeInput.value;
+
+
+    /* =====================================================
+       FREE SHIPPING ONLY
+    ===================================================== */
+
+    if (
+        type === "free_shipping"
+    ) {
+
+        /*
+           Hide discount value.
+        */
+
+        if (discountValueBox) {
+
+            discountValueBox.style.display =
+                "none";
+
+        }
+
+
+        /*
+           Automatically enable
+           free shipping.
+        */
+
+        if (freeShippingInput) {
+
+            freeShippingInput.checked =
+                true;
+
+        }
+
+
+        /*
+           Hide checkbox because
+           it is already automatically
+           enabled.
+        */
+
+        if (freeShippingBox) {
+
+            freeShippingBox.style.display =
+                "none";
+
+        }
+
+    }
+
+    else {
+
+        /*
+           Show discount value.
+        */
+
+        if (discountValueBox) {
+
+            discountValueBox.style.display =
+                "block";
+
+        }
+
+
+        /*
+           Show Free Shipping checkbox
+           for Percent and Flat.
+        */
+
+        if (freeShippingBox) {
+
+            freeShippingBox.style.display =
+                "block";
+
+        }
 
     }
 
@@ -135,26 +289,6 @@ function setupScopeChange() {
     }
 
 
-    /*
-       Attach listener only once.
-    */
-
-    if (
-        scopeInput.dataset
-            .couponScopeListener === "true"
-    ) {
-
-        updateProductSelectorVisibility();
-
-        return;
-
-    }
-
-
-    scopeInput.dataset
-        .couponScopeListener = "true";
-
-
     scopeInput.addEventListener(
         "change",
         () => {
@@ -165,17 +299,13 @@ function setupScopeChange() {
     );
 
 
-    /*
-       Set initial state.
-    */
-
     updateProductSelectorVisibility();
 
 }
 
 
 /* =========================================================
-   SHOW / HIDE PRODUCT SELECTOR
+   PRODUCT SELECTOR VISIBILITY
 ========================================================= */
 
 function updateProductSelectorVisibility() {
@@ -202,26 +332,18 @@ function updateProductSelectorVisibility() {
         scope === "product"
     ) {
 
-        /*
-           Show product selector
-           directly below scope.
-        */
-
         productSelectorBox.style.display =
             "block";
 
 
         renderProductList(
-            productSearchInput?.value || ""
+            productSearchInput?.value ||
+            ""
         );
 
     }
 
     else {
-
-        /*
-           Hide for global coupon.
-        */
 
         productSelectorBox.style.display =
             "none";
@@ -280,14 +402,6 @@ if (selectAllProductsButton) {
                         )
                             .toLowerCase();
 
-
-                    /*
-                       If search is empty:
-                       select everything.
-
-                       If search exists:
-                       select only matching products.
-                    */
 
                     if (
                         !search ||
@@ -355,10 +469,6 @@ async function loadProducts() {
 
     if (!productListBox) {
 
-        console.warn(
-            "#productList not found."
-        );
-
         return;
 
     }
@@ -367,9 +477,7 @@ async function loadProducts() {
     productListBox.innerHTML = `
 
         <div class="coupon-loading-products">
-
             Loading products...
-
         </div>
 
     `;
@@ -409,10 +517,6 @@ async function loadProducts() {
         );
 
 
-        /*
-           Sort products alphabetically.
-        */
-
         allProducts.sort(
             (a, b) => {
 
@@ -426,12 +530,6 @@ async function loadProducts() {
                     );
 
             }
-        );
-
-
-        console.log(
-            "Coupon products loaded:",
-            allProducts.length
         );
 
 
@@ -513,10 +611,6 @@ function renderProductList(
         "";
 
 
-    /*
-       No products at all.
-    */
-
     if (!allProducts.length) {
 
         productListBox.innerHTML = `
@@ -537,10 +631,6 @@ function renderProductList(
     }
 
 
-    /*
-       Search returned nothing.
-    */
-
     if (!filteredProducts.length) {
 
         productListBox.innerHTML = `
@@ -560,10 +650,6 @@ function renderProductList(
 
     }
 
-
-    /*
-       Render products.
-    */
 
     filteredProducts.forEach(
         product => {
@@ -593,9 +679,7 @@ function renderProductList(
             }
 
 
-            /* =================================================
-               CHECKBOX
-            ================================================= */
+            /* Checkbox */
 
             const checkbox =
                 document.createElement(
@@ -661,9 +745,7 @@ function renderProductList(
             );
 
 
-            /* =================================================
-               PRODUCT IMAGE
-            ================================================= */
+            /* Product image */
 
             const image =
                 document.createElement(
@@ -693,20 +775,13 @@ function renderProductList(
             image.onerror =
                 () => {
 
-                    /*
-                       Hide broken image instead
-                       of showing broken icon.
-                    */
-
                     image.style.display =
                         "none";
 
                 };
 
 
-            /* =================================================
-               PRODUCT INFO
-            ================================================= */
+            /* Product info */
 
             const info =
                 document.createElement(
@@ -769,10 +844,6 @@ function renderProductList(
             );
 
 
-            /* =================================================
-               APPEND ROW
-            ================================================= */
-
             row.appendChild(
                 checkbox
             );
@@ -802,14 +873,12 @@ function renderProductList(
 
 
 /* =========================================================
-   UPDATE SELECTED PRODUCT COUNT
+   SELECTED PRODUCT COUNT
 ========================================================= */
 
 function updateSelectedProductCount() {
 
-    if (
-        !selectedProductCount
-    ) {
+    if (!selectedProductCount) {
 
         return;
 
@@ -839,9 +908,9 @@ async function () {
 
     try {
 
-        /* =====================================================
+        /* =================================================
            BASIC VALUES
-        ===================================================== */
+        ================================================= */
 
         const code =
             codeInput?.value
@@ -855,11 +924,25 @@ async function () {
             "percent";
 
 
-        const value =
-            Number(
-                valueInput?.value ||
-                0
-            );
+        /*
+           Free shipping coupon has
+           no discount value.
+        */
+
+        let value = 0;
+
+
+        if (
+            type !== "free_shipping"
+        ) {
+
+            value =
+                Number(
+                    valueInput?.value ||
+                    0
+                );
+
+        }
 
 
         const minOrder =
@@ -884,9 +967,35 @@ async function () {
             "stack";
 
 
-        /* =====================================================
+        /* =================================================
+           FREE SHIPPING
+        ================================================= */
+
+        let freeShipping =
+            false;
+
+
+        if (
+            type === "free_shipping"
+        ) {
+
+            freeShipping =
+                true;
+
+        }
+
+        else {
+
+            freeShipping =
+                freeShippingInput?.checked ||
+                false;
+
+        }
+
+
+        /* =================================================
            PAYMENT MODES
-        ===================================================== */
+        ================================================= */
 
         const modes =
             [
@@ -900,15 +1009,16 @@ async function () {
                 );
 
 
-        /* =====================================================
+        /* =================================================
            VALIDATION
-        ===================================================== */
+        ================================================= */
 
         if (!code) {
 
             alert(
                 "Please enter coupon code."
             );
+
 
             codeInput?.focus();
 
@@ -917,13 +1027,20 @@ async function () {
         }
 
 
+        /*
+           Discount value is required
+           only for Percent and Flat.
+        */
+
         if (
+            type !== "free_shipping" &&
             value <= 0
         ) {
 
             alert(
                 "Please enter a valid discount value."
             );
+
 
             valueInput?.focus();
 
@@ -935,8 +1052,9 @@ async function () {
         if (!expiryRaw) {
 
             alert(
-                "Please select expiry date."
+                "Please select coupon expiry."
             );
+
 
             expiryInput?.focus();
 
@@ -956,9 +1074,9 @@ async function () {
         }
 
 
-        /* =====================================================
+        /* =================================================
            PRODUCT-SPECIFIC VALIDATION
-        ===================================================== */
+        ================================================= */
 
         if (
             scope === "product"
@@ -979,9 +1097,30 @@ async function () {
         }
 
 
-        /* =====================================================
+        /* =================================================
+           PERCENT VALIDATION
+        ================================================= */
+
+        if (
+            type === "percent" &&
+            value > 100
+        ) {
+
+            alert(
+                "Percentage discount cannot be more than 100%."
+            );
+
+
+            valueInput?.focus();
+
+            return;
+
+        }
+
+
+        /* =================================================
            EXPIRY
-        ===================================================== */
+        ================================================= */
 
         const expiry =
             new Date(
@@ -1004,27 +1143,54 @@ async function () {
         }
 
 
-        /* =====================================================
+        /*
+           Set expiry to end of selected date.
+
+           Example:
+           24 Aug → 24 Aug 11:59:59 PM
+        */
+
+        expiry.setHours(
+            23,
+            59,
+            59,
+            999
+        );
+
+
+        /* =================================================
            PRODUCT IDS
-        ===================================================== */
+        ================================================= */
 
         const productIds =
             scope === "product"
                 ?
-                [...selectedProductIds]
+                [
+                    ...selectedProductIds
+                ]
                 :
                 [];
 
 
-        /* =====================================================
+        /* =================================================
            COUPON DATA
-        ===================================================== */
+        ================================================= */
 
         const couponData = {
 
             code,
 
+            /*
+               percent
+               flat
+               free_shipping
+            */
+
             type,
+
+            /*
+               0 for free shipping.
+            */
 
             value,
 
@@ -1037,17 +1203,19 @@ async function () {
 
             scope,
 
-            /*
-               Product-specific coupons contain
-               selected product IDs.
-
-               Global coupons contain [].
-            */
-
             productIds,
 
             allowedModes:
                 modes,
+
+            /*
+               true if:
+               - coupon type is free_shipping
+               OR
+               - checkbox is selected.
+            */
+
+            freeShipping,
 
             stackRule,
 
@@ -1066,9 +1234,9 @@ async function () {
         );
 
 
-        /* =====================================================
-           SAVE FIRESTORE
-        ===================================================== */
+        /* =================================================
+           FIRESTORE
+        ================================================= */
 
         await addDoc(
             collection(
@@ -1084,16 +1252,16 @@ async function () {
         );
 
 
-        /* =====================================================
-           RESET FORM
-        ===================================================== */
+        /* =================================================
+           RESET
+        ================================================= */
 
         clearForm();
 
 
-        /* =====================================================
-           RELOAD COUPONS
-        ===================================================== */
+        /* =================================================
+           RELOAD
+        ================================================= */
 
         await loadCoupons();
 
@@ -1127,10 +1295,6 @@ async function () {
 async function loadCoupons() {
 
     if (!listBox) {
-
-        console.error(
-            "#couponList not found."
-        );
 
         return;
 
@@ -1200,10 +1364,6 @@ async function loadCoupons() {
             }
         );
 
-
-        /*
-           Newest first.
-        */
 
         coupons.sort(
             (a, b) => {
@@ -1300,15 +1460,51 @@ function renderCouponCard(
 
 
     /* =====================================================
-       DISCOUNT
+       DISCOUNT TEXT
     ===================================================== */
 
-    const discountText =
-        coupon.type === "percent"
-            ?
-            `${coupon.value}% OFF`
-            :
+    let discountText =
+        "";
+
+
+    if (
+        coupon.type ===
+        "free_shipping"
+    ) {
+
+        discountText =
+            "FREE SHIPPING";
+
+    }
+
+    else if (
+        coupon.type ===
+        "percent"
+    ) {
+
+        discountText =
+            `${coupon.value}% OFF`;
+
+    }
+
+    else {
+
+        discountText =
             `₹${coupon.value} OFF`;
+
+    }
+
+
+    /* =====================================================
+       SHIPPING TEXT
+    ===================================================== */
+
+    const shippingText =
+        coupon.freeShipping
+            ?
+            " + Free Shipping"
+            :
+            "";
 
 
     /* =====================================================
@@ -1357,7 +1553,8 @@ function renderCouponCard(
                 const product =
                     allProducts.find(
                         item =>
-                            item.id === id
+                            item.id ===
+                            id
                     );
 
 
@@ -1377,7 +1574,8 @@ function renderCouponCard(
 
 
     if (
-        coupon.scope === "product"
+        coupon.scope ===
+        "product"
     ) {
 
         if (
@@ -1394,6 +1592,7 @@ function renderCouponCard(
 
                     </div>
 
+
                     <div class="coupon-product-tags">
 
                         ${
@@ -1401,7 +1600,9 @@ function renderCouponCard(
                                 .map(
                                     name => `
 
-                                        <span class="coupon-product-tag">
+                                        <span
+                                            class="coupon-product-tag"
+                                        >
 
                                             ${escapeHtml(
                                                 name
@@ -1444,7 +1645,32 @@ function renderCouponCard(
 
 
     /* =====================================================
-       CARD HTML
+       SHIPPING BADGE
+    ===================================================== */
+
+    let shippingHTML =
+        "";
+
+
+    if (
+        coupon.freeShipping
+    ) {
+
+        shippingHTML = `
+
+            <div class="coupon-shipping-badge">
+
+                🚚 Free Shipping
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       CARD
     ===================================================== */
 
     card.innerHTML = `
@@ -1462,11 +1688,16 @@ function renderCouponCard(
 
                 </div>
 
+
                 <div class="coupon-discount">
 
                     ${escapeHtml(
                         discountText
                     )}
+
+                    ${
+                        shippingText
+                    }
 
                 </div>
 
@@ -1486,6 +1717,9 @@ function renderCouponCard(
             </span>
 
         </div>
+
+
+        ${shippingHTML}
 
 
         <div class="coupon-details">
@@ -1509,7 +1743,7 @@ function renderCouponCard(
             <div class="coupon-detail">
 
                 <span>
-                    Expiry
+                    Coupon Expiry
                 </span>
 
                 <b>
@@ -1543,14 +1777,21 @@ function renderCouponCard(
                 </span>
 
                 <b>
+
                     ${
                         coupon.scope ===
                         "product"
+
                             ?
+
                             "Product Specific"
+
                             :
+
                             "Global"
+
                     }
+
                 </b>
 
             </div>
@@ -1691,9 +1932,15 @@ function clearForm() {
     }
 
 
-    /* =====================================================
-       PAYMENT MODES
-    ===================================================== */
+    if (freeShippingInput) {
+
+        freeShippingInput.checked =
+            false;
+
+    }
+
+
+    /* Payment modes */
 
     document
         .querySelectorAll(
@@ -1709,9 +1956,7 @@ function clearForm() {
         );
 
 
-    /* =====================================================
-       SCOPE
-    ===================================================== */
+    /* Scope */
 
     if (scopeInput) {
 
@@ -1721,9 +1966,17 @@ function clearForm() {
     }
 
 
-    /* =====================================================
-       PRODUCTS
-    ===================================================== */
+    /* Type */
+
+    if (typeInput) {
+
+        typeInput.value =
+            "percent";
+
+    }
+
+
+    /* Products */
 
     selectedProductIds =
         [];
@@ -1739,9 +1992,9 @@ function clearForm() {
 
     updateSelectedProductCount();
 
+    updateCouponTypeUI();
 
     updateProductSelectorVisibility();
-
 
     renderProductList(
         ""
@@ -1751,7 +2004,7 @@ function clearForm() {
 
 
 /* =========================================================
-   FORMAT PAYMENT MODE
+   PAYMENT MODE FORMAT
 ========================================================= */
 
 function formatPaymentMode(
