@@ -792,6 +792,24 @@ body {
     border-radius: 10px;
 }
 
+
+
+.free-shipping-option {
+    margin: 4px 0 12px;
+}
+
+.free-shipping-option .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.free-shipping-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+
 /* =========================================================
    MOBILE
 ========================================================= */
