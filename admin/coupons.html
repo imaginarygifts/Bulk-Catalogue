@@ -5,7 +5,6 @@
 
     <meta charset="UTF-8">
 
-    <!-- IMPORTANT: MOBILE VIEWPORT -->
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -40,6 +39,8 @@
 
         <section class="card coupon-form">
 
+            <!-- Coupon Code -->
+
             <input
                 id="code"
                 type="text"
@@ -47,6 +48,8 @@
                 autocomplete="off"
             >
 
+
+            <!-- Coupon Type -->
 
             <select id="type">
 
@@ -58,104 +61,151 @@
                     Flat
                 </option>
 
+                <option value="free_shipping">
+                    Free Shipping
+                </option>
+
             </select>
 
 
-            <input
-                id="value"
-                type="number"
-                inputmode="decimal"
-                placeholder="Discount value"
-            >
+            <!-- Discount Value -->
 
+            <div id="discountValueBox">
+
+                <input
+                    id="value"
+                    type="number"
+                    inputmode="decimal"
+                    min="0"
+                    placeholder="Discount value"
+                >
+
+            </div>
+
+
+            <!-- Minimum Order -->
 
             <input
                 id="minOrder"
                 type="number"
                 inputmode="decimal"
+                min="0"
                 placeholder="Minimum order"
             >
 
 
+            <!-- Coupon Expiry -->
+
             <input
                 id="expiry"
                 type="date"
-                placeholder="Coupon Expiry Date"
-
+                placeholder="Coupon Expiry"
+                aria-label="Coupon Expiry"
             >
 
 
-           <select id="scope">
+            <!-- =====================================
+                 FREE SHIPPING OPTION
+            ====================================== -->
 
-    <option value="global">
-        Global
-    </option>
+            <div
+                id="freeShippingBox"
+                class="free-shipping-option"
+            >
 
-    <option value="product">
-        Product specific
-    </option>
+                <label class="check-row">
 
-</select>
+                    <input
+                        type="checkbox"
+                        id="freeShipping"
+                    >
 
+                    <span>
+                        Free Shipping
+                    </span>
 
-<!-- =========================================
-     PRODUCT SELECTION
-========================================== -->
+                </label>
 
-<div
-    id="productSelector"
-    class="product-selector"
-    style="display:none;"
->
-
-    <div class="product-selector-title">
-        Select Products
-    </div>
+            </div>
 
 
-    <input
-        type="search"
-        id="productSearch"
-        placeholder="Search product..."
-        autocomplete="off"
-    >
+            <!-- =====================================
+                 SCOPE
+            ====================================== -->
+
+            <select id="scope">
+
+                <option value="global">
+                    Global
+                </option>
+
+                <option value="product">
+                    Product specific
+                </option>
+
+            </select>
 
 
-    <div class="product-actions">
+            <!-- =====================================
+                 PRODUCT SELECTION
+            ====================================== -->
 
-        <button
-            type="button"
-            id="selectAllProducts"
-        >
-            Select All
-        </button>
+            <div
+                id="productSelector"
+                class="product-selector"
+                style="display:none;"
+            >
 
-        <button
-            type="button"
-            id="clearProducts"
-        >
-            Clear
-        </button>
-
-    </div>
+                <div class="product-selector-title">
+                    Select Products
+                </div>
 
 
-    <div
-        id="selectedProductCount"
-        class="selected-product-count"
-    >
-        0 products selected
-    </div>
+                <input
+                    type="search"
+                    id="productSearch"
+                    placeholder="Search product..."
+                    autocomplete="off"
+                >
 
 
-    <div
-        id="productList"
-        class="product-list"
-    >
-        Loading products...
-    </div>
+                <div class="product-actions">
 
-</div>
+                    <button
+                        type="button"
+                        id="selectAllProducts"
+                    >
+                        Select All
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="clearProducts"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="selectedProductCount"
+                    class="selected-product-count"
+                >
+                    0 products selected
+                </div>
+
+
+                <div
+                    id="productList"
+                    class="product-list"
+                >
+                    Loading products...
+                </div>
+
+            </div>
+
 
             <!-- =====================================
                  PAYMENT MODES
@@ -209,6 +259,10 @@
 
             </div>
 
+
+            <!-- =====================================
+                 STACK RULE
+            ====================================== -->
 
             <select id="stackRule">
 
