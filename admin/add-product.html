@@ -80,39 +80,6 @@
   <div id="designList" class="design-list"></div>
 </div>
 
-  <!-- VARIANTS -->
-  <div class="accordion" onclick="toggleSection('variantsSection')">
-    ▶ Variants
-  </div>
-
-  <div id="variantsSection" class="hidden">
-
-    <h4>Colors</h4>
-    <input id="colorName" placeholder="Color name">
-
-    <input id="colorPrice" placeholder="Extra price" type="number">
-
-    <button class="btn-outline" onclick="addColor()">Add Color</button>
-
-<label>
-  <input type="checkbox" id="colorRequired">
-  Required
-</label>
-
-    <div id="colorList"></div>
-
-    <h4>Quantity</h4>
-    <input id="sizeName" placeholder="Enter Quantity">
-    <input id="sizePrice" placeholder="Extra price" type="number">
-    <button class="btn-outline" onclick="addSize()">Add Quantity</button>
-<label>
-  <input type="checkbox" id="sizeRequired">
-  Required
-</label>
-    <div id="sizeList"></div>
-
-  </div>
-
 
 
 <!-- ==================================================
@@ -166,6 +133,96 @@
 </div>
 
 
+
+
+  <!-- VARIANTS -->
+  <div class="accordion" onclick="toggleSection('variantsSection')">
+    ▶ Variants
+  </div>
+
+  <div id="variantsSection" class="hidden">
+
+    <h4>Colors</h4>
+    <input id="colorName" placeholder="Color name">
+
+    <input id="colorPrice" placeholder="Extra price" type="number">
+
+    <button class="btn-outline" onclick="addColor()">Add Color</button>
+
+<label>
+  <input type="checkbox" id="colorRequired">
+  Required
+</label>
+
+    <div id="colorList"></div>
+
+   <h4>Size</h4>
+
+<input
+  id="sizeName"
+  placeholder="Enter Size"
+>
+
+<input
+  id="sizePrice"
+  placeholder="Extra price"
+  type="number"
+  min="0"
+  step="1"
+>
+
+<label>
+  Shipping for this Size
+</label>
+
+<select id="sizeShippingType">
+
+  <option value="common">
+    Use Common Shipping
+  </option>
+
+  <option value="free">
+    Free Shipping
+  </option>
+
+  <option value="paid">
+    Custom Shipping Amount
+  </option>
+
+</select>
+
+<div
+  id="sizeShippingAmountBox"
+  class="hidden"
+>
+
+  <input
+    id="sizeShippingAmount"
+    type="number"
+    min="0"
+    step="1"
+    placeholder="Shipping Amount"
+  >
+
+</div>
+
+<button
+  class="btn-outline"
+  type="button"
+  onclick="addSize()"
+>
+  Add Size
+</button>
+
+<label>
+  <input
+    type="checkbox"
+    id="sizeRequired"
+  >
+  Required
+</label>
+
+<div id="sizeList"></div>
 
 
   <!-- CUSTOM OPTIONS -->
