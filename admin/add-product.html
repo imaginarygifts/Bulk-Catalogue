@@ -113,6 +113,61 @@
 
   </div>
 
+
+
+<!-- ==================================================
+     SHIPPING
+================================================== -->
+
+<div class="accordion" onclick="toggleSection('shippingSection')">
+
+  ▶ Shipping
+
+</div>
+
+<div id="shippingSection" class="hidden">
+
+  <h4>Common Shipping</h4>
+
+  <label>Shipping Type</label>
+
+  <select id="shippingType">
+
+    <option value="free">
+      Free Shipping
+    </option>
+
+    <option value="paid">
+      Paid Shipping
+    </option>
+
+  </select>
+
+
+  <div id="commonShippingAmountBox">
+
+    <label>Common Shipping Amount</label>
+
+    <input
+      id="shippingAmount"
+      type="number"
+      min="0"
+      step="1"
+      placeholder="Shipping amount"
+    >
+
+    <small>
+      This amount will be used for all sizes unless a
+      different shipping amount is specified for that size.
+    </small>
+
+  </div>
+
+</div>
+
+
+
+
   <!-- CUSTOM OPTIONS -->
   <div class="accordion" onclick="toggleSection('customSection')">
     ▶ Custom Options
