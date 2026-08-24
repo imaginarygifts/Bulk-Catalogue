@@ -1786,6 +1786,7 @@ img {
 
 
 
+
 /* ==================================================
    TABLET
 ================================================== */
@@ -1974,5 +1975,284 @@ img {
             35px;
 
     }
+
+}
+
+
+
+/*==================================================
+    PRODUCT ACTION AREA
+==================================================*/
+
+.product-action-area{
+
+    position:fixed;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    z-index:9999;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:stretch;
+
+    gap:8px;
+
+    padding:
+
+        8px
+
+        12px
+
+        calc(
+            8px +
+            env(
+                safe-area-inset-bottom
+            )
+        );
+
+    background:
+        rgba(
+            13,
+            13,
+            17,
+            .96
+        );
+
+    border-top:
+        1px solid #292930;
+
+    backdrop-filter:
+        blur(14px);
+
+    box-sizing:border-box;
+
+}
+
+
+/*==================================================
+    FLOATING SHARE BUTTON
+==================================================*/
+
+.product-floating-share{
+
+    align-self:flex-end;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:7px;
+
+    min-width:92px;
+
+    height:38px;
+
+    padding:
+        0 14px;
+
+    border:0;
+
+    border-radius:20px;
+
+    background:#fff;
+
+    color:#222;
+
+    font-size:13px;
+
+    font-weight:800;
+
+    box-shadow:
+        0 5px 18px
+        rgba(
+            0,
+            0,
+            0,
+            .25
+        );
+
+    cursor:pointer;
+
+}
+
+
+.product-floating-share i{
+
+    font-size:15px;
+
+}
+
+
+/*==================================================
+    ADD TO CART BUTTON
+==================================================*/
+
+.product-cart-action{
+
+    width:100%;
+
+    min-height:56px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    border:0;
+
+    border-radius:18px;
+
+    background:
+        var(--ig-gradient);
+
+    color:#fff;
+
+    font-size:18px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+    user-select:none;
+
+    box-shadow:
+        0 6px 20px
+        rgba(
+            214,
+            41,
+            118,
+            .25
+        );
+
+    box-sizing:border-box;
+
+}
+
+
+.product-cart-action i{
+
+    font-size:19px;
+
+}
+
+
+.product-cart-action:active{
+
+    transform:scale(.985);
+
+}
+
+
+/*==================================================
+    QUANTITY MODE
+
+    Used after product is already
+    inside the cart.
+==================================================*/
+
+.product-cart-action.cart-quantity{
+
+    justify-content:
+        space-between;
+
+    padding:
+        0 8px;
+
+}
+
+
+/*==================================================
+    QUANTITY MINUS / PLUS
+==================================================*/
+
+.product-cart-action
+.cart-qty-button{
+
+    width:46px;
+
+    height:46px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    flex-shrink:0;
+
+    border:0;
+
+    border-radius:14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            .18
+        );
+
+    color:#fff;
+
+    font-size:24px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+}
+
+
+.product-cart-action
+.cart-qty-button:active{
+
+    transform:scale(.92);
+
+}
+
+
+/*==================================================
+    QUANTITY NUMBER
+==================================================*/
+
+.product-cart-action
+.cart-qty-number{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#fff;
+
+    font-size:20px;
+
+    font-weight:900;
+
+}
+
+
+/*==================================================
+    PRODUCT PAGE BOTTOM SPACE
+==================================================*/
+
+.product-page{
+
+    padding-bottom:130px;
 
 }
