@@ -70,6 +70,94 @@ let siteSettings = {
 
 };
 
+/* =========================================
+   LOAD PRODUCT NOTE
+========================================= */
+
+async function loadProductNote() {
+
+    const noteElement =
+        document.getElementById(
+            "productNote"
+        );
+
+
+    if (!noteElement) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const settingsRef =
+            doc(
+                db,
+                "settings",
+                "general"
+            );
+
+
+        const snapshot =
+            await getDoc(
+                settingsRef
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            noteElement.innerText =
+                "";
+
+            return;
+
+        }
+
+
+        const settings =
+            snapshot.data();
+
+
+        const note =
+            String(
+                settings.productNote ||
+                ""
+            ).trim();
+
+
+        if (!note) {
+
+            noteElement.innerText =
+                "";
+
+            return;
+
+        }
+
+
+        noteElement.innerText =
+            note;
+
+    }
+
+    catch(error) {
+
+        console.error(
+            "Product note loading error:",
+            error
+        );
+
+
+        noteElement.innerText =
+            "";
+
+    }
+
+}
+
 
 /* ==================================================
    LOAD SITE SETTINGS
@@ -4144,6 +4232,7 @@ function() {
 ================================================== */
 
 loadProduct();
+loadProductNote();
 
 
 /* ==================================================
