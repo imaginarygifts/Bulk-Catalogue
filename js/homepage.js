@@ -38,6 +38,118 @@ document.addEventListener(
 );
 
 
+
+/* =========================================
+   LOAD HOMEPAGE NOTE
+========================================= */
+
+async function loadHomepageNote() {
+
+    const bar =
+        document.getElementById(
+            "homepageNoteBar"
+        );
+
+
+    const track =
+        document.getElementById(
+            "homepageNoteTrack"
+        );
+
+
+    if (
+        !bar ||
+        !track
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const settingsRef =
+            doc(
+                db,
+                "settings",
+                "general"
+            );
+
+
+        const snapshot =
+            await getDoc(
+                settingsRef
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            bar.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        const settings =
+            snapshot.data();
+
+
+        const note =
+            String(
+                settings.homepageNote ||
+                ""
+            ).trim();
+
+
+        /*
+           Hide the bar if no note
+           has been configured.
+        */
+
+        if (!note) {
+
+            bar.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        /*
+           Show note
+        */
+
+        track.textContent =
+            note;
+
+
+        bar.style.display =
+            "flex";
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Homepage note loading error:",
+            error
+        );
+
+
+        bar.style.display =
+            "none";
+
+    }
+
+}
+
 /*==================================================
 LOAD HOMEPAGE
 ==================================================*/
@@ -3006,6 +3118,7 @@ function escapeAttribute(
 
 }
 
+loadHomepageNote();
 
 /*==================================================
 EXPORT
