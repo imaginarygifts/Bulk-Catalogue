@@ -13,7 +13,9 @@ import {
     collection,
     getDocs,
     query,
-    where
+    where,
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 
@@ -34,7 +36,13 @@ INIT
 
 document.addEventListener(
     "DOMContentLoaded",
-    loadHomepage
+    async () => {
+
+        await loadHomepageNote();
+
+        await loadHomepage();
+
+    }
 );
 
 
@@ -3118,7 +3126,6 @@ function escapeAttribute(
 
 }
 
-loadHomepageNote();
 
 /*==================================================
 EXPORT
