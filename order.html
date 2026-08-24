@@ -8,69 +8,158 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
-    <div class="top-bar">
-  <span class="back-btn" onclick="goBack()">←</span>
-  <span class="title">Checkout</span>
-</div>
+
+  <div class="top-bar">
+    <span class="back-btn" onclick="goBack()">←</span>
+    <span class="title">Checkout</span>
+  </div>
 
   <div class="checkout-page">
 
     <div class="glass-card">
+
       <h2>Checkout</h2>
 
-      <!-- Customer Details -->
+      <!-- =========================================
+           CUSTOMER DETAILS
+      ========================================== -->
       <div class="section">
         <h3>Customer Details</h3>
-        <input type="text" id="custName" placeholder="Full Name" />
-        <input type="tel" id="custPhone" placeholder="Phone Number" />
-        <textarea id="custAddress" placeholder="Full Address"></textarea>
-        <input type="text" id="custPincode" placeholder="Pincode" />
+
+        <input
+          type="text"
+          id="custName"
+          placeholder="Full Name"
+        />
+
+        <input
+          type="tel"
+          id="custPhone"
+          placeholder="Phone Number"
+        />
+
+        <textarea
+          id="custAddress"
+          placeholder="Full Address"
+        ></textarea>
+
+        <input
+          type="text"
+          id="custPincode"
+          placeholder="Pincode"
+        />
       </div>
 
-      <!-- Order Summary -->
+      <!-- =========================================
+           ORDER SUMMARY
+      ========================================== -->
       <div class="section">
         <h3>Order Summary</h3>
         <div id="orderSummary"></div>
       </div>
 
-      <!-- Coupon -->
-<div class="section">
-  <h3>Available Coupons</h3>
+      <!-- =========================================
+           COUPONS
+      ========================================== -->
+      <div class="section">
+        <h3>Available Coupons</h3>
 
-  <div id="couponListUI" class="coupon-list"></div>
+        <div
+          id="couponListUI"
+          class="coupon-list"
+        ></div>
 
-  <div class="coupon-row">
-    <input type="text" id="couponInput" placeholder="Enter coupon code" />
-    <button onclick="applyManualCoupon()">Apply</button>
-  </div>
+        <div class="coupon-row">
+          <input
+            type="text"
+            id="couponInput"
+            placeholder="Enter coupon code"
+            autocomplete="off"
+          />
 
-  <p id="couponMsg"></p>
-</div>
-      <!-- Payment Mode -->
-<label id="onlineOption">
-  <input type="radio" name="paymode" value="online" checked />
-  Online Payment
-</label>
+          <button
+            type="button"
+            onclick="applyManualCoupon()"
+          >
+            Apply
+          </button>
+        </div>
 
-<label id="codOption">
-  <input type="radio" name="paymode" value="cod" />
-  Cash on Delivery
-</label>
+        <p id="couponMsg"></p>
+      </div>
 
-<label id="advanceOption">
-  <input type="radio" name="paymode" value="advance" />
-  Pay Advance
-</label>
-      <div id="advancePaymentInfo" class="advance-payment-info"></div>
+      <!-- =========================================
+           PAYMENT MODE
+      ========================================== -->
 
-      <!-- Price Breakdown -->
+      <label id="onlineOption">
+        <input
+          type="radio"
+          name="paymode"
+          value="online"
+          checked
+        />
+        Online Payment
+      </label>
+
+      <label id="codOption">
+        <input
+          type="radio"
+          name="paymode"
+          value="cod"
+        />
+        Cash on Delivery
+      </label>
+
+      <label id="advanceOption">
+        <input
+          type="radio"
+          name="paymode"
+          value="advance"
+        />
+        Pay Advance
+      </label>
+
+      <div
+        id="advancePaymentInfo"
+        class="advance-payment-info"
+      ></div>
+
+      <!-- =========================================
+           PRICE BREAKDOWN
+      ========================================== -->
       <div class="section">
         <h3>Price Breakdown</h3>
+
         <div class="price-row">
           <span>Subtotal</span>
           <span id="subTotal">₹0</span>
         </div>
 
+        <!-- Shipping is always visible -->
+        <div class="price-row">
+          <span>Shipping</span>
+          <span id="shippingAmount">₹0</span>
+        </div>
+
+        <!-- Optional detailed discount rows -->
+        <div
+          class="price-row"
+          id="paymentDiscountRow"
+        >
+          <span>Payment Discount</span>
+          <span id="paymentDiscountAmount">-₹0</span>
+        </div>
+
+        <div
+          class="price-row"
+          id="couponDiscountRow"
+        >
+          <span>Coupon Discount</span>
+          <span id="couponDiscountAmount">-₹0</span>
+        </div>
+
+        <!-- Combined discount -->
         <div class="price-row">
           <span>Discount</span>
           <span id="discountAmount">-₹0</span>
@@ -82,49 +171,81 @@
         </div>
       </div>
 
+      <!-- =========================================
+           COMMON CHECKOUT NOTE
+           This is NOT a site/product setting.
+           Edit the text in order.js if required.
+      ========================================== -->
+      <div
+        id="checkoutNote"
+        class="checkout-note"
+      ></div>
+
     </div>
 
   </div>
 
-  <!-- Sticky Bottom Bar -->
+  <!-- ==============================================
+       STICKY BOTTOM BAR
+  =============================================== -->
   <div class="checkout-bottom">
-    <button class="pay-btn" onclick="placeOrder()">Continue to Payment</button>
+    <button
+      class="pay-btn"
+      type="button"
+      onclick="placeOrder()"
+    >
+      Continue to Payment
+    </button>
   </div>
 
+  <!-- ==============================================
+       ORDER RESULT POPUP
+  =============================================== -->
+  <div
+    id="orderResultPopup"
+    class="order-popup-overlay"
+  >
 
-  <div id="orderResultPopup" class="order-popup-overlay">
     <div class="order-popup">
 
-        <div id="orderPopupIcon" class="order-popup-icon">✓</div>
+      <div
+        id="orderPopupIcon"
+        class="order-popup-icon"
+      >
+        ✓
+      </div>
 
-        <h2 id="orderPopupTitle">
-            Order Placed Successfully!
-        </h2>
+      <h2 id="orderPopupTitle">
+        Order Placed Successfully!
+      </h2>
 
-        <p id="orderPopupMessage">
-            Your order has been placed successfully.
-        </p>
+      <p id="orderPopupMessage">
+        Your order has been placed successfully.
+      </p>
 
-        <div id="orderPopupOrderNo" class="order-popup-order"></div>
+      <div
+        id="orderPopupOrderNo"
+        class="order-popup-order"
+      ></div>
 
-        <button
-            id="orderPopupButton"
-            type="button"
-            onclick="closeOrderPopup()"
-        >
-            Continue Shopping
-        </button>
+      <button
+        id="orderPopupButton"
+        type="button"
+        onclick="closeOrderPopup()"
+      >
+        Continue Shopping
+      </button>
 
     </div>
-</div>
+  </div>
 
-  
   <script type="module" src="js/order.js"></script>
-  
+
   <script>
-  function goBack() {
-    history.back();
-  }
-</script>
+    function goBack() {
+      history.back();
+    }
+  </script>
+
 </body>
 </html>
