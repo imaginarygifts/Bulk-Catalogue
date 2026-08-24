@@ -1077,9 +1077,9 @@ button{
 
     z-index:5;
 
-    min-width:25px;
+    min-width:32px !important;
 
-    height:25px;
+    height:32px !important;
 
     padding:0 8px;
 
