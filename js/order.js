@@ -131,7 +131,7 @@ let availableCoupons = [];
 let selectedPaymentMode = "online";
 
 
-*
+/*
    Order number.
 */
 let orderNumber = null;
