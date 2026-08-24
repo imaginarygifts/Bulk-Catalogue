@@ -959,11 +959,11 @@ button{
 
     .product-carousel .product-card{
 
-        flex:0 0 305px;
+        flex:0 0 180px;
 
-        width:305px;
+        width:180px;
 
-        min-width:305px;
+        min-width:180px;
 
     }
 
