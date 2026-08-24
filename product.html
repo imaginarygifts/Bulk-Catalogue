@@ -12,12 +12,9 @@
 
     <!-- ==================================================
          DEFAULT SEO
-         site-settings.js / product.js can replace these
     ================================================== -->
 
-    <title>
-        
-    </title>
+    <title></title>
 
     <meta
         name="description"
@@ -126,7 +123,10 @@
 
 <header class="site-topbar">
 
-    <!-- MENU -->
+
+    <!-- ==============================================
+         MENU
+    =============================================== -->
 
     <button
         type="button"
@@ -141,7 +141,10 @@
     </button>
 
 
-    <!-- LOGO -->
+
+    <!-- ==============================================
+         LOGO
+    =============================================== -->
 
     <div class="topbar-logo">
 
@@ -164,7 +167,10 @@
     </div>
 
 
-    <!-- SEARCH -->
+
+    <!-- ==============================================
+         SEARCH
+    =============================================== -->
 
     <button
         type="button"
@@ -176,6 +182,31 @@
         <i class="fa-solid fa-magnifying-glass"></i>
 
     </button>
+
+
+
+    <!-- ==============================================
+         CART
+    =============================================== -->
+
+    <a
+        href="cart.html"
+        class="topbar-button cart-button"
+        id="cartButton"
+        aria-label="Shopping Cart"
+    >
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+
+        <span
+            id="cartCount"
+            class="cart-count"
+        >
+            0
+        </span>
+
+    </a>
 
 </header>
 
@@ -192,6 +223,9 @@
 >
 
     <div class="search-panel">
+
+
+        <!-- SEARCH HEADER -->
 
         <div class="search-header">
 
@@ -213,6 +247,9 @@
 
         </div>
 
+
+
+        <!-- SEARCH INPUT -->
 
         <div class="search-input-wrapper">
 
@@ -243,6 +280,9 @@
 
         </div>
 
+
+
+        <!-- SEARCH RESULTS -->
 
         <div
             id="searchResults"
@@ -285,6 +325,9 @@
     aria-hidden="true"
 >
 
+
+    <!-- SIDEBAR HEADER -->
+
     <div class="sidebar-header">
 
         <strong data-company-name>
@@ -306,6 +349,7 @@
     </div>
 
 
+
     <!-- HOME -->
 
     <a
@@ -322,21 +366,40 @@
 
     </a>
 
-     <!-- Shop -->
+
+
+    <!-- SHOP -->
 
     <a
         href="shop"
         class="sidebar-link"
-     
     >
 
-        <i class="fa-solid fa-house"></i>
+        <i class="fa-solid fa-shop"></i>
 
         <span>
-           Shop
+            Shop
         </span>
 
     </a>
+
+
+
+    <!-- CART -->
+
+    <a
+        href="cart.html"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        <span>
+            Cart
+        </span>
+
+    </a>
+
 
 
     <!-- CATEGORIES -->
@@ -359,7 +422,9 @@
             </span>
 
 
-            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
+            <i
+                class="fa-solid fa-chevron-down sidebar-chevron"
+            ></i>
 
         </button>
 
@@ -376,6 +441,7 @@
         </div>
 
     </div>
+
 
 
     <!-- TAGS -->
@@ -398,7 +464,9 @@
             </span>
 
 
-            <i class="fa-solid fa-chevron-down sidebar-chevron"></i>
+            <i
+                class="fa-solid fa-chevron-down sidebar-chevron"
+            ></i>
 
         </button>
 
@@ -417,6 +485,7 @@
     </div>
 
 
+
     <!-- ABOUT -->
 
     <a
@@ -431,6 +500,7 @@
         </span>
 
     </a>
+
 
 
     <!-- CONTACT -->
@@ -449,6 +519,7 @@
     </a>
 
 
+
     <!-- TERMS -->
 
     <a
@@ -463,6 +534,7 @@
         </span>
 
     </a>
+
 
 
     <!-- PRIVACY -->
@@ -481,6 +553,7 @@
     </a>
 
 
+
     <!-- REFUND -->
 
     <a
@@ -495,6 +568,7 @@
         </span>
 
     </a>
+
 
 
     <!-- SHIPPING -->
@@ -517,10 +591,13 @@
 
 
 <!-- ==================================================
-     PRODUCT BACK BAR
+     PRODUCT TOP ROW
 ================================================== -->
 
 <div class="product-top-row">
+
+
+    <!-- BACK -->
 
     <button
         type="button"
@@ -532,7 +609,12 @@
         <i class="fa-solid fa-arrow-left"></i>
 
     </button>
-  <div
+
+
+
+    <!-- PRODUCT NOTE -->
+
+    <div
         id="productNote"
         class="product-note"
     ></div>
@@ -549,7 +631,7 @@
 
 
     <!-- ==================================================
-         IMAGE SLIDER
+         PRODUCT GALLERY
     ================================================== -->
 
     <section class="product-gallery">
@@ -571,15 +653,6 @@
 
     <!-- ==================================================
          PRODUCT DETAILS
-         
-         product.js renders:
-         - badges
-         - title
-         - description
-         - price
-         - colors
-         - sizes
-         - related products
     ================================================== -->
 
     <section
@@ -601,6 +674,7 @@
 >
 
     <div class="customize-form">
+
 
         <button
             type="button"
@@ -633,6 +707,7 @@
                 Total
             </span>
 
+
             <strong id="popupPrice">
                 ₹0
             </strong>
@@ -644,12 +719,15 @@
 
         <div class="modal-actions">
 
+
             <button
                 type="button"
                 class="modal-cancel-btn"
                 onclick="closeCustomizePopup()"
             >
+
                 Cancel
+
             </button>
 
 
@@ -658,8 +736,11 @@
                 class="modal-next-btn"
                 onclick="nextToAddress()"
             >
+
                 Next
+
                 <i class="fa-solid fa-arrow-right"></i>
+
             </button>
 
         </div>
@@ -680,6 +761,7 @@
 >
 
     <div class="wa-form">
+
 
         <button
             type="button"
@@ -740,6 +822,7 @@
 
         <div class="modal-actions">
 
+
             <button
                 type="button"
                 class="modal-cancel-btn"
@@ -784,6 +867,7 @@
 
     <div class="error-box">
 
+
         <div class="error-icon">
 
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -806,7 +890,9 @@
             class="error-ok-btn"
             onclick="closeErrorModal()"
         >
+
             OK
+
         </button>
 
     </div>
@@ -816,32 +902,55 @@
 
 
 <!-- ==================================================
-     STICKY ACTION BAR
+     PRODUCT ACTION AREA
 ================================================== -->
 
-<div class="sticky-order">
-
-  <!-- PRODUCT ORDER BUTTON -->
-
-  <div
-    id="productOrderButton"
-    class="buy-now-btn"
-  >
-    Buy Now
-  </div>
+<div class="product-action-area">
 
 
-  <!-- SHARE -->
+    <!-- ==============================================
+         FLOATING SHARE BUTTON
+    =============================================== -->
 
-  <button
-    type="button"
-    class="share-btn"
-    onclick="sharePage()"
-  >
-    Share 🔗
-  </button>
+    <button
+        type="button"
+        class="product-floating-share"
+        onclick="sharePage()"
+        aria-label="Share Product"
+    >
+
+        <i class="fa-solid fa-share-nodes"></i>
+
+        <span>
+            Share
+        </span>
+
+    </button>
+
+
+
+    <!-- ==============================================
+         ADD TO CART
+    =============================================== -->
+
+    <div
+        id="productOrderButton"
+        class="product-cart-action"
+        role="button"
+        tabindex="0"
+        aria-label="Add to Cart"
+    >
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        <span>
+            Add to Cart
+        </span>
+
+    </div>
 
 </div>
+
 
 
 <!-- ==================================================
@@ -854,14 +963,27 @@
 ></script>
 
 
+
 <!-- ==================================================
-     COMMON TOPBAR / SIDEBAR
+     COMMON TOPBAR
 ================================================== -->
 
 <script
     type="module"
     src="js/topbar.js"
 ></script>
+
+
+
+<!-- ==================================================
+     CART SYSTEM
+================================================== -->
+
+<script
+    type="module"
+    src="js/cart.js"
+></script>
+
 
 
 <!-- ==================================================
@@ -872,6 +994,7 @@
     type="module"
     src="js/product.js"
 ></script>
+
 
 
 <!-- ==================================================
@@ -890,9 +1013,10 @@
 
 <script>
 
-function goBack() {
+function goBack(){
 
-    location.href = "index";
+    location.href =
+        "index";
 
 }
 
