@@ -1,7 +1,25 @@
 /* ======================================================
-   ORDER PAGE
-   SITE SETTINGS + PAYMENT DISCOUNTS + ADVANCE PAYMENT
-   + SINGLE ORDER COUNTER
+   ORDER / CHECKOUT PAGE
+
+   FEATURES
+   ------------------------------------------------------
+   ✓ Single product checkout
+   ✓ Multiple product checkout
+   ✓ Product variants
+   ✓ Size-specific shipping
+   ✓ Common shipping
+   ✓ Free shipping
+   ✓ Payment-method discount
+   ✓ Coupon discount
+   ✓ Coupon free shipping
+   ✓ STACK / REPLACE / BEST
+   ✓ Product-specific coupons
+   ✓ Shipping in summary
+   ✓ Shipping in price breakdown
+   ✓ Advance payment
+   ✓ Razorpay
+   ✓ WhatsApp
+   ✓ Common checkout note
 ====================================================== */
 
 import { db } from "./firebase.js";
@@ -11,8 +29,6 @@ import {
     addDoc,
     doc,
     getDoc,
-    setDoc,
-    updateDoc,
     getDocs,
     runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -27,47 +43,114 @@ let orderData = null;
 let siteSettings = {
 
     companyName: "",
-
     whatsapp: "",
-
     email: "",
-
     logoUrl: "",
-
     faviconUrl: "",
-
     websiteTitle: "",
-
     metaDescription: "",
-
     metaKeywords: "",
-
     razorpayKeyId: "",
-
     orderPrefix: "IG"
 
 };
 
+
+/*
+   All checkout items.
+
+   This supports:
+   checkoutData.items
+   checkoutData.products
+   checkoutData.cart
+
+   and old:
+   checkoutData.product
+*/
+let orderItems = [];
+
+
+/*
+   Original subtotal before discounts.
+*/
 let subTotal = 0;
 
-/* Product payment-mode discount */
+
+/*
+   Original shipping before free shipping.
+*/
+let originalShipping = 0;
+
+
+/*
+   Final shipping after free shipping.
+*/
+let shippingAmount = 0;
+
+
+/*
+   Payment method discount.
+*/
 let paymentDiscount = 0;
 
-/* Coupon discount */
-let discount = 0;
 
-/* Final order total */
+/*
+   Coupon discount.
+*/
+let couponDiscount = 0;
+
+
+/*
+   Actual discount applied after
+   STACK / REPLACE / BEST.
+*/
+let totalDiscount = 0;
+
+
+/*
+   Final amount.
+*/
 let finalAmount = 0;
 
+
+/*
+   Currently applied coupon.
+*/
 let appliedCoupon = null;
 
-let selectedPaymentMode = "online";
 
+/*
+   Available coupons.
+*/
 let availableCoupons = [];
 
+
+/*
+   Payment mode.
+*/
+let selectedPaymentMode = "online";
+
+
+*
+   Order number.
+*/
 let orderNumber = null;
 
+
+/*
+   Prevent double order submission.
+*/
 let orderSubmitting = false;
+
+
+/*
+   Common checkout note.
+
+   This is NOT loaded from settings.
+   Change the text here whenever required.
+*/
+const CHECKOUT_NOTE =
+    "Please check your product details, customization and delivery information carefully before placing the order.";
 
 
 /* ======================================================
@@ -85,10 +168,12 @@ async function loadSiteSettings() {
                 "general"
             );
 
+
         const snapshot =
             await getDoc(
                 settingsRef
             );
+
 
         if (snapshot.exists()) {
 
@@ -102,15 +187,13 @@ async function loadSiteSettings() {
 
         }
 
+
         window.siteSettings =
             siteSettings;
 
-        console.log(
-            "Order page site settings:",
-            siteSettings
-        );
 
         applySiteSettings();
+
 
         return siteSettings;
 
@@ -123,8 +206,10 @@ async function loadSiteSettings() {
             error
         );
 
+
         window.siteSettings =
             siteSettings;
+
 
         return siteSettings;
 
@@ -144,14 +229,10 @@ function applySiteSettings() {
         "";
 
 
-    /* PAGE TITLE */
-
     document.title =
         siteSettings.websiteTitle ||
         companyName;
 
-
-    /* COMPANY NAME */
 
     document
         .querySelectorAll(
@@ -166,8 +247,6 @@ function applySiteSettings() {
             }
         );
 
-
-    /* LOGO */
 
     document
         .querySelectorAll(
@@ -185,14 +264,13 @@ function applySiteSettings() {
 
                 }
 
+
                 image.alt =
                     companyName;
 
             }
         );
 
-
-    /* FAVICON */
 
     if (
         siteSettings.faviconUrl
@@ -203,6 +281,7 @@ function applySiteSettings() {
                 'link[rel="icon"]'
             );
 
+
         if (!favicon) {
 
             favicon =
@@ -210,8 +289,10 @@ function applySiteSettings() {
                     "link"
                 );
 
+
             favicon.rel =
                 "icon";
+
 
             document.head.appendChild(
                 favicon
@@ -219,13 +300,12 @@ function applySiteSettings() {
 
         }
 
+
         favicon.href =
             siteSettings.faviconUrl;
 
     }
 
-
-    /* META DESCRIPTION */
 
     if (
         siteSettings.metaDescription
@@ -236,6 +316,7 @@ function applySiteSettings() {
                 'meta[name="description"]'
             );
 
+
         if (!meta) {
 
             meta =
@@ -243,14 +324,17 @@ function applySiteSettings() {
                     "meta"
                 );
 
+
             meta.name =
                 "description";
+
 
             document.head.appendChild(
                 meta
             );
 
         }
+
 
         meta.content =
             siteSettings.metaDescription;
@@ -261,19 +345,15 @@ function applySiteSettings() {
 
 
 /* ======================================================
-   LOAD ORDER DATA
+   LOAD ORDER
 ====================================================== */
 
 async function loadOrder() {
 
     try {
 
-        /* SETTINGS FIRST */
-
         await loadSiteSettings();
 
-
-        /* CHECKOUT DATA */
 
         const raw =
             localStorage.getItem(
@@ -287,8 +367,10 @@ async function loadOrder() {
                 "No product selected"
             );
 
+
             location.href =
                 "website/shop.html";
+
 
             return;
 
@@ -301,17 +383,16 @@ async function loadOrder() {
             );
 
 
-        if (
-            !orderData ||
-            !orderData.product
-        ) {
+        if (!orderData) {
 
             alert(
                 "Invalid checkout data"
             );
 
+
             location.href =
                 "website/shop.html";
+
 
             return;
 
@@ -319,36 +400,86 @@ async function loadOrder() {
 
 
         /*
-           finalPrice from checkout already
-           contains selected variant/custom option
-           pricing.
+           Convert checkout data into
+           standard orderItems array.
         */
 
-        subTotal =
-            Number(
-                orderData.finalPrice ||
-                0
+        orderItems =
+            normalizeCheckoutItems(
+                orderData
             );
 
 
-        finalAmount =
-            subTotal;
+        if (!orderItems.length) {
 
+            alert(
+                "No products selected"
+            );
+
+
+            location.href =
+                "website/shop.html";
+
+
+            return;
+
+        }
+
+
+        /*
+           Calculate base subtotal.
+        */
+
+        calculateSubtotal();
+
+
+        /*
+           Render products.
+        */
 
         renderSummary();
 
+
+        /*
+           Setup payment methods.
+        */
+
         setupPaymentModes();
+
+
+        /*
+           Load coupons.
+        */
 
         await loadCoupons();
 
+
+        /*
+           Calculate everything.
+        */
+
         recalcPrice();
 
+
         updateAdvancePaymentInfo();
+
+
+        /*
+           Render common checkout note.
+        */
+
+        renderCheckoutNote();
 
 
         console.log(
             "Order data loaded:",
             orderData
+        );
+
+
+        console.log(
+            "Normalized order items:",
+            orderItems
         );
 
     }
@@ -359,6 +490,7 @@ async function loadOrder() {
             "Order loading error:",
             error
         );
+
 
         showOrderPopup(
             false,
@@ -372,134 +504,1597 @@ async function loadOrder() {
 
 
 /* ======================================================
-   GENERATE ORDER NUMBER
-   SINGLE COUNTER FOR ALL PAYMENT MODES
+   NORMALIZE CHECKOUT ITEMS
 ====================================================== */
 
-async function generateOrderNumber() {
+function normalizeCheckoutItems(
+    data
+) {
 
-    const prefix =
-        String(
-            siteSettings.orderPrefix ||
-            "IG"
-        )
-            .trim()
-            .replace(
-                /\s+/g,
-                ""
-            )
-            .toUpperCase();
+    let rawItems = [];
 
 
-    if (!prefix) {
+    /*
+       New multiple-product format
+    */
 
-        throw new Error(
-            "Order prefix is not configured in Site Settings."
-        );
+    if (
+        Array.isArray(
+            data.items
+        ) &&
+        data.items.length
+    ) {
+
+        rawItems =
+            data.items;
 
     }
 
 
-    const counterRef =
-        doc(
-            db,
-            "counters",
-            "orders"
+    /*
+       Alternative multiple-product format
+    */
+
+    else if (
+        Array.isArray(
+            data.products
+        ) &&
+        data.products.length
+    ) {
+
+        rawItems =
+            data.products;
+
+    }
+
+
+    /*
+       Alternative cart format
+    */
+
+    else if (
+        Array.isArray(
+            data.cart
+        ) &&
+        data.cart.length
+    ) {
+
+        rawItems =
+            data.cart;
+
+    }
+
+
+    /*
+       Existing single product format
+    */
+
+    else if (
+        data.product
+    ) {
+
+        rawItems = [
+
+            {
+
+                product:
+                    data.product,
+
+                color:
+                    data.color ||
+                    null,
+
+                size:
+                    data.size ||
+                    null,
+
+                options:
+                    data.options ||
+                    {},
+
+                optionValues:
+                    data.optionValues ||
+                    {},
+
+                imageLinks:
+                    data.imageLinks ||
+                    {},
+
+                quantity:
+                    Number(
+                        data.quantity ||
+                        1
+                    ),
+
+                finalPrice:
+                    data.finalPrice
+
+            }
+
+        ];
+
+    }
+
+
+    return rawItems
+        .map(
+            item => {
+
+                /*
+                   Some carts may directly contain
+                   product properties.
+                */
+
+                const product =
+                    item.product ||
+                    item;
+
+
+                return {
+
+                    product,
+
+                    color:
+                        item.color ||
+                        null,
+
+                    size:
+                        item.size ||
+                        null,
+
+                    options:
+                        item.options ||
+                        {},
+
+                    optionValues:
+                        item.optionValues ||
+                        {},
+
+                    imageLinks:
+                        item.imageLinks ||
+                        {},
+
+                    quantity:
+                        Math.max(
+                            Number(
+                                item.quantity ||
+                                1
+                            ),
+                            1
+                        ),
+
+                    finalPrice:
+                        item.finalPrice
+
+                };
+
+            }
+        );
+
+}
+
+
+/* ======================================================
+   GET ITEM UNIT PRICE
+====================================================== */
+
+function getItemUnitPrice(
+    item
+) {
+
+    /*
+       If checkout already calculated
+       finalPrice, use it.
+
+       This is useful because your product
+       page may already calculate:
+
+       base price
+       + color
+       + size
+       + custom options
+    */
+
+    if (
+        item.finalPrice !== undefined &&
+        item.finalPrice !== null &&
+        item.finalPrice !== ""
+    ) {
+
+        const value =
+            Number(
+                item.finalPrice
+            );
+
+
+        if (
+            Number.isFinite(
+                value
+            )
+        ) {
+
+            return Math.max(
+                value,
+                0
+            );
+
+        }
+
+    }
+
+
+    const product =
+        item.product ||
+        {};
+
+
+    let price =
+        Number(
+            product.salePrice ??
+            product.basePrice ??
+            0
         );
 
 
     /*
-       IMPORTANT:
-
-       We use a Firestore transaction.
-
-       COD
-       ONLINE
-       ADVANCE
-
-       ALL use this exact same counter.
-
-       There is intentionally NO timestamp
-       fallback. A fallback creates different
-       order-number formats.
+       COLOR PRICE
     */
 
-    try {
+    if (
+        item.color
+    ) {
 
-        const next =
-            await runTransaction(
-                db,
-                async transaction => {
-
-                    const snapshot =
-                        await transaction.get(
-                            counterRef
-                        );
-
-
-                    let current =
-                        1000;
-
-
-                    if (
-                        snapshot.exists()
-                    ) {
-
-                        current =
-                            Number(
-                                snapshot.data().current ||
-                                1000
-                            );
-
-                    }
-
-
-                    const nextNumber =
-                        current + 1;
-
-
-                    transaction.set(
-                        counterRef,
-                        {
-                            current:
-                                nextNumber
-                        },
-                        {
-                            merge:
-                                true
-                        }
-                    );
-
-
-                    return nextNumber;
-
-                }
+        price +=
+            Number(
+                item.color.price ||
+                0
             );
-
-
-        return `${prefix}-${next}`;
 
     }
 
-    catch (error) {
 
-        console.error(
-            "ORDER COUNTER ERROR:",
-            error
+    /*
+       SIZE PRICE
+
+       If size object already contains price,
+       use it.
+    */
+
+    if (
+        item.size
+    ) {
+
+        price +=
+            Number(
+                item.size.price ||
+                0
+            );
+
+    }
+
+
+    /*
+       CUSTOM OPTION PRICES
+
+       Calculate only when finalPrice was
+       not already supplied.
+    */
+
+    const customOptions =
+        product.customOptions ||
+        [];
+
+
+    Object
+        .keys(
+            item.options ||
+            {}
+        )
+        .forEach(
+            index => {
+
+                const option =
+                    customOptions[index];
+
+
+                if (!option) {
+
+                    return;
+
+                }
+
+
+                price +=
+                    Number(
+                        option.price ||
+                        0
+                    );
+
+            }
         );
 
 
-        /*
-           DO NOT create timestamp IDs.
+    return Math.max(
+        price,
+        0
+    );
 
-           If this happens, Firestore rules are
-           probably blocking the customer from
-           reading/updating counters/orders.
-        */
+}
 
-        throw new Error(
-            "Unable to generate order number. Please try again."
+
+/* ======================================================
+   CALCULATE SUBTOTAL
+====================================================== */
+
+function calculateSubtotal() {
+
+    subTotal = 0;
+
+
+    orderItems.forEach(
+        item => {
+
+            const unitPrice =
+                getItemUnitPrice(
+                    item
+                );
+
+
+            const quantity =
+                Math.max(
+                    Number(
+                        item.quantity ||
+                        1
+                    ),
+                    1
+                );
+
+
+            item.calculatedUnitPrice =
+                unitPrice;
+
+
+            item.calculatedQuantity =
+                quantity;
+
+
+            item.calculatedSubtotal =
+                unitPrice *
+                quantity;
+
+
+            subTotal +=
+                item.calculatedSubtotal;
+
+        }
+    );
+
+
+    subTotal =
+        Math.round(
+            subTotal *
+            100
+        ) / 100;
+
+}
+
+
+/* ======================================================
+   SHIPPING HELPERS
+====================================================== */
+
+
+/*
+   Find selected size shipping.
+
+   Supports:
+   shippingType
+   shippingAmount
+
+   on size object.
+*/
+
+function getSizeShipping(
+    item
+) {
+
+    const size =
+        item.size;
+
+
+    if (!size) {
+
+        return null;
+
+    }
+
+
+    const type =
+        String(
+            size.shippingType ||
+            ""
+        )
+            .toLowerCase()
+            .trim();
+
+
+    /*
+       No override means common shipping.
+    */
+
+    if (!type) {
+
+        return null;
+
+    }
+
+
+    if (
+        type === "free"
+    ) {
+
+        return {
+
+            type: "free",
+
+            amount: 0
+
+        };
+
+    }
+
+
+    if (
+        type === "paid"
+    ) {
+
+        return {
+
+            type: "paid",
+
+            amount:
+                Number(
+                    size.shippingAmount ||
+                    0
+                )
+
+        };
+
+    }
+
+
+    /*
+       Explicit common.
+    */
+
+    if (
+        type === "common"
+    ) {
+
+        return {
+
+            type: "common",
+
+            amount: 0
+
+        };
+
+    }
+
+
+    return null;
+
+}
+
+
+/*
+   Get product common shipping.
+*/
+
+function getProductShipping(
+    product
+) {
+
+    const shipping =
+        product?.shipping ||
+        {};
+
+
+    /*
+       Some older product structures may
+       store shippingType directly.
+    */
+
+    const type =
+        String(
+            shipping.type ||
+            product.shippingType ||
+            "free"
+        )
+            .toLowerCase()
+            .trim();
+
+
+    let amount =
+        Number(
+            shipping.amount ??
+            product.shippingAmount ??
+            0
         );
+
+
+    if (
+        !Number.isFinite(
+            amount
+        )
+    ) {
+
+        amount = 0;
+
+    }
+
+
+    if (
+        type === "free"
+    ) {
+
+        return {
+
+            type: "free",
+
+            amount: 0
+
+        };
+
+    }
+
+
+    if (
+        type === "paid"
+    ) {
+
+        return {
+
+            type: "paid",
+
+            amount:
+                Math.max(
+                    amount,
+                    0
+                )
+
+        };
+
+    }
+
+
+    return {
+
+        type: "free",
+
+        amount: 0
+
+    };
+
+}
+
+
+/*
+   Get shipping for one item.
+*/
+
+function getItemShipping(
+    item
+) {
+
+    const product =
+        item.product ||
+        {};
+
+
+    const sizeShipping =
+        getSizeShipping(
+            item
+        );
+
+
+    /*
+       Size has FREE
+    */
+
+    if (
+        sizeShipping?.type ===
+        "free"
+    ) {
+
+        return 0;
+
+    }
+
+
+    /*
+       Size has custom paid shipping
+    */
+
+    if (
+        sizeShipping?.type ===
+        "paid"
+    ) {
+
+        return Math.max(
+            Number(
+                sizeShipping.amount ||
+                0
+            ),
+            0
+        );
+
+    }
+
+
+    /*
+       Size = common
+       or no size override.
+
+       Use common product shipping.
+    */
+
+    const commonShipping =
+        getProductShipping(
+            product
+        );
+
+
+    return Math.max(
+        Number(
+            commonShipping.amount ||
+            0
+        ),
+        0
+    );
+
+}
+
+
+/* ======================================================
+   CALCULATE ORIGINAL SHIPPING
+====================================================== */
+
+function calculateOriginalShipping() {
+
+    originalShipping = 0;
+
+
+    orderItems.forEach(
+        item => {
+
+            const unitShipping =
+                getItemShipping(
+                    item
+                );
+
+
+            const quantity =
+                Math.max(
+                    Number(
+                        item.quantity ||
+                        1
+                    ),
+                    1
+                );
+
+
+            item.originalShipping =
+                unitShipping *
+                quantity;
+
+
+            originalShipping +=
+                item.originalShipping;
+
+        }
+    );
+
+
+    originalShipping =
+        Math.round(
+            originalShipping *
+            100
+        ) / 100;
+
+}
+
+
+/* ======================================================
+   COUPON APPLIES TO ITEM
+====================================================== */
+
+function couponAppliesToItem(
+    coupon,
+    item
+) {
+
+    if (!coupon) {
+
+        return false;
+
+    }
+
+
+    /*
+       Global coupon
+    */
+
+    if (
+        coupon.scope !==
+        "product"
+    ) {
+
+        return true;
+
+    }
+
+
+    const productIds =
+        Array.isArray(
+            coupon.productIds
+        )
+            ?
+            coupon.productIds
+            :
+            [];
+
+
+    /*
+       Product-specific coupon
+       with no products assigned.
+    */
+
+    if (
+        !productIds.length
+    ) {
+
+        return false;
+
+    }
+
+
+    return productIds.includes(
+        item.product?.id
+    );
+
+}
+
+
+/* ======================================================
+   GET COUPON ELIGIBLE SUBTOTAL
+====================================================== */
+
+function getCouponEligibleSubtotal(
+    coupon
+) {
+
+    let total = 0;
+
+
+    orderItems.forEach(
+        item => {
+
+            if (
+                couponAppliesToItem(
+                    coupon,
+                    item
+                )
+            ) {
+
+                total +=
+                    Number(
+                        item.calculatedSubtotal ||
+                        0
+                    );
+
+            }
+
+        }
+    );
+
+
+    return Math.max(
+        total,
+        0
+    );
+
+}
+
+
+/* ======================================================
+   CALCULATE COUPON DISCOUNT
+====================================================== */
+
+function calculateCouponDiscount(
+    coupon
+) {
+
+    if (!coupon) {
+
+        return 0;
+
+    }
+
+
+    /*
+       Free shipping coupons do not
+       necessarily have a price discount.
+    */
+
+    if (
+        coupon.type ===
+            "free_shipping" ||
+        coupon.type ===
+            "shipping"
+    ) {
+
+        return 0;
+
+    }
+
+
+    const eligibleSubtotal =
+        getCouponEligibleSubtotal(
+            coupon
+        );
+
+
+    if (
+        eligibleSubtotal <= 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    const type =
+        String(
+            coupon.type ||
+            ""
+        )
+            .toLowerCase()
+            .trim();
+
+
+    const value =
+        Number(
+            coupon.value ||
+            0
+        );
+
+
+    let result = 0;
+
+
+    /*
+       PERCENT
+    */
+
+    if (
+        type === "percent" ||
+        type === "%" ||
+        type === "percentage"
+    ) {
+
+        result =
+            eligibleSubtotal *
+            (
+                value /
+                100
+            );
+
+    }
+
+
+    /*
+       FLAT
+    */
+
+    else if (
+        type === "flat" ||
+        type === "amount" ||
+        type === "fixed"
+    ) {
+
+        result =
+            value;
+
+    }
+
+
+    result =
+        Math.max(
+            result,
+            0
+        );
+
+
+    /*
+       Coupon cannot discount more
+       than its eligible products.
+    */
+
+    result =
+        Math.min(
+            result,
+            eligibleSubtotal
+        );
+
+
+    return Math.round(
+        result *
+        100
+    ) / 100;
+
+}
+
+
+/* ======================================================
+   CALCULATE PAYMENT DISCOUNT
+====================================================== */
+
+function calculatePaymentDiscountForItems() {
+
+    let total = 0;
+
+
+    orderItems.forEach(
+        item => {
+
+            const product =
+                item.product ||
+                {};
+
+
+            const settings =
+                product
+                    .paymentSettings
+                    ?.[selectedPaymentMode] ||
+                {};
+
+
+            if (
+                !settings.enabled
+            ) {
+
+                return;
+
+            }
+
+
+            const type =
+                String(
+                    settings.discountType ||
+                    "none"
+                )
+                    .toLowerCase()
+                    .trim();
+
+
+            const value =
+                Number(
+                    settings.discountValue ||
+                    0
+                );
+
+
+            if (
+                value <= 0
+            ) {
+
+                return;
+
+            }
+
+
+            const itemSubtotal =
+                Number(
+                    item.calculatedSubtotal ||
+                    0
+                );
+
+
+            let discountForItem =
+                0;
+
+
+            /*
+               PERCENT
+            */
+
+            if (
+                type === "percent" ||
+                type === "%" ||
+                type === "percentage"
+            ) {
+
+                discountForItem =
+                    itemSubtotal *
+                    (
+                        value /
+                        100
+                    );
+
+            }
+
+
+            /*
+               FLAT
+            */
+
+            else if (
+                type === "flat" ||
+                type === "amount" ||
+                type === "fixed"
+            ) {
+
+                /*
+                   Flat payment discount is
+                   applied once per product line,
+                   not once per quantity.
+                */
+
+                discountForItem =
+                    value;
+
+            }
+
+
+            discountForItem =
+                Math.max(
+                    discountForItem,
+                    0
+                );
+
+
+            discountForItem =
+                Math.min(
+                    discountForItem,
+                    itemSubtotal
+                );
+
+
+            total +=
+                discountForItem;
+
+        }
+    );
+
+
+    return Math.round(
+        total *
+        100
+    ) / 100;
+
+}
+
+
+/* ======================================================
+   CALCULATE FREE SHIPPING
+====================================================== */
+
+function calculateFreeShipping() {
+
+    if (!appliedCoupon) {
+
+        return false;
+
+    }
+
+
+    /*
+       New format
+    */
+
+    if (
+        appliedCoupon.freeShipping ===
+        true
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+       Also support coupon type.
+    */
+
+    const type =
+        String(
+            appliedCoupon.type ||
+            ""
+        )
+            .toLowerCase()
+            .trim();
+
+
+    return (
+        type === "free_shipping" ||
+        type === "shipping"
+    );
+
+}
+
+
+/* ======================================================
+   CALCULATE SHIPPING
+====================================================== */
+
+function calculateShipping() {
+
+    calculateOriginalShipping();
+
+
+    const freeShipping =
+        calculateFreeShipping();
+
+
+    if (
+        freeShipping
+    ) {
+
+        shippingAmount = 0;
+
+    }
+
+    else {
+
+        shippingAmount =
+            originalShipping;
+
+    }
+
+
+    shippingAmount =
+        Math.round(
+            shippingAmount *
+            100
+        ) / 100;
+
+}
+
+
+/* ======================================================
+   GET COUPON / PAYMENT DISCOUNT
+   ACCORDING TO STACK RULE
+====================================================== */
+
+function calculateDiscountRule() {
+
+    /*
+       Payment discount
+    */
+
+    paymentDiscount =
+        calculatePaymentDiscountForItems();
+
+
+    /*
+       Coupon discount
+    */
+
+    couponDiscount =
+        appliedCoupon
+            ?
+            calculateCouponDiscount(
+                appliedCoupon
+            )
+            :
+            0;
+
+
+    /*
+       No coupon
+    */
+
+    if (!appliedCoupon) {
+
+        totalDiscount =
+            Math.min(
+                subTotal,
+                paymentDiscount
+            );
+
+
+        return;
+
+    }
+
+
+    const rule =
+        String(
+            appliedCoupon.stackRule ||
+            "stack"
+        )
+            .toLowerCase()
+            .trim();
+
+
+    /* ==================================================
+       STACK
+
+       Payment discount + coupon discount
+    ================================================== */
+
+    if (
+        rule === "stack"
+    ) {
+
+        totalDiscount =
+            paymentDiscount +
+            couponDiscount;
+
+    }
+
+
+    /* ==================================================
+       REPLACE
+
+       Coupon replaces payment discount.
+    ================================================== */
+
+    else if (
+        rule === "replace"
+    ) {
+
+        totalDiscount =
+            couponDiscount;
+
+    }
+
+
+    /* ==================================================
+       BEST
+
+       Whichever monetary discount is higher.
+    ================================================== */
+
+    else if (
+        rule === "best"
+    ) {
+
+        totalDiscount =
+            Math.max(
+                paymentDiscount,
+                couponDiscount
+            );
+
+    }
+
+
+    /*
+       Safety
+    */
+
+    totalDiscount =
+        Math.max(
+            totalDiscount,
+            0
+        );
+
+
+    totalDiscount =
+        Math.min(
+            totalDiscount,
+            subTotal
+        );
+
+
+    totalDiscount =
+        Math.round(
+            totalDiscount *
+            100
+        ) / 100;
+
+}
+
+
+/* ======================================================
+   RECALCULATE EVERYTHING
+====================================================== */
+
+function recalcPrice() {
+
+    /*
+       Discount calculation
+    */
+
+    calculateDiscountRule();
+
+
+    /*
+       Shipping
+    */
+
+    calculateShipping();
+
+
+    /*
+       Final amount
+    */
+
+    finalAmount =
+        subTotal -
+        totalDiscount +
+        shippingAmount;
+
+
+    if (
+        finalAmount < 0
+    ) {
+
+        finalAmount = 0;
+
+    }
+
+
+    finalAmount =
+        Math.round(
+            finalAmount *
+            100
+        ) / 100;
+
+
+    /*
+       Subtotal
+    */
+
+    const subTotalElement =
+        document.getElementById(
+            "subTotal"
+        );
+
+
+    if (subTotalElement) {
+
+        subTotalElement.innerText =
+            "₹" +
+            formatMoney(
+                subTotal
+            );
+
+    }
+
+
+    /*
+       Shipping
+    */
+
+    const shippingElement =
+        document.getElementById(
+            "shippingAmount"
+        );
+
+
+    if (shippingElement) {
+
+        shippingElement.innerText =
+            shippingAmount === 0
+                ?
+                "FREE"
+                :
+                "₹" +
+                formatMoney(
+                    shippingAmount
+                );
+
+    }
+
+
+    /*
+       Discount
+    */
+
+    const discountElement =
+        document.getElementById(
+            "discountAmount"
+        );
+
+
+    if (discountElement) {
+
+        discountElement.innerText =
+            "-₹" +
+            formatMoney(
+                totalDiscount
+            );
+
+    }
+
+
+    /*
+       Payment discount
+    */
+
+    const paymentDiscountElement =
+        document.getElementById(
+            "paymentDiscountAmount"
+        );
+
+
+    if (
+        paymentDiscountElement
+    ) {
+
+        paymentDiscountElement.innerText =
+            "-₹" +
+            formatMoney(
+                paymentDiscount
+            );
+
+    }
+
+
+    /*
+       Coupon discount
+    */
+
+    const couponDiscountElement =
+        document.getElementById(
+            "couponDiscountAmount"
+        );
+
+
+    if (
+        couponDiscountElement
+    ) {
+
+        couponDiscountElement.innerText =
+            "-₹" +
+            formatMoney(
+                couponDiscount
+            );
+
+    }
+
+
+    /*
+       Final amount
+    */
+
+    const finalElement =
+        document.getElementById(
+            "finalAmount"
+        );
+
+
+    if (finalElement) {
+
+        finalElement.innerText =
+            "₹" +
+            formatMoney(
+                finalAmount
+            );
+
+    }
+
+
+    /*
+       Render discount explanation
+    */
+
+    renderDiscountInformation();
+
+
+    updateAdvancePaymentInfo();
+
+}
+
+
+/* ======================================================
+   DISCOUNT INFORMATION
+====================================================== */
+
+function renderDiscountInformation() {
+
+    const box =
+        document.getElementById(
+            "discountInformation"
+        );
+
+
+    if (!box) {
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        "";
+
+
+    if (
+        !paymentDiscount &&
+        !couponDiscount
+    ) {
+
+        return;
+
+    }
+
+
+    let text = "";
+
+
+    if (
+        appliedCoupon
+    ) {
+
+        const rule =
+            String(
+                appliedCoupon.stackRule ||
+                "stack"
+            )
+                .toLowerCase();
+
+
+        if (
+            rule === "stack"
+        ) {
+
+            text =
+                "Payment discount + coupon discount applied.";
+
+        }
+
+        else if (
+            rule === "replace"
+        ) {
+
+            text =
+                "Coupon discount replaced the payment discount.";
+
+        }
+
+        else if (
+            rule === "best"
+        ) {
+
+            if (
+                couponDiscount >
+                paymentDiscount
+            ) {
+
+                text =
+                    "Coupon discount was higher, so it was applied.";
+
+            }
+
+            else if (
+                paymentDiscount >
+                couponDiscount
+            ) {
+
+                text =
+                    "Payment discount was higher, so it was applied.";
+
+            }
+
+            else {
+
+                text =
+                    "The coupon and payment discount were equal.";
+
+            }
+
+        }
+
+    }
+
+
+    if (text) {
+
+        box.textContent =
+            text;
 
     }
 
@@ -507,7 +2102,7 @@ async function generateOrderNumber() {
 
 
 /* ======================================================
-   RENDER SUMMARY
+   RENDER ORDER SUMMARY
 ====================================================== */
 
 function renderSummary() {
@@ -525,172 +2120,391 @@ function renderSummary() {
     }
 
 
-    const product =
-        orderData.product;
+    box.innerHTML =
+        "";
 
 
-    const productPrice =
-        Number(
-            product.salePrice ||
-            product.basePrice ||
-            0
+    orderItems.forEach(
+        (item, itemIndex) => {
+
+            const product =
+                item.product ||
+                {};
+
+
+            const quantity =
+                Math.max(
+                    Number(
+                        item.quantity ||
+                        1
+                    ),
+                    1
+                );
+
+
+            const unitPrice =
+                Number(
+                    item.calculatedUnitPrice ||
+                    getItemUnitPrice(
+                        item
+                    )
+                );
+
+
+            const itemSubtotal =
+                Number(
+                    item.calculatedSubtotal ||
+                    unitPrice *
+                    quantity
+                );
+
+
+            const itemShipping =
+                Number(
+                    item.originalShipping ||
+                    0
+                );
+
+
+            const wrapper =
+                document.createElement(
+                    "div"
+                );
+
+
+            wrapper.className =
+                "order-summary-item";
+
+
+            let html = `
+
+                <div class="order-product">
+
+                    ${
+                        product.images?.[0]
+                            ?
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    product.images[0]
+                                )}"
+                                alt="${escapeAttribute(
+                                    product.name ||
+                                    "Product"
+                                )}"
+                                style="
+                                    width:70px;
+                                    height:70px;
+                                    object-fit:cover;
+                                    border-radius:10px;
+                                    margin-bottom:8px;
+                                "
+                            >
+                            `
+                            :
+                            ""
+                    }
+
+                    <div>
+
+                        <b>
+                            ${escapeHtml(
+                                product.name ||
+                                "Product"
+                            )}
+                        </b>
+
+                    </div>
+
+                </div>
+
+
+                <div>
+                    Price:
+                    ₹${formatMoney(
+                        unitPrice
+                    )}
+                </div>
+
+
+                <div>
+                    Quantity:
+                    ${quantity}
+                </div>
+
+            `;
+
+
+            /* COLOR */
+
+            if (
+                item.color
+            ) {
+
+                html += `
+
+                    <div>
+
+                        Color:
+                        ${escapeHtml(
+                            item.color.name ||
+                            ""
+                        )}
+
+                    </div>
+
+                `;
+
+            }
+
+
+            /* SIZE */
+
+            if (
+                item.size
+            ) {
+
+                html += `
+
+                    <div>
+
+                        Size:
+                        ${escapeHtml(
+                            item.size.name ||
+                            ""
+                        )}
+
+                    </div>
+
+                `;
+
+            }
+
+
+            /* CUSTOM OPTIONS */
+
+            if (
+                item.options &&
+                Object.keys(
+                    item.options
+                ).length
+            ) {
+
+                html += `
+
+                    <div style="margin-top:6px">
+
+                        <b>
+                            Options:
+                        </b>
+
+                    </div>
+
+                `;
+
+
+                Object
+                    .keys(
+                        item.options
+                    )
+                    .forEach(
+                        index => {
+
+                            const option =
+                                product
+                                    .customOptions
+                                    ?.[index];
+
+
+                            const label =
+                                option?.label ||
+                                "Option";
+
+
+                            const value =
+                                item
+                                    .optionValues
+                                    ?.[index] ||
+                                "Selected";
+
+
+                            html += `
+
+                                <div>
+
+                                    -
+                                    ${escapeHtml(
+                                        label
+                                    )}:
+
+                                    ${escapeHtml(
+                                        value
+                                    )}
+
+                                </div>
+
+                            `;
+
+                        }
+                    );
+
+            }
+
+
+            html += `
+
+                <div>
+
+                    Product Total:
+                    ₹${formatMoney(
+                        itemSubtotal
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    Shipping:
+                    ${
+                        itemShipping > 0
+                            ?
+                            `₹${formatMoney(
+                                itemShipping
+                            )}`
+                            :
+                            "FREE"
+                    }
+
+                </div>
+
+            `;
+
+
+            wrapper.innerHTML =
+                html;
+
+
+            box.appendChild(
+                wrapper
+            );
+
+
+            /*
+               Divider
+            */
+
+            if (
+                itemIndex <
+                orderItems.length - 1
+            ) {
+
+                const divider =
+                    document.createElement(
+                        "hr"
+                    );
+
+
+                divider.style.margin =
+                    "15px 0";
+
+
+                box.appendChild(
+                    divider
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+       Summary total shipping
+    */
+
+    const shippingSummary =
+        document.createElement(
+            "div"
         );
 
 
-    let html = `
+    shippingSummary.style.marginTop =
+        "15px";
 
-        <div>
 
-            <b>
-                ${escapeHtml(
-                    product.name ||
-                    "Product"
-                )}
-            </b>
+    shippingSummary.innerHTML = `
 
-        </div>
+        <b>
+            Total Shipping:
+        </b>
 
-        <div>
-
-            Sale Price:
-            ₹${productPrice}
-
-        </div>
+        <span>
+            ${
+                originalShipping > 0
+                    ?
+                    `₹${formatMoney(
+                        originalShipping
+                    )}`
+                    :
+                    "FREE"
+            }
+        </span>
 
     `;
 
 
-    /* COLOR */
-
-    if (
-        orderData.color
-    ) {
-
-        html += `
-
-            <div>
-
-                Color:
-                ${escapeHtml(
-                    orderData.color.name ||
-                    ""
-                )}
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* SIZE */
-
-    if (
-        orderData.size
-    ) {
-
-        html += `
-
-            <div>
-
-                Size:
-                ${escapeHtml(
-                    orderData.size.name ||
-                    ""
-                )}
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* OPTIONS */
-
-    if (
-        orderData.options &&
-        Object.keys(
-            orderData.options
-        ).length
-    ) {
-
-        html += `
-
-            <div style="margin-top:6px">
-
-                <b>
-                    Options:
-                </b>
-
-            </div>
-
-        `;
-
-
-        Object
-            .keys(
-                orderData.options
-            )
-            .forEach(
-                index => {
-
-                    const option =
-                        product
-                            .customOptions?.[index];
-
-
-                    const label =
-                        option?.label ||
-                        "Option";
-
-
-                    const value =
-                        orderData
-                            .optionValues?.[index] ||
-                        "Selected";
-
-
-                    html += `
-
-                        <div>
-
-                            -
-                            ${escapeHtml(
-                                label
-                            )}:
-
-                            ${escapeHtml(
-                                value
-                            )}
-
-                        </div>
-
-                    `;
-
-                }
-            );
-
-    }
-
-
-    box.innerHTML =
-        html;
+    box.appendChild(
+        shippingSummary
+    );
 
 }
 
 
 /* ======================================================
-   PAYMENT MODES
+   SETUP PAYMENT MODES
 ====================================================== */
 
 function setupPaymentModes() {
 
-    const ps =
-        orderData
-            ?.product
-            ?.paymentSettings ||
-        {};
+    /*
+       Determine which payment modes are
+       actually available.
+
+       For multiple products, a mode is enabled
+       when at least one item supports it.
+
+       This preserves compatibility with
+       your existing product payment settings.
+    */
+
+    const modes = {
+
+        online: orderItems.some(
+            item =>
+                item.product
+                    ?.paymentSettings
+                    ?.online
+                    ?.enabled
+        ),
+
+        cod: orderItems.some(
+            item =>
+                item.product
+                    ?.paymentSettings
+                    ?.cod
+                    ?.enabled
+        ),
+
+        advance: orderItems.some(
+            item =>
+                item.product
+                    ?.paymentSettings
+                    ?.advance
+                    ?.enabled
+        )
+
+    };
 
 
     const onlineLabel =
@@ -711,78 +2525,78 @@ function setupPaymentModes() {
         );
 
 
-    /* ONLINE */
-
-    if (
-        !ps.online?.enabled &&
-        onlineLabel
-    ) {
+    if (onlineLabel) {
 
         onlineLabel.style.display =
-            "none";
+            modes.online
+                ?
+                ""
+                :
+                "none";
 
     }
 
 
-    /* COD */
-
-    if (
-        !ps.cod?.enabled &&
-        codLabel
-    ) {
+    if (codLabel) {
 
         codLabel.style.display =
-            "none";
+            modes.cod
+                ?
+                ""
+                :
+                "none";
 
     }
 
 
-    /* ADVANCE */
-
-    if (
-        !ps.advance?.enabled &&
-        advanceLabel
-    ) {
+    if (advanceLabel) {
 
         advanceLabel.style.display =
-            "none";
+            modes.advance
+                ?
+                ""
+                :
+                "none";
 
     }
 
 
-    /* DEFAULT PAYMENT MODE */
+    /*
+       Default mode.
+    */
 
-    if (
-        ps.online?.enabled
-    ) {
+    if (modes.online) {
 
         selectedPaymentMode =
             "online";
 
     }
 
-    else if (
-        ps.cod?.enabled
-    ) {
+    else if (modes.cod) {
 
         selectedPaymentMode =
             "cod";
 
     }
 
-    else if (
-        ps.advance?.enabled
-    ) {
+    else if (modes.advance) {
 
         selectedPaymentMode =
             "advance";
 
     }
 
+    else {
+
+        selectedPaymentMode =
+            "online";
+
+    }
+
 
     const firstRadio =
         document.querySelector(
-            `input[value="${selectedPaymentMode}"]`
+            `input[name="paymode"][value="${selectedPaymentMode}"]`
         );
 
 
@@ -794,7 +2608,9 @@ function setupPaymentModes() {
     }
 
 
-    /* PAYMENT CHANGE */
+    /*
+       Payment change.
+    */
 
     document
         .querySelectorAll(
@@ -812,9 +2628,11 @@ function setupPaymentModes() {
 
 
                         /*
-                           Coupon is reset because
-                           allowed payment modes may
-                           change.
+                           Existing coupon may
+                           no longer be valid for
+                           this payment mode.
+
+                           Remove it.
                         */
 
                         removeCoupon();
@@ -835,484 +2653,13 @@ function setupPaymentModes() {
         );
 
 
-    /*
-       Calculate initial payment discount
-       immediately.
-    */
-
     recalcPrice();
 
 }
 
 
 /* ======================================================
-   PAYMENT MODE DISCOUNT
-====================================================== */
-
-function getPaymentModeDiscount() {
-
-    const paymentSettings =
-        orderData
-            ?.product
-            ?.paymentSettings ||
-        {};
-
-
-    const settings =
-        paymentSettings[
-            selectedPaymentMode
-        ] ||
-        {};
-
-
-    if (
-        !settings.enabled
-    ) {
-
-        return 0;
-
-    }
-
-
-    const type =
-        String(
-            settings.discountType ||
-            "none"
-        )
-            .toLowerCase()
-            .trim();
-
-
-    const value =
-        Number(
-            settings.discountValue ||
-            0
-        );
-
-
-    if (
-        !value ||
-        value <= 0
-    ) {
-
-        return 0;
-
-    }
-
-
-    let result =
-        0;
-
-
-    /* PERCENT */
-
-    if (
-        type === "percent" ||
-        type === "%" ||
-        type === "percentage"
-    ) {
-
-        result =
-            Math.round(
-                subTotal *
-                (
-                    value /
-                    100
-                )
-            );
-
-    }
-
-
-    /* FLAT */
-
-    else if (
-        type === "flat" ||
-        type === "amount" ||
-        type === "fixed"
-    ) {
-
-        result =
-            value;
-
-    }
-
-
-    /*
-       Safety
-    */
-
-    if (
-        result < 0
-    ) {
-
-        result =
-            0;
-
-    }
-
-
-    if (
-        result > subTotal
-    ) {
-
-        result =
-            subTotal;
-
-    }
-
-
-    return Math.round(
-        result
-    );
-
-}
-
-
-/* ======================================================
-   PRICE
-====================================================== */
-
-function recalcPrice() {
-
-    /*
-       PRODUCT PAYMENT DISCOUNT
-    */
-
-    paymentDiscount =
-        getPaymentModeDiscount();
-
-
-    /*
-       TOTAL DISCOUNT
-
-       Payment discount
-       +
-       Coupon discount
-    */
-
-    const totalDiscount =
-        Math.min(
-            subTotal,
-            Number(
-                paymentDiscount
-            ) +
-            Number(
-                discount
-            )
-        );
-
-
-    finalAmount =
-        Number(
-            subTotal
-        ) -
-        totalDiscount;
-
-
-    if (
-        finalAmount < 0
-    ) {
-
-        finalAmount =
-            0;
-
-    }
-
-
-    const subTotalElement =
-        document.getElementById(
-            "subTotal"
-        );
-
-
-    const discountElement =
-        document.getElementById(
-            "discountAmount"
-        );
-
-
-    const finalElement =
-        document.getElementById(
-            "finalAmount"
-        );
-
-
-    if (subTotalElement) {
-
-        subTotalElement.innerText =
-            "₹" +
-            subTotal;
-
-    }
-
-
-    if (discountElement) {
-
-        discountElement.innerText =
-            "-₹" +
-            totalDiscount;
-
-    }
-
-
-    if (finalElement) {
-
-        finalElement.innerText =
-            "₹" +
-            finalAmount;
-
-    }
-
-
-    /*
-       Optional dedicated payment discount
-       element if you add it to HTML.
-    */
-
-    const paymentDiscountElement =
-        document.getElementById(
-            "paymentDiscountAmount"
-        );
-
-
-    if (paymentDiscountElement) {
-
-        paymentDiscountElement.innerText =
-            "-₹" +
-            paymentDiscount;
-
-    }
-
-
-    /*
-       Optional coupon discount element.
-    */
-
-    const couponDiscountElement =
-        document.getElementById(
-            "couponDiscountAmount"
-        );
-
-
-    if (couponDiscountElement) {
-
-        couponDiscountElement.innerText =
-            "-₹" +
-            discount;
-
-    }
-
-
-    updateAdvancePaymentInfo();
-
-}
-
-
-/* ======================================================
-   ADVANCE PAYMENT AMOUNT
-====================================================== */
-
-function getAdvancePaymentAmount() {
-
-    const advanceSettings =
-        orderData
-            ?.product
-            ?.paymentSettings
-            ?.advance ||
-        {};
-
-
-    if (
-        !advanceSettings.enabled
-    ) {
-
-        return finalAmount;
-
-    }
-
-
-    const type =
-        String(
-            advanceSettings.type ||
-            "percent"
-        )
-            .toLowerCase()
-            .trim();
-
-
-    const value =
-        Number(
-            advanceSettings.value ||
-            0
-        );
-
-
-    let advanceAmount =
-        0;
-
-
-    /* FLAT ADVANCE */
-
-    if (
-        type === "flat" ||
-        type === "amount" ||
-        type === "fixed"
-    ) {
-
-        advanceAmount =
-            value;
-
-    }
-
-
-    /* PERCENT ADVANCE */
-
-    else {
-
-        advanceAmount =
-            finalAmount *
-            (
-                value /
-                100
-            );
-
-    }
-
-
-    /*
-       Safety limits
-    */
-
-    if (
-        advanceAmount < 0
-    ) {
-
-        advanceAmount =
-            0;
-
-    }
-
-
-    if (
-        advanceAmount >
-        finalAmount
-    ) {
-
-        advanceAmount =
-            finalAmount;
-
-    }
-
-
-    /*
-       Keep paise/decimal amounts.
-       Razorpay supports smallest currency
-       units, so ₹427.50 becomes 42750 paise.
-    */
-
-    return Math.round(
-        advanceAmount *
-        100
-    ) / 100;
-
-}
-
-
-/* ======================================================
-   ADVANCE PAYMENT INFO
-====================================================== */
-
-function updateAdvancePaymentInfo() {
-
-    const box =
-        document.getElementById(
-            "advancePaymentInfo"
-        );
-
-
-    if (!box) {
-
-        return;
-
-    }
-
-
-    if (
-        selectedPaymentMode !==
-        "advance"
-    ) {
-
-        box.classList.remove(
-            "show"
-        );
-
-        box.innerHTML =
-            "";
-
-        return;
-
-    }
-
-
-    const advanceAmount =
-        getAdvancePaymentAmount();
-
-
-    const balance =
-        Math.max(
-            Number(
-                finalAmount
-            ) -
-            Number(
-                advanceAmount
-            ),
-            0
-        );
-
-
-    box.innerHTML = `
-
-        <span>
-
-            ℹ️
-
-            Pay Advance
-
-            <span class="advance-amount">
-
-                ₹${formatMoney(
-                    advanceAmount
-                )}
-
-            </span>
-
-            now and Balance
-
-            <span class="balance-amount">
-
-                ₹${formatMoney(
-                    balance
-                )}
-
-            </span>
-
-            on COD.
-
-        </span>
-
-    `;
-
-
-    box.classList.add(
-        "show"
-    );
-
-}
-
-
-/* ======================================================
-   COUPONS
+   LOAD COUPONS
 ====================================================== */
 
 async function loadCoupons() {
@@ -1339,12 +2686,12 @@ async function loadCoupons() {
         snap.forEach(
             d => {
 
-                const c =
+                const coupon =
                     d.data();
 
 
                 if (
-                    !c.active
+                    coupon.active === false
                 ) {
 
                     return;
@@ -1352,10 +2699,14 @@ async function loadCoupons() {
                 }
 
 
+                /*
+                   Expiry
+                */
+
                 const expiry =
-                    c.expiry?.toDate
+                    coupon.expiry?.toDate
                         ?
-                        c.expiry.toDate()
+                        coupon.expiry.toDate()
                         :
                         null;
 
@@ -1370,10 +2721,18 @@ async function loadCoupons() {
                 }
 
 
+                /*
+                   Minimum order.
+
+                   Use overall subtotal.
+                */
+
                 if (
-                    c.minOrder &&
-                    subTotal <
-                    c.minOrder
+                    Number(
+                        coupon.minOrder ||
+                        0
+                    ) >
+                    subTotal
                 ) {
 
                     return;
@@ -1381,9 +2740,19 @@ async function loadCoupons() {
                 }
 
 
+                /*
+                   Payment mode.
+
+                   Coupon can be used only
+                   with allowed modes.
+                */
+
                 if (
-                    c.allowedModes &&
-                    !c.allowedModes.includes(
+                    Array.isArray(
+                        coupon.allowedModes
+                    ) &&
+                    coupon.allowedModes.length &&
+                    !coupon.allowedModes.includes(
                         selectedPaymentMode
                     )
                 ) {
@@ -1393,15 +2762,30 @@ async function loadCoupons() {
                 }
 
 
+                /*
+                   Product-specific coupon.
+
+                   At least one checkout item
+                   must belong to the coupon.
+                */
+
                 if (
-                    c.scope === "product" &&
-                    c.productIds?.length
+                    coupon.scope ===
+                    "product"
                 ) {
 
+                    const hasMatchingProduct =
+                        orderItems.some(
+                            item =>
+                                couponAppliesToItem(
+                                    coupon,
+                                    item
+                                )
+                        );
+
+
                     if (
-                        !c.productIds.includes(
-                            orderData.product.id
-                        )
+                        !hasMatchingProduct
                     ) {
 
                         return;
@@ -1416,7 +2800,7 @@ async function loadCoupons() {
                     id:
                         d.id,
 
-                    ...c
+                    ...coupon
 
                 });
 
@@ -1477,6 +2861,7 @@ function renderCoupons() {
 
         `;
 
+
         return;
 
     }
@@ -1495,11 +2880,13 @@ function renderCoupons() {
                 "coupon-card";
 
 
-            if (
+            const isApplied =
                 appliedCoupon &&
                 appliedCoupon.id ===
-                coupon.id
-            ) {
+                coupon.id;
+
+
+            if (isApplied) {
 
                 div.classList.add(
                     "applied"
@@ -1508,22 +2895,66 @@ function renderCoupons() {
             }
 
 
-            const valueText =
-                coupon.type === "percent"
+            const couponType =
+                String(
+                    coupon.type ||
+                    ""
+                )
+                    .toLowerCase();
 
-                    ?
 
-                    `${coupon.value}% OFF`
+            let valueText =
+                "";
 
-                    :
 
+            if (
+                coupon.freeShipping ===
+                true &&
+                (
+                    couponType ===
+                    "free_shipping" ||
+                    Number(
+                        coupon.value ||
+                        0
+                    ) === 0
+                )
+            ) {
+
+                valueText =
+                    "FREE SHIPPING";
+
+            }
+
+            else if (
+                couponType ===
+                "percent"
+            ) {
+
+                valueText =
+                    `${coupon.value}% OFF`;
+
+            }
+
+            else {
+
+                valueText =
                     `₹${coupon.value} OFF`;
 
+            }
 
-            const isApplied =
-                appliedCoupon &&
-                appliedCoupon.id ===
-                coupon.id;
+
+            if (
+                coupon.freeShipping ===
+                true &&
+                !valueText.includes(
+                    "FREE SHIPPING"
+                )
+            ) {
+
+                valueText +=
+                    " + FREE SHIPPING";
+
+            }
 
 
             div.innerHTML = `
@@ -1532,14 +2963,17 @@ function renderCoupons() {
 
                     <b>
                         ${escapeHtml(
-                            coupon.code
+                            coupon.code ||
+                            ""
                         )}
                     </b>
 
                     <small>
+
                         ${escapeHtml(
                             valueText
                         )}
+
                     </small>
 
                 </div>
@@ -1602,38 +3036,35 @@ function(id) {
     }
 
 
-    if (
-        coupon.type === "percent"
-    ) {
-
-        discount =
-            Math.round(
-                subTotal *
-                (
-                    coupon.value /
-                    100
-                )
-            );
-
-    }
-
-    else {
-
-        discount =
-            Number(
-                coupon.value ||
-                0
-            );
-
-    }
-
+    /*
+       Product-specific validation.
+    */
 
     if (
-        discount > subTotal
+        coupon.scope ===
+        "product"
     ) {
 
-        discount =
-            subTotal;
+        const matching =
+            orderItems.some(
+                item =>
+                    couponAppliesToItem(
+                        coupon,
+                        item
+                    )
+            );
+
+
+        if (!matching) {
+
+            showCouponMessage(
+                "This coupon does not apply to the selected products."
+            );
+
+
+            return;
+
+        }
 
     }
 
@@ -1642,11 +3073,88 @@ function(id) {
         coupon;
 
 
-    renderCoupons();
+    /*
+       Calculate immediately.
+    */
 
     recalcPrice();
 
+
+    renderCoupons();
+
+
+    showCouponMessage(
+        `Coupon ${coupon.code} applied successfully.`
+    );
+
+
     updateAdvancePaymentInfo();
+
+};
+
+
+/* ======================================================
+   MANUAL COUPON
+====================================================== */
+
+window.applyManualCoupon =
+function() {
+
+    const input =
+        document.getElementById(
+            "couponInput"
+        );
+
+
+    const code =
+        String(
+            input?.value ||
+            ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    if (!code) {
+
+        showCouponMessage(
+            "Please enter a coupon code."
+        );
+
+
+        return;
+
+    }
+
+
+    const coupon =
+        availableCoupons.find(
+            item =>
+                String(
+                    item.code ||
+                    ""
+                )
+                    .trim()
+                    .toUpperCase() ===
+                code
+        );
+
+
+    if (!coupon) {
+
+        showCouponMessage(
+            "Invalid or unavailable coupon."
+        );
+
+
+        return;
+
+    }
+
+
+    applyCoupon(
+        coupon.id
+    );
 
 };
 
@@ -1662,17 +3170,625 @@ function() {
         null;
 
 
-    discount =
+    couponDiscount =
         0;
+
+
+    const input =
+        document.getElementById(
+            "couponInput"
+        );
+
+
+    if (input) {
+
+        input.value =
+            "";
+
+    }
 
 
     renderCoupons();
 
+
     recalcPrice();
+
 
     updateAdvancePaymentInfo();
 
 };
+
+
+/* ======================================================
+   COUPON MESSAGE
+====================================================== */
+
+function showCouponMessage(
+    message
+) {
+
+    const element =
+        document.getElementById(
+            "couponMsg"
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.textContent =
+        message;
+
+}
+
+
+/* ======================================================
+   ADVANCE PAYMENT AMOUNT
+====================================================== */
+
+function getAdvancePaymentAmount() {
+
+    /*
+       For multiple products we calculate
+       advance settings per product.
+
+       If multiple products have different
+       advance settings, we calculate each
+       product's proportion of the final amount.
+
+       For a single product, this behaves
+       exactly like your old system.
+    */
+
+    if (
+        selectedPaymentMode !==
+        "advance"
+    ) {
+
+        return finalAmount;
+
+    }
+
+
+    if (
+        orderItems.length === 1
+    ) {
+
+        const settings =
+            orderItems[0]
+                .product
+                ?.paymentSettings
+                ?.advance ||
+            {};
+
+
+        if (
+            !settings.enabled
+        ) {
+
+            return finalAmount;
+
+        }
+
+
+        const type =
+            String(
+                settings.type ||
+                "percent"
+            )
+                .toLowerCase()
+                .trim();
+
+
+        const value =
+            Number(
+                settings.value ||
+                0
+            );
+
+
+        let advanceAmount =
+            0;
+
+
+        if (
+            type === "flat" ||
+            type === "amount" ||
+            type === "fixed"
+        ) {
+
+            advanceAmount =
+                value;
+
+        }
+
+        else {
+
+            advanceAmount =
+                finalAmount *
+                (
+                    value /
+                    100
+                );
+
+        }
+
+
+        return Math.min(
+            Math.max(
+                advanceAmount,
+                0
+            ),
+            finalAmount
+        );
+
+    }
+
+
+    /*
+       Multiple products.
+
+       Calculate weighted advance based
+       on each product's discounted
+       contribution.
+    */
+
+    let advanceTotal = 0;
+
+
+    const subtotalAfterDiscount =
+        Math.max(
+            subTotal -
+            totalDiscount,
+            0
+        );
+
+
+    orderItems.forEach(
+        item => {
+
+            const product =
+                item.product ||
+                {};
+
+
+            const settings =
+                product
+                    .paymentSettings
+                    ?.advance ||
+                {};
+
+
+            if (
+                !settings.enabled
+            ) {
+
+                return;
+
+            }
+
+
+            const itemSubtotal =
+                Number(
+                    item.calculatedSubtotal ||
+                    0
+                );
+
+
+            if (
+                itemSubtotal <= 0
+            ) {
+
+                return;
+
+            }
+
+
+            /*
+               Approximate item's share of
+               discounted merchandise total.
+            */
+
+            const itemShare =
+                subtotalAfterDiscount >
+                0
+                    ?
+                    itemSubtotal /
+                    subTotal
+                    :
+                    0;
+
+
+            const itemFinal =
+                (
+                    finalAmount -
+                    shippingAmount
+                ) *
+                itemShare;
+
+
+            const type =
+                String(
+                    settings.type ||
+                    "percent"
+                )
+                    .toLowerCase()
+                    .trim();
+
+
+            const value =
+                Number(
+                    settings.value ||
+                    0
+                );
+
+
+            if (
+                type === "flat" ||
+                type === "amount" ||
+                type === "fixed"
+            ) {
+
+                advanceTotal +=
+                    Math.min(
+                        value,
+                        itemFinal
+                    );
+
+            }
+
+            else {
+
+                advanceTotal +=
+                    itemFinal *
+                    (
+                        value /
+                        100
+                    );
+
+            }
+
+        }
+    );
+
+
+    /*
+       Shipping is normally payable at
+       the same time as the advance unless
+       your business rules say otherwise.
+    */
+
+    if (
+        advanceTotal <= 0
+    ) {
+
+        return finalAmount;
+
+    }
+
+
+    return Math.min(
+        Math.round(
+            advanceTotal *
+            100
+        ) / 100,
+        finalAmount
+    );
+
+}
+
+
+/* ======================================================
+   ADVANCE PAYMENT INFO
+====================================================== */
+
+function updateAdvancePaymentInfo() {
+
+    const box =
+        document.getElementById(
+            "advancePaymentInfo"
+        );
+
+
+    if (!box) {
+
+        return;
+
+    }
+
+
+    if (
+        selectedPaymentMode !==
+        "advance"
+    ) {
+
+        box.classList.remove(
+            "show"
+        );
+
+
+        box.innerHTML =
+            "";
+
+
+        return;
+
+    }
+
+
+    const advanceAmount =
+        getAdvancePaymentAmount();
+
+
+    const balance =
+        Math.max(
+            finalAmount -
+            advanceAmount,
+            0
+        );
+
+
+    box.innerHTML = `
+
+        <span>
+
+            ℹ️ Pay Advance
+
+            <span class="advance-amount">
+
+                ₹${formatMoney(
+                    advanceAmount
+                )}
+
+            </span>
+
+            now and Balance
+
+            <span class="balance-amount">
+
+                ₹${formatMoney(
+                    balance
+                )}
+
+            </span>
+
+            on COD.
+
+        </span>
+
+    `;
+
+
+    box.classList.add(
+        "show"
+    );
+
+}
+
+
+/* ======================================================
+   RENDER CHECKOUT NOTE
+====================================================== */
+
+function renderCheckoutNote() {
+
+    /*
+       Do not require HTML manually.
+
+       The JS creates the note below
+       the price breakdown.
+    */
+
+    let note =
+        document.getElementById(
+            "checkoutCommonNote"
+        );
+
+
+    if (!note) {
+
+        note =
+            document.createElement(
+                "div"
+            );
+
+
+        note.id =
+            "checkoutCommonNote";
+
+
+        note.className =
+            "checkout-common-note";
+
+
+        /*
+           Put below the price breakdown.
+        */
+
+        const finalElement =
+            document.getElementById(
+                "finalAmount"
+            );
+
+
+        if (
+            finalElement
+        ) {
+
+            const priceSection =
+                finalElement.closest(
+                    ".section"
+                );
+
+
+            if (
+                priceSection
+            ) {
+
+                priceSection.appendChild(
+                    note
+                );
+
+            }
+
+            else {
+
+                document.body.appendChild(
+                    note
+                );
+
+            }
+
+        }
+
+        else {
+
+            document.body.appendChild(
+                note
+            );
+
+        }
+
+    }
+
+
+    note.innerHTML = `
+
+        <div class="checkout-note-title">
+
+            Note
+
+        </div>
+
+        <div class="checkout-note-text">
+
+            ${escapeHtml(
+                CHECKOUT_NOTE
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+/* ======================================================
+   GENERATE ORDER NUMBER
+====================================================== */
+
+async function generateOrderNumber() {
+
+    const prefix =
+        String(
+            siteSettings.orderPrefix ||
+            "IG"
+        )
+            .trim()
+            .replace(
+                /\s+/g,
+                ""
+            )
+            .toUpperCase();
+
+
+    if (!prefix) {
+
+        throw new Error(
+            "Order prefix is not configured in Site Settings."
+        );
+
+    }
+
+
+    const counterRef =
+        doc(
+            db,
+            "counters",
+            "orders"
+        );
+
+
+    try {
+
+        const next =
+            await runTransaction(
+                db,
+                async transaction => {
+
+                    const snapshot =
+                        await transaction.get(
+                            counterRef
+                        );
+
+
+                    let current =
+                        1000;
+
+
+                    if (
+                        snapshot.exists()
+                    ) {
+
+                        current =
+                            Number(
+                                snapshot.data().current ||
+                                1000
+                            );
+
+                    }
+
+
+                    const nextNumber =
+                        current + 1;
+
+
+                    transaction.set(
+                        counterRef,
+                        {
+
+                            current:
+                                nextNumber
+
+                        },
+                        {
+
+                            merge:
+                                true
+
+                        }
+                    );
+
+
+                    return nextNumber;
+
+                }
+            );
+
+
+        return `${prefix}-${next}`;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "ORDER COUNTER ERROR:",
+            error
+        );
+
+
+        throw new Error(
+            "Unable to generate order number. Please try again."
+        );
+
+    }
+
+}
 
 
 /* ======================================================
@@ -1728,6 +3844,7 @@ function validateForm() {
             "Please fill all fields"
         );
 
+
         return null;
 
     }
@@ -1742,6 +3859,7 @@ function validateForm() {
         alert(
             "Please enter a valid 10-digit mobile number"
         );
+
 
         return null;
 
@@ -1758,6 +3876,7 @@ function validateForm() {
             "Please enter a valid 6-digit pincode"
         );
 
+
         return null;
 
     }
@@ -1766,11 +3885,8 @@ function validateForm() {
     return {
 
         name,
-
         phone,
-
         address,
-
         pincode
 
     };
@@ -1800,10 +3916,7 @@ async function saveOrder(
 
 
     /*
-       Generate ONE order number.
-
-       This is called exactly once for
-       each successful order.
+       Generate order number.
     */
 
     orderNumber =
@@ -1811,7 +3924,7 @@ async function saveOrder(
 
 
     /*
-       FINAL ORDER TOTAL
+       Final total.
     */
 
     const orderTotal =
@@ -1821,19 +3934,20 @@ async function saveOrder(
 
 
     /*
-       ACTUAL AMOUNT PAID
+       Actual paid amount.
     */
 
-    let paidAmount =
-        0;
+    let paidAmount = 0;
 
 
     if (
-        paymentStatus === "paid"
+        paymentStatus ===
+        "paid"
     ) {
 
         if (
-            paymentMode === "advance"
+            paymentMode ===
+            "advance"
         ) {
 
             paidAmount =
@@ -1852,7 +3966,7 @@ async function saveOrder(
 
 
     /*
-       BALANCE
+       Balance.
     */
 
     const balanceAmount =
@@ -1864,26 +3978,159 @@ async function saveOrder(
 
 
     /*
-       ADVANCE SETTINGS
+       Free shipping.
     */
 
-    const advanceSettings =
-        orderData
-            ?.product
-            ?.paymentSettings
-            ?.advance ||
-        {};
+    const freeShipping =
+        shippingAmount === 0 &&
+        originalShipping > 0;
 
 
     /*
-       PAYMENT MODE DISCOUNT SETTINGS
+       Save all order items.
     */
 
+    const items =
+        orderItems.map(
+            item => {
+
+                const product =
+                    item.product ||
+                    {};
+
+
+                return {
+
+                    productId:
+                        product.id ||
+                        null,
+
+
+                    productName:
+                        product.name ||
+                        "",
+
+
+                    productImage:
+                        product.images?.[0] ||
+                        "",
+
+
+                    quantity:
+                        Number(
+                            item.quantity ||
+                            1
+                        ),
+
+
+                    unitPrice:
+                        Number(
+                            item.calculatedUnitPrice ||
+                            0
+                        ),
+
+
+                    subtotal:
+                        Number(
+                            item.calculatedSubtotal ||
+                            0
+                        ),
+
+
+                    shipping:
+                        Number(
+                            item.originalShipping ||
+                            0
+                        ),
+
+
+                    variants: {
+
+                        color:
+                            item.color ||
+                            null,
+
+
+                        size:
+                            item.size ||
+                            null
+
+                    },
+
+
+                    customOptions:
+                        Object
+                            .keys(
+                                item.options ||
+                                {}
+                            )
+                            .map(
+                                index => {
+
+                                    const option =
+                                        product
+                                            .customOptions
+                                            ?.[index];
+
+
+                                    return {
+
+                                        label:
+                                            option?.label ||
+                                            "",
+
+
+                                        value:
+                                            item
+                                                .optionValues
+                                                ?.[index] ||
+                                            "Selected",
+
+
+                                        image:
+                                            item
+                                                .imageLinks
+                                                ?.[index] ||
+                                            null
+
+                                    };
+
+                                }
+                            )
+
+                };
+
+            }
+        );
+
+
+    /*
+       Keep old single-product fields
+       for compatibility with existing
+       admin/order pages.
+    */
+
+    const firstItem =
+        items[0] ||
+        {};
+
+
+    const firstProduct =
+        orderItems[0]?.product ||
+        {};
+
+
     const paymentSettings =
-        orderData
-            ?.product
+        firstProduct
             ?.paymentSettings
             ?.[paymentMode] ||
+        {};
+
+
+    const advanceSettings =
+        firstProduct
+            ?.paymentSettings
+            ?.advance ||
         {};
 
 
@@ -1895,76 +4142,63 @@ async function saveOrder(
             orderNumber,
 
 
+        /*
+           Multiple products
+        */
+
+        items,
+
+
+        /*
+           Old compatibility fields
+        */
+
         productId:
-            orderData.product.id ||
+            firstProduct.id ||
             null,
 
 
         productName:
-            orderData.product.name ||
+            firstProduct.name ||
             "",
 
 
         productImage:
-            orderData.product.images?.[0] ||
+            firstProduct.images?.[0] ||
             "",
 
 
         categoryId:
-            orderData.product.categoryId ||
+            firstProduct.categoryId ||
             null,
 
 
         tags:
-            orderData.product.tags ||
+            firstProduct.tags ||
             [],
 
 
-        variants: {
+        variants:
+            firstItem.variants ||
+            {
 
-            color:
-                orderData.color ||
-                null,
+                color:
+                    null,
 
-            size:
-                orderData.size ||
-                null
+                size:
+                    null
 
-        },
+            },
 
 
         customOptions:
-
-            Object
-                .keys(
-                    orderData.options ||
-                    {}
-                )
-                .map(
-                    i => ({
-
-                        label:
-                            orderData
-                                .product
-                                .customOptions?.[i]
-                                ?.label ||
-                            "",
+            firstItem.customOptions ||
+            [],
 
 
-                        value:
-                            orderData
-                                .optionValues?.[i] ||
-                            "Selected",
-
-
-                        image:
-                            orderData
-                                .imageLinks?.[i] ||
-                            null
-
-                    })
-                ),
-
+        /*
+           PRICING
+        */
 
         pricing: {
 
@@ -1974,9 +4208,23 @@ async function saveOrder(
                 ),
 
 
-            /*
-               Product payment discount
-            */
+            originalShipping:
+                Number(
+                    originalShipping
+                ),
+
+
+            shipping:
+                Number(
+                    shippingAmount
+                ),
+
+
+            freeShipping:
+                Boolean(
+                    freeShipping
+                ),
+
 
             paymentDiscount:
                 Number(
@@ -1984,38 +4232,78 @@ async function saveOrder(
                 ),
 
 
-            /*
-               Coupon discount
-            */
-
             couponDiscount:
                 Number(
-                    discount
+                    couponDiscount
                 ),
 
 
-            /*
-               Combined discount
-            */
-
             discount:
                 Number(
-                    Math.min(
-                        subTotal,
-                        paymentDiscount +
-                        discount
-                    )
+                    totalDiscount
                 ),
 
 
             finalAmount:
-                orderTotal,
+                Number(
+                    orderTotal
+                ),
 
 
             totalAmount:
-                orderTotal
+                Number(
+                    orderTotal
+                )
 
         },
+
+
+        /*
+           COUPON
+        */
+
+        coupon: appliedCoupon
+            ?
+
+            {
+
+                id:
+                    appliedCoupon.id ||
+                    null,
+
+
+                code:
+                    appliedCoupon.code ||
+                    "",
+
+
+                type:
+                    appliedCoupon.type ||
+                    "",
+
+
+                value:
+                    Number(
+                        appliedCoupon.value ||
+                        0
+                    ),
+
+
+                freeShipping:
+                    Boolean(
+                        appliedCoupon.freeShipping
+                    ),
+
+
+                stackRule:
+                    appliedCoupon.stackRule ||
+                    "stack"
+
+            }
+
+            :
+
+            null,
 
 
         customer,
@@ -2062,7 +4350,8 @@ async function saveOrder(
 
 
             advanceType:
-                paymentMode === "advance"
+                paymentMode ===
+                "advance"
                     ?
                     (
                         advanceSettings.type ||
@@ -2073,7 +4362,8 @@ async function saveOrder(
 
 
             advanceValue:
-                paymentMode === "advance"
+                paymentMode ===
+                "advance"
                     ?
                     Number(
                         advanceSettings.value ||
@@ -2083,6 +4373,14 @@ async function saveOrder(
                     0
 
         },
+
+
+        /*
+           COMMON CHECKOUT NOTE
+        */
+
+        checkoutNote:
+            CHECKOUT_NOTE,
 
 
         orderStatus:
@@ -2103,11 +4401,17 @@ async function saveOrder(
             "IG",
 
 
+        /*
+           Keep first product link
+           for compatibility.
+        */
+
         productLink:
             window.location.origin +
             "/product?id=" +
             encodeURIComponent(
-                orderData.product.id
+                firstProduct.id ||
+                ""
             ),
 
 
@@ -2118,7 +4422,7 @@ async function saveOrder(
 
 
     /*
-       SAVE FIRESTORE ORDER
+       SAVE FIRESTORE
     */
 
     await addDoc(
@@ -2136,7 +4440,7 @@ async function saveOrder(
 
 
 /* ======================================================
-   ORDER SUCCESS POPUP
+   ORDER SUCCESS
 ====================================================== */
 
 function showOrderSuccess(
@@ -2162,11 +4466,8 @@ function showOrderSuccess(
 
     showOrderPopup(
         true,
-
         "Order Placed Successfully!",
-
         message,
-
         order?.orderNumber ||
         ""
     );
@@ -2175,7 +4476,7 @@ function showOrderSuccess(
 
 
 /* ======================================================
-   ORDER FAILED POPUP
+   ORDER FAILED
 ====================================================== */
 
 function showOrderFailed(
@@ -2184,9 +4485,7 @@ function showOrderFailed(
 
     showOrderPopup(
         false,
-
         "Order Failed",
-
         message ||
         "Something went wrong. Please try again."
     );
@@ -2195,7 +4494,7 @@ function showOrderFailed(
 
 
 /* ======================================================
-   ORDER RESULT POPUP
+   ORDER POPUP
 ====================================================== */
 
 function showOrderPopup(
@@ -2247,11 +4546,6 @@ function showOrderPopup(
         );
 
 
-    /*
-       If popup HTML is not present,
-       use alert.
-    */
-
     if (!overlay) {
 
         alert(
@@ -2281,6 +4575,7 @@ function showOrderPopup(
             );
 
         }
+
 
         return;
 
@@ -2378,7 +4673,7 @@ function showOrderPopup(
 
 
 /* ======================================================
-   CLOSE ORDER POPUP
+   CLOSE POPUP
 ====================================================== */
 
 window.closeOrderPopup =
@@ -2428,9 +4723,9 @@ async function() {
             true;
 
 
-        /* ==============================================
+        /*
            COD
-        ============================================== */
+        */
 
         if (
             selectedPaymentMode ===
@@ -2473,9 +4768,9 @@ async function() {
         }
 
 
-        /* ==============================================
+        /*
            ADVANCE
-        ============================================== */
+        */
 
         if (
             selectedPaymentMode ===
@@ -2493,9 +4788,9 @@ async function() {
         }
 
 
-        /* ==============================================
+        /*
            ONLINE
-        ============================================== */
+        */
 
         await startPayment(
             customer,
@@ -2548,8 +4843,9 @@ function sendWhatsApp(
     if (!whatsappNumber) {
 
         console.warn(
-            "WhatsApp number is not configured in Site Settings."
+            "WhatsApp number is not configured."
         );
+
 
         return false;
 
@@ -2585,67 +4881,73 @@ function sendWhatsApp(
         `📮 *Pincode:* ${order.customer.pincode}\n\n`;
 
 
+    /*
+       PRODUCTS
+    */
+
     message +=
-        `📦 *Product:* ${order.productName}\n`;
+        `📦 *Products:*\n`;
 
 
-    /* COLOR */
+    order.items.forEach(
+        (item, index) => {
 
-    if (
-        order.variants.color
-    ) {
-
-        message +=
-            `🎨 Color: ${order.variants.color.name}\n`;
-
-    }
+            message +=
+                `\n${index + 1}. ${item.productName}\n`;
 
 
-    /* SIZE */
-
-    if (
-        order.variants.size
-    ) {
-
-        message +=
-            `📏 Size: ${order.variants.size.name}\n`;
-
-    }
+            message +=
+                `   Qty: ${item.quantity}\n`;
 
 
-    /* OPTIONS */
-
-    if (
-        order.customOptions.length
-    ) {
-
-        message +=
-            `\n⚙ *Options:*\n`;
+            message +=
+                `   Price: ₹${formatMoney(
+                    item.unitPrice
+                )}\n`;
 
 
-        order.customOptions.forEach(
-            option => {
+            if (
+                item.variants?.color
+            ) {
 
                 message +=
-                    `- ${option.label}: ${option.value}\n`;
-
-
-                if (
-                    option.image
-                ) {
-
-                    message +=
-                        `  Image: ${option.image}\n`;
-
-                }
+                    `   Color: ${item.variants.color.name}\n`;
 
             }
-        );
-
-    }
 
 
-    /* PRICE */
+            if (
+                item.variants?.size
+            ) {
+
+                message +=
+                    `   Size: ${item.variants.size.name}\n`;
+
+            }
+
+
+            if (
+                item.customOptions?.length
+            ) {
+
+                item.customOptions.forEach(
+                    option => {
+
+                        message +=
+                            `   ${option.label}: ${option.value}\n`;
+
+                    }
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+       PRICE
+    */
 
     message +=
         `\n💰 *Subtotal:* ₹${formatMoney(
@@ -2653,8 +4955,36 @@ function sendWhatsApp(
         )}\n`;
 
 
+    /*
+       SHIPPING
+    */
+
     if (
-        order.pricing.paymentDiscount > 0
+        order.pricing.freeShipping
+    ) {
+
+        message +=
+            `🚚 *Shipping:* FREE\n`;
+
+    }
+
+    else {
+
+        message +=
+            `🚚 *Shipping:* ₹${formatMoney(
+                order.pricing.shipping
+            )}\n`;
+
+    }
+
+
+    /*
+       PAYMENT DISCOUNT
+    */
+
+    if (
+        order.pricing.paymentDiscount >
+        0
     ) {
 
         message +=
@@ -2665,8 +4995,23 @@ function sendWhatsApp(
     }
 
 
+    /*
+       COUPON
+    */
+
     if (
-        order.pricing.couponDiscount > 0
+        order.coupon?.code
+    ) {
+
+        message +=
+            `🏷 *Coupon:* ${order.coupon.code}\n`;
+
+    }
+
+
+    if (
+        order.pricing.couponDiscount >
+        0
     ) {
 
         message +=
@@ -2677,8 +5022,13 @@ function sendWhatsApp(
     }
 
 
+    /*
+       TOTAL DISCOUNT
+    */
+
     if (
-        order.pricing.discount > 0
+        order.pricing.discount >
+        0
     ) {
 
         message +=
@@ -2689,48 +5039,42 @@ function sendWhatsApp(
     }
 
 
+    /*
+       FINAL
+    */
+
     message +=
-        `💵 *Order Total:* ₹${formatMoney(
+        `\n💵 *Order Total:* ₹${formatMoney(
             order.pricing.finalAmount
         )}\n`;
 
 
-    /* ADVANCE */
+    /*
+       ADVANCE
+    */
 
     if (
         order.payment.mode ===
         "advance"
     ) {
 
-        const paid =
-            Number(
-                order.payment.paidAmount ||
-                0
-            );
-
-
-        const balance =
-            Number(
-                order.payment.balanceAmount ||
-                0
-            );
-
-
         message +=
             `\n💳 *Advance Paid:* ₹${formatMoney(
-                paid
+                order.payment.paidAmount
             )}\n`;
 
 
         message +=
             `💰 *Balance on COD:* ₹${formatMoney(
-                balance
+                order.payment.balanceAmount
             )}\n`;
 
     }
 
 
-    /* PAYMENT */
+    /*
+       PAYMENT
+    */
 
     message +=
         `💳 *Payment:* ${String(
@@ -2738,16 +5082,38 @@ function sendWhatsApp(
         ).toUpperCase()}\n`;
 
 
-    /* PRODUCT LINK */
+    /*
+       CHECKOUT NOTE
+    */
 
-    message +=
-        `\n🔗 Product Link:\n`;
+    if (
+        order.checkoutNote
+    ) {
+
+        message +=
+            `\n📝 *Note:* ${order.checkoutNote}\n`;
+
+    }
 
 
-    message +=
-        `${window.location.origin}/product?id=${encodeURIComponent(
-            order.productId
-        )}`;
+    /*
+       PRODUCT LINK
+    */
+
+    if (
+        order.productId
+    ) {
+
+        message +=
+            `\n🔗 Product Link:\n`;
+
+
+        message +=
+            `${window.location.origin}/product?id=${encodeURIComponent(
+                order.productId
+            )}`;
+
+    }
 
 
     const whatsappUrl =
@@ -2763,6 +5129,7 @@ function sendWhatsApp(
             "_blank"
         );
 
+
         return true;
 
     }
@@ -2773,6 +5140,7 @@ function sendWhatsApp(
             "WhatsApp open error:",
             error
         );
+
 
         return false;
 
@@ -2872,7 +5240,7 @@ function loadRazorpayScript() {
 
 
 /* ======================================================
-   RAZORPAY PAYMENT
+   START RAZORPAY PAYMENT
 ====================================================== */
 
 async function startPayment(
@@ -2890,35 +5258,32 @@ async function startPayment(
                 .trim();
 
 
-        /* CHECK KEY */
-
         if (!razorpayKey) {
 
             showOrderFailed(
                 "Razorpay Key ID is not configured in Site Settings."
             );
 
+
             orderSubmitting =
                 false;
+
 
             return;
 
         }
 
 
-        /*
-           ONLINE
-           = final order amount
-
-           ADVANCE
-           = configured advance amount
-        */
-
         const paymentAmount =
-            paymentMode === "advance"
+            paymentMode ===
+            "advance"
+
                 ?
+
                 getAdvancePaymentAmount()
+
                 :
+
                 finalAmount;
 
 
@@ -2930,30 +5295,14 @@ async function startPayment(
                 "Invalid payment amount."
             );
 
+
             orderSubmitting =
                 false;
+
 
             return;
 
         }
-
-
-        console.log(
-            "Order total:",
-            finalAmount
-        );
-
-
-        console.log(
-            "Payment mode:",
-            paymentMode
-        );
-
-
-        console.log(
-            "Payment amount:",
-            paymentAmount
-        );
 
 
         await loadRazorpayScript();
@@ -2969,10 +5318,6 @@ async function startPayment(
             key:
                 razorpayKey,
 
-
-            /*
-               Razorpay expects INR in paise.
-            */
 
             amount:
                 Math.round(
@@ -2990,7 +5335,8 @@ async function startPayment(
 
 
             description:
-                paymentMode === "advance"
+                paymentMode ===
+                "advance"
 
                     ?
 
@@ -3008,18 +5354,6 @@ async function startPayment(
 
                     try {
 
-                        /*
-                           IMPORTANT:
-
-                           Order number is generated
-                           only after successful
-                           payment.
-
-                           This means failed payment
-                           does not consume an order
-                           number.
-                        */
-
                         const order =
                             await saveOrder(
                                 paymentMode,
@@ -3032,8 +5366,9 @@ async function startPayment(
                         if (!order) {
 
                             showOrderFailed(
-                                "Payment was successful, but the order could not be saved. Please contact us."
+                                "Payment was successful, but the order could not be saved."
                             );
+
 
                             return;
 
@@ -3089,24 +5424,32 @@ async function startPayment(
 
             notes: {
 
-                product:
-                    orderData.product.name,
-
                 company:
                     companyName,
 
+
                 paymentMode:
                     paymentMode,
+
 
                 orderTotal:
                     String(
                         finalAmount
                     ),
 
-                paymentAmount:
+
+                shipping:
                     String(
-                        paymentAmount
+                        shippingAmount
                     ),
+
+
+                coupon:
+                    String(
+                        appliedCoupon?.code ||
+                        ""
+                    ),
+
 
                 orderPrefix:
                     String(
@@ -3132,8 +5475,6 @@ async function startPayment(
                 options
             );
 
-
-        /* PAYMENT FAILED */
 
         rzp.on(
             "payment.failed",
@@ -3163,8 +5504,6 @@ async function startPayment(
             }
         );
 
-
-        /* MODAL CLOSED */
 
         rzp.on(
             "modal.ondismiss",
@@ -3213,29 +5552,25 @@ function formatMoney(
 
     const number =
         Number(
-            value || 0
+            value ||
+            0
         );
 
 
-    /*
-       Remove unnecessary .00
+    if (
+        Number.isInteger(
+            number
+        )
+    ) {
 
-       1500
-       427.5
-       427.50
-    */
+        return number.toString();
 
-    return Number.isInteger(
-        number
-    )
+    }
 
-        ?
 
-        number.toString()
-
-        :
-
-        number.toFixed(2);
+    return number.toFixed(
+        2
+    );
 
 }
 
@@ -3251,22 +5586,27 @@ function escapeHtml(
     return String(
         value ?? ""
     )
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
