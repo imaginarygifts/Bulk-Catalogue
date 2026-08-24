@@ -1063,3 +1063,130 @@ body.search-open{
     overflow:hidden;
 
 }
+
+
+
+
+
+
+/*==================================================
+    CART BUTTON
+==================================================*/
+
+.cart-button{
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    width:52px;
+
+    height:52px;
+
+    flex-shrink:0;
+
+    color:#fff;
+
+    text-decoration:none;
+
+    cursor:pointer;
+
+}
+
+
+.cart-button i{
+
+    color:#fff;
+
+    font-size:24px;
+
+}
+
+
+/*==================================================
+    CART COUNT BADGE
+==================================================*/
+
+.cart-count{
+
+    position:absolute;
+
+    top:2px;
+
+    right:0;
+
+    min-width:21px;
+
+    height:21px;
+
+    padding:0 5px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    box-sizing:border-box;
+
+    border-radius:50%;
+
+    background:#ff8a00;
+
+    border:2px solid #111;
+
+    color:#fff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size:10px;
+
+    font-weight:900;
+
+    line-height:1;
+
+}
+
+
+/*==================================================
+    CART COUNT ANIMATION
+==================================================*/
+
+.cart-count.bump{
+
+    animation:
+        cartBadgeBump
+        .25s
+        ease;
+
+}
+
+
+@keyframes cartBadgeBump{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.3);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
