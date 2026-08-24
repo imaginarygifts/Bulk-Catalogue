@@ -58,7 +58,6 @@ async function loadHomepageNote() {
             "homepageNoteBar"
         );
 
-
     const track =
         document.getElementById(
             "homepageNoteTrack"
@@ -69,6 +68,10 @@ async function loadHomepageNote() {
         !bar ||
         !track
     ) {
+
+        console.warn(
+            "Homepage note elements not found."
+        );
 
         return;
 
@@ -115,8 +118,7 @@ async function loadHomepageNote() {
 
 
         /*
-           Hide the bar if no note
-           has been configured.
+           No note configured
         */
 
         if (!note) {
@@ -140,6 +142,11 @@ async function loadHomepageNote() {
         bar.style.display =
             "flex";
 
+
+        console.log(
+            "Homepage note loaded:",
+            note
+        );
 
     }
 
