@@ -187,8 +187,8 @@ function initSettings(){
                 adminVerified =
                     true;
 
-loadCurrentAdminAccount();
 
+                loadCurrentAdminAccount();
 
 
                 /*======================================
@@ -274,6 +274,28 @@ async function loadSettings(){
             setValue(
                 "orderPrefix",
                 "IG"
+            );
+
+
+            /*------------------------------------------
+                DEFAULT NOTES
+            ------------------------------------------*/
+
+            setValue(
+                "checkoutNote",
+                ""
+            );
+
+
+            setValue(
+                "productNote",
+                ""
+            );
+
+
+            setValue(
+                "homepageNote",
+                ""
             );
 
 
@@ -406,6 +428,39 @@ async function loadSettings(){
         setValue(
             "shippingPolicy",
             settings.shippingPolicy
+        );
+
+
+        /*==============================================
+            CHECKOUT NOTE
+        ==============================================*/
+
+        setValue(
+            "checkoutNote",
+            settings.checkoutNote ||
+            ""
+        );
+
+
+        /*==============================================
+            PRODUCT NOTE
+        ==============================================*/
+
+        setValue(
+            "productNote",
+            settings.productNote ||
+            ""
+        );
+
+
+        /*==============================================
+            HOMEPAGE NOTE
+        ==============================================*/
+
+        setValue(
+            "homepageNote",
+            settings.homepageNote ||
+            ""
         );
 
 
@@ -823,11 +878,6 @@ async function handleSave(
             );
 
 
-        /*
-            Only allow the two values that
-            product.js understands.
-        */
-
         if(
             orderButton !== "whatsapp" &&
             orderButton !== "buyNow"
@@ -859,10 +909,6 @@ async function handleSave(
             );
 
 
-        /*
-            Default prefix
-        */
-
         if(
             !orderPrefix
         ){
@@ -872,16 +918,6 @@ async function handleSave(
 
         }
 
-
-        /*
-            Remove spaces and convert
-            prefix to uppercase.
-
-            Example:
-            "ig"      -> "IG"
-            "IG "     -> "IG"
-            "myshop"  -> "MYSHOP"
-        */
 
         orderPrefix =
             orderPrefix
@@ -892,10 +928,6 @@ async function handleSave(
                 .toUpperCase();
 
 
-        /*
-            Maximum 10 characters
-        */
-
         orderPrefix =
             orderPrefix
                 .substring(
@@ -904,23 +936,12 @@ async function handleSave(
                 );
 
 
-        /*
-            Only letters and numbers.
-
-            Example:
-            "IG@" -> "IG"
-        */
-
         orderPrefix =
             orderPrefix.replace(
                 /[^A-Z0-9]/g,
                 ""
             );
 
-
-        /*
-            Final fallback
-        */
 
         if(
             !orderPrefix
@@ -930,6 +951,28 @@ async function handleSave(
                 "IG";
 
         }
+
+
+        /*==============================================
+            WEBSITE NOTES
+        ==============================================*/
+
+        const checkoutNote =
+            getValue(
+                "checkoutNote"
+            );
+
+
+        const productNote =
+            getValue(
+                "productNote"
+            );
+
+
+        const homepageNote =
+            getValue(
+                "homepageNote"
+            );
 
 
         /*==============================================
@@ -1021,6 +1064,22 @@ async function handleSave(
 
 
             /*------------------------------------------
+                WEBSITE NOTES
+            ------------------------------------------*/
+
+            checkoutNote:
+                checkoutNote,
+
+
+            productNote:
+                productNote,
+
+
+            homepageNote:
+                homepageNote,
+
+
+            /*------------------------------------------
                 LOGO
             ------------------------------------------*/
 
@@ -1052,9 +1111,22 @@ async function handleSave(
         );
 
 
+        /*
+            MERGE = true
+
+            This is important.
+
+            It updates these settings without
+            deleting other existing fields that
+            may already exist in settings/general.
+        */
+
         await setDoc(
             settingsRef,
-            settings
+            settings,
+            {
+                merge: true
+            }
         );
 
 
@@ -1406,6 +1478,8 @@ function showMessage(
         `settings-message ${type}`;
 
 }
+
+
 /*==================================================
     ADMIN ACCOUNT
 ==================================================*/
@@ -1843,6 +1917,7 @@ function showAdminAccountMessage(
         `admin-account-message ${type}`;
 
 }
+
 
 /*==================================================
     EXPORT
