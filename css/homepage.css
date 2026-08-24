@@ -885,16 +885,19 @@ button{
 
 .product-carousel{
 
-    display:grid;
+    display:flex;
 
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
+    flex-direction:row;
 
-    gap:10px;
+    flex-wrap:nowrap;
+
+    gap:14px;
 
     width:100%;
 
-    overflow-x:visible;
+    overflow-x:auto;
+
+    overflow-y:hidden;
 
     padding:10px;
 
@@ -903,6 +906,66 @@ button{
     border:1px solid #26262d;
 
     border-top:0;
+
+    scroll-behavior:smooth;
+
+    -webkit-overflow-scrolling:touch;
+
+    scrollbar-width:none;
+
+}
+
+
+/*==================================================
+    HIDE HORIZONTAL SCROLLBAR
+==================================================*/
+
+.product-carousel::-webkit-scrollbar{
+
+    display:none;
+
+}
+
+
+/*==================================================
+    PRODUCT CARD INSIDE CAROUSEL
+==================================================*/
+
+.product-carousel .product-card{
+
+    flex:0 0 305px;
+
+    width:305px;
+
+    min-width:305px;
+
+}
+
+
+/*==================================================
+    MOBILE
+==================================================*/
+
+@media(max-width:600px){
+
+    .product-carousel{
+
+        gap:14px;
+
+        padding:10px;
+
+    }
+
+
+    .product-carousel .product-card{
+
+        flex:0 0 305px;
+
+        width:305px;
+
+        min-width:305px;
+
+    }
 
 }
 
