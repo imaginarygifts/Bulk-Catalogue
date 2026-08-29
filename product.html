@@ -929,19 +929,12 @@
      PRODUCT STICKY ACTION BAR
 ================================================== -->
 
-<div class="product-action-area">
-
-
-    <!-- ==============================================
-         ADD TO CART
-         
-         cart.js controls this button.
-         
-         IMPORTANT:
-         Do NOT use productOrderButton here.
-    =============================================== -->
-
-    <button
+<div class="sticky-order">    <!-- PRODUCT ORDER BUTTON -->    <div  
+    id="productOrderButton"  
+    class="buy-now-btn"  
+  >  
+    Buy Now  
+  </div>    <!-- SHARE -->      <button
         type="button"
         id="productCartButton"
         class="product-cart-action"
@@ -954,35 +947,7 @@
             Add to Cart
         </span>
 
-    </button>
-
-
-
-    <!-- ==============================================
-         BUY NOW / WHATSAPP
-         
-         IMPORTANT:
-         Keep this ID because product.js
-         already uses it.
-    =============================================== -->
-
-    <div
-        id="productOrderButton"
-        class="product-order-action"
-        role="button"
-        tabindex="0"
-        aria-label="Buy Now"
-    >
-
-        <i class="fa-solid fa-bag-shopping"></i>
-
-        <span>
-            Buy Now
-        </span>
-
-    </div>
-
-</div>
+    </button>  </div> 
 
 
 
