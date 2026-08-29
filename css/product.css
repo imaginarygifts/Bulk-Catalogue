@@ -2335,3 +2335,75 @@ img {
 .product-page{
     padding-bottom:105px;
 }
+
+
+
+
+
+
+
+/* ==================================================
+   SHARE BUTTON
+================================================== */
+
+.share-button {
+
+    position: fixed;
+
+    right: 18px;
+
+    bottom: 70px;
+
+    z-index: 1000;
+
+    width: 52px;
+
+    height: 52px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff9f1c 0%,
+            #ff5b2e 28%,
+            #ed287c 60%,
+            #9c27d5 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 7px 22px
+        rgba(0,0,0,0.40);
+
+    cursor: pointer;
+
+    font-size: 20px;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.share-button:hover {
+
+    transform: scale(1.06);
+
+    box-shadow:
+        0 8px 25px
+        rgba(236,40,124,0.35);
+}
+
+
+.share-button:active {
+
+    transform: scale(0.92);
+}
