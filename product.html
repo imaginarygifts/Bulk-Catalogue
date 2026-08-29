@@ -1,789 +1,1461 @@
-<!DOCTYPE html>  <html lang="en">  <head>  <meta charset="UTF-8">  
+<!DOCTYPE html>
+<html lang="en">
 
-<meta  
-    name="viewport"  
-    content="width=device-width, initial-scale=1.0"  
->  
+<head>
 
-<!-- ==================================================  
-     DEFAULT SEO  
-     site-settings.js / product.js can replace these  
-================================================== -->  
+    <meta charset="UTF-8">
 
-<title>  
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-</title>  
+    <!-- ==================================================
+         DEFAULT SEO
+    ================================================== -->
 
-<meta  
-    name="description"  
-    content=""  
->  
+    <title></title>
 
-<meta  
-    name="keywords"  
-    content=""  
->  
+    <meta
+        name="description"
+        content=""
+    >
 
-
-<!-- ==================================================  
-     OPEN GRAPH  
-================================================== -->  
-
-<meta  
-    property="og:title"  
-    content=""  
->  
-
-<meta  
-    property="og:description"  
-    content=""  
->  
-
-<meta  
-    property="og:image"  
-    content=""  
->  
-
-<meta  
-    property="og:url"  
-    content=""  
->  
-
-<meta  
-    property="og:type"  
-    content="product"  
->  
+    <meta
+        name="keywords"
+        content=""
+    >
 
 
-<!-- ==================================================  
-     TWITTER  
-================================================== -->  
+    <!-- ==================================================
+         OPEN GRAPH
+    ================================================== -->
 
-<meta  
-    name="twitter:card"  
-    content="summary_large_image"  
->  
+    <meta
+        property="og:title"
+        content=""
+    >
 
-<meta  
-    name="twitter:title"  
-    content=""  
->  
+    <meta
+        property="og:description"
+        content=""
+    >
 
-<meta  
-    name="twitter:description"  
-    content=""  
->  
+    <meta
+        property="og:image"
+        content=""
+    >
 
-<meta  
-    name="twitter:image"  
-    content=""  
->  
+    <meta
+        property="og:url"
+        content=""
+    >
 
-
-<!-- ==================================================  
-     FONT AWESOME  
-================================================== -->  
-
-<link  
-    rel="stylesheet"  
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"  
->  
+    <meta
+        property="og:type"
+        content="product"
+    >
 
 
-<!-- ==================================================  
-     PRODUCT CSS  
-================================================== -->  
+    <!-- ==================================================
+         TWITTER
+    ================================================== -->
 
-<link  
-    rel="stylesheet"  
-    href="css/product.css"  
->  
+    <meta
+        name="twitter:card"
+        content="summary_large_image"
+    >
+
+    <meta
+        name="twitter:title"
+        content=""
+    >
+
+    <meta
+        name="twitter:description"
+        content=""
+    >
+
+    <meta
+        name="twitter:image"
+        content=""
+    >
 
 
-<!-- ==================================================  
-     COMMON TOPBAR CSS  
-================================================== -->  
+    <!-- ==================================================
+         FONT AWESOME
+    ================================================== -->
 
-<link  
-    rel="stylesheet"  
-    href="css/topbar.css"  
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+
+    <!-- ==================================================
+         PRODUCT CSS
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/product.css"
+    >
+
+
+    <!-- ==================================================
+         COMMON TOPBAR CSS
+    ================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/topbar.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- ==================================================
+     COMMON TOPBAR
+================================================== -->
+
+<header class="site-topbar">
+
+
+    <!-- ==============================================
+         MENU
+    =============================================== -->
+
+    <button
+        type="button"
+        class="topbar-button menu-button"
+        id="menuButton"
+        aria-label="Open menu"
+        aria-expanded="false"
+    >
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+
+
+    <!-- ==============================================
+         LOGO
+    =============================================== -->
+
+    <div class="topbar-logo">
+
+        <a
+            href=""
+            id="logoLink"
+            data-logo-link
+            aria-label="Home"
+        >
+
+            <img
+                id="siteLogo"
+                data-site-logo
+                src=""
+                alt="Company Logo"
+            >
+
+        </a>
+
+    </div>
+
+
+
+    <!-- ==============================================
+         SEARCH
+    =============================================== -->
+
+    <button
+        type="button"
+        class="topbar-button search-button"
+        id="searchButton"
+        aria-label="Search"
+    >
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+    </button>
+
+
+
+    <!-- ==============================================
+         CART
+    =============================================== -->
+
+    <a
+        href="cart.html"
+        class="topbar-button cart-button"
+        id="cartButton"
+        aria-label="Shopping Cart"
+    >
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+
+        <!-- CART COUNT -->
+
+        <span
+            id="cartCount"
+            class="cart-count"
+        >
+            0
+        </span>
+
+    </a>
+
+
+</header>
+
+
+
+<!-- ==================================================
+     SEARCH OVERLAY
+================================================== -->
+
+<div
+    id="searchOverlay"
+    class="search-overlay"
+    aria-hidden="true"
 >
 
-</head>  <body>  <!-- ==================================================  
-     COMMON TOPBAR  
-================================================== -->  <header class="site-topbar">  <!-- MENU -->  
-
-<button  
-    type="button"  
-    class="topbar-button menu-button"  
-    id="menuButton"  
-    aria-label="Open menu"  
-    aria-expanded="false"  
->  
-
-    <i class="fa-solid fa-bars"></i>  
-
-</button>  
+    <div class="search-panel">
 
 
-<!-- LOGO -->  
+        <!-- SEARCH HEADER -->
 
-<div class="topbar-logo">  
+        <div class="search-header">
 
-    <a  
-        href=""  
-        id="logoLink"  
-        data-logo-link  
-        aria-label="Home"  
-    >  
-
-        <img  
-            id="siteLogo"  
-            data-site-logo  
-            src=""  
-            alt="Company Logo"  
-        >  
-
-    </a>  
-
-</div>  
+            <div class="search-title">
+                Search Products
+            </div>
 
 
-<!-- SEARCH -->  
+            <button
+                type="button"
+                class="search-close-button"
+                id="closeSearchButton"
+                aria-label="Close search"
+            >
 
-<button  
-    type="button"  
-    class="topbar-button search-button"  
-    id="searchButton"  
-    aria-label="Search"  
->  
+                <i class="fa-solid fa-xmark"></i>
 
-    <i class="fa-solid fa-magnifying-glass"></i>  
+            </button>
+
+        </div>
+
+
+
+        <!-- SEARCH INPUT -->
+
+        <div class="search-input-wrapper">
+
+            <i
+                class="fa-solid fa-magnifying-glass search-input-icon"
+            ></i>
+
+
+            <input
+                type="search"
+                id="searchInput"
+                class="search-input"
+                placeholder="Search for products..."
+                autocomplete="off"
+            >
+
+
+            <button
+                type="button"
+                id="clearSearchButton"
+                class="clear-search-button"
+                aria-label="Clear search"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- SEARCH RESULTS -->
+
+        <div
+            id="searchResults"
+            class="search-results"
+        >
+
+            <div class="search-message">
+
+                Search for a product
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     SIDEBAR OVERLAY
+================================================== -->
+
+<div
+    id="sidebarOverlay"
+    class="sidebar-overlay"
+    aria-hidden="true"
+></div>
+
+
+
+<!-- ==================================================
+     SIDEBAR
+================================================== -->
+
+<aside
+    id="sidebar"
+    class="site-sidebar"
+    aria-hidden="true"
+>
+
+
+    <!-- SIDEBAR HEADER -->
+
+    <div class="sidebar-header">
+
+        <strong data-company-name>
+            Company Name
+        </strong>
+
+
+        <button
+            type="button"
+            class="sidebar-close-button"
+            id="closeSidebarButton"
+            aria-label="Close menu"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+
+
+    <!-- ==============================================
+         HOME
+    =============================================== -->
+
+    <a
+        href=""
+        class="sidebar-link"
+        data-home-link
+    >
+
+        <i class="fa-solid fa-house"></i>
+
+        <span>
+            Home
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         SHOP
+    =============================================== -->
+
+    <a
+        href="shop"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-shop"></i>
+
+        <span>
+            Shop
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         CART
+    =============================================== -->
+
+    <a
+        href="cart.html"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        <span>
+            Cart
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         CATEGORIES
+    =============================================== -->
+
+    <div class="sidebar-expandable">
+
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="categoriesToggle"
+            aria-expanded="false"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                Categories
+
+            </span>
+
+
+            <i
+                class="fa-solid fa-chevron-down sidebar-chevron"
+            ></i>
+
+        </button>
+
+
+        <div
+            id="sidebarCategories"
+            class="sidebar-submenu"
+        >
+
+            <div class="sidebar-loading">
+                Loading categories...
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==============================================
+         TAGS
+    =============================================== -->
+
+    <div class="sidebar-expandable">
+
+        <button
+            type="button"
+            class="sidebar-expand-button"
+            id="tagsToggle"
+            aria-expanded="false"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-tags"></i>
+
+                Tags
+
+            </span>
+
+
+            <i
+                class="fa-solid fa-chevron-down sidebar-chevron"
+            ></i>
+
+        </button>
+
+
+        <div
+            id="sidebarTags"
+            class="sidebar-submenu"
+        >
+
+            <div class="sidebar-loading">
+                Loading tags...
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==============================================
+         ABOUT
+    =============================================== -->
+
+    <a
+        href="aboutus"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <span>
+            About Us
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         CONTACT
+    =============================================== -->
+
+    <a
+        href="contact-us"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-phone"></i>
+
+        <span>
+            Contact Us
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         TERMS
+    =============================================== -->
+
+    <a
+        href="t&c"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-file-contract"></i>
+
+        <span>
+            Terms & Conditions
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         PRIVACY
+    =============================================== -->
+
+    <a
+        href="privacy-policy"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-lock"></i>
+
+        <span>
+            Privacy Policy
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         REFUND
+    =============================================== -->
+
+    <a
+        href="refund"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-money-bill-transfer"></i>
+
+        <span>
+            Refund Policy
+        </span>
+
+    </a>
+
+
+
+    <!-- ==============================================
+         SHIPPING
+    =============================================== -->
+
+    <a
+        href="shipping"
+        class="sidebar-link"
+    >
+
+        <i class="fa-solid fa-truck"></i>
+
+        <span>
+            Shipping Policy
+        </span>
+
+    </a>
+
+</aside>
+
+
+
+<!-- ==================================================
+     PRODUCT TOP ROW
+================================================== -->
+
+<div class="product-top-row">
+
+
+    <!-- BACK BUTTON -->
+
+    <button
+        type="button"
+        class="product-back-button"
+        onclick="goBack()"
+        aria-label="Go back"
+    >
+
+        <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
+
+
+
+    <!-- PRODUCT NOTE -->
+
+    <div
+        id="productNote"
+        class="product-note"
+    ></div>
+
+</div>
+
+
+
+<!-- ==================================================
+     PRODUCT PAGE
+================================================== -->
+
+<main class="product-page">
+
+
+    <!-- ==================================================
+         IMAGE SLIDER
+    ================================================== -->
+
+    <section class="product-gallery">
+
+        <div
+            id="slider"
+            class="slider"
+        ></div>
+
+
+        <div
+            id="sliderDots"
+            class="slider-dots"
+        ></div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         PRODUCT DETAILS
+    ================================================== -->
+
+    <section
+        id="productDetails"
+        class="product-details"
+    ></section>
+
+</main>
+
+
+
+<!-- ==================================================
+     CUSTOMIZE POPUP
+================================================== -->
+
+<div
+    id="customizeOverlay"
+    class="product-modal hidden"
+>
+
+    <div class="customize-form">
+
+
+        <!-- CLOSE -->
+
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeCustomizePopup()"
+            aria-label="Close"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+
+        <h3>
+            Customize Your Product
+        </h3>
+
+
+
+        <!-- CUSTOM OPTIONS -->
+
+        <div
+            id="customOptionsContainer"
+            class="custom-options-container"
+        ></div>
+
+
+
+        <!-- PRICE -->
+
+        <div class="popup-price">
+
+            <span>
+                Total
+            </span>
+
+
+            <strong id="popupPrice">
+                ₹0
+            </strong>
+
+        </div>
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="modal-actions">
+
+
+            <button
+                type="button"
+                class="modal-cancel-btn"
+                onclick="closeCustomizePopup()"
+            >
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-next-btn"
+                onclick="nextToAddress()"
+            >
+
+                Next
+
+                <i class="fa-solid fa-arrow-right"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     WHATSAPP DELIVERY FORM
+================================================== -->
+
+<div
+    id="waFormOverlay"
+    class="product-modal hidden"
+>
+
+    <div class="wa-form">
+
+
+        <!-- CLOSE -->
+
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeWaForm()"
+            aria-label="Close"
+        >
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+
+        <h3>
+            Enter delivery details
+        </h3>
+
+
+
+        <p class="form-subtitle">
+
+            Your details will be sent with your order.
+
+        </p>
+
+
+
+        <input
+            id="custName"
+            type="text"
+            placeholder="Full Name"
+            autocomplete="name"
+        >
+
+
+        <input
+            id="custPhone"
+            type="tel"
+            placeholder="Mobile Number"
+            inputmode="numeric"
+            maxlength="10"
+            autocomplete="tel"
+        >
+
+
+        <textarea
+            id="custAddress"
+            placeholder="Full Address"
+            autocomplete="street-address"
+        ></textarea>
+
+
+        <input
+            id="custPincode"
+            type="tel"
+            placeholder="Pincode"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="postal-code"
+        >
+
+
+
+        <!-- ACTIONS -->
+
+        <div class="modal-actions">
+
+
+            <button
+                type="button"
+                class="modal-cancel-btn"
+                onclick="backToCustomize()"
+            >
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Back
+
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-whatsapp-btn"
+                onclick="submitWaOrder()"
+            >
+
+                <i class="fa-brands fa-whatsapp"></i>
+
+                Continue to WhatsApp
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     ERROR MODAL
+================================================== -->
+
+<div
+    id="errorModal"
+    class="product-modal hidden"
+>
+
+    <div class="error-box">
+
+
+        <!-- ERROR ICON -->
+
+        <div class="error-icon">
+
+            <i class="fa-solid fa-circle-exclamation"></i>
+
+        </div>
+
+
+
+        <h3>
+            Please Fill These First
+        </h3>
+
+
+
+        <ul
+            id="errorList"
+        ></ul>
+
+
+
+        <button
+            type="button"
+            class="error-ok-btn"
+            onclick="closeErrorModal()"
+        >
+
+            OK
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     FLOATING SHARE BUTTON
+     
+     IMPORTANT:
+     This is OUTSIDE the sticky action bar.
+================================================== -->
+
+<button
+    type="button"
+    class="product-floating-share"
+    onclick="sharePage()"
+    aria-label="Share Product"
+>
+
+    <i class="fa-solid fa-share-nodes"></i>
+
+    <span>
+        Share
+    </span>
 
 </button>
 
-</header>  <!-- ==================================================  
-     SEARCH OVERLAY  
-================================================== -->  <div  
-    id="searchOverlay"  
-    class="search-overlay"  
-    aria-hidden="true"  
->  <div class="search-panel">  
-
-    <div class="search-header">  
-
-        <div class="search-title">  
-            Search Products  
-        </div>  
 
 
-        <button  
-            type="button"  
-            class="search-close-button"  
-            id="closeSearchButton"  
-            aria-label="Close search"  
-        >  
+<!-- ==================================================
+     PRODUCT STICKY ACTION BAR
+================================================== -->
 
-            <i class="fa-solid fa-xmark"></i>  
-
-        </button>  
-
-    </div>  
+<div class="product-action-area">
 
 
-    <div class="search-input-wrapper">  
+    <!-- ==============================================
+         ADD TO CART
+         
+         cart.js controls this button.
+         
+         IMPORTANT:
+         Do NOT use productOrderButton here.
+    =============================================== -->
 
-        <i  
-            class="fa-solid fa-magnifying-glass search-input-icon"  
-        ></i>  
+    <button
+        type="button"
+        id="productCartButton"
+        class="product-cart-action"
+        aria-label="Add to Cart"
+    >
 
+        <i class="fa-solid fa-cart-shopping"></i>
 
-        <input  
-            type="search"  
-            id="searchInput"  
-            class="search-input"  
-            placeholder="Search for products..."  
-            autocomplete="off"  
-        >  
+        <span>
+            Add to Cart
+        </span>
 
-
-        <button  
-            type="button"  
-            id="clearSearchButton"  
-            class="clear-search-button"  
-            aria-label="Clear search"  
-        >  
-
-            <i class="fa-solid fa-xmark"></i>  
-
-        </button>  
-
-    </div>  
+    </button>
 
 
-    <div  
-        id="searchResults"  
-        class="search-results"  
-    >  
 
-        <div class="search-message">  
+    <!-- ==============================================
+         BUY NOW / WHATSAPP
+         
+         IMPORTANT:
+         Keep this ID because product.js
+         already uses it.
+    =============================================== -->
 
-            Search for a product  
+    <div
+        id="productOrderButton"
+        class="product-order-action"
+        role="button"
+        tabindex="0"
+        aria-label="Buy Now"
+    >
 
-        </div>  
+        <i class="fa-solid fa-bag-shopping"></i>
 
-    </div>  
+        <span>
+            Buy Now
+        </span>
+
+    </div>
 
 </div>
 
-</div>  <!-- ==================================================  
-     SIDEBAR OVERLAY  
-================================================== -->  <div  
-    id="sidebarOverlay"  
-    class="sidebar-overlay"  
-    aria-hidden="true"  
-></div>  <!-- ==================================================  
-     SIDEBAR  
-================================================== -->  <aside  
-    id="sidebar"  
-    class="site-sidebar"  
-    aria-hidden="true"  
->  <div class="sidebar-header">  
 
-    <strong data-company-name>  
-        Company Name  
-    </strong>  
 
 
-    <button  
-        type="button"  
-        class="sidebar-close-button"  
-        id="closeSidebarButton"  
-        aria-label="Close menu"  
-    >  
+<!-- ==================================================
+     SITE SETTINGS
+================================================== -->
 
-        <i class="fa-solid fa-xmark"></i>  
-
-    </button>  
-
-</div>  
-
-
-<!-- HOME -->  
-
-<a  
-    href=""  
-    class="sidebar-link"  
-    data-home-link  
->  
-
-    <i class="fa-solid fa-house"></i>  
-
-    <span>  
-        Home  
-    </span>  
-
-</a>  
-
- <!-- Shop -->  
-
-<a  
-    href="shop"  
-    class="sidebar-link"  
-
->  
-
-    <i class="fa-solid fa-house"></i>  
-
-    <span>  
-       Shop  
-    </span>  
-
-</a>  
-
-
-<!-- CATEGORIES -->  
-
-<div class="sidebar-expandable">  
-
-    <button  
-        type="button"  
-        class="sidebar-expand-button"  
-        id="categoriesToggle"  
-        aria-expanded="false"  
-    >  
-
-        <span>  
-
-            <i class="fa-solid fa-layer-group"></i>  
-
-            Categories  
-
-        </span>  
-
-
-        <i class="fa-solid fa-chevron-down sidebar-chevron"></i>  
-
-    </button>  
-
-
-    <div  
-        id="sidebarCategories"  
-        class="sidebar-submenu"  
-    >  
-
-        <div class="sidebar-loading">  
-            Loading categories...  
-        </div>  
-
-    </div>  
-
-</div>  
-
-
-<!-- TAGS -->  
-
-<div class="sidebar-expandable">  
-
-    <button  
-        type="button"  
-        class="sidebar-expand-button"  
-        id="tagsToggle"  
-        aria-expanded="false"  
-    >  
-
-        <span>  
-
-            <i class="fa-solid fa-tags"></i>  
-
-            Tags  
-
-        </span>  
-
-
-        <i class="fa-solid fa-chevron-down sidebar-chevron"></i>  
-
-    </button>  
-
-
-    <div  
-        id="sidebarTags"  
-        class="sidebar-submenu"  
-    >  
-
-        <div class="sidebar-loading">  
-            Loading tags...  
-        </div>  
-
-    </div>  
-
-</div>  
-
-
-<!-- ABOUT -->  
-
-<a  
-    href="aboutus"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-circle-info"></i>  
-
-    <span>  
-        About Us  
-    </span>  
-
-</a>  
-
-
-<!-- CONTACT -->  
-
-<a  
-    href="contact-us"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-phone"></i>  
-
-    <span>  
-        Contact Us  
-    </span>  
-
-</a>  
-
-
-<!-- TERMS -->  
-
-<a  
-    href="t&c"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-file-contract"></i>  
-
-    <span>  
-        Terms & Conditions  
-    </span>  
-
-</a>  
-
-
-<!-- PRIVACY -->  
-
-<a  
-    href="privacy-policy"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-lock"></i>  
-
-    <span>  
-        Privacy Policy  
-    </span>  
-
-</a>  
-
-
-<!-- REFUND -->  
-
-<a  
-    href="refund"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-money-bill-transfer"></i>  
-
-    <span>  
-        Refund Policy  
-    </span>  
-
-</a>  
-
-
-<!-- SHIPPING -->  
-
-<a  
-    href="shipping"  
-    class="sidebar-link"  
->  
-
-    <i class="fa-solid fa-truck"></i>  
-
-    <span>  
-        Shipping Policy  
-    </span>  
-
-</a>
-
-</aside>  <!-- ==================================================  
-     PRODUCT BACK BAR  
-================================================== -->  <div class="product-top-row">  <button  
-    type="button"  
-    class="product-back-button"  
-    onclick="goBack()"  
-    aria-label="Go back"  
->  
-
-    <i class="fa-solid fa-arrow-left"></i>  
-
-</button>
-
-  <div  
-        id="productNote"  
-        class="product-note"  
-    ></div>  </div>  <!-- ==================================================  
-     PRODUCT PAGE  
-================================================== -->  <main class="product-page">  <!-- ==================================================  
-     IMAGE SLIDER  
-================================================== -->  
-
-<section class="product-gallery">  
-
-    <div  
-        id="slider"  
-        class="slider"  
-    ></div>  
-
-
-    <div  
-        id="sliderDots"  
-        class="slider-dots"  
-    ></div>  
-
-</section>  
-
-
-
-<!-- ==================================================  
-     PRODUCT DETAILS  
-       
-     product.js renders:  
-     - badges  
-     - title  
-     - description  
-     - price  
-     - colors  
-     - sizes  
-     - related products  
-================================================== -->  
-
-<section  
-    id="productDetails"  
-    class="product-details"  
-></section>
-
-</main>  <!-- ==================================================  
-     CUSTOMIZE POPUP  
-================================================== -->  <div  
-    id="customizeOverlay"  
-    class="product-modal hidden"  
->  <div class="customize-form">  
-
-    <button  
-        type="button"  
-        class="modal-close"  
-        onclick="closeCustomizePopup()"  
-        aria-label="Close"  
-    >  
-
-        <i class="fa-solid fa-xmark"></i>  
-
-    </button>  
-
-
-    <h3>  
-        Customize Your Product  
-    </h3>  
-
-
-    <div  
-        id="customOptionsContainer"  
-        class="custom-options-container"  
-    ></div>  
-
-
-    <!-- PRICE -->  
-
-    <div class="popup-price">  
-
-        <span>  
-            Total  
-        </span>  
-
-        <strong id="popupPrice">  
-            ₹0  
-        </strong>  
-
-    </div>  
-
-
-    <!-- ACTIONS -->  
-
-    <div class="modal-actions">  
-
-        <button  
-            type="button"  
-            class="modal-cancel-btn"  
-            onclick="closeCustomizePopup()"  
-        >  
-            Cancel  
-        </button>  
-
-
-        <button  
-            type="button"  
-            class="modal-next-btn"  
-            onclick="nextToAddress()"  
-        >  
-            Next  
-            <i class="fa-solid fa-arrow-right"></i>  
-        </button>  
-
-    </div>  
-
-</div>
-
-</div>  <!-- ==================================================  
-     WHATSAPP DELIVERY FORM  
-================================================== -->  <div  
-    id="waFormOverlay"  
-    class="product-modal hidden"  
->  <div class="wa-form">  
-
-    <button  
-        type="button"  
-        class="modal-close"  
-        onclick="closeWaForm()"  
-        aria-label="Close"  
-    >  
-
-        <i class="fa-solid fa-xmark"></i>  
-
-    </button>  
-
-
-    <h3>  
-        Enter delivery details  
-    </h3>  
-
-
-    <p class="form-subtitle">  
-        Your details will be sent with your order.  
-    </p>  
-
-
-    <input  
-        id="custName"  
-        type="text"  
-        placeholder="Full Name"  
-        autocomplete="name"  
-    >  
-
-
-    <input  
-        id="custPhone"  
-        type="tel"  
-        placeholder="Mobile Number"  
-        inputmode="numeric"  
-        maxlength="10"  
-        autocomplete="tel"  
-    >  
-
-
-    <textarea  
-        id="custAddress"  
-        placeholder="Full Address"  
-        autocomplete="street-address"  
-    ></textarea>  
-
-
-    <input  
-        id="custPincode"  
-        type="tel"  
-        placeholder="Pincode"  
-        inputmode="numeric"  
-        maxlength="6"  
-        autocomplete="postal-code"  
-    >  
-
-
-    <div class="modal-actions">  
-
-        <button  
-            type="button"  
-            class="modal-cancel-btn"  
-            onclick="backToCustomize()"  
-        >  
-
-            <i class="fa-solid fa-arrow-left"></i>  
-
-            Back  
-
-        </button>  
-
-
-        <button  
-            type="button"  
-            class="modal-whatsapp-btn"  
-            onclick="submitWaOrder()"  
-        >  
-
-            <i class="fa-brands fa-whatsapp"></i>  
-
-            Continue to WhatsApp  
-
-        </button>  
-
-    </div>  
-
-</div>
-
-</div>  <!-- ==================================================  
-     ERROR MODAL  
-================================================== -->  <div  
-    id="errorModal"  
-    class="product-modal hidden"  
->  <div class="error-box">  
-
-    <div class="error-icon">  
-
-        <i class="fa-solid fa-circle-exclamation"></i>  
-
-    </div>  
-
-
-    <h3>  
-        Please Fill These First  
-    </h3>  
-
-
-    <ul  
-        id="errorList"  
-    ></ul>  
-
-
-    <button  
-        type="button"  
-        class="error-ok-btn"  
-        onclick="closeErrorModal()"  
-    >  
-        OK  
-    </button>  
-
-</div>
-
-</div>  <!-- ==================================================  
-     STICKY ACTION BAR  
-================================================== -->  <div class="sticky-order">    <!-- PRODUCT ORDER BUTTON -->    <div  
-    id="productOrderButton"  
-    class="buy-now-btn"  
-  >  
-    Buy Now  
-  </div>    <!-- SHARE -->  <button
-        id="addToCart"
-type="button"
-class="share-btn"
-
-
-> 
-Add To Cart
-
-  </button>  </div>  <!-- ==================================================  
-     SITE SETTINGS  
-================================================== -->  <script  
-    type="module"  
-    src="js/site-settings.js"  
-></script>  <!-- ==================================================  
-     COMMON TOPBAR / SIDEBAR  
-================================================== -->  <script  
-    type="module"  
-    src="js/topbar.js"  
-></script>  <!-- ==================================================  
-     PRODUCT JS  
-================================================== -->  <script  
-    type="module"  
-    src="js/product.js"  
-></script> 
-
-<!-- ==================================================  
-     CART JS  
-================================================== -->  <script  
-    type="module"  
-    src="js/cart.js"  
+<script
+    type="module"
+    src="js/site-settings.js"
 ></script>
 
- <!-- ==================================================  
-     SHARE  
-================================================== -->  <script  
-    src="js/share.js"  
-></script>  <!-- ==================================================  
-     BACK  
-================================================== -->  <script>  
-  
-function goBack() {  
-  
-    location.href = "index";  
-  
-}  
-  
-</script>  </body>  </html>  
+
+
+<!-- ==================================================
+     COMMON TOPBAR / SIDEBAR
+================================================== -->
+
+<script
+    type="module"
+    src="js/topbar.js"
+></script>
+
+
+
+<!-- ==================================================
+     CART SYSTEM
+================================================== -->
+
+<script
+    type="module"
+    src="js/cart.js"
+></script>
+
+
+
+<!-- ==================================================
+     PRODUCT JS
+================================================== -->
+
+<script
+    type="module"
+    src="js/product.js"
+></script>
+
+
+
+<!-- ==================================================
+     SHARE
+================================================== -->
+
+<script
+    src="js/share.js"
+></script>
+
+
+
+<!-- ==================================================
+     BACK
+================================================== -->
+
+<script>
+
+function goBack() {
+
+    location.href = "index";
+
+}
+
+</script>
+
+
+<!-- ==================================================
+     CART ICON STYLE
+     
+     This can later be moved to topbar.css
+================================================== -->
+
+<style>
+
+    /* ==================================================
+       TOPBAR CART
+    ================================================== */
+
+    .cart-button{
+
+        position:relative;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        text-decoration:none;
+
+        color:#fff;
+
+    }
+
+
+    .cart-button i{
+
+        font-size:24px;
+
+        color:#fff;
+
+    }
+
+
+    /* ==================================================
+       CART BADGE
+    ================================================== */
+
+    .cart-count{
+
+        position:absolute;
+
+        top:2px;
+
+        right:0;
+
+        min-width:20px;
+
+        height:20px;
+
+        padding:
+            0
+            5px;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        border-radius:50%;
+
+        background:#ff8a00;
+
+        color:#fff;
+
+        border:
+            2px solid #111;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        font-size:10px;
+
+        font-weight:900;
+
+        line-height:1;
+
+        box-sizing:border-box;
+
+    }
+
+
+    /* ==================================================
+       EMPTY CART
+
+       Keep 0 visible like the screenshot
+    ================================================== */
+
+    .cart-count.empty{
+
+        display:flex;
+
+    }
+
+
+    /* ==================================================
+       PRODUCT ACTION AREA
+    ================================================== */
+
+    .product-action-area{
+
+        position:fixed;
+
+        left:0;
+
+        right:0;
+
+        bottom:0;
+
+        z-index:9999;
+
+        display:flex;
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+        gap:8px;
+
+        padding:
+            8px
+            12px
+            calc(
+                8px +
+                env(
+                    safe-area-inset-bottom
+                )
+            );
+
+        background:
+            rgba(
+                13,
+                13,
+                17,
+                .96
+            );
+
+        border-top:
+            1px solid #292930;
+
+        backdrop-filter:
+            blur(14px);
+
+        box-sizing:border-box;
+
+    }
+
+
+    /* ==================================================
+       SHARE BUTTON
+    ================================================== */
+
+    .product-floating-share{
+
+        align-self:flex-end;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        gap:7px;
+
+        min-width:92px;
+
+        height:38px;
+
+        padding:
+            0
+            14px;
+
+        border:0;
+
+        border-radius:20px;
+
+        background:#fff;
+
+        color:#222;
+
+        font-size:13px;
+
+        font-weight:800;
+
+        box-shadow:
+            0 5px 18px
+            rgba(
+                0,
+                0,
+                0,
+                .25
+            );
+
+        cursor:pointer;
+
+    }
+
+
+    .product-floating-share i{
+
+        font-size:15px;
+
+    }
+
+
+    /* ==================================================
+       ADD TO CART
+    ================================================== */
+
+    .product-cart-action{
+
+        width:100%;
+
+        min-height:56px;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        gap:10px;
+
+        border:0;
+
+        border-radius:18px;
+
+        background:
+            var(--ig-gradient);
+
+        color:#fff;
+
+        font-size:18px;
+
+        font-weight:900;
+
+        cursor:pointer;
+
+        user-select:none;
+
+        box-shadow:
+            0 6px 20px
+            rgba(
+                214,
+                41,
+                118,
+                .25
+            );
+
+        box-sizing:border-box;
+
+    }
+
+
+    .product-cart-action i{
+
+        font-size:19px;
+
+    }
+
+
+    .product-cart-action:active{
+
+        transform:scale(.985);
+
+    }
+
+
+    /* ==================================================
+       QUANTITY MODE
+
+       cart.js / product.js can add
+       .cart-quantity to this element
+    ================================================== */
+
+    .product-cart-action.cart-quantity{
+
+        justify-content:
+            space-between;
+
+        padding:
+            0
+            8px;
+
+    }
+
+
+    .product-cart-action
+    .cart-qty-button{
+
+        width:46px;
+
+        height:46px;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        border:0;
+
+        border-radius:14px;
+
+        background:
+            rgba(
+                255,
+                255,
+                255,
+                .18
+            );
+
+        color:#fff;
+
+        font-size:24px;
+
+        font-weight:900;
+
+        cursor:pointer;
+
+    }
+
+
+    .product-cart-action
+    .cart-qty-number{
+
+        flex:1;
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        color:#fff;
+
+        font-size:20px;
+
+        font-weight:900;
+
+    }
+
+
+</style>
+
+
+</body>
+
+</html>
