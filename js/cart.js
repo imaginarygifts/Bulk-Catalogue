@@ -1,6 +1,6 @@
 /* =========================================================
    CART SYSTEM
-   =========================================================
+=========================================================
 
    FEATURES
    ---------------------------------------------------------
@@ -16,6 +16,7 @@
    • Common cart count
    • Cart subtotal
    • Cart page compatibility
+   • Product-page configuration tracking
 ========================================================= */
 
 
@@ -35,7 +36,7 @@ let cart = [];
 
 
 /* =========================================================
-   INITIALIZE
+   INITIALIZE CART
 ========================================================= */
 
 function initializeCart() {
@@ -146,7 +147,7 @@ function getCart() {
 
 
 /* =========================================================
-   GET CART ITEM COUNT
+   GET TOTAL CART QUANTITY
 =========================================================
 
    Example:
@@ -167,11 +168,12 @@ function getCartQuantity() {
             item
         ) => {
 
-            return total +
+            return (
+                total +
                 Number(
-                    item.quantity ||
-                    0
-                );
+                    item.quantity || 0
+                )
+            );
 
         },
         0
@@ -181,7 +183,7 @@ function getCartQuantity() {
 
 
 /* =========================================================
-   GET NUMBER OF DIFFERENT CART ITEMS
+   GET DIFFERENT CART ITEM COUNT
 ========================================================= */
 
 function getCartItemCount() {
@@ -205,23 +207,23 @@ function getCartSubtotal() {
 
             const price =
                 Number(
-                    item.price ||
-                    0
+                    item.price || 0
                 );
 
 
             const quantity =
                 Number(
-                    item.quantity ||
-                    0
+                    item.quantity || 0
                 );
 
 
-            return total +
+            return (
+                total +
                 (
                     price *
                     quantity
-                );
+                )
+            );
 
         },
         0
@@ -234,7 +236,19 @@ function getCartSubtotal() {
    NORMALIZE VALUE
 =========================================================
 
-   Used to create a stable variant identity.
+   Used for creating a stable cart identity.
+
+   Important:
+
+   Objects are sorted by key so that:
+
+   {name:"Red", price:20}
+
+   and
+
+   {price:20, name:"Red"}
+
+   are treated as the same configuration.
 ========================================================= */
 
 function normalizeValue(
@@ -251,22 +265,27 @@ function normalizeValue(
     }
 
 
+    /* ARRAY */
+
     if (
-        typeof value ===
-        "object"
+        Array.isArray(value)
     ) {
 
-        /*
-           Sort object keys so:
+        return value.map(
+            item =>
+                normalizeValue(
+                    item
+                )
+        );
 
-           {name:"Red", price:20}
+    }
 
-           and
 
-           {price:20, name:"Red"}
+    /* OBJECT */
 
-           produce the same identity.
-        */
+    if (
+        typeof value === "object"
+    ) {
 
         const sorted = {};
 
@@ -290,19 +309,7 @@ function normalizeValue(
     }
 
 
-    if (
-        Array.isArray(value)
-    ) {
-
-        return value.map(
-            item =>
-                normalizeValue(
-                    item
-                )
-        );
-
-    }
-
+    /* STRING / NUMBER / BOOLEAN */
 
     return String(
         value
@@ -317,28 +324,23 @@ function normalizeValue(
    CREATE CART ITEM KEY
 =========================================================
 
-   IMPORTANT:
-
    Product ID alone is NOT enough.
 
-   These are different:
+   Example:
 
    Product A
    Red
    M
 
-   Product A
-   Red
-   L
+   and
 
    Product A
    Blue
    M
 
-   Product A
-   Red
-   M
-   Custom Text: Rahul
+   must be separate cart items.
+
+   Custom values are also included.
 
 ========================================================= */
 
@@ -351,8 +353,7 @@ function createCartItemKey(
 
         productId:
             String(
-                productId ||
-                ""
+                productId || ""
             ),
 
         color:
@@ -407,7 +408,7 @@ function findCartItem(
 
 
 /* =========================================================
-   GET PRODUCT PRICE
+   GET PRODUCT CART PRICE
 ========================================================= */
 
 function getProductCartPrice(
@@ -415,17 +416,59 @@ function getProductCartPrice(
     configuration = {}
 ) {
 
-    let price =
-        Number(
-            product?.salePrice ??
-            product?.basePrice ??
-            product?.price ??
-            0
-        );
+    let price = 0;
 
 
     /* =====================================================
-       COLOR EXTRA PRICE
+       BASE PRODUCT PRICE
+
+       Match product.js pricing:
+
+       salePrice is used only when it is
+       lower than basePrice.
+    ===================================================== */
+
+    const base =
+        Number(
+            product?.basePrice || 0
+        );
+
+
+    const sale =
+        Number(
+            product?.salePrice || 0
+        );
+
+
+    if (
+        sale > 0 &&
+        sale < base
+    ) {
+
+        price = sale;
+
+    }
+
+    else if (
+        base > 0
+    ) {
+
+        price = base;
+
+    }
+
+    else {
+
+        price =
+            Number(
+                product?.price || 0
+            );
+
+    }
+
+
+    /* =====================================================
+       COLOR EXTRA
     ===================================================== */
 
     if (
@@ -442,7 +485,7 @@ function getProductCartPrice(
 
 
     /* =====================================================
-       SIZE EXTRA PRICE
+       SIZE EXTRA
     ===================================================== */
 
     if (
@@ -459,7 +502,7 @@ function getProductCartPrice(
 
 
     /* =====================================================
-       CUSTOM OPTION EXTRA PRICES
+       CUSTOM OPTIONS
     ===================================================== */
 
     if (
@@ -475,8 +518,7 @@ function getProductCartPrice(
 
                     price +=
                         Number(
-                            extra ||
-                            0
+                            extra || 0
                         );
 
                 }
@@ -488,6 +530,66 @@ function getProductCartPrice(
     return Math.max(
         0,
         price
+    );
+
+}
+
+
+/* =========================================================
+   GET PRODUCT IMAGE
+========================================================= */
+
+function getProductImage(
+    product
+) {
+
+    /* =====================================================
+       PRODUCT IMAGES ARRAY
+    ===================================================== */
+
+    if (
+        Array.isArray(
+            product?.images
+        ) &&
+        product.images.length
+    ) {
+
+        const first =
+            product.images[0];
+
+
+        /* STRING IMAGE URL */
+
+        if (
+            typeof first ===
+            "string"
+        ) {
+
+            return first;
+
+        }
+
+
+        /* OBJECT IMAGE */
+
+        return (
+            first?.url ||
+            first?.src ||
+            ""
+        );
+
+    }
+
+
+    /* =====================================================
+       FALLBACK IMAGE FIELDS
+    ===================================================== */
+
+    return (
+        product?.image ||
+        product?.imageUrl ||
+        product?.thumbnail ||
+        ""
     );
 
 }
@@ -510,7 +612,11 @@ function getProductCartPrice(
        }
 
    quantity:
-       default = 1
+       Default = 1
+
+   If the exact same configuration already exists,
+   quantity is increased.
+
 ========================================================= */
 
 function addToCart(
@@ -551,12 +657,26 @@ function addToCart(
     }
 
 
+    quantity =
+        Math.floor(
+            quantity
+        );
+
+
+    /* =====================================================
+       CREATE CONFIGURATION KEY
+    ===================================================== */
+
     const cartItemKey =
         createCartItemKey(
             product.id,
             configuration
         );
 
+
+    /* =====================================================
+       FIND EXISTING ITEM
+    ===================================================== */
 
     const existing =
         findCartItem(
@@ -574,8 +694,7 @@ function addToCart(
 
         existing.quantity =
             Number(
-                existing.quantity ||
-                0
+                existing.quantity || 0
             ) +
             quantity;
 
@@ -584,8 +703,7 @@ function addToCart(
             existing.quantity < 1
         ) {
 
-            existing.quantity =
-                1;
+            existing.quantity = 1;
 
         }
 
@@ -626,6 +744,10 @@ function addToCart(
 
             quantity,
 
+            /* =================================================
+               SELECTED VARIANTS
+            ================================================= */
+
             color:
                 configuration.color ||
                 null,
@@ -633,6 +755,11 @@ function addToCart(
             size:
                 configuration.size ||
                 null,
+
+
+            /* =================================================
+               CUSTOM OPTIONS
+            ================================================= */
 
             options:
                 configuration.options ||
@@ -645,6 +772,11 @@ function addToCart(
             customOptionPrices:
                 configuration.customOptionPrices ||
                 [],
+
+
+            /* =================================================
+               PRODUCT SNAPSHOT
+            ================================================= */
 
             productSnapshot: {
 
@@ -668,14 +800,23 @@ function addToCart(
                     Array.isArray(
                         product.images
                     )
+
                         ?
+
                         [
                             ...product.images
                         ]
+
                         :
+
                         []
 
             },
+
+
+            /* =================================================
+               TIMESTAMP
+            ================================================= */
 
             addedAt:
                 Date.now()
@@ -690,9 +831,23 @@ function addToCart(
     }
 
 
+    /* =====================================================
+       SAVE
+    ===================================================== */
+
     saveCart();
 
+
+    /* =====================================================
+       UPDATE UI
+    ===================================================== */
+
     updateCartUI();
+
+
+    /* =====================================================
+       NOTIFY OTHER PAGES / COMPONENTS
+    ===================================================== */
 
     dispatchCartChange();
 
@@ -708,12 +863,10 @@ function addToCart(
    SET EXACT QUANTITY
 =========================================================
 
-   If quantity becomes 0:
+   quantity = 0
+   →
+   item is removed.
 
-   Remove cart item.
-
-   The product page/shop/homepage can then
-   automatically show "Add to Cart".
 ========================================================= */
 
 function setCartItemQuantity(
@@ -762,6 +915,11 @@ function setCartItemQuantity(
 
     }
 
+
+    /* =====================================================
+       SET QUANTITY
+    ===================================================== */
+
     else {
 
         cart[index].quantity =
@@ -772,9 +930,23 @@ function setCartItemQuantity(
     }
 
 
+    /* =====================================================
+       SAVE
+    ===================================================== */
+
     saveCart();
 
+
+    /* =====================================================
+       UPDATE UI
+    ===================================================== */
+
     updateCartUI();
+
+
+    /* =====================================================
+       DISPATCH EVENT
+    ===================================================== */
 
     dispatchCartChange();
 
@@ -816,15 +988,29 @@ function increaseCartItem(
     }
 
 
+    amount =
+        Number(
+            amount
+        );
+
+
+    if (
+        !Number.isFinite(
+            amount
+        ) ||
+        amount <= 0
+    ) {
+
+        amount = 1;
+
+    }
+
+
     const newQuantity =
         Number(
-            item.quantity ||
-            0
+            item.quantity || 0
         ) +
-        Number(
-            amount ||
-            1
-        );
+        amount;
 
 
     return setCartItemQuantity(
@@ -859,15 +1045,29 @@ function decreaseCartItem(
     }
 
 
+    amount =
+        Number(
+            amount
+        );
+
+
+    if (
+        !Number.isFinite(
+            amount
+        ) ||
+        amount <= 0
+    ) {
+
+        amount = 1;
+
+    }
+
+
     const newQuantity =
         Number(
-            item.quantity ||
-            0
+            item.quantity || 0
         ) -
-        Number(
-            amount ||
-            1
-        );
+        amount;
 
 
     return setCartItemQuantity(
@@ -940,79 +1140,33 @@ function clearCart() {
 
 
 /* =========================================================
-   GET PRODUCT IMAGE
-========================================================= */
-
-function getProductImage(
-    product
-) {
-
-    if (
-        Array.isArray(
-            product?.images
-        )
-        &&
-        product.images.length
-    ) {
-
-        const first =
-            product.images[0];
-
-
-        if (
-            typeof first ===
-            "string"
-        ) {
-
-            return first;
-
-        }
-
-
-        return (
-            first?.url ||
-            first?.src ||
-            ""
-        );
-
-    }
-
-
-    return (
-        product?.image ||
-        product?.imageUrl ||
-        product?.thumbnail ||
-        ""
-    );
-
-}
-
-
-/* =========================================================
-   GET CURRENT QUANTITY FOR CONFIGURATION
+   GET CONFIGURATION QUANTITY
 =========================================================
 
-   This is especially important for PRODUCT PAGE.
+   This is used by:
+
+   • Product page
+   • Shop page
+   • Homepage
 
    Example:
 
-   Customer has:
+   Cart:
 
    Red + M = 2
 
-   They change selection to:
+   Current selection:
 
    Blue + L
 
-   This returns 0 if Blue + L isn't in cart.
+   Result:
 
-   Therefore UI shows:
+   0
 
-   ADD TO CART
+   Therefore the button shows:
 
-   instead of:
+   Add to Cart
 
-   − 2 +
 ========================================================= */
 
 function getConfigurationQuantity(
@@ -1033,14 +1187,18 @@ function getConfigurationQuantity(
         );
 
 
-    return item
-        ?
-        Number(
-            item.quantity ||
-            0
-        )
-        :
-        0;
+    if (
+        !item
+    ) {
+
+        return 0;
+
+    }
+
+
+    return Number(
+        item.quantity || 0
+    );
 
 }
 
@@ -1076,13 +1234,22 @@ function getCartItemByConfiguration(
    UPDATE CART UI
 =========================================================
 
-   Supports common topbar:
+   Supports:
 
-   #cartCount
+       #cartCount
 
-   Also supports:
+   and:
 
-   .cart-count
+       .cart-count
+
+   The badge displays TOTAL QUANTITY.
+
+   Example:
+
+       Product A × 2
+       Product B × 3
+
+       Cart badge = 5
 
 ========================================================= */
 
@@ -1091,6 +1258,10 @@ function updateCartUI() {
     const totalQuantity =
         getCartQuantity();
 
+
+    /* =====================================================
+       CART BADGE
+    ===================================================== */
 
     const elements =
         document.querySelectorAll(
@@ -1107,9 +1278,9 @@ function updateCartUI() {
                 );
 
 
-            /*
-               Hide badge when empty.
-            */
+            /* =================================================
+               EMPTY STATE
+            ================================================= */
 
             if (
                 totalQuantity <= 0
@@ -1118,11 +1289,6 @@ function updateCartUI() {
                 element.classList.add(
                     "empty"
                 );
-
-                /*
-                   Keep 0 in DOM for
-                   accessibility/logic.
-                */
 
             }
 
@@ -1138,9 +1304,9 @@ function updateCartUI() {
     );
 
 
-    /*
-       Optional subtotal elements.
-    */
+    /* =====================================================
+       SUBTOTAL
+    ===================================================== */
 
     document
         .querySelectorAll(
@@ -1158,9 +1324,9 @@ function updateCartUI() {
         );
 
 
-    /*
-       Optional cart item count.
-    */
+    /* =====================================================
+       DIFFERENT ITEM COUNT
+    ===================================================== */
 
     document
         .querySelectorAll(
@@ -1184,12 +1350,15 @@ function updateCartUI() {
    CART CHANGE EVENT
 =========================================================
 
-   Other pages can listen to:
+   Other pages can listen:
 
-   window.addEventListener(
-       "cartUpdated",
-       ...
-   );
+       window.addEventListener(
+           "cartUpdated",
+           event => {
+               ...
+           }
+       );
+
 ========================================================= */
 
 function dispatchCartChange() {
@@ -1213,6 +1382,7 @@ function dispatchCartChange() {
                         getCartSubtotal()
 
                 }
+
             }
         )
     );
@@ -1230,8 +1400,7 @@ function formatMoney(
 
     const number =
         Number(
-            value ||
-            0
+            value || 0
         );
 
 
@@ -1254,25 +1423,10 @@ function formatMoney(
 
 
 /* =========================================================
-   CART PAGE
-=========================================================
-
-   We are not creating cart.html yet.
-
-   But this function is ready for it.
-
+   OPEN CART
 ========================================================= */
 
 function openCart() {
-
-    /*
-       Later we can change this
-       if cart.html has another path.
-
-       For now:
-
-       cart.html
-    */
 
     window.location.href =
         "cart.html";
@@ -1284,9 +1438,9 @@ function openCart() {
    GLOBAL CART FUNCTIONS
 =========================================================
 
-   These allow HTML onclick handlers
-   to use the cart without importing
-   the module manually.
+   Makes functions available to normal HTML
+   onclick handlers if needed.
+
 ========================================================= */
 
 window.addToCart =
@@ -1339,6 +1493,10 @@ window.getCartItemByConfiguration =
 
 window.openCart =
     openCart;
+
+
+window.updateCartUI =
+    updateCartUI;
 
 
 /* =========================================================
