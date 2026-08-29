@@ -1,1028 +1,780 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>  <html lang="en">  <head>  <meta charset="UTF-8">  
 
-<head>
+<meta  
+    name="viewport"  
+    content="width=device-width, initial-scale=1.0"  
+>  
 
-    <meta charset="UTF-8">
+<!-- ==================================================  
+     DEFAULT SEO  
+     site-settings.js / product.js can replace these  
+================================================== -->  
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<title>  
 
-    <!-- ==================================================
-         DEFAULT SEO
-    ================================================== -->
+</title>  
 
-    <title></title>
+<meta  
+    name="description"  
+    content=""  
+>  
 
-    <meta
-        name="description"
-        content=""
-    >
+<meta  
+    name="keywords"  
+    content=""  
+>  
 
-    <meta
-        name="keywords"
-        content=""
-    >
 
+<!-- ==================================================  
+     OPEN GRAPH  
+================================================== -->  
 
-    <!-- ==================================================
-         OPEN GRAPH
-    ================================================== -->
+<meta  
+    property="og:title"  
+    content=""  
+>  
 
-    <meta
-        property="og:title"
-        content=""
-    >
+<meta  
+    property="og:description"  
+    content=""  
+>  
 
-    <meta
-        property="og:description"
-        content=""
-    >
+<meta  
+    property="og:image"  
+    content=""  
+>  
 
-    <meta
-        property="og:image"
-        content=""
-    >
+<meta  
+    property="og:url"  
+    content=""  
+>  
 
-    <meta
-        property="og:url"
-        content=""
-    >
+<meta  
+    property="og:type"  
+    content="product"  
+>  
 
-    <meta
-        property="og:type"
-        content="product"
-    >
 
+<!-- ==================================================  
+     TWITTER  
+================================================== -->  
 
-    <!-- ==================================================
-         TWITTER
-    ================================================== -->
+<meta  
+    name="twitter:card"  
+    content="summary_large_image"  
+>  
 
-    <meta
-        name="twitter:card"
-        content="summary_large_image"
-    >
+<meta  
+    name="twitter:title"  
+    content=""  
+>  
 
-    <meta
-        name="twitter:title"
-        content=""
-    >
+<meta  
+    name="twitter:description"  
+    content=""  
+>  
 
-    <meta
-        name="twitter:description"
-        content=""
-    >
+<meta  
+    name="twitter:image"  
+    content=""  
+>  
 
-    <meta
-        name="twitter:image"
-        content=""
-    >
 
+<!-- ==================================================  
+     FONT AWESOME  
+================================================== -->  
 
-    <!-- ==================================================
-         FONT AWESOME
-    ================================================== -->
+<link  
+    rel="stylesheet"  
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"  
+>  
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    >
 
+<!-- ==================================================  
+     PRODUCT CSS  
+================================================== -->  
 
-    <!-- ==================================================
-         PRODUCT CSS
-    ================================================== -->
+<link  
+    rel="stylesheet"  
+    href="css/product.css"  
+>  
 
-    <link
-        rel="stylesheet"
-        href="css/product.css"
-    >
 
+<!-- ==================================================  
+     COMMON TOPBAR CSS  
+================================================== -->  
 
-    <!-- ==================================================
-         COMMON TOPBAR CSS
-    ================================================== -->
-
-    <link
-        rel="stylesheet"
-        href="css/topbar.css"
-    >
-
-</head>
-
-
-<body>
-
-
-<!-- ==================================================
-     COMMON TOPBAR
-================================================== -->
-
-<header class="site-topbar">
-
-
-    <!-- ==============================================
-         MENU
-    =============================================== -->
-
-    <button
-        type="button"
-        class="topbar-button menu-button"
-        id="menuButton"
-        aria-label="Open menu"
-        aria-expanded="false"
-    >
-
-        <i class="fa-solid fa-bars"></i>
-
-    </button>
-
-
-
-    <!-- ==============================================
-         LOGO
-    =============================================== -->
-
-    <div class="topbar-logo">
-
-        <a
-            href=""
-            id="logoLink"
-            data-logo-link
-            aria-label="Home"
-        >
-
-            <img
-                id="siteLogo"
-                data-site-logo
-                src=""
-                alt="Company Logo"
-            >
-
-        </a>
-
-    </div>
-
-
-
-    <!-- ==============================================
-         SEARCH
-    =============================================== -->
-
-    <button
-        type="button"
-        class="topbar-button search-button"
-        id="searchButton"
-        aria-label="Search"
-    >
-
-        <i class="fa-solid fa-magnifying-glass"></i>
-
-    </button>
-
-
-
-    <!-- ==============================================
-         CART
-    =============================================== -->
-
-    <a
-        href="cart.html"
-        class="topbar-button cart-button"
-        id="cartButton"
-        aria-label="Shopping Cart"
-    >
-
-        <i class="fa-solid fa-cart-shopping"></i>
-
-
-        <span
-            id="cartCount"
-            class="cart-count"
-        >
-            0
-        </span>
-
-    </a>
-
-</header>
-
-
-
-<!-- ==================================================
-     SEARCH OVERLAY
-================================================== -->
-
-<div
-    id="searchOverlay"
-    class="search-overlay"
-    aria-hidden="true"
+<link  
+    rel="stylesheet"  
+    href="css/topbar.css"  
 >
 
-    <div class="search-panel">
+</head>  <body>  <!-- ==================================================  
+     COMMON TOPBAR  
+================================================== -->  <header class="site-topbar">  <!-- MENU -->  
+
+<button  
+    type="button"  
+    class="topbar-button menu-button"  
+    id="menuButton"  
+    aria-label="Open menu"  
+    aria-expanded="false"  
+>  
+
+    <i class="fa-solid fa-bars"></i>  
+
+</button>  
 
 
-        <!-- SEARCH HEADER -->
+<!-- LOGO -->  
 
-        <div class="search-header">
+<div class="topbar-logo">  
 
-            <div class="search-title">
-                Search Products
-            </div>
+    <a  
+        href=""  
+        id="logoLink"  
+        data-logo-link  
+        aria-label="Home"  
+    >  
 
+        <img  
+            id="siteLogo"  
+            data-site-logo  
+            src=""  
+            alt="Company Logo"  
+        >  
 
-            <button
-                type="button"
-                class="search-close-button"
-                id="closeSearchButton"
-                aria-label="Close search"
-            >
+    </a>  
 
-                <i class="fa-solid fa-xmark"></i>
-
-            </button>
-
-        </div>
-
-
-
-        <!-- SEARCH INPUT -->
-
-        <div class="search-input-wrapper">
-
-            <i
-                class="fa-solid fa-magnifying-glass search-input-icon"
-            ></i>
+</div>  
 
 
-            <input
-                type="search"
-                id="searchInput"
-                class="search-input"
-                placeholder="Search for products..."
-                autocomplete="off"
-            >
+<!-- SEARCH -->  
+
+<button  
+    type="button"  
+    class="topbar-button search-button"  
+    id="searchButton"  
+    aria-label="Search"  
+>  
+
+    <i class="fa-solid fa-magnifying-glass"></i>  
+
+</button>
+
+</header>  <!-- ==================================================  
+     SEARCH OVERLAY  
+================================================== -->  <div  
+    id="searchOverlay"  
+    class="search-overlay"  
+    aria-hidden="true"  
+>  <div class="search-panel">  
+
+    <div class="search-header">  
+
+        <div class="search-title">  
+            Search Products  
+        </div>  
 
 
-            <button
-                type="button"
-                id="clearSearchButton"
-                class="clear-search-button"
-                aria-label="Clear search"
-            >
+        <button  
+            type="button"  
+            class="search-close-button"  
+            id="closeSearchButton"  
+            aria-label="Close search"  
+        >  
 
-                <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-xmark"></i>  
 
-            </button>
+        </button>  
 
-        </div>
+    </div>  
 
 
+    <div class="search-input-wrapper">  
 
-        <!-- SEARCH RESULTS -->
+        <i  
+            class="fa-solid fa-magnifying-glass search-input-icon"  
+        ></i>  
 
-        <div
-            id="searchResults"
-            class="search-results"
-        >
 
-            <div class="search-message">
+        <input  
+            type="search"  
+            id="searchInput"  
+            class="search-input"  
+            placeholder="Search for products..."  
+            autocomplete="off"  
+        >  
 
-                Search for a product
 
-            </div>
+        <button  
+            type="button"  
+            id="clearSearchButton"  
+            class="clear-search-button"  
+            aria-label="Clear search"  
+        >  
 
-        </div>
+            <i class="fa-solid fa-xmark"></i>  
 
-    </div>
+        </button>  
+
+    </div>  
+
+
+    <div  
+        id="searchResults"  
+        class="search-results"  
+    >  
+
+        <div class="search-message">  
+
+            Search for a product  
+
+        </div>  
+
+    </div>  
 
 </div>
 
+</div>  <!-- ==================================================  
+     SIDEBAR OVERLAY  
+================================================== -->  <div  
+    id="sidebarOverlay"  
+    class="sidebar-overlay"  
+    aria-hidden="true"  
+></div>  <!-- ==================================================  
+     SIDEBAR  
+================================================== -->  <aside  
+    id="sidebar"  
+    class="site-sidebar"  
+    aria-hidden="true"  
+>  <div class="sidebar-header">  
 
+    <strong data-company-name>  
+        Company Name  
+    </strong>  
 
-<!-- ==================================================
-     SIDEBAR OVERLAY
-================================================== -->
 
-<div
-    id="sidebarOverlay"
-    class="sidebar-overlay"
-    aria-hidden="true"
-></div>
+    <button  
+        type="button"  
+        class="sidebar-close-button"  
+        id="closeSidebarButton"  
+        aria-label="Close menu"  
+    >  
 
+        <i class="fa-solid fa-xmark"></i>  
 
+    </button>  
 
-<!-- ==================================================
-     SIDEBAR
-================================================== -->
+</div>  
 
-<aside
-    id="sidebar"
-    class="site-sidebar"
-    aria-hidden="true"
->
 
+<!-- HOME -->  
 
-    <!-- SIDEBAR HEADER -->
+<a  
+    href=""  
+    class="sidebar-link"  
+    data-home-link  
+>  
 
-    <div class="sidebar-header">
+    <i class="fa-solid fa-house"></i>  
 
-        <strong data-company-name>
-            Company Name
-        </strong>
+    <span>  
+        Home  
+    </span>  
 
+</a>  
 
-        <button
-            type="button"
-            class="sidebar-close-button"
-            id="closeSidebarButton"
-            aria-label="Close menu"
-        >
+ <!-- Shop -->  
 
-            <i class="fa-solid fa-xmark"></i>
+<a  
+    href="shop"  
+    class="sidebar-link"  
 
-        </button>
+>  
 
-    </div>
+    <i class="fa-solid fa-house"></i>  
 
+    <span>  
+       Shop  
+    </span>  
 
+</a>  
 
-    <!-- HOME -->
 
-    <a
-        href=""
-        class="sidebar-link"
-        data-home-link
-    >
+<!-- CATEGORIES -->  
 
-        <i class="fa-solid fa-house"></i>
+<div class="sidebar-expandable">  
 
-        <span>
-            Home
-        </span>
+    <button  
+        type="button"  
+        class="sidebar-expand-button"  
+        id="categoriesToggle"  
+        aria-expanded="false"  
+    >  
 
-    </a>
+        <span>  
 
+            <i class="fa-solid fa-layer-group"></i>  
 
+            Categories  
 
-    <!-- SHOP -->
+        </span>  
 
-    <a
-        href="shop"
-        class="sidebar-link"
-    >
 
-        <i class="fa-solid fa-shop"></i>
+        <i class="fa-solid fa-chevron-down sidebar-chevron"></i>  
 
-        <span>
-            Shop
-        </span>
+    </button>  
 
-    </a>
 
+    <div  
+        id="sidebarCategories"  
+        class="sidebar-submenu"  
+    >  
 
+        <div class="sidebar-loading">  
+            Loading categories...  
+        </div>  
 
-    <!-- CART -->
+    </div>  
 
-    <a
-        href="cart.html"
-        class="sidebar-link"
-    >
+</div>  
 
-        <i class="fa-solid fa-cart-shopping"></i>
 
-        <span>
-            Cart
-        </span>
+<!-- TAGS -->  
 
-    </a>
+<div class="sidebar-expandable">  
 
+    <button  
+        type="button"  
+        class="sidebar-expand-button"  
+        id="tagsToggle"  
+        aria-expanded="false"  
+    >  
 
+        <span>  
 
-    <!-- CATEGORIES -->
+            <i class="fa-solid fa-tags"></i>  
 
-    <div class="sidebar-expandable">
+            Tags  
 
-        <button
-            type="button"
-            class="sidebar-expand-button"
-            id="categoriesToggle"
-            aria-expanded="false"
-        >
+        </span>  
 
-            <span>
 
-                <i class="fa-solid fa-layer-group"></i>
+        <i class="fa-solid fa-chevron-down sidebar-chevron"></i>  
 
-                Categories
+    </button>  
 
-            </span>
 
+    <div  
+        id="sidebarTags"  
+        class="sidebar-submenu"  
+    >  
 
-            <i
-                class="fa-solid fa-chevron-down sidebar-chevron"
-            ></i>
+        <div class="sidebar-loading">  
+            Loading tags...  
+        </div>  
 
-        </button>
+    </div>  
 
+</div>  
 
-        <div
-            id="sidebarCategories"
-            class="sidebar-submenu"
-        >
 
-            <div class="sidebar-loading">
-                Loading categories...
-            </div>
+<!-- ABOUT -->  
 
-        </div>
+<a  
+    href="aboutus"  
+    class="sidebar-link"  
+>  
 
-    </div>
+    <i class="fa-solid fa-circle-info"></i>  
 
+    <span>  
+        About Us  
+    </span>  
 
+</a>  
 
-    <!-- TAGS -->
 
-    <div class="sidebar-expandable">
+<!-- CONTACT -->  
 
-        <button
-            type="button"
-            class="sidebar-expand-button"
-            id="tagsToggle"
-            aria-expanded="false"
-        >
+<a  
+    href="contact-us"  
+    class="sidebar-link"  
+>  
 
-            <span>
+    <i class="fa-solid fa-phone"></i>  
 
-                <i class="fa-solid fa-tags"></i>
+    <span>  
+        Contact Us  
+    </span>  
 
-                Tags
+</a>  
 
-            </span>
 
+<!-- TERMS -->  
 
-            <i
-                class="fa-solid fa-chevron-down sidebar-chevron"
-            ></i>
+<a  
+    href="t&c"  
+    class="sidebar-link"  
+>  
 
-        </button>
+    <i class="fa-solid fa-file-contract"></i>  
 
+    <span>  
+        Terms & Conditions  
+    </span>  
 
-        <div
-            id="sidebarTags"
-            class="sidebar-submenu"
-        >
+</a>  
 
-            <div class="sidebar-loading">
-                Loading tags...
-            </div>
 
-        </div>
+<!-- PRIVACY -->  
 
-    </div>
+<a  
+    href="privacy-policy"  
+    class="sidebar-link"  
+>  
 
+    <i class="fa-solid fa-lock"></i>  
 
+    <span>  
+        Privacy Policy  
+    </span>  
 
-    <!-- ABOUT -->
+</a>  
 
-    <a
-        href="aboutus"
-        class="sidebar-link"
-    >
 
-        <i class="fa-solid fa-circle-info"></i>
+<!-- REFUND -->  
 
-        <span>
-            About Us
-        </span>
+<a  
+    href="refund"  
+    class="sidebar-link"  
+>  
 
-    </a>
+    <i class="fa-solid fa-money-bill-transfer"></i>  
 
+    <span>  
+        Refund Policy  
+    </span>  
 
+</a>  
 
-    <!-- CONTACT -->
 
-    <a
-        href="contact-us"
-        class="sidebar-link"
-    >
+<!-- SHIPPING -->  
 
-        <i class="fa-solid fa-phone"></i>
+<a  
+    href="shipping"  
+    class="sidebar-link"  
+>  
 
-        <span>
-            Contact Us
-        </span>
+    <i class="fa-solid fa-truck"></i>  
 
-    </a>
+    <span>  
+        Shipping Policy  
+    </span>  
 
+</a>
 
+</aside>  <!-- ==================================================  
+     PRODUCT BACK BAR  
+================================================== -->  <div class="product-top-row">  <button  
+    type="button"  
+    class="product-back-button"  
+    onclick="goBack()"  
+    aria-label="Go back"  
+>  
 
-    <!-- TERMS -->
+    <i class="fa-solid fa-arrow-left"></i>  
 
-    <a
-        href="t&c"
-        class="sidebar-link"
-    >
+</button>
 
-        <i class="fa-solid fa-file-contract"></i>
+  <div  
+        id="productNote"  
+        class="product-note"  
+    ></div>  </div>  <!-- ==================================================  
+     PRODUCT PAGE  
+================================================== -->  <main class="product-page">  <!-- ==================================================  
+     IMAGE SLIDER  
+================================================== -->  
 
-        <span>
-            Terms & Conditions
-        </span>
+<section class="product-gallery">  
 
-    </a>
+    <div  
+        id="slider"  
+        class="slider"  
+    ></div>  
 
 
+    <div  
+        id="sliderDots"  
+        class="slider-dots"  
+    ></div>  
 
-    <!-- PRIVACY -->
+</section>  
 
-    <a
-        href="privacy-policy"
-        class="sidebar-link"
-    >
 
-        <i class="fa-solid fa-lock"></i>
 
-        <span>
-            Privacy Policy
-        </span>
+<!-- ==================================================  
+     PRODUCT DETAILS  
+       
+     product.js renders:  
+     - badges  
+     - title  
+     - description  
+     - price  
+     - colors  
+     - sizes  
+     - related products  
+================================================== -->  
 
-    </a>
+<section  
+    id="productDetails"  
+    class="product-details"  
+></section>
 
+</main>  <!-- ==================================================  
+     CUSTOMIZE POPUP  
+================================================== -->  <div  
+    id="customizeOverlay"  
+    class="product-modal hidden"  
+>  <div class="customize-form">  
 
+    <button  
+        type="button"  
+        class="modal-close"  
+        onclick="closeCustomizePopup()"  
+        aria-label="Close"  
+    >  
 
-    <!-- REFUND -->
+        <i class="fa-solid fa-xmark"></i>  
 
-    <a
-        href="refund"
-        class="sidebar-link"
-    >
+    </button>  
 
-        <i class="fa-solid fa-money-bill-transfer"></i>
 
-        <span>
-            Refund Policy
-        </span>
+    <h3>  
+        Customize Your Product  
+    </h3>  
 
-    </a>
 
+    <div  
+        id="customOptionsContainer"  
+        class="custom-options-container"  
+    ></div>  
 
 
-    <!-- SHIPPING -->
+    <!-- PRICE -->  
 
-    <a
-        href="shipping"
-        class="sidebar-link"
-    >
+    <div class="popup-price">  
 
-        <i class="fa-solid fa-truck"></i>
+        <span>  
+            Total  
+        </span>  
 
-        <span>
-            Shipping Policy
-        </span>
+        <strong id="popupPrice">  
+            ₹0  
+        </strong>  
 
-    </a>
+    </div>  
 
-</aside>
 
+    <!-- ACTIONS -->  
 
+    <div class="modal-actions">  
 
-<!-- ==================================================
-     PRODUCT TOP ROW
-================================================== -->
+        <button  
+            type="button"  
+            class="modal-cancel-btn"  
+            onclick="closeCustomizePopup()"  
+        >  
+            Cancel  
+        </button>  
 
-<div class="product-top-row">
 
+        <button  
+            type="button"  
+            class="modal-next-btn"  
+            onclick="nextToAddress()"  
+        >  
+            Next  
+            <i class="fa-solid fa-arrow-right"></i>  
+        </button>  
 
-    <!-- BACK -->
-
-    <button
-        type="button"
-        class="product-back-button"
-        onclick="goBack()"
-        aria-label="Go back"
-    >
-
-        <i class="fa-solid fa-arrow-left"></i>
-
-    </button>
-
-
-
-    <!-- PRODUCT NOTE -->
-
-    <div
-        id="productNote"
-        class="product-note"
-    ></div>
+    </div>  
 
 </div>
 
+</div>  <!-- ==================================================  
+     WHATSAPP DELIVERY FORM  
+================================================== -->  <div  
+    id="waFormOverlay"  
+    class="product-modal hidden"  
+>  <div class="wa-form">  
+
+    <button  
+        type="button"  
+        class="modal-close"  
+        onclick="closeWaForm()"  
+        aria-label="Close"  
+    >  
+
+        <i class="fa-solid fa-xmark"></i>  
+
+    </button>  
 
 
-<!-- ==================================================
-     PRODUCT PAGE
-================================================== -->
-
-<main class="product-page">
+    <h3>  
+        Enter delivery details  
+    </h3>  
 
 
-    <!-- ==================================================
-         PRODUCT GALLERY
-    ================================================== -->
-
-    <section class="product-gallery">
-
-        <div
-            id="slider"
-            class="slider"
-        ></div>
+    <p class="form-subtitle">  
+        Your details will be sent with your order.  
+    </p>  
 
 
-        <div
-            id="sliderDots"
-            class="slider-dots"
-        ></div>
-
-    </section>
-
-
-
-    <!-- ==================================================
-         PRODUCT DETAILS
-    ================================================== -->
-
-    <section
-        id="productDetails"
-        class="product-details"
-    ></section>
-
-</main>
+    <input  
+        id="custName"  
+        type="text"  
+        placeholder="Full Name"  
+        autocomplete="name"  
+    >  
 
 
-
-<!-- ==================================================
-     CUSTOMIZE POPUP
-================================================== -->
-
-<div
-    id="customizeOverlay"
-    class="product-modal hidden"
->
-
-    <div class="customize-form">
+    <input  
+        id="custPhone"  
+        type="tel"  
+        placeholder="Mobile Number"  
+        inputmode="numeric"  
+        maxlength="10"  
+        autocomplete="tel"  
+    >  
 
 
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeCustomizePopup()"
-            aria-label="Close"
-        >
-
-            <i class="fa-solid fa-xmark"></i>
-
-        </button>
+    <textarea  
+        id="custAddress"  
+        placeholder="Full Address"  
+        autocomplete="street-address"  
+    ></textarea>  
 
 
-        <h3>
-            Customize Your Product
-        </h3>
+    <input  
+        id="custPincode"  
+        type="tel"  
+        placeholder="Pincode"  
+        inputmode="numeric"  
+        maxlength="6"  
+        autocomplete="postal-code"  
+    >  
 
 
-        <div
-            id="customOptionsContainer"
-            class="custom-options-container"
-        ></div>
+    <div class="modal-actions">  
+
+        <button  
+            type="button"  
+            class="modal-cancel-btn"  
+            onclick="backToCustomize()"  
+        >  
+
+            <i class="fa-solid fa-arrow-left"></i>  
+
+            Back  
+
+        </button>  
 
 
-        <!-- PRICE -->
+        <button  
+            type="button"  
+            class="modal-whatsapp-btn"  
+            onclick="submitWaOrder()"  
+        >  
 
-        <div class="popup-price">
+            <i class="fa-brands fa-whatsapp"></i>  
 
-            <span>
-                Total
-            </span>
+            Continue to WhatsApp  
 
+        </button>  
 
-            <strong id="popupPrice">
-                ₹0
-            </strong>
-
-        </div>
-
-
-        <!-- ACTIONS -->
-
-        <div class="modal-actions">
-
-
-            <button
-                type="button"
-                class="modal-cancel-btn"
-                onclick="closeCustomizePopup()"
-            >
-
-                Cancel
-
-            </button>
-
-
-            <button
-                type="button"
-                class="modal-next-btn"
-                onclick="nextToAddress()"
-            >
-
-                Next
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </div>
-
-    </div>
+    </div>  
 
 </div>
 
+</div>  <!-- ==================================================  
+     ERROR MODAL  
+================================================== -->  <div  
+    id="errorModal"  
+    class="product-modal hidden"  
+>  <div class="error-box">  
+
+    <div class="error-icon">  
+
+        <i class="fa-solid fa-circle-exclamation"></i>  
+
+    </div>  
 
 
-<!-- ==================================================
-     WHATSAPP DELIVERY FORM
-================================================== -->
-
-<div
-    id="waFormOverlay"
-    class="product-modal hidden"
->
-
-    <div class="wa-form">
+    <h3>  
+        Please Fill These First  
+    </h3>  
 
 
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeWaForm()"
-            aria-label="Close"
-        >
-
-            <i class="fa-solid fa-xmark"></i>
-
-        </button>
+    <ul  
+        id="errorList"  
+    ></ul>  
 
 
-        <h3>
-            Enter delivery details
-        </h3>
-
-
-        <p class="form-subtitle">
-            Your details will be sent with your order.
-        </p>
-
-
-        <input
-            id="custName"
-            type="text"
-            placeholder="Full Name"
-            autocomplete="name"
-        >
-
-
-        <input
-            id="custPhone"
-            type="tel"
-            placeholder="Mobile Number"
-            inputmode="numeric"
-            maxlength="10"
-            autocomplete="tel"
-        >
-
-
-        <textarea
-            id="custAddress"
-            placeholder="Full Address"
-            autocomplete="street-address"
-        ></textarea>
-
-
-        <input
-            id="custPincode"
-            type="tel"
-            placeholder="Pincode"
-            inputmode="numeric"
-            maxlength="6"
-            autocomplete="postal-code"
-        >
-
-
-        <div class="modal-actions">
-
-
-            <button
-                type="button"
-                class="modal-cancel-btn"
-                onclick="backToCustomize()"
-            >
-
-                <i class="fa-solid fa-arrow-left"></i>
-
-                Back
-
-            </button>
-
-
-            <button
-                type="button"
-                class="modal-whatsapp-btn"
-                onclick="submitWaOrder()"
-            >
-
-                <i class="fa-brands fa-whatsapp"></i>
-
-                Continue to WhatsApp
-
-            </button>
-
-        </div>
-
-    </div>
+    <button  
+        type="button"  
+        class="error-ok-btn"  
+        onclick="closeErrorModal()"  
+    >  
+        OK  
+    </button>  
 
 </div>
 
-
-
-<!-- ==================================================
-     ERROR MODAL
-================================================== -->
-
-<div
-    id="errorModal"
-    class="product-modal hidden"
->
-
-    <div class="error-box">
-
-
-        <div class="error-icon">
-
-            <i class="fa-solid fa-circle-exclamation"></i>
-
-        </div>
-
-
-        <h3>
-            Please Fill These First
-        </h3>
-
-
-        <ul
-            id="errorList"
-        ></ul>
-
-
-        <button
-            type="button"
-            class="error-ok-btn"
-            onclick="closeErrorModal()"
-        >
-
-            OK
-
-        </button>
-
-    </div>
-
-</div>
-
-
-
-<!-- ==================================================
-     PRODUCT ACTION AREA
-================================================== -->
-
-<div class="product-action-area">
-
-
-    <!-- ==============================================
-         FLOATING SHARE BUTTON
-    =============================================== -->
-
-    <button
-        type="button"
-        class="product-floating-share"
-        onclick="sharePage()"
-        aria-label="Share Product"
-    >
-
-        <i class="fa-solid fa-share-nodes"></i>
-
-        <span>
-            Share
-        </span>
-
-    </button>
-
-
-
-    <!-- ==============================================
-         ADD TO CART
-    =============================================== -->
-
-    <div
-        id="productOrderButton"
-        class="product-cart-action"
-        role="button"
-        tabindex="0"
-        aria-label="Add to Cart"
-    >
-
-        <i class="fa-solid fa-cart-shopping"></i>
-
-        <span>
-            Add to Cart
-        </span>
-
-    </div>
-
-</div>
-
-
-
-<!-- ==================================================
-     SITE SETTINGS
-================================================== -->
-
-<script
-    type="module"
-    src="js/site-settings.js"
-></script>
-
-
-
-<!-- ==================================================
-     COMMON TOPBAR
-================================================== -->
-
-<script
-    type="module"
-    src="js/topbar.js"
-></script>
-
-
-
-<!-- ==================================================
-     CART SYSTEM
-================================================== -->
-
-<script
-    type="module"
-    src="js/cart.js"
-></script>
-
-
-
-<!-- ==================================================
-     PRODUCT JS
-================================================== -->
-
-<script
-    type="module"
-    src="js/product.js"
-></script>
-
-
-
-<!-- ==================================================
-     SHARE
-================================================== -->
-
-<script
-    src="js/share.js"
-></script>
-
-
-
-<!-- ==================================================
-     BACK
-================================================== -->
-
-<script>
-
-function goBack(){
-
-    location.href =
-        "index";
-
-}
-
-</script>
-
-
-</body>
-
-</html>
+</div>  <!-- ==================================================  
+     STICKY ACTION BAR  
+================================================== -->  <div class="sticky-order">    <!-- PRODUCT ORDER BUTTON -->    <div  
+    id="productOrderButton"  
+    class="buy-now-btn"  
+  >  
+    Buy Now  
+  </div>    <!-- SHARE -->  <button
+        id="addToCart"
+type="button"
+class="share-btn"
+
+
+> 
+Add To Cart
+
+  </button>  </div>  <!-- ==================================================  
+     SITE SETTINGS  
+================================================== -->  <script  
+    type="module"  
+    src="js/site-settings.js"  
+></script>  <!-- ==================================================  
+     COMMON TOPBAR / SIDEBAR  
+================================================== -->  <script  
+    type="module"  
+    src="js/topbar.js"  
+></script>  <!-- ==================================================  
+     PRODUCT JS  
+================================================== -->  <script  
+    type="module"  
+    src="js/product.js"  
+></script>  <!-- ==================================================  
+     SHARE  
+================================================== -->  <script  
+    src="js/share.js"  
+></script>  <!-- ==================================================  
+     BACK  
+================================================== -->  <script>  
+  
+function goBack() {  
+  
+    location.href = "index";  
+  
+}  
+  
+</script>  </body>  </html>  
