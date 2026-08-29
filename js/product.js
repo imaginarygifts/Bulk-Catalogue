@@ -24,6 +24,17 @@ import {
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+/* ==================================================
+   CART SYSTEM
+================================================== */
+
+import {
+    addToCart,
+    getConfigurationQuantity,
+    setCartItemQuantity,
+    getCartItemByConfiguration
+} from "./cart.js";
+
 
 /* ==================================================
    SITE SETTINGS
@@ -69,6 +80,7 @@ let siteSettings = {
     orderButton: "buyNow"
 
 };
+
 
 /* =========================================
    LOAD PRODUCT NOTE
@@ -1130,6 +1142,8 @@ async function loadProduct() {
 
         updateStickyOrderButton();
 
+        updateProductCartButton();
+
 
         console.log(
             "Product loaded successfully:",
@@ -1826,6 +1840,410 @@ function updateStickyOrderButton() {
 
 
 /* ==================================================
+   PRODUCT CART CONFIGURATION
+================================================== */
+
+function getCurrentCartConfiguration() {
+
+    return {
+
+        color:
+            selected.color ||
+            null,
+
+        size:
+            selected.size ||
+            null,
+
+        options:
+            selected.options ||
+            {},
+
+        optionValues:
+            selected.optionValues ||
+            {},
+
+        customOptionPrices:
+            Object.values(
+                selected.options ||
+                {}
+            ),
+
+        imageLinks:
+            selected.imageLinks ||
+            {}
+
+    };
+
+}
+
+
+/* ==================================================
+   PRODUCT CART QUANTITY
+================================================== */
+
+function getCurrentCartQuantity() {
+
+    if (
+        !product?.id
+    ) {
+
+        return 0;
+
+    }
+
+
+    return getConfigurationQuantity(
+        product.id,
+        getCurrentCartConfiguration()
+    );
+
+}
+
+
+/* ==================================================
+   UPDATE PRODUCT CART BUTTON
+================================================== */
+
+function updateProductCartButton() {
+
+    const button =
+        document.getElementById(
+            "productCartButton"
+        );
+
+
+    if (
+        !button
+    ) {
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       OUT OF STOCK
+    ================================================== */
+
+    if (
+        product?.inStock === false
+    ) {
+
+        button.innerHTML = `
+
+            <i class="fa-solid fa-ban"></i>
+
+            <span>
+                Out of Stock
+            </span>
+
+        `;
+
+        button.disabled =
+            true;
+
+        button.classList.add(
+            "out-of-stock"
+        );
+
+        button.onclick =
+            null;
+
+        return;
+
+    }
+
+
+    button.disabled =
+        false;
+
+    button.classList.remove(
+        "out-of-stock"
+    );
+
+
+    const quantity =
+        getCurrentCartQuantity();
+
+
+    /* ==================================================
+       ADD TO CART
+    ================================================== */
+
+    if (
+        quantity <= 0
+    ) {
+
+        button.innerHTML = `
+
+            <i class="fa-solid fa-cart-shopping"></i>
+
+            <span>
+                Add to Cart
+            </span>
+
+        `;
+
+        button.classList.remove(
+            "cart-quantity-mode"
+        );
+
+        button.onclick =
+            addCurrentProductToCart;
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       QUANTITY MODE
+    ================================================== */
+
+    button.classList.add(
+        "cart-quantity-mode"
+    );
+
+
+    button.innerHTML = `
+
+        <span
+            class="cart-minus"
+            aria-label="Decrease quantity"
+        >
+            −
+        </span>
+
+        <span
+            class="cart-quantity"
+        >
+            ${quantity}
+        </span>
+
+        <span
+            class="cart-plus"
+            aria-label="Increase quantity"
+        >
+            +
+        </span>
+
+    `;
+
+
+    button.onclick =
+    function(event) {
+
+        const target =
+            event.target;
+
+
+        if (
+            target.closest(
+                ".cart-minus"
+            )
+        ) {
+
+            decreaseCurrentProductQuantity();
+
+            return;
+
+        }
+
+
+        if (
+            target.closest(
+                ".cart-plus"
+            )
+        ) {
+
+            increaseCurrentProductQuantity();
+
+            return;
+
+        }
+
+    };
+
+}
+
+
+/* ==================================================
+   ADD CURRENT PRODUCT TO CART
+================================================== */
+
+function addCurrentProductToCart() {
+
+    if (
+        !product?.id
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        product?.inStock === false
+    ) {
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       VALIDATE REQUIRED SELECTIONS
+    ================================================== */
+
+    const errors =
+        validateRequiredSelections();
+
+
+    if (
+        errors.length
+    ) {
+
+        showErrorModal(
+            errors
+        );
+
+        return;
+
+    }
+
+
+    const configuration =
+        getCurrentCartConfiguration();
+
+
+    addToCart(
+        product,
+        configuration,
+        1
+    );
+
+
+    updateProductCartButton();
+
+}
+
+
+/* ==================================================
+   INCREASE CURRENT PRODUCT QUANTITY
+================================================== */
+
+function increaseCurrentProductQuantity() {
+
+    if (
+        !product?.id
+    ) {
+
+        return;
+
+    }
+
+
+    const configuration =
+        getCurrentCartConfiguration();
+
+
+    const item =
+        getCartItemByConfiguration(
+            product.id,
+            configuration
+        );
+
+
+    if (
+        !item
+    ) {
+
+        addCurrentProductToCart();
+
+        return;
+
+    }
+
+
+    setCartItemQuantity(
+        item.cartItemKey,
+        Number(
+            item.quantity || 0
+        ) + 1
+    );
+
+
+    updateProductCartButton();
+
+}
+
+
+/* ==================================================
+   DECREASE CURRENT PRODUCT QUANTITY
+================================================== */
+
+function decreaseCurrentProductQuantity() {
+
+    if (
+        !product?.id
+    ) {
+
+        return;
+
+    }
+
+
+    const configuration =
+        getCurrentCartConfiguration();
+
+
+    const item =
+        getCartItemByConfiguration(
+            product.id,
+            configuration
+        );
+
+
+    if (
+        !item
+    ) {
+
+        updateProductCartButton();
+
+        return;
+
+    }
+
+
+    setCartItemQuantity(
+        item.cartItemKey,
+        Number(
+            item.quantity || 0
+        ) - 1
+    );
+
+
+    updateProductCartButton();
+
+}
+
+
+/* ==================================================
+   CART UPDATED EVENT
+================================================== */
+
+window.addEventListener(
+    "cartUpdated",
+    () => {
+
+        updateProductCartButton();
+
+    }
+);
+
+
+/* ==================================================
    RELATED DESIGN NAVIGATION
 ================================================== */
 
@@ -2027,6 +2445,8 @@ function(index) {
 
     recalcPrice();
 
+    updateProductCartButton();
+
 };
 
 
@@ -2071,6 +2491,8 @@ function(index) {
 
     recalcPrice();
 
+    updateProductCartButton();
+
 };
 
 
@@ -2094,6 +2516,8 @@ function(
 
         recalcPrice();
 
+        updateProductCartButton();
+
         return;
 
     }
@@ -2108,6 +2532,8 @@ function(
 
 
     recalcPrice();
+
+    updateProductCartButton();
 
 };
 
@@ -2146,6 +2572,8 @@ function(
 
     recalcPrice();
 
+    updateProductCartButton();
+
 };
 
 
@@ -2169,6 +2597,8 @@ function(
 
         recalcPrice();
 
+        updateProductCartButton();
+
         return;
 
     }
@@ -2183,6 +2613,8 @@ function(
 
 
     recalcPrice();
+
+    updateProductCartButton();
 
 };
 
@@ -2298,6 +2730,8 @@ async function(
 
 
         recalcPrice();
+
+        updateProductCartButton();
 
     }
 
@@ -2802,6 +3236,8 @@ function renderCustomizePopup() {
 
     recalcPrice();
 
+    updateProductCartButton();
+
 }
 
 
@@ -3021,6 +3457,7 @@ function() {
         );
 
 };
+
 
 /* ==================================================
    WHATSAPP ORDER SUCCESS POPUP
@@ -3393,6 +3830,7 @@ function showWhatsAppOrderSuccess(orderNumber) {
         );
 
 }
+
 
 /* ==================================================
    WHATSAPP ORDER
@@ -3874,35 +4312,35 @@ async function() {
 
 
         /* ==================================================
-   OPEN WHATSAPP
-================================================== */
+           OPEN WHATSAPP
+        ================================================== */
 
-window.open(
-    whatsappUrl,
-    "_blank"
-);
-
-
-/* ==================================================
-   CLOSE WHATSAPP FORM
-================================================== */
-
-document
-    .getElementById(
-        "waFormOverlay"
-    )
-    ?.classList.add(
-        "hidden"
-    );
+        window.open(
+            whatsappUrl,
+            "_blank"
+        );
 
 
-/* ==================================================
-   SHOW SUCCESS POPUP
-================================================== */
+        /* ==================================================
+           CLOSE WHATSAPP FORM
+        ================================================== */
 
-showWhatsAppOrderSuccess(
-    orderNumber
-);
+        document
+            .getElementById(
+                "waFormOverlay"
+            )
+            ?.classList.add(
+                "hidden"
+            );
+
+
+        /* ==================================================
+           SHOW SUCCESS POPUP
+        ================================================== */
+
+        showWhatsAppOrderSuccess(
+            orderNumber
+        );
 
     }
 
@@ -4133,7 +4571,7 @@ function saveCheckoutAndGo() {
 
     /* ==================================================
        GO TO CHECKOUT
-    ================================================== */
+================================================== */
 
     location.href =
         "order";
