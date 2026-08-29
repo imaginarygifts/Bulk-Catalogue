@@ -2256,3 +2256,82 @@ img {
     padding-bottom:130px;
 
 }
+
+
+
+/* Floating Share */
+.floating-share-btn{
+    position:fixed;
+    right:16px;
+    bottom:92px;
+    z-index:1001;
+
+    width:56px;
+    height:56px;
+
+    border:none;
+    border-radius:50%;
+
+    background:#fff;
+    color:#222;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:22px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);
+}
+
+/* Sticky Bottom */
+.sticky-order{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+
+    z-index:1000;
+
+    display:flex;
+    gap:10px;
+
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+
+    background:#0d0d11;
+    border-top:1px solid #2a2a32;
+}
+
+/* Add to Cart */
+.cart-btn{
+    flex:1;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    border:none;
+    border-radius:18px;
+
+    background:#1b1b22;
+    color:#fff;
+
+    font-size:16px;
+    font-weight:800;
+}
+
+/* Buy Now */
+.buy-now-btn{
+    flex:1;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:18px;
+}
+
+/* Space for sticky bar */
+.product-page{
+    padding-bottom:105px;
+}
