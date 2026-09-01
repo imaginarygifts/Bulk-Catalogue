@@ -1074,6 +1074,31 @@ img {
 
 
 /* ==================================================
+   PRODUCT QUANTITY CONTROL
+================================================== */
+
+.share-btn .cart-minus,
+.share-btn .cart-quantity,
+.share-btn .cart-plus {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+.share-btn .cart-minus {
+    margin-right: 18px;
+}
+
+.share-btn .cart-quantity {
+    margin-right: 18px;
+}
+
+
+
+/* ==================================================
    PRESS EFFECT
 ================================================== */
 
