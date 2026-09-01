@@ -213,7 +213,7 @@
 
     display:block;
 
-    max-width:250px;
+    max-width:250px !important;
 
     max-height:40px;
 
