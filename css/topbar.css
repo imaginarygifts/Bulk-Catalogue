@@ -1093,7 +1093,7 @@
 
         max-width:
             calc(
-                100vw - 80px
+                100vw - 150px
             );
 
     }
