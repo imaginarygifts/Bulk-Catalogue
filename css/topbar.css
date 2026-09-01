@@ -1,35 +1,3 @@
-/*==================================================
-    TOPBAR
-==================================================*/
-
-.site-topbar{
-
-    width:100%;
-
-    height:72px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    padding:
-        0
-        18px;
-
-    background:#050505;
-
-    border-bottom:
-        1px solid
-        rgba(255,255,255,0.12);
-
-    position:relative;
-
-    z-index:900;
-
-}
-
 /* =========================================
    HOMEPAGE RUNNING NOTE
 ========================================= */
@@ -133,6 +101,40 @@
     }
 
 }
+
+/*==================================================
+    TOPBAR
+==================================================*/
+
+.site-topbar{
+
+    width:100%;
+
+    height:72px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:
+        0
+        18px;
+
+    background:#050505;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    position:relative;
+
+    z-index:900;
+
+}
+
+
 
 /*==================================================
     TOPBAR BUTTON
