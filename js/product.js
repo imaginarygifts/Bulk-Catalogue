@@ -461,6 +461,8 @@ function escapeAttribute(value) {
 }
 
 
+
+        );
 /* ==================================================
    REQUIRED SELECTION VALIDATION
 ================================================== */
@@ -468,7 +470,6 @@ function escapeAttribute(value) {
 function validateRequiredSelections() {
 
     const errors = [];
-
 
     document
         .querySelectorAll(
@@ -490,9 +491,10 @@ function validateRequiredSelections() {
     ================================================== */
 
     if (
-        product?.variants?.colors?.some(
-            c => c.required
-        )
+        Array.isArray(
+            product?.variants?.colors
+        ) &&
+        product.variants.colors.length > 0
     ) {
 
         if (
@@ -513,9 +515,10 @@ function validateRequiredSelections() {
     ================================================== */
 
     if (
-        product?.variants?.sizes?.some(
-            s => s.required
-        )
+        Array.isArray(
+            product?.variants?.sizes
+        ) &&
+        product.variants.sizes.length > 0
     ) {
 
         if (
@@ -1989,8 +1992,13 @@ function updateProductCartButton() {
             "cart-quantity-mode"
         );
 
-        button.onclick =
-            addCurrentProductToCart;
+       button.onclick = function() {
+
+    handleProductAction(
+        "addToCart"
+    );
+
+};
 
         return;
 
@@ -3299,9 +3307,12 @@ function() {
 window.nextToAddress =
 function() {
 
+    /* ==================================================
+       VALIDATE EVERYTHING
+    ================================================== */
+
     const errors =
         validateRequiredSelections();
-
 
     if (
         errors.length
@@ -3310,6 +3321,23 @@ function() {
         showErrorModal(
             errors
         );
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       ADD TO CART
+    ================================================== */
+
+    if (
+        orderMode === "addToCart"
+    ) {
+
+        addCurrentProductToCart();
+
+        closeCustomizePopup();
 
         return;
 
@@ -3326,9 +3354,7 @@ function() {
 
         closeCustomizePopup();
 
-
         saveCheckoutAndGo();
-
 
         return;
 
@@ -3339,16 +3365,23 @@ function() {
        WHATSAPP
     ================================================== */
 
-    closeCustomizePopup();
+    if (
+        orderMode === "whatsapp"
+    ) {
 
+        closeCustomizePopup();
 
-    document
-        .getElementById(
-            "waFormOverlay"
-        )
-        ?.classList.remove(
-            "hidden"
-        );
+        document
+            .getElementById(
+                "waFormOverlay"
+            )
+            ?.classList.remove(
+                "hidden"
+            );
+
+        return;
+
+    }
 
 };
 
@@ -3380,15 +3413,233 @@ function() {
 };
 
 
+
+
+
+
+/* ==================================================
+   PRODUCT ACTION HELPERS
+================================================== */
+
+function hasVariants() {
+
+    return (
+
+        (
+            Array.isArray(
+                product?.variants?.colors
+            ) &&
+            product.variants.colors.length > 0
+        )
+
+        ||
+
+        (
+            Array.isArray(
+                product?.variants?.sizes
+            ) &&
+            product.variants.sizes.length > 0
+        )
+
+    );
+
+}
+
+
+function hasCustomOptions() {
+
+    return (
+        Array.isArray(
+            product?.customOptions
+        ) &&
+        product.customOptions.length > 0
+    );
+
+}
+
+
+/* ==================================================
+   PRODUCT ACTION FLOW
+================================================== */
+
+function handleProductAction(mode) {
+
+    if (
+        !product ||
+        product.inStock === false
+    ) {
+
+        return;
+
+    }
+
+
+    orderMode = mode;
+
+
+    /* ==================================================
+       STEP 1 — VARIANTS
+    ================================================== */
+
+    if (
+        hasVariants()
+    ) {
+
+        const variantErrors =
+            validateVariantSelections();
+
+        if (
+            variantErrors.length
+        ) {
+
+            showErrorModal(
+                variantErrors
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    /* ==================================================
+       STEP 2 — CUSTOM OPTIONS
+    ================================================== */
+
+    if (
+        hasCustomOptions()
+    ) {
+
+        renderCustomizePopup();
+
+        document
+            .getElementById(
+                "customizeOverlay"
+            )
+            ?.classList.remove(
+                "hidden"
+            );
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       STEP 3 — NO CUSTOM OPTIONS
+    ================================================== */
+
+    if (
+        mode === "addToCart"
+    ) {
+
+        addCurrentProductToCart();
+
+        return;
+
+    }
+
+
+    if (
+        mode === "buyNow"
+    ) {
+
+        saveCheckoutAndGo();
+
+        return;
+
+    }
+
+
+    if (
+        mode === "whatsapp"
+    ) {
+
+        document
+            .getElementById(
+                "waFormOverlay"
+            )
+            ?.classList.remove(
+                "hidden"
+            );
+
+        return;
+
+    }
+
+}
+
+
+/* ==================================================
+   VARIANT ONLY VALIDATION
+================================================== */
+
+function validateVariantSelections() {
+
+    const errors = [];
+
+
+    /* COLOR */
+
+    if (
+        Array.isArray(
+            product?.variants?.colors
+        ) &&
+        product.variants.colors.length > 0
+    ) {
+
+        if (
+            !selected.color
+        ) {
+
+            errors.push(
+                "Please select a color"
+            );
+
+        }
+
+    }
+
+
+    /* SIZE */
+
+    if (
+        Array.isArray(
+            product?.variants?.sizes
+        ) &&
+        product.variants.sizes.length > 0
+    ) {
+
+        if (
+            !selected.size
+        ) {
+
+            errors.push(
+                "Please select a size"
+            );
+
+        }
+
+    }
+
+
+    return errors;
+
+}
+
+
 /* ==================================================
    ORDER NOW / WHATSAPP
 ================================================== */
 
-window.orderNow =
-function() {
+window.orderNow = function() {
 
-    orderMode =
-        "whatsapp";
+    handleProductAction(
+        "whatsapp"
+    );
+
+};
 
 
     /* ==================================================
@@ -4387,11 +4638,13 @@ function() {
    BUY NOW
 ================================================== */
 
-window.buyNow =
-function() {
+window.buyNow = function() {
 
-    orderMode =
-        "buyNow";
+    handleProductAction(
+        "buyNow"
+    );
+
+};
 
 
     /* ==================================================
