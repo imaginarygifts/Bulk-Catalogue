@@ -462,7 +462,6 @@ function escapeAttribute(value) {
 
 
 
-        );
 /* ==================================================
    REQUIRED SELECTION VALIDATION
 ================================================== */
