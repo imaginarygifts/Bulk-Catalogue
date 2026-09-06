@@ -1,60 +1,72 @@
-
-/* ==================================================
+/* ============================================================
    CART SIDEBAR
-================================================== */
+   ============================================================ */
 
-/* ==================================================
-   OVERLAY
-================================================== */
-
-#cartSidebarOverlay {
+.cart-sidebar-overlay {
     position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.55);
+    z-index: 99990;
+
+    background: rgba(0, 0, 0, 0.58);
 
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
 
     transition:
         opacity 0.28s ease,
         visibility 0.28s ease;
-
-    z-index: 99990;
 
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
 }
 
 
-/* OPEN */
+/* ============================================================
+   OPEN STATE
+   ============================================================ */
 
-#cartSidebarOverlay.show {
+.cart-sidebar-overlay.open {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
 }
 
 
-/* ==================================================
-   SIDEBAR
-================================================== */
+/* ============================================================
+   BODY LOCK
+   ============================================================ */
+
+body.cart-sidebar-open {
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   CART SIDEBAR
+   ============================================================ */
 
 .cart-sidebar {
     position: absolute;
 
     top: 0;
     right: 0;
+    bottom: 0;
 
-    width: min(430px, 92vw);
-    height: 100%;
-
-    background: #ffffff;
+    width: min(430px, 94vw);
 
     display: flex;
     flex-direction: column;
+
+    background:
+        linear-gradient(
+            180deg,
+            #171717 0%,
+            #111111 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        -12px 0 40px rgba(0, 0, 0, 0.35);
 
     transform: translateX(100%);
 
@@ -66,117 +78,105 @@
             1
         );
 
-    box-shadow:
-        -10px 0 40px rgba(0, 0, 0, 0.20);
-
     overflow: hidden;
-
-    z-index: 99991;
 }
 
 
-/* DRAWER OPEN */
-
-#cartSidebarOverlay.show .cart-sidebar {
+.cart-sidebar-overlay.open .cart-sidebar {
     transform: translateX(0);
 }
 
 
-/* ==================================================
-   BODY LOCK
-================================================== */
-
-body.cart-sidebar-open {
-    overflow: hidden;
-}
-
-
-/* ==================================================
-   HEADER
-================================================== */
+/* ============================================================
+   CART HEADER
+   ============================================================ */
 
 .cart-sidebar-header {
     flex: 0 0 auto;
 
-    min-height: 72px;
-
-    padding:
-        0 18px
-        0 22px;
+    min-height: 70px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    border-bottom: 1px solid #eeeeee;
+    padding: 0 20px;
 
-    background: #ffffff;
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
 
-    position: relative;
-    z-index: 2;
+    background:
+        linear-gradient(
+            135deg,
+            #1d1d1d,
+            #121212
+        );
 }
 
-
-/* TITLE */
 
 .cart-sidebar-title {
     display: flex;
     align-items: center;
+    gap: 11px;
 
-    gap: 10px;
-
-    color: #171717;
-
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
-
-    line-height: 1;
+    letter-spacing: 0.1px;
 }
 
 
 .cart-sidebar-title i {
     font-size: 19px;
 
-    color: #e84b20;
+    background:
+        linear-gradient(
+            135deg,
+            #ff9d19,
+            #df267f
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
 }
 
 
-/* ==================================================
+/* ============================================================
    CLOSE BUTTON
-================================================== */
+   ============================================================ */
 
 .cart-sidebar-close {
-    width: 42px;
-    height: 42px;
-
-    padding: 0;
+    width: 40px;
+    height: 40px;
 
     border: none;
-    border-radius: 50%;
-
-    background: #f5f5f5;
-
-    color: #222222;
+    border-radius: 12px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    cursor: pointer;
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
 
     font-size: 18px;
 
+    cursor: pointer;
+
     transition:
         background 0.2s ease,
-        color 0.2s ease,
         transform 0.2s ease;
 }
 
 
 .cart-sidebar-close:hover {
-    background: #eeeeee;
+    background:
+        rgba(255, 255, 255, 0.13);
 
-    transform: rotate(90deg);
+    transform: rotate(4deg);
 }
 
 
@@ -185,11 +185,11 @@ body.cart-sidebar-open {
 }
 
 
-/* ==================================================
-   BODY
-================================================== */
+/* ============================================================
+   CART ITEMS CONTAINER
+   ============================================================ */
 
-.cart-sidebar-body {
+.cart-sidebar-items {
     flex: 1 1 auto;
 
     min-height: 0;
@@ -197,95 +197,103 @@ body.cart-sidebar-open {
     overflow-y: auto;
     overflow-x: hidden;
 
-    padding: 16px;
-
-    background: #fafafa;
-
-    overscroll-behavior: contain;
+    padding: 14px 16px 20px;
 
     scrollbar-width: thin;
+    scrollbar-color:
+        rgba(255, 255, 255, 0.18)
+        transparent;
 }
 
 
-/* WEBKIT SCROLLBAR */
-
-.cart-sidebar-body::-webkit-scrollbar {
+.cart-sidebar-items::-webkit-scrollbar {
     width: 5px;
 }
 
 
-.cart-sidebar-body::-webkit-scrollbar-track {
+.cart-sidebar-items::-webkit-scrollbar-track {
     background: transparent;
 }
 
 
-.cart-sidebar-body::-webkit-scrollbar-thumb {
-    background: #d3d3d3;
+.cart-sidebar-items::-webkit-scrollbar-thumb {
+    background:
+        rgba(255, 255, 255, 0.18);
+
     border-radius: 20px;
 }
 
 
-/* ==================================================
+/* ============================================================
    CART ITEM
-================================================== */
+   ============================================================ */
 
 .cart-sidebar-item {
-    width: 100%;
+    position: relative;
 
     display: flex;
-    gap: 12px;
+    gap: 13px;
 
     padding: 13px;
 
-    margin-bottom: 12px;
+    margin-bottom: 11px;
 
-    background: #ffffff;
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
 
-    border: 1px solid #eeeeee;
+    border-radius: 17px;
 
-    border-radius: 16px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.025)
+        );
 
-    box-sizing: border-box;
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.13);
 
     transition:
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
 
 .cart-sidebar-item:hover {
-    border-color: #e5e5e5;
+    border-color:
+        rgba(255, 255, 255, 0.12);
 
-    box-shadow:
-        0 5px 18px rgba(0, 0, 0, 0.06);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.03)
+        );
 }
 
 
-/* ==================================================
-   ITEM IMAGE
-================================================== */
+/* ============================================================
+   PRODUCT IMAGE
+   ============================================================ */
 
-.cart-sidebar-item-image {
+.cart-item-image {
     flex: 0 0 82px;
 
     width: 82px;
     height: 82px;
 
-    border-radius: 12px;
-
     overflow: hidden;
 
-    background: #f1f1f1;
+    border-radius: 13px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #222;
 
-    position: relative;
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
 }
 
 
-.cart-sidebar-item-image img {
+.cart-item-image img {
     width: 100%;
     height: 100%;
 
@@ -295,9 +303,7 @@ body.cart-sidebar-open {
 }
 
 
-/* NO IMAGE */
-
-.cart-no-image {
+.cart-item-no-image {
     width: 100%;
     height: 100%;
 
@@ -305,17 +311,18 @@ body.cart-sidebar-open {
     align-items: center;
     justify-content: center;
 
-    color: #a0a0a0;
+    color:
+        rgba(255, 255, 255, 0.3);
 
     font-size: 22px;
 }
 
 
-/* ==================================================
-   ITEM INFO
-================================================== */
+/* ============================================================
+   CART ITEM INFO
+   ============================================================ */
 
-.cart-sidebar-item-info {
+.cart-item-info {
     flex: 1 1 auto;
 
     min-width: 0;
@@ -325,13 +332,11 @@ body.cart-sidebar-open {
 }
 
 
-/* ==================================================
+/* ============================================================
    ITEM TOP
-================================================== */
+   ============================================================ */
 
-.cart-sidebar-item-top {
-    width: 100%;
-
+.cart-item-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -340,18 +345,15 @@ body.cart-sidebar-open {
 }
 
 
-/* ITEM NAME */
-
-.cart-sidebar-item-name {
-    flex: 1;
+.cart-item-top h4 {
+    margin: 0;
 
     min-width: 0;
 
-    color: #171717;
+    color: #ffffff;
 
     font-size: 15px;
     font-weight: 750;
-
     line-height: 1.3;
 
     display: -webkit-box;
@@ -362,151 +364,157 @@ body.cart-sidebar-open {
 }
 
 
-/* ==================================================
+/* ============================================================
    REMOVE BUTTON
-================================================== */
+   ============================================================ */
 
-.cart-remove-button {
+.cart-item-remove {
     flex: 0 0 auto;
 
     width: 30px;
     height: 30px;
 
-    padding: 0;
-
     border: none;
-    border-radius: 8px;
-
-    background: transparent;
-
-    color: #999999;
+    border-radius: 9px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    cursor: pointer;
+    background:
+        rgba(255, 75, 75, 0.08);
 
-    font-size: 14px;
+    color:
+        rgba(255, 120, 120, 0.9);
+
+    font-size: 12px;
+
+    cursor: pointer;
 
     transition:
         background 0.2s ease,
-        color 0.2s ease;
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 
-.cart-remove-button:hover {
-    background: #fff0f0;
+.cart-item-remove:hover {
+    background:
+        rgba(255, 75, 75, 0.16);
 
-    color: #dc3545;
+    color: #ff7777;
+
+    transform: scale(1.05);
 }
 
 
-/* ==================================================
+/* ============================================================
    ITEM PRICE
-================================================== */
+   ============================================================ */
 
-.cart-sidebar-item-price {
+.cart-item-price {
     margin-top: 5px;
 
-    color: #e84b20;
+    color: #ffb43b;
 
-    font-size: 15px;
-    font-weight: 800;
-
-    line-height: 1.2;
+    font-size: 14px;
+    font-weight: 750;
 }
 
 
-/* ==================================================
-   OPTIONS
-================================================== */
+.cart-item-price span {
+    color:
+        rgba(255, 255, 255, 0.52);
 
-.cart-sidebar-item-options {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+
+.cart-item-configuration {
     margin-top: 6px;
 
     display: flex;
     flex-direction: column;
-
     gap: 2px;
+
+    color:
+        rgba(255, 255, 255, 0.62);
+
+    font-size: 11.5px;
+
+    line-height: 1.4;
 }
 
 
 .cart-item-option {
-    color: #777777;
-
-    font-size: 11px;
-    font-weight: 500;
-
-    line-height: 1.35;
-
-    white-space: normal;
-
     overflow-wrap: anywhere;
 }
 
 
-/* ==================================================
+/* ============================================================
    ITEM BOTTOM
-================================================== */
+   ============================================================ */
 
-.cart-sidebar-item-bottom {
+.cart-item-bottom {
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 9px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    gap: 10px;
+    gap: 8px;
 }
 
 
-/* ==================================================
-   QUANTITY
-================================================== */
+/* ============================================================
+   QUANTITY CONTROL
+   ============================================================ */
 
-.cart-sidebar-quantity {
+.cart-quantity-control {
     display: inline-flex;
     align-items: center;
 
     height: 34px;
 
-    padding: 0 4px;
+    overflow: hidden;
 
-    background: #f5f5f5;
-
-    border: 1px solid #e8e8e8;
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
 
     border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
 }
 
 
-/* QUANTITY BUTTON */
-
-.cart-quantity-button {
-    width: 28px;
-    height: 28px;
+.cart-quantity-minus,
+.cart-quantity-plus {
+    width: 32px;
+    height: 32px;
 
     padding: 0;
 
     border: none;
-    border-radius: 7px;
-
-    background: transparent;
-
-    color: #222222;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 600;
+
     cursor: pointer;
-
-    font-size: 18px;
-    font-weight: 700;
-
-    line-height: 1;
 
     transition:
         background 0.18s ease,
@@ -514,103 +522,132 @@ body.cart-sidebar-open {
 }
 
 
-.cart-quantity-button:hover {
-    background: #ffffff;
+.cart-quantity-minus:hover,
+.cart-quantity-plus:hover {
+    background:
+        rgba(255, 255, 255, 0.09);
 
-    color: #e84b20;
+    color: #ffad2f;
 }
 
 
-.cart-quantity-button:active {
-    transform: scale(0.92);
+.cart-quantity-minus:active,
+.cart-quantity-plus:active {
+    background:
+        rgba(255, 255, 255, 0.14);
 }
 
 
-/* QUANTITY VALUE */
+.cart-quantity-value {
+    min-width: 29px;
 
-.cart-sidebar-quantity-value {
-    min-width: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    text-align: center;
-
-    color: #222222;
+    color: #ffffff;
 
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 750;
 }
 
 
-/* ==================================================
+/* ============================================================
    ITEM TOTAL
-================================================== */
+   ============================================================ */
 
-.cart-sidebar-item-total {
-    color: #171717;
+.cart-item-total {
+    color: #ffffff;
 
-    font-size: 15px;
-    font-weight: 850;
+    font-size: 14px;
+    font-weight: 800;
 
     white-space: nowrap;
 }
 
 
-/* ==================================================
-   EMPTY CART
-================================================== */
+/* ============================================================
+   ITEM SHIPPING
+   ============================================================ */
 
-.cart-empty {
-    min-height: 100%;
+.cart-item-shipping {
+    margin-top: 6px;
+
+    color:
+        rgba(255, 255, 255, 0.5);
+
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+
+.cart-item-shipping.free {
+    color: #65d99a;
+}
+
+
+/* ============================================================
+   EMPTY CART
+   ============================================================ */
+
+.cart-sidebar-empty {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    padding: 35px 25px;
 
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
 
     text-align: center;
-
-    padding: 35px 20px;
-
-    box-sizing: border-box;
 }
 
 
-.cart-empty-icon {
-    width: 76px;
-    height: 76px;
+.cart-sidebar-empty i {
+    width: 72px;
+    height: 72px;
 
-    margin-bottom: 18px;
-
-    border-radius: 50%;
-
-    background: #f2f2f2;
+    margin-bottom: 17px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    color: #b0b0b0;
+    border-radius: 22px;
 
-    font-size: 28px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 157, 25, 0.12),
+            rgba(223, 38, 127, 0.12)
+        );
+
+    color: #ff9d19;
+
+    font-size: 27px;
 }
 
 
-.cart-empty h3 {
+.cart-sidebar-empty h3 {
     margin: 0 0 7px;
 
-    color: #222222;
+    color: #ffffff;
 
     font-size: 19px;
     font-weight: 800;
 }
 
 
-.cart-empty p {
-    max-width: 260px;
+.cart-sidebar-empty p {
+    max-width: 270px;
 
     margin: 0;
 
-    color: #888888;
+    color:
+        rgba(255, 255, 255, 0.5);
 
     font-size: 13px;
 
@@ -618,126 +655,107 @@ body.cart-sidebar-open {
 }
 
 
-/* ==================================================
-   FOOTER
-================================================== */
+/* ============================================================
+   CART FOOTER
+   ============================================================ */
 
 .cart-sidebar-footer {
     flex: 0 0 auto;
 
-    padding: 15px 16px 17px;
+    padding: 16px 18px 18px;
 
-    background: #ffffff;
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
 
-    border-top: 1px solid #eeeeee;
+    background:
+        linear-gradient(
+            180deg,
+            #151515 0%,
+            #101010 100%
+        );
 
     box-shadow:
-        0 -6px 18px rgba(0, 0, 0, 0.04);
-
-    position: relative;
-
-    z-index: 3;
+        0 -10px 28px rgba(0, 0, 0, 0.2);
 }
 
 
-/* ==================================================
-   PRICE BREAKDOWN
-================================================== */
-
-.cart-price-breakdown {
-    width: 100%;
-}
-
-
-/* PRICE ROW */
+/* ============================================================
+   PRICE ROW
+   ============================================================ */
 
 .cart-price-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    gap: 15px;
+    margin-bottom: 9px;
 
-    padding: 4px 0;
-
-    color: #666666;
+    color:
+        rgba(255, 255, 255, 0.62);
 
     font-size: 13px;
 }
 
 
 .cart-price-row strong {
-    color: #222222;
+    color: #ffffff;
 
     font-size: 13px;
-    font-weight: 750;
-
-    white-space: nowrap;
+    font-weight: 700;
 }
 
 
-/* FREE */
-
-.cart-price-row strong {
-    letter-spacing: 0;
-}
-
-
-/* ==================================================
-   DIVIDER
-================================================== */
-
-.cart-price-divider {
-    width: 100%;
-    height: 1px;
-
-    margin: 8px 0;
-
-    background: #eeeeee;
-}
-
-
-/* ==================================================
-   TOTAL
-================================================== */
+/* ============================================================
+   TOTAL ROW
+   ============================================================ */
 
 .cart-total-row {
-    padding-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-    color: #171717;
+    margin-top: 4px;
+    padding-top: 12px;
 
-    font-size: 17px;
-}
+    border-top:
+        1px dashed rgba(255, 255, 255, 0.1);
 
+    color: #ffffff;
 
-.cart-total-row span {
+    font-size: 16px;
     font-weight: 800;
 }
 
 
 .cart-total-row strong {
-    color: #e84b20;
+    color: #ffb13b;
 
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 19px;
+    font-weight: 850;
 }
 
 
-/* ==================================================
+/* ============================================================
    CHECKOUT BUTTON
-================================================== */
+   ============================================================ */
 
 .cart-checkout-button {
     width: 100%;
 
-    min-height: 54px;
+    min-height: 56px;
 
-    margin-top: 13px;
+    margin-top: 15px;
 
     padding: 0 18px;
 
     border: none;
-    border-radius: 15px;
+    border-radius: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
 
     background:
         linear-gradient(
@@ -749,51 +767,41 @@ body.cart-sidebar-open {
 
     color: #ffffff;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 10px;
-
     font-size: 15px;
     font-weight: 850;
 
     cursor: pointer;
 
     box-shadow:
-        0 8px 22px rgba(
-            255,
-            92,
-            31,
-            0.22
-        );
+        0 9px 25px rgba(255, 92, 31, 0.22);
 
     transition:
         transform 0.2s ease,
-        box-shadow 0.2s ease;
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
 }
 
 
 .cart-checkout-button:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 
     box-shadow:
-        0 11px 27px rgba(
-            255,
-            92,
-            31,
-            0.28
-        );
+        0 13px 30px rgba(255, 92, 31, 0.3);
+
+    filter: brightness(1.04);
 }
 
 
 .cart-checkout-button:active {
-    transform: translateY(1px) scale(0.99);
+    transform: translateY(0);
+
+    box-shadow:
+        0 6px 16px rgba(255, 92, 31, 0.2);
 }
 
 
 .cart-checkout-button i {
-    font-size: 14px;
+    font-size: 13px;
 
     transition:
         transform 0.2s ease;
@@ -805,22 +813,385 @@ body.cart-sidebar-open {
 }
 
 
-/* ==================================================
-   MOBILE
-================================================== */
+/* ============================================================
+   WHATSAPP CUSTOMER FORM OVERLAY
+   ============================================================ */
+
+.cart-whatsapp-form-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 100000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.72);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+
+.cart-whatsapp-form-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* ============================================================
+   CUSTOMER FORM
+   ============================================================ */
+
+.cart-whatsapp-form {
+    width: min(440px, 100%);
+
+    max-height: calc(100vh - 40px);
+
+    overflow-y: auto;
+
+    padding: 21px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            160deg,
+            #1b1b1b 0%,
+            #111111 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.55);
+
+    transform:
+        translateY(18px)
+        scale(0.97);
+
+    transition:
+        transform 0.28s cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(255, 255, 255, 0.18)
+        transparent;
+}
+
+
+.cart-whatsapp-form-overlay.open
+.cart-whatsapp-form {
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+.cart-whatsapp-form::-webkit-scrollbar {
+    width: 5px;
+}
+
+
+.cart-whatsapp-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.cart-whatsapp-form::-webkit-scrollbar-thumb {
+    background:
+        rgba(255, 255, 255, 0.18);
+
+    border-radius: 20px;
+}
+
+
+/* ============================================================
+   FORM HEADER
+   ============================================================ */
+
+.cart-whatsapp-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+
+.cart-whatsapp-form-header h3 {
+    margin: 0 0 5px;
+
+    color: #ffffff;
+
+    font-size: 21px;
+    font-weight: 850;
+}
+
+
+.cart-whatsapp-form-header p {
+    margin: 0;
+
+    color:
+        rgba(255, 255, 255, 0.5);
+
+    font-size: 12px;
+
+    line-height: 1.45;
+}
+
+
+/* ============================================================
+   FORM CLOSE
+   ============================================================ */
+
+.cart-whatsapp-close {
+    flex: 0 0 auto;
+
+    width: 37px;
+    height: 37px;
+
+    border: none;
+    border-radius: 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color:
+        rgba(255, 255, 255, 0.8);
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.cart-whatsapp-close:hover {
+    background:
+        rgba(255, 255, 255, 0.13);
+
+    transform: rotate(5deg);
+}
+
+
+.cart-whatsapp-close:active {
+    transform: scale(0.94);
+}
+
+
+/* ============================================================
+   FORM GROUP
+   ============================================================ */
+
+.cart-form-group {
+    margin-bottom: 15px;
+}
+
+
+.cart-form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color:
+        rgba(255, 255, 255, 0.78);
+
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+
+.cart-form-group input,
+.cart-form-group textarea {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    border-radius: 13px;
+
+    outline: none;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.cart-form-group input {
+    height: 49px;
+
+    padding: 0 14px;
+}
+
+
+.cart-form-group textarea {
+    min-height: 95px;
+
+    padding: 13px 14px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+
+.cart-form-group input::placeholder,
+.cart-form-group textarea::placeholder {
+    color:
+        rgba(255, 255, 255, 0.3);
+}
+
+
+.cart-form-group input:focus,
+.cart-form-group textarea:focus {
+    border-color:
+        rgba(255, 157, 25, 0.65);
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255, 157, 25, 0.08);
+}
+
+
+/* ============================================================
+   WHATSAPP SUBMIT BUTTON
+   ============================================================ */
+
+.cart-whatsapp-submit-button {
+    width: 100%;
+
+    min-height: 54px;
+
+    margin-top: 5px;
+
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1fce67,
+            #14a957
+        );
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 9px 24px rgba(22, 180, 91, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+.cart-whatsapp-submit-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 13px 28px rgba(22, 180, 91, 0.26);
+
+    filter: brightness(1.04);
+}
+
+
+.cart-whatsapp-submit-button:active {
+    transform: translateY(0);
+}
+
+
+.cart-whatsapp-submit-button i {
+    font-size: 18px;
+}
+
+
+.cart-whatsapp-submit-button:disabled {
+    opacity: 0.7;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow:
+        none;
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+   ============================================================ */
 
 @media (max-width: 600px) {
 
     .cart-sidebar {
-        width: min(420px, 94vw);
+        width: min(430px, 96vw);
     }
 
 
     .cart-sidebar-header {
-        min-height: 66px;
+        min-height: 64px;
 
-        padding-left: 18px;
-        padding-right: 14px;
+        padding:
+            0 16px;
     }
 
 
@@ -829,72 +1200,131 @@ body.cart-sidebar-open {
     }
 
 
-    .cart-sidebar-body {
-        padding: 12px;
+    .cart-sidebar-items {
+        padding:
+            12px 12px 16px;
+    }
+
+
+    .cart-sidebar-footer {
+        padding:
+            14px 14px 15px;
+    }
+
+
+    .cart-whatsapp-form-overlay {
+        padding: 14px;
+    }
+
+
+    .cart-whatsapp-form {
+        max-height:
+            calc(100vh - 28px);
+
+        padding: 18px;
+
+        border-radius: 19px;
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE — SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 420px) {
+
+    .cart-sidebar {
+        width: 100vw;
     }
 
 
     .cart-sidebar-item {
         padding: 11px;
 
-        gap: 10px;
+        gap: 11px;
 
-        border-radius: 14px;
+        border-radius: 15px;
     }
 
 
-    .cart-sidebar-item-image {
+    .cart-item-image {
         flex-basis: 72px;
 
         width: 72px;
         height: 72px;
-
-        border-radius: 10px;
     }
 
 
-    .cart-sidebar-item-name {
+    .cart-item-top h4 {
         font-size: 14px;
     }
 
 
-    .cart-sidebar-item-price {
-        font-size: 14px;
+    .cart-item-price {
+        font-size: 13px;
     }
 
 
-    .cart-sidebar-footer {
-        padding:
-            13px
-            12px
-            calc(
-                13px +
-                env(safe-area-inset-bottom)
-            );
+    .cart-item-configuration {
+        font-size: 10.5px;
+    }
+
+
+    .cart-item-total {
+        font-size: 13px;
+    }
+
+
+    .cart-quantity-control {
+        height: 32px;
+    }
+
+
+    .cart-quantity-minus,
+    .cart-quantity-plus {
+        width: 29px;
+        height: 30px;
+    }
+
+
+    .cart-quantity-value {
+        min-width: 27px;
     }
 
 
     .cart-checkout-button {
-        min-height: 52px;
+        min-height: 54px;
 
-        border-radius: 14px;
+        border-radius: 15px;
+    }
+
+
+    .cart-whatsapp-form-header h3 {
+        font-size: 19px;
+    }
+
+
+    .cart-form-group input {
+        height: 47px;
+    }
+
+
+    .cart-whatsapp-submit-button {
+        min-height: 52px;
     }
 
 }
 
 
-/* ==================================================
+/* ============================================================
    VERY SMALL MOBILE
-================================================== */
+   ============================================================ */
 
-@media (max-width: 380px) {
+@media (max-width: 350px) {
 
-    .cart-sidebar {
-        width: 96vw;
-    }
-
-
-    .cart-sidebar-item-image {
+    .cart-item-image {
         flex-basis: 64px;
 
         width: 64px;
@@ -903,66 +1333,39 @@ body.cart-sidebar-open {
 
 
     .cart-sidebar-item {
+        gap: 9px;
         padding: 9px;
     }
 
 
-    .cart-sidebar-item-name {
-        font-size: 13px;
+    .cart-item-remove {
+        width: 27px;
+        height: 27px;
     }
 
 
-    .cart-sidebar-item-price {
-        font-size: 13px;
-    }
-
-
-    .cart-sidebar-item-total {
-        font-size: 14px;
-    }
-
-
-    .cart-sidebar-quantity {
-        height: 32px;
-    }
-
-
-    .cart-quantity-button {
-        width: 26px;
-        height: 26px;
+    .cart-sidebar-title {
+        font-size: 17px;
     }
 
 }
 
 
-/* ==================================================
-   ACCESSIBILITY
-================================================== */
-
-.cart-sidebar-close:focus-visible,
-.cart-remove-button:focus-visible,
-.cart-quantity-button:focus-visible,
-.cart-checkout-button:focus-visible {
-    outline: 2px solid #e84b20;
-
-    outline-offset: 2px;
-}
-
-
-/* ==================================================
-   REDUCE MOTION
-================================================== */
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
 
-    #cartSidebarOverlay,
+    .cart-sidebar-overlay,
     .cart-sidebar,
-    .cart-sidebar-close,
-    .cart-remove-button,
-    .cart-quantity-button,
+    .cart-whatsapp-form-overlay,
+    .cart-whatsapp-form,
     .cart-checkout-button,
-    .cart-checkout-button i {
-        transition: none;
+    .cart-whatsapp-submit-button,
+    .cart-sidebar-close,
+    .cart-whatsapp-close {
+        transition: none !important;
     }
 
 }
