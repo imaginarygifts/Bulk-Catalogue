@@ -3642,72 +3642,7 @@ window.orderNow = function() {
 };
 
 
-    /* ==================================================
-       CHECK CUSTOMIZATION
-    ================================================== */
-
-    const hasCustomization =
-        Array.isArray(
-            product?.customOptions
-        ) &&
-        product.customOptions.length > 0;
-
-
-    /* ==================================================
-       NO CUSTOMIZATION
-    ================================================== */
-
-    if (
-        !hasCustomization
-    ) {
-
-        const errors =
-            validateRequiredSelections();
-
-
-        if (
-            errors.length
-        ) {
-
-            showErrorModal(
-                errors
-            );
-
-            return;
-
-        }
-
-
-        document
-            .getElementById(
-                "waFormOverlay"
-            )
-            ?.classList.remove(
-                "hidden"
-            );
-
-
-        return;
-
-    }
-
-
-    /* ==================================================
-       CUSTOMIZATION AVAILABLE
-    ================================================== */
-
-    renderCustomizePopup();
-
-
-    document
-        .getElementById(
-            "customizeOverlay"
-        )
-        ?.classList.remove(
-            "hidden"
-        );
-
-};
+  
 
 
 /* ==================================================
@@ -4647,66 +4582,7 @@ window.buyNow = function() {
 };
 
 
-    /* ==================================================
-       CHECK CUSTOMIZATION
-    ================================================== */
-
-    const hasCustomization =
-        Array.isArray(
-            product?.customOptions
-        ) &&
-        product.customOptions.length > 0;
-
-
-    /* ==================================================
-       NO CUSTOMIZATION
-    ================================================== */
-
-    if (
-        !hasCustomization
-    ) {
-
-        const errors =
-            validateRequiredSelections();
-
-
-        if (
-            errors.length
-        ) {
-
-            showErrorModal(
-                errors
-            );
-
-            return;
-
-        }
-
-
-        saveCheckoutAndGo();
-
-
-        return;
-
-    }
-
-
-    /* ==================================================
-       CUSTOMIZATION AVAILABLE
-    ================================================== */
-
-    renderCustomizePopup();
-
-
-    document
-        .getElementById(
-            "customizeOverlay"
-        )
-        ?.classList.remove(
-            "hidden"
-        );
-
-};
+ 
 
 
 /* ==================================================
