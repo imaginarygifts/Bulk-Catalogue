@@ -17,6 +17,7 @@
    • Cart subtotal
    • Cart page compatibility
    • Product-page configuration tracking
+   • Real-time synchronization with cart sidebar
 ========================================================= */
 
 
@@ -107,6 +108,29 @@ function loadCart() {
 
 
 /* =========================================================
+   REFRESH CART FROM LOCAL STORAGE
+=========================================================
+
+   IMPORTANT:
+
+   cart-sidebar.js and cart.js can both interact
+   with the same storeCart.
+
+   Always reload before performing cart operations
+   so an old in-memory cart cannot overwrite newer
+   localStorage data.
+========================================================= */
+
+function refreshCart() {
+
+    loadCart();
+
+    return cart;
+
+}
+
+
+/* =========================================================
    SAVE CART
 ========================================================= */
 
@@ -134,10 +158,48 @@ function saveCart() {
 
 
 /* =========================================================
+   SAVE + NOTIFY
+========================================================= */
+
+function commitCart() {
+
+    /*
+       Save current cart.
+    */
+
+    saveCart();
+
+
+    /*
+       Update local UI immediately.
+    */
+
+    updateCartUI();
+
+
+    /*
+       Notify sidebar and other cart components.
+    */
+
+    dispatchCartChange();
+
+}
+
+
+/* =========================================================
    GET CART
 ========================================================= */
 
 function getCart() {
+
+    /*
+       Always return the latest LocalStorage state.
+
+       This prevents stale cart data.
+    */
+
+    refreshCart();
+
 
     return [
         ...cart
@@ -161,6 +223,13 @@ function getCart() {
 ========================================================= */
 
 function getCartQuantity() {
+
+    /*
+       Make sure the in-memory cart is current.
+    */
+
+    refreshCart();
+
 
     return cart.reduce(
         (
@@ -188,6 +257,9 @@ function getCartQuantity() {
 
 function getCartItemCount() {
 
+    refreshCart();
+
+
     return cart.length;
 
 }
@@ -198,6 +270,9 @@ function getCartItemCount() {
 ========================================================= */
 
 function getCartSubtotal() {
+
+    refreshCart();
+
 
     return cart.reduce(
         (
@@ -597,26 +672,6 @@ function getProductImage(
 
 /* =========================================================
    ADD TO CART
-=========================================================
-
-   product:
-       Complete product object
-
-   configuration:
-       {
-           color,
-           size,
-           options,
-           optionValues,
-           customOptionPrices
-       }
-
-   quantity:
-       Default = 1
-
-   If the exact same configuration already exists,
-   quantity is increased.
-
 ========================================================= */
 
 function addToCart(
@@ -624,6 +679,13 @@ function addToCart(
     configuration = {},
     quantity = 1
 ) {
+
+    /*
+       Always get the newest cart first.
+    */
+
+    refreshCart();
+
 
     if (
         !product ||
@@ -744,6 +806,7 @@ function addToCart(
 
             quantity,
 
+
             /* =================================================
                SELECTED VARIANTS
             ================================================= */
@@ -779,6 +842,22 @@ function addToCart(
             ================================================= */
 
             productSnapshot: {
+
+                /*
+                   IMPORTANT:
+
+                   Include product ID inside the snapshot
+                   as well. This makes checkout conversion
+                   more reliable.
+                */
+
+                id:
+                    product.id,
+
+                name:
+                    product.name ||
+                    product.title ||
+                    "Product",
 
                 basePrice:
                     product.basePrice ??
@@ -832,24 +911,10 @@ function addToCart(
 
 
     /* =====================================================
-       SAVE
+       SAVE + NOTIFY
     ===================================================== */
 
-    saveCart();
-
-
-    /* =====================================================
-       UPDATE UI
-    ===================================================== */
-
-    updateCartUI();
-
-
-    /* =====================================================
-       NOTIFY OTHER PAGES / COMPONENTS
-    ===================================================== */
-
-    dispatchCartChange();
+    commitCart();
 
 
     return findCartItem(
@@ -861,18 +926,22 @@ function addToCart(
 
 /* =========================================================
    SET EXACT QUANTITY
-=========================================================
-
-   quantity = 0
-   →
-   item is removed.
-
 ========================================================= */
 
 function setCartItemQuantity(
     cartItemKey,
     quantity
 ) {
+
+    /*
+       IMPORTANT:
+
+       Reload before modifying so we don't
+       overwrite changes made by sidebar.
+    */
+
+    refreshCart();
+
 
     quantity =
         Number(
@@ -931,24 +1000,10 @@ function setCartItemQuantity(
 
 
     /* =====================================================
-       SAVE
+       SAVE + NOTIFY
     ===================================================== */
 
-    saveCart();
-
-
-    /* =====================================================
-       UPDATE UI
-    ===================================================== */
-
-    updateCartUI();
-
-
-    /* =====================================================
-       DISPATCH EVENT
-    ===================================================== */
-
-    dispatchCartChange();
+    commitCart();
 
 
     return (
@@ -972,6 +1027,9 @@ function increaseCartItem(
     cartItemKey,
     amount = 1
 ) {
+
+    refreshCart();
+
 
     const item =
         findCartItem(
@@ -1030,6 +1088,9 @@ function decreaseCartItem(
     amount = 1
 ) {
 
+    refreshCart();
+
+
     const item =
         findCartItem(
             cartItemKey
@@ -1086,6 +1147,9 @@ function removeCartItem(
     cartItemKey
 ) {
 
+    refreshCart();
+
+
     const index =
         cart.findIndex(
             item =>
@@ -1109,11 +1173,7 @@ function removeCartItem(
     );
 
 
-    saveCart();
-
-    updateCartUI();
-
-    dispatchCartChange();
+    commitCart();
 
 
     return true;
@@ -1127,52 +1187,33 @@ function removeCartItem(
 
 function clearCart() {
 
+    /*
+       Clear both memory and LocalStorage.
+    */
+
     cart = [];
 
 
-    saveCart();
-
-    updateCartUI();
-
-    dispatchCartChange();
+    commitCart();
 
 }
 
 
 /* =========================================================
    GET CONFIGURATION QUANTITY
-=========================================================
-
-   This is used by:
-
-   • Product page
-   • Shop page
-   • Homepage
-
-   Example:
-
-   Cart:
-
-   Red + M = 2
-
-   Current selection:
-
-   Blue + L
-
-   Result:
-
-   0
-
-   Therefore the button shows:
-
-   Add to Cart
-
 ========================================================= */
 
 function getConfigurationQuantity(
     productId,
     configuration = {}
 ) {
+
+    /*
+       Always use the latest cart.
+    */
+
+    refreshCart();
+
 
     const key =
         createCartItemKey(
@@ -1212,6 +1253,9 @@ function getCartItemByConfiguration(
     configuration = {}
 ) {
 
+    refreshCart();
+
+
     const key =
         createCartItemKey(
             productId,
@@ -1232,31 +1276,34 @@ function getCartItemByConfiguration(
 
 /* =========================================================
    UPDATE CART UI
-=========================================================
-
-   Supports:
-
-       #cartCount
-
-   and:
-
-       .cart-count
-
-   The badge displays TOTAL QUANTITY.
-
-   Example:
-
-       Product A × 2
-       Product B × 3
-
-       Cart badge = 5
-
 ========================================================= */
 
 function updateCartUI() {
 
+    /*
+       Use the current in-memory cart here.
+
+       Do NOT call getCartQuantity(),
+       because that would reload again.
+    */
+
     const totalQuantity =
-        getCartQuantity();
+        cart.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    Number(
+                        item.quantity || 0
+                    )
+                );
+
+            },
+            0
+        );
 
 
     /* =====================================================
@@ -1308,6 +1355,30 @@ function updateCartUI() {
        SUBTOTAL
     ===================================================== */
 
+    const subtotal =
+        cart.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    (
+                        Number(
+                            item.price || 0
+                        ) *
+                        Number(
+                            item.quantity || 0
+                        )
+                    )
+                );
+
+            },
+            0
+        );
+
+
     document
         .querySelectorAll(
             "#cartSubtotal, .cart-subtotal"
@@ -1317,7 +1388,7 @@ function updateCartUI() {
 
                 element.textContent =
                     formatMoney(
-                        getCartSubtotal()
+                        subtotal
                     );
 
             }
@@ -1337,7 +1408,7 @@ function updateCartUI() {
 
                 element.textContent =
                     String(
-                        getCartItemCount()
+                        cart.length
                     );
 
             }
@@ -1348,20 +1419,67 @@ function updateCartUI() {
 
 /* =========================================================
    CART CHANGE EVENT
-=========================================================
-
-   Other pages can listen:
-
-       window.addEventListener(
-           "cartUpdated",
-           event => {
-               ...
-           }
-       );
-
 ========================================================= */
 
 function dispatchCartChange() {
+
+    /*
+       Create a fresh snapshot so listeners cannot
+       accidentally modify our internal array.
+    */
+
+    const currentCart =
+        [
+            ...cart
+        ];
+
+
+    const quantity =
+        currentCart.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    Number(
+                        item.quantity || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    const itemCount =
+        currentCart.length;
+
+
+    const subtotal =
+        currentCart.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    (
+                        Number(
+                            item.price || 0
+                        ) *
+                        Number(
+                            item.quantity || 0
+                        )
+                    )
+                );
+
+            },
+            0
+        );
+
 
     window.dispatchEvent(
         new CustomEvent(
@@ -1370,16 +1488,13 @@ function dispatchCartChange() {
                 detail: {
 
                     cart:
-                        getCart(),
+                        currentCart,
 
-                    quantity:
-                        getCartQuantity(),
+                    quantity,
 
-                    itemCount:
-                        getCartItemCount(),
+                    itemCount,
 
-                    subtotal:
-                        getCartSubtotal()
+                    subtotal
 
                 }
 
@@ -1424,9 +1539,31 @@ function formatMoney(
 
 /* =========================================================
    OPEN CART
+=========================================================
+
+   cart-sidebar.js now controls the cart drawer.
+
+   This fallback remains for pages where the drawer
+   is not loaded.
 ========================================================= */
 
 function openCart() {
+
+    if (
+        typeof window.openCartSidebar ===
+        "function"
+    ) {
+
+        window.openCartSidebar();
+
+        return;
+
+    }
+
+
+    /*
+       Fallback only.
+    */
 
     window.location.href =
         "cart.html";
@@ -1436,11 +1573,6 @@ function openCart() {
 
 /* =========================================================
    GLOBAL CART FUNCTIONS
-=========================================================
-
-   Makes functions available to normal HTML
-   onclick handlers if needed.
-
 ========================================================= */
 
 window.addToCart =
