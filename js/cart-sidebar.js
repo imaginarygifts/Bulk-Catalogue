@@ -1519,20 +1519,29 @@ function checkoutFromCart() {
             .map(
                 item => {
 
-                    const product =
-                        item.productSnapshot ||
-                        item.product ||
-                        null;
+                    const product = {
+    ...(item.productSnapshot ||
+        item.product ||
+        {})
+};
 
 
-                    if (
-                        !product ||
-                        !product.id
-                    ) {
+if (
+    !product.id &&
+    item.productId
+) {
 
-                        return null;
+    product.id =
+        item.productId;
 
-                    }
+}
+
+
+if (!product.id) {
+
+    return null;
+
+}
 
 
                     const quantity =
