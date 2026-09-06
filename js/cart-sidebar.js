@@ -3,96 +3,47 @@
    ==================================================
    - No cart.html required
    - Opens from #cartButton
-   - Uses existing storeCart
+   - Uses cart.js as the SINGLE cart system
    - Quantity + / -
    - Remove item
    - Subtotal
    - Shipping estimate
    - Total
    - Direct Checkout → order
+   - Real-time cart synchronization
 ================================================== */
+
+
+/* ==================================================
+   IMPORT CART SYSTEM
+================================================== */
+
+import {
+    getCart,
+    setCartItemQuantity,
+    removeCartItem
+} from "./cart.js";
 
 
 /* ==================================================
    SETTINGS
 ================================================== */
 
-const CART_STORAGE_KEY = "storeCart";
-
-const CHECKOUT_PAGE = "order";
+const CHECKOUT_PAGE =
+    "order";
 
 
 /* ==================================================
    HELPERS
 ================================================== */
 
-function getCart() {
-
-    try {
-
-        const raw =
-            localStorage.getItem(
-                CART_STORAGE_KEY
-            );
-
-        if (!raw) {
-            return [];
-        }
-
-        const cart =
-            JSON.parse(raw);
-
-        return Array.isArray(cart)
-            ? cart
-            : [];
-
-    }
-    catch (error) {
-
-        console.error(
-            "Cart loading error:",
-            error
-        );
-
-        return [];
-
-    }
-
-}
-
-
-function saveCart(cart) {
-
-    try {
-
-        localStorage.setItem(
-            CART_STORAGE_KEY,
-            JSON.stringify(cart)
-        );
-
-        window.dispatchEvent(
-            new CustomEvent(
-                "cartUpdated"
-            )
-        );
-
-    }
-    catch (error) {
-
-        console.error(
-            "Cart save error:",
-            error
-        );
-
-    }
-
-}
-
-
 function formatMoney(value) {
 
     const amount =
-        Number(value || 0);
+        Number(
+            value || 0
+        );
+
 
     return amount.toLocaleString(
         "en-IN",
@@ -109,11 +60,26 @@ function escapeHtml(value) {
     return String(
         value ?? ""
     )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
 
@@ -125,8 +91,8 @@ function escapeHtml(value) {
 function getCartItemUnitPrice(item) {
 
     /*
-       cart.js normally stores the final
-       selected configuration price in item.price.
+       cart.js stores the final selected
+       configuration price in item.price.
     */
 
     if (
@@ -170,12 +136,18 @@ function getCartItemUnitPrice(item) {
 
 function getCartItemTotal(item) {
 
+    const quantity =
+        Math.max(
+            Number(
+                item.quantity || 1
+            ),
+            1
+        );
+
+
     return (
         getCartItemUnitPrice(item) *
-        Math.max(
-            Number(item.quantity || 1),
-            1
-        )
+        quantity
     );
 
 }
@@ -187,8 +159,12 @@ function getCartItemTotal(item) {
 
 function getCartItemImage(item) {
 
-    if (item.image) {
+    if (
+        item.image
+    ) {
+
         return item.image;
+
     }
 
 
@@ -199,7 +175,25 @@ function getCartItemImage(item) {
         item.images.length
     ) {
 
-        return item.images[0];
+        const first =
+            item.images[0];
+
+
+        if (
+            typeof first ===
+            "string"
+        ) {
+
+            return first;
+
+        }
+
+
+        return (
+            first?.url ||
+            first?.src ||
+            ""
+        );
 
     }
 
@@ -212,7 +206,25 @@ function getCartItemImage(item) {
         item.productSnapshot.images.length
     ) {
 
-        return item.productSnapshot.images[0];
+        const first =
+            item.productSnapshot.images[0];
+
+
+        if (
+            typeof first ===
+            "string"
+        ) {
+
+            return first;
+
+        }
+
+
+        return (
+            first?.url ||
+            first?.src ||
+            ""
+        );
 
     }
 
@@ -225,7 +237,25 @@ function getCartItemImage(item) {
         item.product.images.length
     ) {
 
-        return item.product.images[0];
+        const first =
+            item.product.images[0];
+
+
+        if (
+            typeof first ===
+            "string"
+        ) {
+
+            return first;
+
+        }
+
+
+        return (
+            first?.url ||
+            first?.src ||
+            ""
+        );
 
     }
 
@@ -244,11 +274,13 @@ function getConfigurationHtml(item) {
     let html = "";
 
 
-    /*
+    /* ==================================================
        COLOR
-    */
+    ================================================== */
 
-    if (item.color) {
+    if (
+        item.color
+    ) {
 
         const color =
             typeof item.color === "object"
@@ -259,12 +291,20 @@ function getConfigurationHtml(item) {
                 )
                 : item.color;
 
-        if (color) {
+
+        if (
+            color
+        ) {
 
             html += `
+
                 <div class="cart-item-option">
-                    Color: ${escapeHtml(color)}
+
+                    Color:
+                    ${escapeHtml(color)}
+
                 </div>
+
             `;
 
         }
@@ -272,11 +312,13 @@ function getConfigurationHtml(item) {
     }
 
 
-    /*
+    /* ==================================================
        SIZE
-    */
+    ================================================== */
 
-    if (item.size) {
+    if (
+        item.size
+    ) {
 
         const size =
             typeof item.size === "object"
@@ -287,12 +329,20 @@ function getConfigurationHtml(item) {
                 )
                 : item.size;
 
-        if (size) {
+
+        if (
+            size
+        ) {
 
             html += `
+
                 <div class="cart-item-option">
-                    Size: ${escapeHtml(size)}
+
+                    Size:
+                    ${escapeHtml(size)}
+
                 </div>
+
             `;
 
         }
@@ -300,13 +350,14 @@ function getConfigurationHtml(item) {
     }
 
 
-    /*
+    /* ==================================================
        CUSTOM OPTIONS
-    */
+    ================================================== */
 
     const optionValues =
         item.optionValues ||
         {};
+
 
     const optionKeys =
         Object.keys(
@@ -314,12 +365,15 @@ function getConfigurationHtml(item) {
         );
 
 
-    if (optionKeys.length) {
+    if (
+        optionKeys.length
+    ) {
 
         const product =
             item.productSnapshot ||
             item.product ||
             {};
+
 
         const customOptions =
             product.customOptions ||
@@ -332,17 +386,21 @@ function getConfigurationHtml(item) {
                 const value =
                     optionValues[key];
 
+
                 if (
                     value === undefined ||
                     value === null ||
                     value === ""
                 ) {
+
                     return;
+
                 }
 
 
                 const option =
                     customOptions[key];
+
 
                 const label =
                     option?.label ||
@@ -350,10 +408,14 @@ function getConfigurationHtml(item) {
 
 
                 html += `
+
                     <div class="cart-item-option">
+
                         ${escapeHtml(label)}:
                         ${escapeHtml(value)}
+
                     </div>
+
                 `;
 
             }
@@ -375,19 +437,22 @@ function getCommonProductShipping(
     product
 ) {
 
-    if (!product) {
+    if (
+        !product
+    ) {
 
         return {
-            type: "free",
-            amount: 0
+
+            type:
+                "free",
+
+            amount:
+                0
+
         };
 
     }
 
-
-    /*
-       Product shipping object
-    */
 
     const shipping =
         product.shipping ||
@@ -402,8 +467,10 @@ function getCommonProductShipping(
 
 
     type =
-        String(type)
-            .toLowerCase();
+        String(
+            type
+        )
+        .toLowerCase();
 
 
     const amount =
@@ -421,8 +488,13 @@ function getCommonProductShipping(
     ) {
 
         return {
-            type: "free",
-            amount: 0
+
+            type:
+                "free",
+
+            amount:
+                0
+
         };
 
     }
@@ -435,26 +507,39 @@ function getCommonProductShipping(
     ) {
 
         return {
-            type: "paid",
-            amount: Math.max(
-                0,
-                amount
-            )
+
+            type:
+                "paid",
+
+            amount:
+                Math.max(
+                    0,
+                    amount
+                )
+
         };
 
     }
 
 
     return {
+
         type,
-        amount: Math.max(
-            0,
-            amount
-        )
+
+        amount:
+            Math.max(
+                0,
+                amount
+            )
+
     };
 
 }
 
+
+/* ==================================================
+   SIZE SHIPPING
+================================================== */
 
 function getSelectedSizeShipping(
     item
@@ -493,23 +578,33 @@ function getSelectedSizeShipping(
             ).trim();
 
 
-    if (!selectedSizeName) {
+    if (
+        !selectedSizeName
+    ) {
+
         return null;
+
     }
 
 
     const selected =
         sizes.find(
             size =>
+
                 String(
                     size?.name || ""
                 ).trim() ===
                 selectedSizeName
+
         );
 
 
-    if (!selected) {
+    if (
+        !selected
+    ) {
+
         return null;
+
     }
 
 
@@ -519,7 +614,7 @@ function getSelectedSizeShipping(
             selected.shipping?.type ??
             "common"
         )
-            .toLowerCase();
+        .toLowerCase();
 
 
     const amount =
@@ -530,24 +625,38 @@ function getSelectedSizeShipping(
         ) || 0;
 
 
-    if (type === "free") {
+    if (
+        type === "free"
+    ) {
 
         return {
-            type: "free",
-            amount: 0
+
+            type:
+                "free",
+
+            amount:
+                0
+
         };
 
     }
 
 
-    if (type === "paid") {
+    if (
+        type === "paid"
+    ) {
 
         return {
-            type: "paid",
-            amount: Math.max(
-                0,
-                amount
-            )
+
+            type:
+                "paid",
+
+            amount:
+                Math.max(
+                    0,
+                    amount
+                )
+
         };
 
     }
@@ -557,6 +666,10 @@ function getSelectedSizeShipping(
 
 }
 
+
+/* ==================================================
+   ITEM SHIPPING
+================================================== */
 
 function getCartItemShipping(
     item
@@ -581,7 +694,9 @@ function getCartItemShipping(
         );
 
 
-    if (sizeShipping) {
+    if (
+        sizeShipping
+    ) {
 
         return (
             sizeShipping.amount *
@@ -645,7 +760,9 @@ function calculateCartTotals(
     return {
 
         subtotal,
+
         shipping,
+
         total:
             subtotal +
             shipping
@@ -656,7 +773,61 @@ function calculateCartTotals(
 
 
 /* ==================================================
-   SIDEBAR HTML
+   UPDATE CART COUNT
+================================================== */
+
+function updateCartCount(
+    cart
+) {
+
+    const count =
+        cart.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    Math.max(
+                        Number(
+                            item.quantity || 0
+                        ),
+                        0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    document
+        .querySelectorAll(
+            "#cartCount"
+        )
+        .forEach(
+            element => {
+
+                element.innerText =
+                    String(
+                        count
+                    );
+
+
+                element.classList.toggle(
+                    "show",
+                    count > 0
+                );
+
+            }
+        );
+
+}
+
+
+/* ==================================================
+   CREATE SIDEBAR
 ================================================== */
 
 function createCartSidebar() {
@@ -676,6 +847,7 @@ function createCartSidebar() {
         document.createElement(
             "div"
         );
+
 
     overlay.id =
         "cartSidebarOverlay";
@@ -720,7 +892,7 @@ function createCartSidebar() {
             </div>
 
 
-            <!-- CONTENT -->
+            <!-- BODY -->
 
             <div
                 class="cart-sidebar-body"
@@ -745,9 +917,9 @@ function createCartSidebar() {
     );
 
 
-    /*
-       Close button
-    */
+    /* ==================================================
+       CLOSE BUTTON
+    ================================================== */
 
     document
         .getElementById(
@@ -759,9 +931,9 @@ function createCartSidebar() {
         );
 
 
-    /*
-       Click outside drawer
-    */
+    /* ==================================================
+       OUTSIDE CLICK
+    ================================================== */
 
     overlay.addEventListener(
         "click",
@@ -770,26 +942,6 @@ function createCartSidebar() {
             if (
                 event.target ===
                 overlay
-            ) {
-
-                closeCartSidebar();
-
-            }
-
-        }
-    );
-
-
-    /*
-       ESC key
-    */
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Escape"
             ) {
 
                 closeCartSidebar();
@@ -823,10 +975,22 @@ function renderCartSidebar() {
         );
 
 
-    if (!body || !footer) {
+    if (
+        !body ||
+        !footer
+    ) {
+
         return;
+
     }
 
+
+    /*
+       IMPORTANT:
+
+       Always get the latest cart from
+       cart.js.
+    */
 
     const cart =
         getCart();
@@ -837,11 +1001,13 @@ function renderCartSidebar() {
     );
 
 
-    /*
+    /* ==================================================
        EMPTY CART
-    */
+    ================================================== */
 
-    if (!cart.length) {
+    if (
+        !cart.length
+    ) {
 
         body.innerHTML = `
 
@@ -853,13 +1019,19 @@ function renderCartSidebar() {
 
                 </div>
 
+
                 <h3>
+
                     Your cart is empty
+
                 </h3>
 
+
                 <p>
+
                     Add products to your cart
                     and they will appear here.
+
                 </p>
 
             </div>
@@ -867,22 +1039,27 @@ function renderCartSidebar() {
         `;
 
 
-        footer.innerHTML = "";
+        footer.innerHTML =
+            "";
+
 
         return;
 
     }
 
 
-    /*
-       ITEMS
-    */
+    /* ==================================================
+       CART ITEMS
+    ================================================== */
 
     let html = "";
 
 
     cart.forEach(
-        (item, index) => {
+        (
+            item,
+            index
+        ) => {
 
             const image =
                 getCartItemImage(
@@ -939,17 +1116,30 @@ function renderCartSidebar() {
 
                         ${
                             image
-                                ? `
+
+                                ?
+
+                                `
+
                                     <img
                                         src="${escapeHtml(image)}"
                                         alt="${escapeHtml(name)}"
+                                        loading="lazy"
                                     >
-                                  `
-                                : `
+
+                                `
+
+                                :
+
+                                `
+
                                     <div class="cart-no-image">
+
                                         <i class="fa-solid fa-image"></i>
+
                                     </div>
-                                  `
+
+                                `
                         }
 
                     </div>
@@ -992,12 +1182,22 @@ function renderCartSidebar() {
 
                         ${
                             configHtml
-                                ? `
+
+                                ?
+
+                                `
+
                                     <div class="cart-sidebar-item-options">
+
                                         ${configHtml}
+
                                     </div>
-                                  `
-                                : ""
+
+                                `
+
+                                :
+
+                                ""
                         }
 
 
@@ -1014,7 +1214,9 @@ function renderCartSidebar() {
                                     data-index="${index}"
                                     aria-label="Decrease quantity"
                                 >
+
                                     −
+
                                 </button>
 
 
@@ -1032,7 +1234,9 @@ function renderCartSidebar() {
                                     data-index="${index}"
                                     aria-label="Increase quantity"
                                 >
+
                                     +
+
                                 </button>
 
                             </div>
@@ -1062,9 +1266,9 @@ function renderCartSidebar() {
         html;
 
 
-    /*
+    /* ==================================================
        PRICE BREAKDOWN
-    */
+    ================================================== */
 
     const totals =
         calculateCartTotals(
@@ -1083,9 +1287,11 @@ function renderCartSidebar() {
                 </span>
 
                 <strong>
+
                     ₹${formatMoney(
                         totals.subtotal
                     )}
+
                 </strong>
 
             </div>
@@ -1101,10 +1307,16 @@ function renderCartSidebar() {
 
                     ${
                         totals.shipping > 0
-                            ? `₹${formatMoney(
+
+                            ?
+
+                            `₹${formatMoney(
                                 totals.shipping
                             )}`
-                            : "FREE"
+
+                            :
+
+                            "FREE"
                     }
 
                 </strong>
@@ -1122,9 +1334,11 @@ function renderCartSidebar() {
                 </span>
 
                 <strong>
+
                     ₹${formatMoney(
                         totals.total
                     )}
+
                 </strong>
 
             </div>
@@ -1149,9 +1363,9 @@ function renderCartSidebar() {
     `;
 
 
-    /*
-       Quantity / remove events
-    */
+    /* ==================================================
+       QUANTITY / REMOVE EVENTS
+    ================================================== */
 
     body
         .querySelectorAll(
@@ -1186,9 +1400,9 @@ function renderCartSidebar() {
         );
 
 
-    /*
-       Checkout
-    */
+    /* ==================================================
+       CHECKOUT
+    ================================================== */
 
     document
         .getElementById(
@@ -1211,6 +1425,10 @@ function handleCartAction(
     index
 ) {
 
+    /*
+       Always read the newest cart from cart.js.
+    */
+
     const cart =
         getCart();
 
@@ -1228,6 +1446,19 @@ function handleCartAction(
         cart[index];
 
 
+    const cartItemKey =
+        item.cartItemKey;
+
+
+    if (
+        !cartItemKey
+    ) {
+
+        return;
+
+    }
+
+
     const currentQuantity =
         Math.max(
             Number(
@@ -1237,116 +1468,62 @@ function handleCartAction(
         );
 
 
-    /*
+    /* ==================================================
        DECREASE
-    */
+    ================================================== */
 
     if (
         action === "decrease"
     ) {
 
-        if (
-            currentQuantity <= 1
-        ) {
+        /*
+           When quantity reaches 0,
+           cart.js automatically removes it.
+        */
 
-            cart.splice(
-                index,
-                1
-            );
+        setCartItemQuantity(
+            cartItemKey,
+            currentQuantity - 1
+        );
 
-        }
-        else {
-
-            item.quantity =
-                currentQuantity - 1;
-
-        }
+        return;
 
     }
 
 
-    /*
+    /* ==================================================
        INCREASE
-    */
+    ================================================== */
 
-    else if (
+    if (
         action === "increase"
     ) {
 
-        item.quantity =
-            currentQuantity + 1;
+        setCartItemQuantity(
+            cartItemKey,
+            currentQuantity + 1
+        );
+
+        return;
 
     }
 
 
-    /*
+    /* ==================================================
        REMOVE
-    */
+    ================================================== */
 
-    else if (
+    if (
         action === "remove"
     ) {
 
-        cart.splice(
-            index,
-            1
+        removeCartItem(
+            cartItemKey
         );
+
+        return;
 
     }
-
-
-    saveCart(
-        cart
-    );
-
-
-    renderCartSidebar();
-
-}
-
-
-/* ==================================================
-   CART COUNT
-================================================== */
-
-function updateCartCount(
-    cart = getCart()
-) {
-
-    const count =
-        cart.reduce(
-            (total, item) => {
-
-                return total +
-                    Math.max(
-                        Number(
-                            item.quantity || 0
-                        ),
-                        0
-                    );
-
-            },
-            0
-        );
-
-
-    document
-        .querySelectorAll(
-            "#cartCount"
-        )
-        .forEach(
-            element => {
-
-                element.innerText =
-                    count;
-
-                element.classList.toggle(
-                    "show",
-                    count > 0
-                );
-
-            }
-        );
 
 }
 
@@ -1368,8 +1545,12 @@ function openCartSidebar() {
         );
 
 
-    if (!overlay) {
+    if (
+        !overlay
+    ) {
+
         return;
+
     }
 
 
@@ -1403,8 +1584,12 @@ function closeCartSidebar() {
         );
 
 
-    if (!overlay) {
+    if (
+        !overlay
+    ) {
+
         return;
+
     }
 
 
@@ -1452,14 +1637,16 @@ function connectCartButton() {
                     event => {
 
                         /*
-                           Your cart icon is an <a>
+                           The cart icon is an <a>
                            pointing to cart.html.
 
-                           Stop navigation because
-                           there is no cart page anymore.
+                           Stop navigation and open
+                           the drawer instead.
                         */
 
                         event.preventDefault();
+
+                        event.stopPropagation();
 
                         openCartSidebar();
 
@@ -1478,70 +1665,116 @@ function connectCartButton() {
 
 function checkoutFromCart() {
 
+    /*
+       Always get the newest cart.
+    */
+
     const cart =
         getCart();
 
 
-    if (!cart.length) {
+    if (
+        !cart.length
+    ) {
 
         return;
 
     }
 
 
-    /*
-       Convert existing cart items into
-       the structure already supported
-       by order.js:
-
-       {
-           items: [
-               {
-                   product,
-                   finalPrice,
-                   quantity,
-                   color,
-                   size,
-                   options,
-                   optionValues,
-                   imageLinks
-               }
-           ]
-       }
-
-       order.js treats finalPrice as
-       LINE TOTAL.
-    */
-
+    /* ==================================================
+       BUILD CHECKOUT ITEMS
+    ================================================== */
 
     const items =
         cart
             .map(
                 item => {
 
+                    /*
+                       Use product snapshot first.
+                    */
+
                     const product = {
-    ...(item.productSnapshot ||
-        item.product ||
-        {})
-};
+
+                        ...(
+                            item.productSnapshot ||
+                            item.product ||
+                            {}
+
+                        )
+
+                    };
 
 
-if (
-    !product.id &&
-    item.productId
-) {
+                    /*
+                       Older cart items may not have
+                       productSnapshot.id.
 
-    product.id =
-        item.productId;
+                       Restore it from productId.
+                    */
 
-}
+                    if (
+                        !product.id &&
+                        item.productId
+                    ) {
+
+                        product.id =
+                            item.productId;
+
+                    }
 
 
-if (!product.id) {
+                    /*
+                       Make sure product has a name.
+                    */
 
-    return null;
+                    if (
+                        !product.name &&
+                        item.name
+                    ) {
 
-}
+                        product.name =
+                            item.name;
+
+                    }
+
+
+                    /*
+                       Make sure product has image data
+                       when available.
+                    */
+
+                    if (
+                        !Array.isArray(
+                            product.images
+                        ) &&
+                        item.image
+                    ) {
+
+                        product.images = [
+                            item.image
+                        ];
+
+                    }
+
+
+                    /*
+                       INVALID PRODUCT
+                    */
+
+                    if (
+                        !product.id
+                    ) {
+
+                        console.warn(
+                            "Skipping cart item without product ID:",
+                            item
+                        );
+
+                        return null;
+
+                    }
 
 
                     const quantity =
@@ -1560,11 +1793,6 @@ if (!product.id) {
 
 
                     return {
-
-                        /*
-                           Full product snapshot
-                           needed by checkout.
-                        */
 
                         product,
 
@@ -1606,10 +1834,6 @@ if (!product.id) {
                             {},
 
 
-                        /*
-                           Preserve cart identity.
-                        */
-
                         cartItemKey:
                             item.cartItemKey ||
                             null
@@ -1621,7 +1845,13 @@ if (!product.id) {
             .filter(Boolean);
 
 
-    if (!items.length) {
+    /* ==================================================
+       VALIDATION
+    ================================================== */
+
+    if (
+        !items.length
+    ) {
 
         alert(
             "Your cart contains no valid products."
@@ -1632,6 +1862,10 @@ if (!product.id) {
     }
 
 
+    /* ==================================================
+       CHECKOUT DATA
+    ================================================== */
+
     const checkoutData = {
 
         items
@@ -1639,9 +1873,9 @@ if (!product.id) {
     };
 
 
-    /*
-       Save checkout data.
-    */
+    /* ==================================================
+       SAVE CHECKOUT DATA
+    ================================================== */
 
     try {
 
@@ -1653,6 +1887,7 @@ if (!product.id) {
         );
 
     }
+
     catch (error) {
 
         console.error(
@@ -1670,16 +1905,16 @@ if (!product.id) {
     }
 
 
-    /*
-       Close drawer first.
-    */
+    /* ==================================================
+       CLOSE SIDEBAR
+    ================================================== */
 
     closeCartSidebar();
 
 
-    /*
-       Go directly to existing checkout.
-    */
+    /* ==================================================
+       GO TO CHECKOUT
+    ================================================== */
 
     location.href =
         CHECKOUT_PAGE;
@@ -1689,18 +1924,93 @@ if (!product.id) {
 
 /* ==================================================
    CART UPDATED
+==================================================
+
+   cart.js dispatches this event after:
+
+   • Add to cart
+   • Increase
+   • Decrease
+   • Remove
+   • Clear cart
+
+   Therefore the sidebar automatically refreshes.
 ================================================== */
 
 window.addEventListener(
     "cartUpdated",
-    () => {
-
-        updateCartCount();
+    event => {
 
         /*
-           If drawer is already open,
-           refresh it immediately.
+           Prefer the cart supplied by cart.js.
         */
+
+        const cart =
+            event.detail?.cart ||
+            getCart();
+
+
+        updateCartCount(
+            cart
+        );
+
+
+        const overlay =
+            document.getElementById(
+                "cartSidebarOverlay"
+            );
+
+
+        /*
+           If sidebar is currently open,
+           immediately redraw it.
+        */
+
+        if (
+            overlay &&
+            overlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            renderCartSidebar();
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   STORAGE UPDATED
+==================================================
+
+   Useful if another browser tab/window changes
+   the cart.
+================================================== */
+
+window.addEventListener(
+    "storage",
+    event => {
+
+        if (
+            event.key !==
+            "storeCart"
+        ) {
+
+            return;
+
+        }
+
+
+        const cart =
+            getCart();
+
+
+        updateCartCount(
+            cart
+        );
+
 
         const overlay =
             document.getElementById(
@@ -1724,45 +2034,6 @@ window.addEventListener(
 
 
 /* ==================================================
-   STORAGE UPDATED
-================================================== */
-
-window.addEventListener(
-    "storage",
-    event => {
-
-        if (
-            event.key ===
-            CART_STORAGE_KEY
-        ) {
-
-            updateCartCount();
-
-
-            const overlay =
-                document.getElementById(
-                    "cartSidebarOverlay"
-                );
-
-
-            if (
-                overlay &&
-                overlay.classList.contains(
-                    "show"
-                )
-            ) {
-
-                renderCartSidebar();
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ==================================================
    INITIALIZE
 ================================================== */
 
@@ -1770,16 +2041,24 @@ function initializeCartSidebar() {
 
     createCartSidebar();
 
-    updateCartCount();
+
+    const cart =
+        getCart();
+
+
+    updateCartCount(
+        cart
+    );
+
 
     connectCartButton();
 
 }
 
 
-/*
+/* ==================================================
    DOM READY
-*/
+================================================== */
 
 if (
     document.readyState ===
@@ -1792,6 +2071,7 @@ if (
     );
 
 }
+
 else {
 
     initializeCartSidebar();
@@ -1806,8 +2086,10 @@ else {
 window.openCartSidebar =
     openCartSidebar;
 
+
 window.closeCartSidebar =
     closeCartSidebar;
+
 
 window.renderCartSidebar =
     renderCartSidebar;
