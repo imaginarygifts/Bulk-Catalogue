@@ -16,6 +16,11 @@
    - Firestore order creation
    - Real-time cart synchronization
 
+   IMPORTANT CUSTOM OPTION FIX:
+   - Loads latest product document from Firestore
+   - Uses product.customOptions[].label
+   - Maps cart optionValues to the correct labels
+
    Site Settings:
    settings/general
 
@@ -64,6 +69,31 @@ let siteSettings = {
     orderPrefix: "IG",
     orderButton: "buyNow"
 };
+
+
+/* ============================================================
+   PRODUCT CACHE
+   ============================================================
+
+   IMPORTANT:
+
+   The cart may contain an older productSnapshot.
+
+   We therefore fetch the current product document
+   from Firestore and keep it in memory.
+
+   This gives the cart access to:
+
+   product.customOptions
+   product.variants
+   product.shipping
+   product.images
+   product.name
+   etc.
+
+   ============================================================ */
+
+const productCache = new Map();
 
 
 /* ============================================================
@@ -152,10 +182,54 @@ async function loadSiteSettings() {
 
 
 /* ============================================================
-   GET CART ITEM PRODUCT
+   GET CART ITEM PRODUCT ID
+   ============================================================ */
+
+function getCartItemProductId(item) {
+
+    return (
+        item?.productId ||
+        item?.product?.id ||
+        item?.productSnapshot?.id ||
+        item?.productData?.id ||
+        ""
+    );
+
+}
+
+
+/* ============================================================
+   GET PRODUCT FROM CACHE / CART
    ============================================================ */
 
 function getCartItemProduct(item) {
+
+    const productId =
+        getCartItemProductId(item);
+
+
+    /*
+       IMPORTANT:
+
+       If Firestore product was already loaded,
+       use that latest product.
+    */
+
+    if (
+        productId &&
+        productCache.has(productId)
+    ) {
+
+        return productCache.get(
+            productId
+        );
+
+    }
+
+
+    /*
+       Fallback to existing cart data.
+    */
 
     return (
         item?.product ||
@@ -168,17 +242,177 @@ function getCartItemProduct(item) {
 
 
 /* ============================================================
-   GET PRODUCT ID
+   LOAD PRODUCT FROM FIRESTORE
    ============================================================ */
 
-function getCartItemProductId(item) {
+async function loadCartProductFromFirestore(
+    item
+) {
+
+    const productId =
+        getCartItemProductId(item);
+
+
+    if (!productId) {
+
+        return getCartItemProduct(item);
+
+    }
+
+
+    /*
+       If already loaded during this page session,
+       use cached Firestore product.
+    */
+
+    if (
+        productCache.has(productId)
+    ) {
+
+        return productCache.get(
+            productId
+        );
+
+    }
+
+
+    try {
+
+        const productRef =
+            doc(
+                db,
+                "products",
+                productId
+            );
+
+
+        const snapshot =
+            await getDoc(
+                productRef
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            const product = {
+
+                id:
+                    productId,
+
+                ...snapshot.data()
+
+            };
+
+
+            productCache.set(
+                productId,
+                product
+            );
+
+
+            return product;
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Cart product loading error:",
+            productId,
+            error
+        );
+
+    }
+
+
+    /*
+       If Firestore loading fails,
+       keep the existing cart snapshot.
+    */
 
     return (
-        item?.productId ||
-        item?.product?.id ||
-        item?.productSnapshot?.id ||
-        item?.productData?.id ||
-        ""
+        item?.product ||
+        item?.productSnapshot ||
+        item?.productData ||
+        {}
+    );
+
+}
+
+
+/* ============================================================
+   LOAD ALL CART PRODUCTS
+   ============================================================
+
+   Fetches the latest product documents before rendering.
+
+   This is the main fix for custom option labels.
+   ============================================================ */
+
+async function loadCartProducts(
+    items
+) {
+
+    if (
+        !Array.isArray(items) ||
+        !items.length
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+       Only fetch unique product IDs.
+    */
+
+    const uniqueItems = [];
+
+
+    const seenIds = new Set();
+
+
+    items.forEach(
+        item => {
+
+            const productId =
+                getCartItemProductId(
+                    item
+                );
+
+
+            if (
+                productId &&
+                !seenIds.has(
+                    productId
+                )
+            ) {
+
+                seenIds.add(
+                    productId
+                );
+
+                uniqueItems.push(
+                    item
+                );
+
+            }
+
+        }
+    );
+
+
+    await Promise.all(
+        uniqueItems.map(
+            item =>
+                loadCartProductFromFirestore(
+                    item
+                )
+        )
     );
 
 }
@@ -404,6 +638,43 @@ function getCartItemSize(item) {
 
 /* ============================================================
    GET CUSTOM OPTION DEFINITION
+   ============================================================
+
+   Firestore structure:
+
+   customOptions: [
+       {
+           type: "checkbox",
+           label: "Gift wrap",
+           price: 50,
+           required: false
+       },
+
+       {
+           type: "upload",
+           label: "Upload image",
+           price: 0,
+           required: true
+       },
+
+       {
+           type: "text",
+           label: "Enter Name",
+           price: 0,
+           required: true
+       },
+
+       {
+           type: "dropdown",
+           label: "Select Design",
+           price: 0,
+           choices: [
+               "Design 1",
+               "Design 2"
+           ]
+       }
+   ]
+
    ============================================================ */
 
 function getCustomOptionDefinition(
@@ -422,15 +693,9 @@ function getCustomOptionDefinition(
     }
 
 
-    /*
-       NORMAL FORMAT:
-
-       customOptions: [
-           {
-               label: "Enter Name"
-           }
-       ]
-    */
+    /* ========================================================
+       ARRAY FORMAT
+       ======================================================== */
 
     if (
         Array.isArray(
@@ -457,15 +722,9 @@ function getCustomOptionDefinition(
     }
 
 
-    /*
-       OBJECT FORMAT:
-
-       customOptions: {
-           "0": {
-               label: "Enter Name"
-           }
-       }
-    */
+    /* ========================================================
+       OBJECT FORMAT
+       ======================================================== */
 
     if (
         typeof customOptions ===
@@ -504,7 +763,8 @@ function getCustomOptionLabel(
 
 
     /*
-       First try the actual product option label.
+       FIRST PRIORITY:
+       Label saved in Firestore product.
     */
 
     if (
@@ -533,8 +793,8 @@ function getCustomOptionLabel(
 
 
     /*
-       Sometimes cart.js may already contain
-       the option label/value as an object.
+       SECOND PRIORITY:
+       Label embedded in cart value.
     */
 
     if (
@@ -566,7 +826,7 @@ function getCustomOptionLabel(
 
 
     /*
-       Last fallback.
+       LAST FALLBACK
     */
 
     const numericKey =
@@ -621,20 +881,32 @@ function getCustomOptionValue(
 
 /* ============================================================
    GET OPTIONS
+   ============================================================
 
    IMPORTANT:
 
-   This now supports:
+   Uses:
 
-   1. product.customOptions as array
-   2. product.customOptions as object
-   3. item.optionValues
-   4. item.options
-   5. cart item already containing labels
+   product.customOptions
+   +
+   item.optionValues
+   +
+   item.options
 
-   Example result:
+   Example:
 
-   Enter Name: Nenen
+   Firestore:
+
+   customOptions[0].label = "Gift wrap"
+
+   Cart:
+
+   optionValues[0] = "Yes"
+
+   Result:
+
+   Gift wrap: Yes
+
    ============================================================ */
 
 function getCartItemOptions(item) {
@@ -652,8 +924,8 @@ function getCartItemOptions(item) {
 
 
     /*
-       Some cart versions may preserve
-       the custom option definitions directly.
+       Some older cart data may contain
+       customOptions directly.
     */
 
     const storedCustomOptions =
@@ -664,23 +936,42 @@ function getCartItemOptions(item) {
         new Set();
 
 
-    Object.keys(
-        options
-    ).forEach(
-        key => keys.add(key)
-    );
-
+    /*
+       optionValues keys
+    */
 
     Object.keys(
         optionValues
     ).forEach(
-        key => keys.add(key)
+        key => {
+
+            keys.add(
+                key
+            );
+
+        }
     );
 
 
     /*
-       If customOptions are stored on the
-       cart item itself as an array.
+       options keys
+    */
+
+    Object.keys(
+        options
+    ).forEach(
+        key => {
+
+            keys.add(
+                key
+            );
+
+        }
+    );
+
+
+    /*
+       Stored custom option values
     */
 
     if (
@@ -721,13 +1012,16 @@ function getCartItemOptions(item) {
     keys.forEach(
         key => {
 
+            /*
+               First get actual selected value.
+            */
+
             let rawValue =
                 optionValues?.[key];
 
 
             /*
-               If optionValues does not have
-               the value, use options.
+               Fallback to item.options
             */
 
             if (
@@ -743,8 +1037,7 @@ function getCartItemOptions(item) {
 
 
             /*
-               If still missing, try cart-level
-               customOptions.
+               Fallback to cart-level customOptions
             */
 
             if (
@@ -779,8 +1072,8 @@ function getCartItemOptions(item) {
 
 
             /*
-               If the option itself is an object,
-               preserve its label for display.
+               If the stored value is an object,
+               preserve its embedded label.
             */
 
             let embeddedLabel =
@@ -802,6 +1095,11 @@ function getCartItemOptions(item) {
             }
 
 
+            /*
+               Convert selected value into
+               displayable text.
+            */
+
             const value =
                 getCustomOptionValue(
                     rawValue
@@ -819,8 +1117,18 @@ function getCartItemOptions(item) {
             }
 
 
+            /*
+               MOST IMPORTANT PART:
+
+               product is now the latest Firestore
+               product document.
+
+               Therefore this gets:
+
+               customOptions[key].label
+            */
+
             let label =
-                embeddedLabel ||
                 getCustomOptionLabel(
                     product,
                     key,
@@ -829,8 +1137,23 @@ function getCartItemOptions(item) {
 
 
             /*
-               If cart item itself contains
-               custom option label information.
+               Embedded label has priority if
+               cart itself contains one.
+            */
+
+            if (
+                embeddedLabel
+            ) {
+
+                label =
+                    embeddedLabel;
+
+            }
+
+
+            /*
+               If stored cart customOptions
+               contain label, use it.
             */
 
             if (
@@ -880,6 +1203,63 @@ function getCartItemOptions(item) {
                     null
 
             });
+
+        }
+    );
+
+
+    /*
+       Keep options in their original
+       numeric order.
+
+       This ensures:
+
+       Option 1
+       Option 2
+       Option 3
+       Option 4
+
+       stays in the same order as
+       the Add Product form.
+    */
+
+    result.sort(
+        (
+            a,
+            b
+        ) => {
+
+            const aNumber =
+                Number(a.key);
+
+            const bNumber =
+                Number(b.key);
+
+
+            if (
+                Number.isFinite(
+                    aNumber
+                ) &&
+                Number.isFinite(
+                    bNumber
+                )
+            ) {
+
+                return (
+                    aNumber -
+                    bNumber
+                );
+
+            }
+
+
+            return String(
+                a.key
+            ).localeCompare(
+                String(
+                    b.key
+                )
+            );
 
         }
     );
@@ -1305,8 +1685,13 @@ function createCartSidebar() {
             <div class="cart-sidebar-header">
 
                 <div class="cart-sidebar-title">
+
                     <i class="fa-solid fa-cart-shopping"></i>
-                    <span>Your Cart</span>
+
+                    <span>
+                        Your Cart
+                    </span>
+
                 </div>
 
 
@@ -1316,7 +1701,9 @@ function createCartSidebar() {
                     class="cart-sidebar-close"
                     aria-label="Close Cart"
                 >
+
                     <i class="fa-solid fa-xmark"></i>
+
                 </button>
 
             </div>
@@ -1336,7 +1723,9 @@ function createCartSidebar() {
 
                 <i class="fa-solid fa-cart-shopping"></i>
 
-                <h3>Your cart is empty</h3>
+                <h3>
+                    Your cart is empty
+                </h3>
 
                 <p>
                     Add products to your cart
@@ -1460,9 +1849,21 @@ function createCartSidebar() {
 
 /* ============================================================
    RENDER CART SIDEBAR
+   ============================================================
+
+   IMPORTANT:
+
+   The first render loads the latest product documents
+   from Firestore.
+
+   Then it renders using those products.
+
+   skipProductRefresh prevents an infinite render loop.
    ============================================================ */
 
-function renderCartSidebar() {
+async function renderCartSidebar(
+    skipProductRefresh = false
+) {
 
     const container =
         document.getElementById(
@@ -1527,6 +1928,44 @@ function renderCartSidebar() {
     }
 
 
+    /*
+       ========================================================
+       LOAD CURRENT FIRESTORE PRODUCT DATA
+       ========================================================
+
+       This is the important fix.
+
+       It loads:
+
+       products/{productId}
+
+       before the cart is rendered.
+       ========================================================
+    */
+
+    if (
+        !skipProductRefresh
+    ) {
+
+        try {
+
+            await loadCartProducts(
+                items
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Cart product refresh error:",
+                error
+            );
+
+        }
+
+    }
+
+
     if (empty) {
 
         empty.style.display =
@@ -1552,31 +1991,51 @@ function renderCartSidebar() {
                 ) => {
 
                     const image =
-                        getCartItemImage(item);
+                        getCartItemImage(
+                            item
+                        );
 
 
                     const name =
-                        getCartItemProductName(item);
+                        getCartItemProductName(
+                            item
+                        );
 
 
                     const quantity =
-                        getCartItemQuantity(item);
+                        getCartItemQuantity(
+                            item
+                        );
 
 
                     const unitPrice =
-                        getCartItemUnitPrice(item);
+                        getCartItemUnitPrice(
+                            item
+                        );
 
 
                     const lineTotal =
-                        getCartItemTotal(item);
+                        getCartItemTotal(
+                            item
+                        );
 
 
                     const shipping =
-                        getCartItemShipping(item);
+                        getCartItemShipping(
+                            item
+                        );
 
 
                     const configuration =
-                        getConfigurationHtml(item);
+                        getConfigurationHtml(
+                            item
+                        );
+
+
+                    const cartKey =
+                        item.cartItemKey ||
+                        item.id ||
+                        "";
 
 
                     return `
@@ -1584,9 +2043,7 @@ function renderCartSidebar() {
                         <div
                             class="cart-sidebar-item"
                             data-cart-key="${escapeAttribute(
-                                item.cartItemKey ||
-                                item.id ||
-                                ""
+                                cartKey
                             )}"
                         >
 
@@ -1596,8 +2053,12 @@ function renderCartSidebar() {
                                     image
                                         ? `
                                             <img
-                                                src="${escapeAttribute(image)}"
-                                                alt="${escapeAttribute(name)}"
+                                                src="${escapeAttribute(
+                                                    image
+                                                )}"
+                                                alt="${escapeAttribute(
+                                                    name
+                                                )}"
                                             >
                                         `
                                         : `
@@ -1615,7 +2076,9 @@ function renderCartSidebar() {
                                 <div class="cart-item-top">
 
                                     <h4>
-                                        ${escapeHtml(name)}
+                                        ${escapeHtml(
+                                            name
+                                        )}
                                     </h4>
 
 
@@ -1624,13 +2087,15 @@ function renderCartSidebar() {
                                         class="cart-item-remove"
                                         data-action="remove"
                                         data-cart-key="${escapeAttribute(
-                                            item.cartItemKey ||
-                                            item.id ||
-                                            ""
+                                            cartKey
                                         )}"
-                                        aria-label="Remove ${escapeAttribute(name)}"
+                                        aria-label="Remove ${escapeAttribute(
+                                            name
+                                        )}"
                                     >
+
                                         <i class="fa-solid fa-trash"></i>
+
                                     </button>
 
                                 </div>
@@ -1638,7 +2103,9 @@ function renderCartSidebar() {
 
                                 <div class="cart-item-price">
 
-                                    ₹${formatMoney(unitPrice)}
+                                    ₹${formatMoney(
+                                        unitPrice
+                                    )}
 
                                     ${
                                         quantity > 1
@@ -1673,9 +2140,7 @@ function renderCartSidebar() {
                                             class="cart-quantity-minus"
                                             data-action="decrease"
                                             data-cart-key="${escapeAttribute(
-                                                item.cartItemKey ||
-                                                item.id ||
-                                                ""
+                                                cartKey
                                             )}"
                                             aria-label="Decrease quantity"
                                         >
@@ -1693,9 +2158,7 @@ function renderCartSidebar() {
                                             class="cart-quantity-plus"
                                             data-action="increase"
                                             data-cart-key="${escapeAttribute(
-                                                item.cartItemKey ||
-                                                item.id ||
-                                                ""
+                                                cartKey
                                             )}"
                                             aria-label="Increase quantity"
                                         >
@@ -1706,7 +2169,11 @@ function renderCartSidebar() {
 
 
                                     <strong class="cart-item-total">
-                                        ₹${formatMoney(lineTotal)}
+
+                                        ₹${formatMoney(
+                                            lineTotal
+                                        )}
+
                                     </strong>
 
                                 </div>
@@ -1716,13 +2183,19 @@ function renderCartSidebar() {
                                     shipping > 0
                                         ? `
                                             <div class="cart-item-shipping">
+
                                                 Shipping:
-                                                ₹${formatMoney(shipping)}
+                                                ₹${formatMoney(
+                                                    shipping
+                                                )}
+
                                             </div>
                                         `
                                         : `
                                             <div class="cart-item-shipping free">
+
                                                 Free Shipping
+
                                             </div>
                                         `
                                 }
@@ -1867,7 +2340,9 @@ function handleCartAction(event) {
 
 
     const quantity =
-        getCartItemQuantity(item);
+        getCartItemQuantity(
+            item
+        );
 
 
     if (
@@ -1904,6 +2379,14 @@ function handleCartAction(event) {
 
     }
 
+
+    /*
+       Re-render.
+
+       Product data is already cached,
+       so this does not repeatedly fetch
+       Firestore for the same product.
+    */
 
     renderCartSidebar();
 
@@ -2093,7 +2576,9 @@ function createWhatsAppCustomerForm() {
                     class="cart-whatsapp-close"
                     aria-label="Close"
                 >
+
                     <i class="fa-solid fa-xmark"></i>
+
                 </button>
 
             </div>
@@ -2346,7 +2831,9 @@ async function checkoutFromCart() {
         String(
             siteSettings.orderButton ||
             "buyNow"
-        ).trim().toLowerCase();
+        )
+            .trim()
+            .toLowerCase();
 
 
     /*
@@ -2393,9 +2880,11 @@ async function checkoutFromCart() {
 
     const checkoutData = {
 
-        cart: items,
+        cart:
+            items,
 
-        items: items,
+        items:
+            items,
 
         site: {
 
@@ -2603,6 +3092,15 @@ async function submitCartWhatsAppOrder(
     try {
 
         /* =====================================================
+           MAKE SURE CURRENT FIRESTORE PRODUCTS ARE LOADED
+           ===================================================== */
+
+        await loadCartProducts(
+            items
+        );
+
+
+        /* =====================================================
            TOTALS
            ===================================================== */
 
@@ -2705,6 +3203,14 @@ async function submitCartWhatsAppOrder(
         const orderItems =
             items.map(
                 item => {
+
+                    /*
+                       IMPORTANT:
+
+                       getCartItemProduct()
+                       now returns the latest Firestore
+                       product because it was loaded above.
+                    */
 
                     const product =
                         getCartItemProduct(
