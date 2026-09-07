@@ -1,47 +1,16 @@
 /* ============================================================
    CART SIDEBAR
-   ============================================================
+   Cart drawer + WhatsApp checkout
 
-   Features:
-   - Opens from #cartButton
-   - Uses cart.js as the single cart system
-   - Quantity + / -
-   - Remove item
-   - Subtotal
-   - Shipping
-   - Total
-   - Checkout
-   - WhatsApp customer details form
-   - Complete multi-product WhatsApp order
-   - Firestore order creation
-   - Real-time cart synchronization
-
-   IMPORTANT CUSTOM OPTION FIX:
-   - Loads latest product document from Firestore
-   - Uses product.customOptions[].label
-   - Maps cart optionValues to the correct labels
-
-   Site Settings:
-   settings/general
-
-   orderButton:
-   "buyNow"    -> normal checkout page
-   "whatsapp"  -> customer form -> WhatsApp order
-
+   IMPORTANT:
+   - Uses the existing cart.js as the single cart source.
+   - Keeps the existing cart sidebar UI/classes.
+   - Saves cart orders in the same Firestore structure used by
+     the normal checkout, including legacy top-level fields.
+   - Uses a Firestore transaction for the order counter.
    ============================================================ */
 
-
-import {
-    getCart,
-    setCartItemQuantity,
-    removeCartItem
-} from "./cart.js";
-
-
-import {
-    db
-} from "./firebase.js";
-
+import { db } from "./firebase.js";
 
 import {
     doc,
@@ -51,12 +20,11 @@ import {
     runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-
-/* ============================================================
-   CHECKOUT PAGE
-   ============================================================ */
-
-const CHECKOUT_PAGE = "order";
+import {
+    getCart,
+    setCartItemQuantity,
+    removeCartItem
+} from "./cart.js";
 
 
 /* ============================================================
@@ -67,1226 +35,217 @@ let siteSettings = {
     companyName: "Imaginary Gifts",
     whatsapp: "",
     orderPrefix: "IG",
-    orderButton: "buyNow"
+    websiteTitle: ""
 };
 
-
-/* ============================================================
-   PRODUCT CACHE
-   ============================================================
-
-   IMPORTANT:
-
-   The cart may contain an older productSnapshot.
-
-   We therefore fetch the current product document
-   from Firestore and keep it in memory.
-
-   This gives the cart access to:
-
-   product.customOptions
-   product.variants
-   product.shipping
-   product.images
-   product.name
-   etc.
-
-   ============================================================ */
-
-const productCache = new Map();
+let cartSidebar = null;
+let cartOverlay = null;
+let cartContent = null;
+let cartSubtotalElement = null;
+let cartShippingElement = null;
+let cartTotalElement = null;
+let cartWhatsAppFormOverlay = null;
 
 
 /* ============================================================
-   FORMAT MONEY
+   HELPERS
    ============================================================ */
 
 function formatMoney(value) {
-
-    const number = Number(value || 0);
-
-    return number.toLocaleString(
-        "en-IN",
-        {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2
-        }
-    );
-
+    return Number(value || 0).toLocaleString("en-IN", {
+        maximumFractionDigits: 2
+    });
 }
 
-
-/* ============================================================
-   ESCAPE HTML
-   ============================================================ */
-
 function escapeHtml(value) {
-
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-
 }
-
-
-/* ============================================================
-   ESCAPE ATTRIBUTE
-   ============================================================ */
 
 function escapeAttribute(value) {
-
     return escapeHtml(value);
-
 }
 
-
-/* ============================================================
-   LOAD SITE SETTINGS
-   ============================================================ */
-
-async function loadSiteSettings() {
-
-    try {
-
-        const snap = await getDoc(
-            doc(
-                db,
-                "settings",
-                "general"
-            )
-        );
-
-
-        if (snap.exists()) {
-
-            siteSettings = {
-                ...siteSettings,
-                ...snap.data()
-            };
-
-        }
-
-    }
-    catch (error) {
-
-        console.error(
-            "Cart sidebar settings error:",
-            error
-        );
-
-    }
-
+function getCartItems() {
+    const items = getCart();
+    return Array.isArray(items) ? items : [];
 }
 
-
-/* ============================================================
-   GET CART ITEM PRODUCT ID
-   ============================================================ */
-
-function getCartItemProductId(item) {
-
-    return (
-        item?.productId ||
-        item?.product?.id ||
-        item?.productSnapshot?.id ||
-        item?.productData?.id ||
-        ""
-    );
-
+function getProductSnapshot(item) {
+    return item?.productSnapshot || item?.product || {};
 }
 
-
-/* ============================================================
-   GET PRODUCT FROM CACHE / CART
-   ============================================================ */
-
-function getCartItemProduct(item) {
-
-    const productId =
-        getCartItemProductId(item);
-
-
-    /*
-       IMPORTANT:
-
-       If Firestore product was already loaded,
-       use that latest product.
-    */
-
-    if (
-        productId &&
-        productCache.has(productId)
-    ) {
-
-        return productCache.get(
-            productId
-        );
-
-    }
-
-
-    /*
-       Fallback to existing cart data.
-    */
-
-    return (
-        item?.product ||
-        item?.productSnapshot ||
-        item?.productData ||
-        {}
-    );
-
+function getProductId(item) {
+    return item?.productId || getProductSnapshot(item)?.id || "";
 }
 
-
-/* ============================================================
-   LOAD PRODUCT FROM FIRESTORE
-   ============================================================ */
-
-async function loadCartProductFromFirestore(
-    item
-) {
-
-    const productId =
-        getCartItemProductId(item);
-
-
-    if (!productId) {
-
-        return getCartItemProduct(item);
-
-    }
-
-
-    /*
-       If already loaded during this page session,
-       use cached Firestore product.
-    */
-
-    if (
-        productCache.has(productId)
-    ) {
-
-        return productCache.get(
-            productId
-        );
-
-    }
-
-
-    try {
-
-        const productRef =
-            doc(
-                db,
-                "products",
-                productId
-            );
-
-
-        const snapshot =
-            await getDoc(
-                productRef
-            );
-
-
-        if (
-            snapshot.exists()
-        ) {
-
-            const product = {
-
-                id:
-                    productId,
-
-                ...snapshot.data()
-
-            };
-
-
-            productCache.set(
-                productId,
-                product
-            );
-
-
-            return product;
-
-        }
-
-    }
-    catch (error) {
-
-        console.error(
-            "Cart product loading error:",
-            productId,
-            error
-        );
-
-    }
-
-
-    /*
-       If Firestore loading fails,
-       keep the existing cart snapshot.
-    */
-
-    return (
-        item?.product ||
-        item?.productSnapshot ||
-        item?.productData ||
-        {}
-    );
-
+function getProductName(item) {
+    return item?.name || getProductSnapshot(item)?.name || "Product";
 }
-
-
-/* ============================================================
-   LOAD ALL CART PRODUCTS
-   ============================================================
-
-   Fetches the latest product documents before rendering.
-
-   This is the main fix for custom option labels.
-   ============================================================ */
-
-async function loadCartProducts(
-    items
-) {
-
-    if (
-        !Array.isArray(items) ||
-        !items.length
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-       Only fetch unique product IDs.
-    */
-
-    const uniqueItems = [];
-
-
-    const seenIds = new Set();
-
-
-    items.forEach(
-        item => {
-
-            const productId =
-                getCartItemProductId(
-                    item
-                );
-
-
-            if (
-                productId &&
-                !seenIds.has(
-                    productId
-                )
-            ) {
-
-                seenIds.add(
-                    productId
-                );
-
-                uniqueItems.push(
-                    item
-                );
-
-            }
-
-        }
-    );
-
-
-    await Promise.all(
-        uniqueItems.map(
-            item =>
-                loadCartProductFromFirestore(
-                    item
-                )
-        )
-    );
-
-}
-
-
-/* ============================================================
-   GET PRODUCT NAME
-   ============================================================ */
-
-function getCartItemProductName(item) {
-
-    const product =
-        getCartItemProduct(item);
-
-
-    return (
-        item?.name ||
-        product?.name ||
-        product?.title ||
-        "Product"
-    );
-
-}
-
-
-/* ============================================================
-   GET CART ITEM UNIT PRICE
-   ============================================================ */
-
-function getCartItemUnitPrice(item) {
-
-    const product =
-        getCartItemProduct(item);
-
-
-    /*
-       cart.js normally stores the final selected
-       configuration price in item.price.
-    */
-
-    if (
-        item?.price !== undefined &&
-        item?.price !== null
-    ) {
-
-        return Number(
-            item.price || 0
-        );
-
-    }
-
-
-    return Number(
-        product?.salePrice ??
-        product?.basePrice ??
-        product?.price ??
-        0
-    );
-
-}
-
-
-/* ============================================================
-   GET CART ITEM QUANTITY
-   ============================================================ */
-
-function getCartItemQuantity(item) {
-
-    return Math.max(
-        Number(
-            item?.quantity ??
-            item?.qty ??
-            1
-        ) || 1,
-        1
-    );
-
-}
-
-
-/* ============================================================
-   GET CART ITEM TOTAL
-   ============================================================ */
-
-function getCartItemTotal(item) {
-
-    return (
-        getCartItemUnitPrice(item) *
-        getCartItemQuantity(item)
-    );
-
-}
-
-
-/* ============================================================
-   GET CART ITEM IMAGE
-   ============================================================ */
 
 function getCartItemImage(item) {
-
-    const product =
-        getCartItemProduct(item);
-
-
     return (
         item?.image ||
-        item?.imageUrl ||
-        product?.images?.[0] ||
+        item?.productSnapshot?.images?.[0] ||
+        item?.product?.images?.[0] ||
         ""
     );
-
 }
 
+function getCartItemUnitPrice(item) {
+    return Math.max(0, Number(item?.price || 0));
+}
 
-/* ============================================================
-   GET PRODUCT LINK
-   ============================================================ */
+function getCartItemTotal(item) {
+    return getCartItemUnitPrice(item) * Math.max(
+        1,
+        Number(item?.quantity || 1)
+    );
+}
 
-function getProductLink(item) {
-
-    const productId =
-        getCartItemProductId(item);
-
-
-    if (!productId) {
-
+function getVariantValue(value) {
+    if (value === null || value === undefined) {
         return "";
-
     }
 
-
-    try {
-
-        return new URL(
-            `product?id=${encodeURIComponent(productId)}`,
-            window.location.origin + "/"
-        ).href;
-
-    }
-    catch (error) {
-
-        return (
-            window.location.origin +
-            `/product?id=${encodeURIComponent(productId)}`
-        );
-
-    }
-
-}
-
-
-/* ============================================================
-   GET COLOR
-   ============================================================ */
-
-function getCartItemColor(item) {
-
-    const color =
-        item?.color;
-
-
-    if (!color) {
-
-        return "";
-
-    }
-
-
-    if (
-        typeof color === "object"
-    ) {
-
-        return (
-            color.name ||
-            color.value ||
-            color.title ||
-            ""
-        );
-
-    }
-
-
-    return String(color);
-
-}
-
-
-/* ============================================================
-   GET SIZE
-   ============================================================ */
-
-function getCartItemSize(item) {
-
-    const size =
-        item?.size;
-
-
-    if (!size) {
-
-        return "";
-
-    }
-
-
-    if (
-        typeof size === "object"
-    ) {
-
-        return (
-            size.name ||
-            size.value ||
-            size.title ||
-            ""
-        );
-
-    }
-
-
-    return String(size);
-
-}
-
-
-/* ============================================================
-   GET CUSTOM OPTION DEFINITION
-   ============================================================
-
-   Firestore structure:
-
-   customOptions: [
-       {
-           type: "checkbox",
-           label: "Gift wrap",
-           price: 50,
-           required: false
-       },
-
-       {
-           type: "upload",
-           label: "Upload image",
-           price: 0,
-           required: true
-       },
-
-       {
-           type: "text",
-           label: "Enter Name",
-           price: 0,
-           required: true
-       },
-
-       {
-           type: "dropdown",
-           label: "Select Design",
-           price: 0,
-           choices: [
-               "Design 1",
-               "Design 2"
-           ]
-       }
-   ]
-
-   ============================================================ */
-
-function getCustomOptionDefinition(
-    product,
-    key
-) {
-
-    const customOptions =
-        product?.customOptions;
-
-
-    if (!customOptions) {
-
-        return null;
-
-    }
-
-
-    /* ========================================================
-       ARRAY FORMAT
-       ======================================================== */
-
-    if (
-        Array.isArray(
-            customOptions
-        )
-    ) {
-
-        const index =
-            Number(key);
-
-
-        if (
-            Number.isInteger(index) &&
-            customOptions[index]
-        ) {
-
-            return customOptions[index];
-
-        }
-
-
-        return null;
-
-    }
-
-
-    /* ========================================================
-       OBJECT FORMAT
-       ======================================================== */
-
-    if (
-        typeof customOptions ===
-        "object"
-    ) {
-
-        return (
-            customOptions[key] ||
-            customOptions[String(key)] ||
-            null
-        );
-
-    }
-
-
-    return null;
-
-}
-
-
-/* ============================================================
-   GET CUSTOM OPTION LABEL
-   ============================================================ */
-
-function getCustomOptionLabel(
-    product,
-    key,
-    value
-) {
-
-    const definition =
-        getCustomOptionDefinition(
-            product,
-            key
-        );
-
-
-    /*
-       FIRST PRIORITY:
-       Label saved in Firestore product.
-    */
-
-    if (
-        definition
-    ) {
-
-        const label =
-            definition.label ||
-            definition.name ||
-            definition.title ||
-            definition.placeholder ||
-            "";
-
-
-        if (
-            String(label).trim()
-        ) {
-
-            return String(
-                label
-            ).trim();
-
-        }
-
-    }
-
-
-    /*
-       SECOND PRIORITY:
-       Label embedded in cart value.
-    */
-
-    if (
-        value &&
-        typeof value ===
-        "object"
-    ) {
-
-        const embeddedLabel =
-            value.label ||
-            value.name ||
-            value.title ||
-            "";
-
-
-        if (
-            String(
-                embeddedLabel
-            ).trim()
-        ) {
-
-            return String(
-                embeddedLabel
-            ).trim();
-
-        }
-
-    }
-
-
-    /*
-       LAST FALLBACK
-    */
-
-    const numericKey =
-        Number(key);
-
-
-    if (
-        Number.isInteger(
-            numericKey
-        )
-    ) {
-
-        return `Option ${numericKey + 1}`;
-
-    }
-
-
-    return `Option ${key}`;
-
-}
-
-
-/* ============================================================
-   GET CUSTOM OPTION VALUE
-   ============================================================ */
-
-function getCustomOptionValue(
-    value
-) {
-
-    if (
-        value &&
-        typeof value ===
-        "object"
-    ) {
-
-        return (
-            value.value ??
-            value.text ??
+    if (typeof value === "object") {
+        return String(
             value.name ??
+            value.value ??
             value.label ??
             ""
-        );
-
+        ).trim();
     }
 
+    return String(value).trim();
+}
 
-    return value;
+function getColorValue(item) {
+    return getVariantValue(item?.color);
+}
 
+function getSizeValue(item) {
+    return getVariantValue(item?.size);
 }
 
 
 /* ============================================================
-   GET OPTIONS
-   ============================================================
-
-   IMPORTANT:
-
-   Uses:
-
-   product.customOptions
-   +
-   item.optionValues
-   +
-   item.options
-
-   Example:
-
-   Firestore:
-
-   customOptions[0].label = "Gift wrap"
-
-   Cart:
-
-   optionValues[0] = "Yes"
-
-   Result:
-
-   Gift wrap: Yes
-
+   CUSTOM OPTIONS
    ============================================================ */
 
-function getCartItemOptions(item) {
+function getCustomOptionEntries(item) {
+    const product = getProductSnapshot(item);
 
-    const product =
-        getCartItemProduct(item);
-
-
-    const options =
-        item?.options || {};
-
+    const customOptions = Array.isArray(
+        product?.customOptions
+    )
+        ? product.customOptions
+        : [];
 
     const optionValues =
         item?.optionValues || {};
 
+    const optionPrices =
+        item?.customOptionPrices ||
+        item?.options ||
+        {};
 
-    /*
-       Some older cart data may contain
-       customOptions directly.
-    */
+    const imageLinks =
+        item?.imageLinks ||
+        {};
 
-    const storedCustomOptions =
-        item?.customOptions;
+    const keys = [
+        ...new Set([
+            ...Object.keys(optionValues),
+            ...Object.keys(optionPrices),
+            ...Object.keys(imageLinks)
+        ])
+    ];
 
+    return keys
+        .map(key => {
 
-    const keys =
-        new Set();
+            const index = Number(key);
 
+            const option =
+                Number.isInteger(index)
+                    ? customOptions[index]
+                    : null;
 
-    /*
-       optionValues keys
-    */
-
-    Object.keys(
-        optionValues
-    ).forEach(
-        key => {
-
-            keys.add(
-                key
-            );
-
-        }
-    );
-
-
-    /*
-       options keys
-    */
-
-    Object.keys(
-        options
-    ).forEach(
-        key => {
-
-            keys.add(
-                key
-            );
-
-        }
-    );
-
-
-    /*
-       Stored custom option values
-    */
-
-    if (
-        Array.isArray(
-            storedCustomOptions
-        )
-    ) {
-
-        storedCustomOptions.forEach(
-            (
-                option,
-                index
-            ) => {
-
-                if (
-                    option &&
-                    (
-                        option.value !== undefined ||
-                        option.selectedValue !== undefined
-                    )
-                ) {
-
-                    keys.add(
-                        String(index)
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    const result = [];
-
-
-    keys.forEach(
-        key => {
-
-            /*
-               First get actual selected value.
-            */
-
-            let rawValue =
-                optionValues?.[key];
-
-
-            /*
-               Fallback to item.options
-            */
+            let value =
+                optionValues[key];
 
             if (
-                rawValue === undefined ||
-                rawValue === null ||
-                rawValue === ""
-            ) {
-
-                rawValue =
-                    options?.[key];
-
-            }
-
-
-            /*
-               Fallback to cart-level customOptions
-            */
-
-            if (
-                (
-                    rawValue === undefined ||
-                    rawValue === null ||
-                    rawValue === ""
-                ) &&
-                Array.isArray(
-                    storedCustomOptions
-                )
-            ) {
-
-                const storedOption =
-                    storedCustomOptions[
-                        Number(key)
-                    ];
-
-
-                if (
-                    storedOption
-                ) {
-
-                    rawValue =
-                        storedOption.value ??
-                        storedOption.selectedValue ??
-                        "";
-
-                }
-
-            }
-
-
-            /*
-               If the stored value is an object,
-               preserve its embedded label.
-            */
-
-            let embeddedLabel =
-                "";
-
-
-            if (
-                rawValue &&
-                typeof rawValue ===
-                "object"
-            ) {
-
-                embeddedLabel =
-                    rawValue.label ||
-                    rawValue.name ||
-                    rawValue.title ||
-                    "";
-
-            }
-
-
-            /*
-               Convert selected value into
-               displayable text.
-            */
-
-            const value =
-                getCustomOptionValue(
-                    rawValue
-                );
-
-
-            if (
-                value === "" ||
+                value === undefined ||
                 value === null ||
-                value === undefined
+                value === ""
             ) {
-
-                return;
-
+                value =
+                    optionPrices[key];
             }
-
-
-            /*
-               MOST IMPORTANT PART:
-
-               product is now the latest Firestore
-               product document.
-
-               Therefore this gets:
-
-               customOptions[key].label
-            */
-
-            let label =
-                getCustomOptionLabel(
-                    product,
-                    key,
-                    rawValue
-                );
-
-
-            /*
-               Embedded label has priority if
-               cart itself contains one.
-            */
 
             if (
-                embeddedLabel
+                value &&
+                typeof value === "object"
             ) {
-
-                label =
-                    embeddedLabel;
-
+                value =
+                    value.name ??
+                    value.value ??
+                    value.label ??
+                    "";
             }
 
+            value =
+                String(value ?? "")
+                    .trim();
 
-            /*
-               If stored cart customOptions
-               contain label, use it.
-            */
+            const image =
+                imageLinks[key] ||
+                null;
 
-            if (
-                Array.isArray(
-                    storedCustomOptions
-                )
-            ) {
-
-                const storedOption =
-                    storedCustomOptions[
-                        Number(key)
-                    ];
-
-
-                if (
-                    storedOption
-                ) {
-
-                    label =
-                        storedOption.label ||
-                        storedOption.name ||
-                        storedOption.title ||
-                        label;
-
-                }
-
+            if (!value && !image) {
+                return null;
             }
 
-
-            result.push({
-
+            return {
                 key,
 
                 label:
                     String(
-                        label ||
-                        `Option ${Number(key) + 1}`
+                        option?.label ||
+                        `Option ${
+                            Number.isInteger(index)
+                                ? index + 1
+                                : key
+                        }`
                     ).trim(),
 
                 value:
-                    String(
-                        value
-                    ).trim(),
+                    value ||
+                    "Selected",
 
-                image:
-                    item?.imageLinks?.[key] ||
-                    null
-
-            });
-
-        }
-    );
-
-
-    /*
-       Keep options in their original
-       numeric order.
-
-       This ensures:
-
-       Option 1
-       Option 2
-       Option 3
-       Option 4
-
-       stays in the same order as
-       the Add Product form.
-    */
-
-    result.sort(
-        (
-            a,
-            b
-        ) => {
-
-            const aNumber =
-                Number(a.key);
-
-            const bNumber =
-                Number(b.key);
-
-
-            if (
-                Number.isFinite(
-                    aNumber
-                ) &&
-                Number.isFinite(
-                    bNumber
-                )
-            ) {
-
-                return (
-                    aNumber -
-                    bNumber
-                );
-
-            }
-
-
-            return String(
-                a.key
-            ).localeCompare(
-                String(
-                    b.key
-                )
-            );
-
-        }
-    );
-
-
-    return result;
-
+                imageLink:
+                    image
+            };
+        })
+        .filter(Boolean);
 }
 
-
-/* ============================================================
-   GET CONFIGURATION HTML
-   ============================================================ */
 
 function getConfigurationHtml(item) {
 
     const color =
-        getCartItemColor(item);
-
+        getColorValue(item);
 
     const size =
-        getCartItemSize(item);
-
+        getSizeValue(item);
 
     const options =
-        getCartItemOptions(item);
-
+        getCustomOptionEntries(item);
 
     let html = "";
 
@@ -1295,10 +254,10 @@ function getConfigurationHtml(item) {
 
         html += `
             <div class="cart-item-option">
-                Color: ${escapeHtml(color)}
+                <span>Color:</span>
+                ${escapeHtml(color)}
             </div>
         `;
-
     }
 
 
@@ -1306,34 +265,33 @@ function getConfigurationHtml(item) {
 
         html += `
             <div class="cart-item-option">
-                Size: ${escapeHtml(size)}
+                <span>Size:</span>
+                ${escapeHtml(size)}
             </div>
         `;
-
     }
 
 
-    options.forEach(
-        option => {
+    options.forEach(option => {
 
-            html += `
-                <div class="cart-item-option">
+        html += `
+            <div class="cart-item-option">
+                <span>
                     ${escapeHtml(option.label)}:
-                    ${escapeHtml(option.value)}
-                </div>
-            `;
+                </span>
 
-        }
-    );
+                ${escapeHtml(option.value)}
+            </div>
+        `;
+    });
 
 
     return html;
-
 }
 
 
 /* ============================================================
-   COMMON PRODUCT SHIPPING
+   SHIPPING
    ============================================================ */
 
 function getCommonProductShipping(product) {
@@ -1341,13 +299,11 @@ function getCommonProductShipping(product) {
     const shipping =
         product?.shipping || {};
 
-
     let type =
         shipping.type ??
         shipping.shippingType ??
         product?.shippingType ??
         "free";
-
 
     let amount =
         Number(
@@ -1357,69 +313,48 @@ function getCommonProductShipping(product) {
             0
         );
 
-
     type =
         String(
             type || "free"
         ).toLowerCase();
 
 
-    if (
-        type === "common"
-    ) {
+    if (type === "common") {
 
         type =
             amount > 0
                 ? "paid"
                 : "free";
-
     }
 
 
-    if (
-        type !== "paid"
-    ) {
-
+    if (type !== "paid") {
         amount = 0;
-
     }
 
 
     return {
         type,
+
         amount:
             Math.max(
                 0,
                 amount
             )
     };
-
 }
 
-
-/* ============================================================
-   SELECTED SIZE SHIPPING
-   ============================================================ */
 
 function getSelectedSizeShipping(item) {
 
     const product =
-        getCartItemProduct(item);
-
+        getProductSnapshot(item);
 
     const selectedSizeName =
-        String(
-            item?.size?.name ??
-            item?.sizeName ??
-            item?.size ??
-            ""
-        ).trim();
-
+        getSizeValue(item);
 
     if (!selectedSizeName) {
-
         return null;
-
     }
 
 
@@ -1428,94 +363,81 @@ function getSelectedSizeShipping(item) {
         product?.sizes ||
         [];
 
-
-    if (
-        !Array.isArray(sizes)
-    ) {
-
+    if (!Array.isArray(sizes)) {
         return null;
-
     }
 
 
-    const selected =
-        sizes.find(
-            size =>
-                String(
-                    size?.name || ""
-                ).trim() ===
-                selectedSizeName
+    const selectedSize =
+        sizes.find(size =>
+            String(
+                size?.name || ""
+            ).trim() ===
+            selectedSizeName
         );
 
 
-    if (!selected) {
-
+    if (!selectedSize) {
         return null;
-
     }
 
 
     const type =
         String(
-            selected.shippingType ??
-            selected.shipping?.type ??
+            selectedSize.shippingType ??
+            selectedSize.shipping?.type ??
             "common"
         ).toLowerCase();
 
 
     const amount =
         Number(
-            selected.shippingAmount ??
-            selected.shipping?.amount ??
+            selectedSize.shippingAmount ??
+            selectedSize.shipping?.amount ??
             0
         );
 
 
-    if (
-        type === "free"
-    ) {
+    if (type === "free") {
 
         return {
             type: "free",
             amount: 0
         };
-
     }
 
 
-    if (
-        type === "paid"
-    ) {
+    if (type === "paid") {
 
         return {
             type: "paid",
+
             amount:
                 Math.max(
                     0,
                     amount
                 )
         };
-
     }
 
 
     return null;
-
 }
 
 
-/* ============================================================
-   GET CART ITEM SHIPPING
-   ============================================================ */
-
 function getCartItemShipping(item) {
+
+    const quantity =
+        Math.max(
+            1,
+            Number(
+                item?.quantity || 1
+            )
+        );
+
 
     const sizeShipping =
         getSelectedSizeShipping(item);
-
-
-    const quantity =
-        getCartItemQuantity(item);
 
 
     if (sizeShipping) {
@@ -1524,122 +446,103 @@ function getCartItemShipping(item) {
             sizeShipping.amount *
             quantity
         );
-
     }
 
 
-    const common =
+    const commonShipping =
         getCommonProductShipping(
-            getCartItemProduct(item)
+            getProductSnapshot(item)
         );
 
 
     return (
-        common.amount *
+        commonShipping.amount *
         quantity
     );
-
 }
 
 
-/* ============================================================
-   CALCULATE CART TOTALS
-   ============================================================ */
-
-function calculateCartTotals(items) {
+function calculateCartTotals(
+    items = getCartItems()
+) {
 
     let subtotal = 0;
-
     let shipping = 0;
 
 
-    items.forEach(
-        item => {
+    items.forEach(item => {
 
-            subtotal +=
-                getCartItemTotal(item);
+        subtotal +=
+            getCartItemTotal(item);
 
-
-            shipping +=
-                getCartItemShipping(item);
-
-        }
-    );
-
-
-    const total =
-        subtotal +
-        shipping;
+        shipping +=
+            getCartItemShipping(item);
+    });
 
 
     return {
-        subtotal,
-        shipping,
-        total
-    };
 
+        subtotal:
+            Math.max(
+                0,
+                subtotal
+            ),
+
+        shipping:
+            Math.max(
+                0,
+                shipping
+            ),
+
+        total:
+            Math.max(
+                0,
+                subtotal + shipping
+            )
+    };
 }
 
 
 /* ============================================================
-   UPDATE CART COUNT
+   CART COUNT
    ============================================================ */
 
 function updateCartCount() {
 
-    const cartCount =
+    const element =
         document.getElementById(
             "cartCount"
         );
 
-
-    if (!cartCount) {
-
+    if (!element) {
         return;
-
     }
 
 
-    const cart =
-        getCart();
-
-
     const count =
-        cart.reduce(
-            (
-                total,
-                item
-            ) => {
-
-                return (
-                    total +
-                    getCartItemQuantity(item)
-                );
-
-            },
+        getCartItems().reduce(
+            (sum, item) =>
+                sum +
+                Math.max(
+                    0,
+                    Number(
+                        item?.quantity || 0
+                    )
+                ),
             0
         );
 
 
-    cartCount.textContent =
-        count;
+    element.textContent =
+        count > 99
+            ? "99+"
+            : String(count);
 
 
-    if (
+    element.style.display =
         count > 0
-    ) {
-
-        cartCount.style.display =
-            "flex";
-
-    }
-    else {
-
-        cartCount.style.display =
-            "none";
-
-    }
-
+            ? "flex"
+            : "none";
 }
 
 
@@ -1651,163 +554,199 @@ function createCartSidebar() {
 
     if (
         document.getElementById(
-            "cartSidebarOverlay"
+            "cartSidebar"
         )
     ) {
 
-        return;
+        cartSidebar =
+            document.getElementById(
+                "cartSidebar"
+            );
 
+        cartOverlay =
+            document.getElementById(
+                "cartSidebarOverlay"
+            );
+
+        cartContent =
+            document.getElementById(
+                "cartSidebarContent"
+            );
+
+        cartSubtotalElement =
+            document.getElementById(
+                "cartSubtotal"
+            );
+
+        cartShippingElement =
+            document.getElementById(
+                "cartShipping"
+            );
+
+        cartTotalElement =
+            document.getElementById(
+                "cartTotal"
+            );
+
+        return;
     }
 
 
-    const overlay =
+    cartOverlay =
         document.createElement(
             "div"
         );
 
-
-    overlay.id =
+    cartOverlay.id =
         "cartSidebarOverlay";
 
-
-    overlay.className =
+    cartOverlay.className =
         "cart-sidebar-overlay";
 
 
-    overlay.innerHTML = `
+    cartSidebar =
+        document.createElement(
+            "aside"
+        );
 
-        <aside
-            id="cartSidebar"
-            class="cart-sidebar"
-            aria-label="Shopping Cart"
-        >
+    cartSidebar.id =
+        "cartSidebar";
 
-            <div class="cart-sidebar-header">
+    cartSidebar.className =
+        "cart-sidebar";
 
-                <div class="cart-sidebar-title">
-
-                    <i class="fa-solid fa-cart-shopping"></i>
-
-                    <span>
-                        Your Cart
-                    </span>
-
-                </div>
+    cartSidebar.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 
 
-                <button
-                    type="button"
-                    id="closeCartSidebarButton"
-                    class="cart-sidebar-close"
-                    aria-label="Close Cart"
-                >
+    cartSidebar.innerHTML = `
 
-                    <i class="fa-solid fa-xmark"></i>
+        <div class="cart-sidebar-header">
 
-                </button>
-
-            </div>
-
-
-            <div
-                id="cartSidebarItems"
-                class="cart-sidebar-items"
-            ></div>
-
-
-            <div
-                id="cartSidebarEmpty"
-                class="cart-sidebar-empty"
-                style="display:none;"
-            >
+            <div class="cart-sidebar-title">
 
                 <i class="fa-solid fa-cart-shopping"></i>
 
-                <h3>
-                    Your cart is empty
-                </h3>
-
-                <p>
-                    Add products to your cart
-                    to see them here.
-                </p>
+                <span>Your Cart</span>
 
             </div>
 
 
-            <div
-                id="cartSidebarFooter"
-                class="cart-sidebar-footer"
+            <button
+                type="button"
+                id="cartSidebarCloseButton"
+                class="cart-sidebar-close"
+                aria-label="Close cart"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div
+            id="cartSidebarContent"
+            class="cart-sidebar-content"
+        ></div>
+
+
+        <div class="cart-sidebar-footer">
+
+            <div class="cart-summary-row">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong id="cartSubtotal">
+                    ₹0
+                </strong>
+
+            </div>
+
+
+            <div class="cart-summary-row">
+
+                <span>
+                    Shipping
+                </span>
+
+                <strong id="cartShipping">
+                    FREE
+                </strong>
+
+            </div>
+
+
+            <div class="cart-summary-divider"></div>
+
+
+            <div class="cart-summary-row cart-summary-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="cartTotal">
+                    ₹0
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="cartCheckoutButton"
+                class="cart-checkout-button"
             >
 
-                <div class="cart-price-row">
+                <span>
+                    Checkout
+                </span>
 
-                    <span>
-                        Subtotal
-                    </span>
+                <i class="fa-solid fa-arrow-right"></i>
 
-                    <strong id="cartSubtotal">
-                        ₹0
-                    </strong>
+            </button>
 
-                </div>
-
-
-                <div class="cart-price-row">
-
-                    <span>
-                        Shipping
-                    </span>
-
-                    <strong id="cartShipping">
-                        FREE
-                    </strong>
-
-                </div>
-
-
-                <div class="cart-total-row">
-
-                    <span>
-                        Total
-                    </span>
-
-                    <strong id="cartTotal">
-                        ₹0
-                    </strong>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    id="cartCheckoutButton"
-                    class="cart-checkout-button"
-                >
-
-                    <span>
-                        Checkout
-                    </span>
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                </button>
-
-            </div>
-
-        </aside>
-
+        </div>
     `;
 
 
     document.body.appendChild(
-        overlay
+        cartOverlay
     );
+
+    document.body.appendChild(
+        cartSidebar
+    );
+
+
+    cartContent =
+        document.getElementById(
+            "cartSidebarContent"
+        );
+
+    cartSubtotalElement =
+        document.getElementById(
+            "cartSubtotal"
+        );
+
+    cartShippingElement =
+        document.getElementById(
+            "cartShipping"
+        );
+
+    cartTotalElement =
+        document.getElementById(
+            "cartTotal"
+        );
 
 
     document
         .getElementById(
-            "closeCartSidebarButton"
+            "cartSidebarCloseButton"
         )
         ?.addEventListener(
             "click",
@@ -1815,20 +754,9 @@ function createCartSidebar() {
         );
 
 
-    overlay.addEventListener(
+    cartOverlay.addEventListener(
         "click",
-        event => {
-
-            if (
-                event.target ===
-                overlay
-            ) {
-
-                closeCartSidebar();
-
-            }
-
-        }
+        closeCartSidebar
     );
 
 
@@ -1842,374 +770,24 @@ function createCartSidebar() {
         );
 
 
-    renderCartSidebar();
-
+    cartContent.addEventListener(
+        "click",
+        handleCartAction
+    );
 }
 
 
 /* ============================================================
-   RENDER CART SIDEBAR
-   ============================================================
-
-   IMPORTANT:
-
-   The first render loads the latest product documents
-   from Firestore.
-
-   Then it renders using those products.
-
-   skipProductRefresh prevents an infinite render loop.
+   RENDER CART
    ============================================================ */
 
-async function renderCartSidebar(
-    skipProductRefresh = false
-) {
+function renderCartSidebar() {
 
-    const container =
-        document.getElementById(
-            "cartSidebarItems"
-        );
-
-
-    const empty =
-        document.getElementById(
-            "cartSidebarEmpty"
-        );
-
-
-    const footer =
-        document.getElementById(
-            "cartSidebarFooter"
-        );
-
-
-    if (
-        !container
-    ) {
-
-        return;
-
-    }
+    createCartSidebar();
 
 
     const items =
-        getCart();
-
-
-    updateCartCount();
-
-
-    if (
-        !items.length
-    ) {
-
-        container.innerHTML =
-            "";
-
-
-        if (empty) {
-
-            empty.style.display =
-                "flex";
-
-        }
-
-
-        if (footer) {
-
-            footer.style.display =
-                "none";
-
-        }
-
-
-        return;
-
-    }
-
-
-    /*
-       ========================================================
-       LOAD CURRENT FIRESTORE PRODUCT DATA
-       ========================================================
-
-       This is the important fix.
-
-       It loads:
-
-       products/{productId}
-
-       before the cart is rendered.
-       ========================================================
-    */
-
-    if (
-        !skipProductRefresh
-    ) {
-
-        try {
-
-            await loadCartProducts(
-                items
-            );
-
-        }
-        catch (error) {
-
-            console.error(
-                "Cart product refresh error:",
-                error
-            );
-
-        }
-
-    }
-
-
-    if (empty) {
-
-        empty.style.display =
-            "none";
-
-    }
-
-
-    if (footer) {
-
-        footer.style.display =
-            "block";
-
-    }
-
-
-    container.innerHTML =
-        items
-            .map(
-                (
-                    item,
-                    index
-                ) => {
-
-                    const image =
-                        getCartItemImage(
-                            item
-                        );
-
-
-                    const name =
-                        getCartItemProductName(
-                            item
-                        );
-
-
-                    const quantity =
-                        getCartItemQuantity(
-                            item
-                        );
-
-
-                    const unitPrice =
-                        getCartItemUnitPrice(
-                            item
-                        );
-
-
-                    const lineTotal =
-                        getCartItemTotal(
-                            item
-                        );
-
-
-                    const shipping =
-                        getCartItemShipping(
-                            item
-                        );
-
-
-                    const configuration =
-                        getConfigurationHtml(
-                            item
-                        );
-
-
-                    const cartKey =
-                        item.cartItemKey ||
-                        item.id ||
-                        "";
-
-
-                    return `
-
-                        <div
-                            class="cart-sidebar-item"
-                            data-cart-key="${escapeAttribute(
-                                cartKey
-                            )}"
-                        >
-
-                            <div class="cart-item-image">
-
-                                ${
-                                    image
-                                        ? `
-                                            <img
-                                                src="${escapeAttribute(
-                                                    image
-                                                )}"
-                                                alt="${escapeAttribute(
-                                                    name
-                                                )}"
-                                            >
-                                        `
-                                        : `
-                                            <div class="cart-item-no-image">
-                                                <i class="fa-regular fa-image"></i>
-                                            </div>
-                                        `
-                                }
-
-                            </div>
-
-
-                            <div class="cart-item-info">
-
-                                <div class="cart-item-top">
-
-                                    <h4>
-                                        ${escapeHtml(
-                                            name
-                                        )}
-                                    </h4>
-
-
-                                    <button
-                                        type="button"
-                                        class="cart-item-remove"
-                                        data-action="remove"
-                                        data-cart-key="${escapeAttribute(
-                                            cartKey
-                                        )}"
-                                        aria-label="Remove ${escapeAttribute(
-                                            name
-                                        )}"
-                                    >
-
-                                        <i class="fa-solid fa-trash"></i>
-
-                                    </button>
-
-                                </div>
-
-
-                                <div class="cart-item-price">
-
-                                    ₹${formatMoney(
-                                        unitPrice
-                                    )}
-
-                                    ${
-                                        quantity > 1
-                                            ? `
-                                                <span>
-                                                    × ${quantity}
-                                                </span>
-                                            `
-                                            : ""
-                                    }
-
-                                </div>
-
-
-                                ${
-                                    configuration
-                                        ? `
-                                            <div class="cart-item-configuration">
-                                                ${configuration}
-                                            </div>
-                                        `
-                                        : ""
-                                }
-
-
-                                <div class="cart-item-bottom">
-
-                                    <div class="cart-quantity-control">
-
-                                        <button
-                                            type="button"
-                                            class="cart-quantity-minus"
-                                            data-action="decrease"
-                                            data-cart-key="${escapeAttribute(
-                                                cartKey
-                                            )}"
-                                            aria-label="Decrease quantity"
-                                        >
-                                            −
-                                        </button>
-
-
-                                        <span class="cart-quantity-value">
-                                            ${quantity}
-                                        </span>
-
-
-                                        <button
-                                            type="button"
-                                            class="cart-quantity-plus"
-                                            data-action="increase"
-                                            data-cart-key="${escapeAttribute(
-                                                cartKey
-                                            )}"
-                                            aria-label="Increase quantity"
-                                        >
-                                            +
-                                        </button>
-
-                                    </div>
-
-
-                                    <strong class="cart-item-total">
-
-                                        ₹${formatMoney(
-                                            lineTotal
-                                        )}
-
-                                    </strong>
-
-                                </div>
-
-
-                                ${
-                                    shipping > 0
-                                        ? `
-                                            <div class="cart-item-shipping">
-
-                                                Shipping:
-                                                ₹${formatMoney(
-                                                    shipping
-                                                )}
-
-                                            </div>
-                                        `
-                                        : `
-                                            <div class="cart-item-shipping free">
-
-                                                Free Shipping
-
-                                            </div>
-                                        `
-                                }
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-                }
-            )
-            .join("");
-
+        getCartItems();
 
     const totals =
         calculateCartTotals(
@@ -2217,289 +795,458 @@ async function renderCartSidebar(
         );
 
 
-    const subtotalElement =
+    updateCartCount();
+
+
+    const checkoutButton =
         document.getElementById(
-            "cartSubtotal"
+            "cartCheckoutButton"
         );
 
 
-    const shippingElement =
-        document.getElementById(
-            "cartShipping"
-        );
+    if (!items.length) {
+
+        cartContent.innerHTML = `
+
+            <div class="cart-empty-state">
+
+                <div class="cart-empty-icon">
+
+                    <i class="fa-solid fa-cart-shopping"></i>
+
+                </div>
 
 
-    const totalElement =
-        document.getElementById(
-            "cartTotal"
-        );
+                <h3>
+                    Your cart is empty
+                </h3>
 
 
-    if (
-        subtotalElement
-    ) {
+                <p>
+                    Add something you love and it will appear here.
+                </p>
 
-        subtotalElement.textContent =
-            `₹${formatMoney(
-                totals.subtotal
-            )}`;
+            </div>
+        `;
 
+
+        cartSubtotalElement.textContent =
+            "₹0";
+
+        cartShippingElement.textContent =
+            "FREE";
+
+        cartTotalElement.textContent =
+            "₹0";
+
+
+        if (checkoutButton) {
+            checkoutButton.disabled =
+                true;
+        }
+
+        return;
     }
 
 
-    if (
-        shippingElement
-    ) {
-
-        shippingElement.textContent =
-            totals.shipping > 0
-                ? `₹${formatMoney(
-                    totals.shipping
-                )}`
-                : "FREE";
-
+    if (checkoutButton) {
+        checkoutButton.disabled =
+            false;
     }
 
 
-    if (
-        totalElement
-    ) {
+    cartContent.innerHTML =
+        items.map(item => {
 
-        totalElement.textContent =
-            `₹${formatMoney(
-                totals.total
-            )}`;
-
-    }
-
-
-    container
-        .querySelectorAll(
-            "[data-action]"
-        )
-        .forEach(
-            button => {
-
-                button.addEventListener(
-                    "click",
-                    handleCartAction
+            const key =
+                String(
+                    item?.cartItemKey ||
+                    item?.id ||
+                    ""
                 );
 
-            }
-        );
 
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        item?.quantity || 1
+                    )
+                );
+
+
+            const image =
+                getCartItemImage(item);
+
+
+            const name =
+                getProductName(item);
+
+
+            const unitPrice =
+                getCartItemUnitPrice(item);
+
+
+            const lineTotal =
+                getCartItemTotal(item);
+
+
+            const shipping =
+                getCartItemShipping(item);
+
+
+            const configurationHtml =
+                getConfigurationHtml(
+                    item
+                );
+
+
+            return `
+
+                <div
+                    class="cart-item-card"
+                    data-cart-key="${escapeAttribute(key)}"
+                >
+
+                    <div class="cart-item-main">
+
+
+                        <div class="cart-item-image-wrap">
+
+                            ${
+                                image
+                                    ? `
+
+                                <img
+                                    class="cart-item-image"
+                                    src="${escapeAttribute(image)}"
+                                    alt="${escapeAttribute(name)}"
+                                    loading="lazy"
+                                >
+
+                            `
+                                    : `
+
+                                <div class="cart-item-image-placeholder">
+
+                                    <i class="fa-solid fa-image"></i>
+
+                                </div>
+
+                            `
+                            }
+
+                        </div>
+
+
+                        <div class="cart-item-info">
+
+
+                            <div class="cart-item-name-row">
+
+                                <h3 class="cart-item-name">
+
+                                    ${escapeHtml(name)}
+
+                                </h3>
+
+
+                                <button
+                                    type="button"
+                                    class="cart-remove-button"
+                                    data-action="remove"
+                                    data-key="${escapeAttribute(key)}"
+                                    aria-label="Remove ${escapeAttribute(name)}"
+                                >
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            <div class="cart-item-price">
+
+                                ₹${formatMoney(unitPrice)}
+
+                            </div>
+
+
+                            <div class="cart-item-configuration">
+
+                                ${configurationHtml}
+
+                            </div>
+
+
+                            <div class="cart-item-bottom-row">
+
+
+                                <div class="cart-quantity-control">
+
+
+                                    <button
+                                        type="button"
+                                        class="cart-quantity-button"
+                                        data-action="decrease"
+                                        data-key="${escapeAttribute(key)}"
+                                        aria-label="Decrease quantity"
+                                    >
+                                        −
+                                    </button>
+
+
+                                    <span class="cart-quantity-value">
+
+                                        ${quantity}
+
+                                    </span>
+
+
+                                    <button
+                                        type="button"
+                                        class="cart-quantity-button"
+                                        data-action="increase"
+                                        data-key="${escapeAttribute(key)}"
+                                        aria-label="Increase quantity"
+                                    >
+                                        +
+                                    </button>
+
+
+                                </div>
+
+
+                                <strong class="cart-item-total">
+
+                                    ₹${formatMoney(lineTotal)}
+
+                                </strong>
+
+
+                            </div>
+
+
+                            <div class="cart-item-shipping">
+
+                                ${
+                                    shipping <= 0
+                                        ? "Free Shipping"
+                                        : `Shipping: ₹${formatMoney(shipping)}`
+                                }
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+        })
+        .join("");
+
+
+    cartSubtotalElement.textContent =
+        `₹${formatMoney(
+            totals.subtotal
+        )}`;
+
+
+    cartShippingElement.textContent =
+        totals.shipping <= 0
+            ? "FREE"
+            : `₹${formatMoney(
+                totals.shipping
+            )}`;
+
+
+    cartTotalElement.textContent =
+        `₹${formatMoney(
+            totals.total
+        )}`;
 }
 
 
 /* ============================================================
-   HANDLE CART ACTION
+   CART ACTIONS
    ============================================================ */
 
 function handleCartAction(event) {
 
     const button =
-        event.currentTarget;
+        event.target.closest(
+            "[data-action]"
+        );
+
+
+    if (!button) {
+        return;
+    }
 
 
     const action =
         button.dataset.action;
 
+    const key =
+        button.dataset.key;
 
-    const cartKey =
-        button.dataset.cartKey;
 
-
-    if (!cartKey) {
-
+    if (!key) {
         return;
-
     }
 
 
-    const items =
-        getCart();
-
-
     const item =
-        items.find(
-            current =>
+        getCartItems().find(
+            cartItem =>
                 String(
-                    current.cartItemKey ||
-                    current.id ||
+                    cartItem?.cartItemKey ||
+                    cartItem?.id ||
                     ""
                 ) ===
-                String(cartKey)
+                String(key)
         );
 
 
     if (!item) {
-
         return;
-
     }
 
 
-    const quantity =
-        getCartItemQuantity(
-            item
+    const currentQuantity =
+        Math.max(
+            1,
+            Number(
+                item.quantity || 1
+            )
         );
 
 
-    if (
-        action === "increase"
-    ) {
+    if (action === "increase") {
 
         setCartItemQuantity(
-            cartKey,
-            quantity + 1
+            key,
+            currentQuantity + 1
         );
-
     }
 
 
-    if (
-        action === "decrease"
-    ) {
+    if (action === "decrease") {
 
-        setCartItemQuantity(
-            cartKey,
-            quantity - 1
-        );
+        if (currentQuantity <= 1) {
 
+            removeCartItem(
+                key
+            );
+
+        } else {
+
+            setCartItemQuantity(
+                key,
+                currentQuantity - 1
+            );
+        }
     }
 
 
-    if (
-        action === "remove"
-    ) {
+    if (action === "remove") {
 
         removeCartItem(
-            cartKey
+            key
         );
-
     }
 
 
-    /*
-       Re-render.
-
-       Product data is already cached,
-       so this does not repeatedly fetch
-       Firestore for the same product.
-    */
-
     renderCartSidebar();
-
 }
 
 
 /* ============================================================
-   OPEN CART SIDEBAR
+   OPEN / CLOSE
    ============================================================ */
 
 function openCartSidebar() {
 
     createCartSidebar();
 
-
     renderCartSidebar();
-
-
-    const overlay =
-        document.getElementById(
-            "cartSidebarOverlay"
-        );
-
-
-    if (!overlay) {
-
-        return;
-
-    }
-
-
-    overlay.classList.add(
-        "open"
-    );
 
 
     document.body.classList.add(
         "cart-sidebar-open"
     );
 
-}
+
+    cartOverlay?.classList.add(
+        "show"
+    );
 
 
-/* ============================================================
-   CLOSE CART SIDEBAR
-   ============================================================ */
-
-function closeCartSidebar() {
-
-    const overlay =
-        document.getElementById(
-            "cartSidebarOverlay"
-        );
-
-
-    if (!overlay) {
-
-        return;
-
-    }
-
-
-    overlay.classList.remove(
+    cartSidebar?.classList.add(
         "open"
     );
 
+
+    cartSidebar?.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+}
+
+
+function closeCartSidebar() {
 
     document.body.classList.remove(
         "cart-sidebar-open"
     );
 
+
+    cartOverlay?.classList.remove(
+        "show"
+    );
+
+
+    cartSidebar?.classList.remove(
+        "open"
+    );
+
+
+    cartSidebar?.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 }
 
 
 /* ============================================================
-   CONNECT CART BUTTON
+   CART BUTTON
    ============================================================ */
 
 function connectCartButton() {
 
-    const cartButton =
+    const button =
         document.getElementById(
             "cartButton"
         );
 
 
-    if (!cartButton) {
-
-        return;
-
-    }
-
-
-    /*
-       Prevent the old href="cart.html"
-       from navigating away.
-    */
-
     if (
-        cartButton.dataset.cartSidebarConnected ===
-        "true"
+        !button ||
+        button.dataset.cartSidebarConnected === "true"
     ) {
-
         return;
-
     }
 
 
-    cartButton.dataset.cartSidebarConnected =
+    button.dataset.cartSidebarConnected =
         "true";
 
 
-    cartButton.addEventListener(
+    button.addEventListener(
         "click",
         event => {
 
@@ -2511,15 +1258,150 @@ function connectCartButton() {
 
         }
     );
-
 }
 
 
 /* ============================================================
-   CREATE CUSTOMER DETAILS FORM
+   SITE SETTINGS
    ============================================================ */
 
-function createWhatsAppCustomerForm() {
+async function loadSiteSettings() {
+
+    try {
+
+        const snapshot =
+            await getDoc(
+                doc(
+                    db,
+                    "settings",
+                    "general"
+                )
+            );
+
+
+        if (snapshot.exists()) {
+
+            siteSettings = {
+
+                ...siteSettings,
+
+                ...snapshot.data()
+
+            };
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Cart site settings error:",
+            error
+        );
+    }
+
+
+    window.siteSettings =
+        siteSettings;
+
+
+    return siteSettings;
+}
+
+
+/* ============================================================
+   ORDER NUMBER
+
+   Uses a transaction so concurrent customers do not receive
+   the same order number.
+   ============================================================ */
+
+async function generateOrderNumber() {
+
+    const prefix =
+        String(
+            siteSettings.orderPrefix ||
+            "IG"
+        )
+            .trim()
+            .replace(
+                /\s+/g,
+                ""
+            )
+            .toUpperCase();
+
+
+    if (!prefix) {
+
+        throw new Error(
+            "Order prefix is not configured in Site Settings."
+        );
+    }
+
+
+    const counterRef =
+        doc(
+            db,
+            "counters",
+            "orders"
+        );
+
+
+    const nextNumber =
+        await runTransaction(
+            db,
+            async transaction => {
+
+                const snapshot =
+                    await transaction.get(
+                        counterRef
+                    );
+
+
+                let current =
+                    1000;
+
+
+                if (
+                    snapshot.exists()
+                ) {
+
+                    current =
+                        Number(
+                            snapshot.data()
+                                ?.current ||
+                            1000
+                        );
+                }
+
+
+                const next =
+                    current + 1;
+
+
+                transaction.set(
+                    counterRef,
+                    {
+                        current: next
+                    },
+                    {
+                        merge: true
+                    }
+                );
+
+
+                return next;
+            }
+        );
+
+
+    return `${prefix}-${nextNumber}`;
+}
+
+
+/* ============================================================
+   WHATSAPP FORM
+   ============================================================ */
+
+function createCartWhatsAppForm() {
 
     if (
         document.getElementById(
@@ -2527,29 +1409,33 @@ function createWhatsAppCustomerForm() {
         )
     ) {
 
-        return;
+        cartWhatsAppFormOverlay =
+            document.getElementById(
+                "cartWhatsAppFormOverlay"
+            );
 
+        return;
     }
 
 
-    const overlay =
+    cartWhatsAppFormOverlay =
         document.createElement(
             "div"
         );
 
 
-    overlay.id =
+    cartWhatsAppFormOverlay.id =
         "cartWhatsAppFormOverlay";
 
 
-    overlay.className =
+    cartWhatsAppFormOverlay.className =
         "cart-whatsapp-form-overlay";
 
 
-    overlay.innerHTML = `
+    cartWhatsAppFormOverlay.innerHTML = `
 
         <div
-            class="cart-whatsapp-form"
+            class="cart-whatsapp-form-box"
             role="dialog"
             aria-modal="true"
             aria-labelledby="cartWhatsAppFormTitle"
@@ -2557,22 +1443,16 @@ function createWhatsAppCustomerForm() {
 
             <div class="cart-whatsapp-form-header">
 
-                <div>
+                <h2 id="cartWhatsAppFormTitle">
 
-                    <h3 id="cartWhatsAppFormTitle">
-                        Customer Details
-                    </h3>
+                    Checkout on WhatsApp
 
-                    <p>
-                        Enter your details to place the order on WhatsApp.
-                    </p>
-
-                </div>
+                </h2>
 
 
                 <button
                     type="button"
-                    id="closeCartWhatsAppForm"
+                    id="cartWhatsAppCloseButton"
                     class="cart-whatsapp-close"
                     aria-label="Close"
                 >
@@ -2584,19 +1464,23 @@ function createWhatsAppCustomerForm() {
             </div>
 
 
-            <form id="cartWhatsAppCustomerForm">
+            <form id="cartWhatsAppForm">
 
-                <div class="cart-form-group">
+
+                <div class="cart-form-field">
 
                     <label for="cartCustomerName">
+
                         Name
+                        <span>*</span>
+
                     </label>
 
+
                     <input
-                        type="text"
                         id="cartCustomerName"
-                        name="name"
-                        placeholder="Enter your name"
+                        type="text"
+                        placeholder="Enter Name"
                         autocomplete="name"
                         required
                     >
@@ -2604,37 +1488,43 @@ function createWhatsAppCustomerForm() {
                 </div>
 
 
-                <div class="cart-form-group">
+                <div class="cart-form-field">
 
                     <label for="cartCustomerPhone">
+
                         Mobile Number
+                        <span>*</span>
+
                     </label>
 
+
                     <input
-                        type="tel"
                         id="cartCustomerPhone"
-                        name="phone"
-                        placeholder="10-digit mobile number"
+                        type="tel"
                         inputmode="numeric"
-                        maxlength="10"
+                        placeholder="Enter Mobile Number"
                         autocomplete="tel"
+                        maxlength="10"
                         required
                     >
 
                 </div>
 
 
-                <div class="cart-form-group">
+                <div class="cart-form-field">
 
                     <label for="cartCustomerAddress">
+
                         Address
+                        <span>*</span>
+
                     </label>
+
 
                     <textarea
                         id="cartCustomerAddress"
-                        name="address"
-                        placeholder="Enter complete delivery address"
                         rows="3"
+                        placeholder="Enter Full Address"
                         autocomplete="street-address"
                         required
                     ></textarea>
@@ -2642,20 +1532,22 @@ function createWhatsAppCustomerForm() {
                 </div>
 
 
-                <div class="cart-form-group">
+                <div class="cart-form-field">
 
                     <label for="cartCustomerPincode">
+
                         Pincode
+                        <span>*</span>
+
                     </label>
 
+
                     <input
-                        type="tel"
                         id="cartCustomerPincode"
-                        name="pincode"
-                        placeholder="6-digit pincode"
+                        type="text"
                         inputmode="numeric"
+                        placeholder="Enter 6-digit Pincode"
                         maxlength="6"
-                        autocomplete="postal-code"
                         required
                     >
 
@@ -2676,6 +1568,7 @@ function createWhatsAppCustomerForm() {
 
                 </button>
 
+
             </form>
 
         </div>
@@ -2684,73 +1577,53 @@ function createWhatsAppCustomerForm() {
 
 
     document.body.appendChild(
-        overlay
+        cartWhatsAppFormOverlay
     );
 
 
     document
         .getElementById(
-            "closeCartWhatsAppForm"
+            "cartWhatsAppCloseButton"
         )
         ?.addEventListener(
             "click",
-            closeWhatsAppCustomerForm
+            closeCartWhatsAppForm
         );
 
 
-    overlay.addEventListener(
+    cartWhatsAppFormOverlay.addEventListener(
         "click",
         event => {
 
             if (
                 event.target ===
-                overlay
+                cartWhatsAppFormOverlay
             ) {
 
-                closeWhatsAppCustomerForm();
-
+                closeCartWhatsAppForm();
             }
-
         }
     );
 
 
     document
         .getElementById(
-            "cartWhatsAppCustomerForm"
+            "cartWhatsAppForm"
         )
         ?.addEventListener(
             "submit",
-            submitCartWhatsAppOrder
+            submitCartWhatsAppForm
         );
-
 }
 
 
-/* ============================================================
-   OPEN CUSTOMER FORM
-   ============================================================ */
+function openCartWhatsAppForm() {
 
-function openWhatsAppCustomerForm() {
-
-    createWhatsAppCustomerForm();
+    createCartWhatsAppForm();
 
 
-    const overlay =
-        document.getElementById(
-            "cartWhatsAppFormOverlay"
-        );
-
-
-    if (!overlay) {
-
-        return;
-
-    }
-
-
-    overlay.classList.add(
-        "open"
+    cartWhatsAppFormOverlay?.classList.add(
+        "show"
     );
 
 
@@ -2764,85 +1637,1026 @@ function openWhatsAppCustomerForm() {
                 ?.focus();
 
         },
-        100
+        50
     );
-
 }
 
 
-/* ============================================================
-   CLOSE CUSTOMER FORM
-   ============================================================ */
+function closeCartWhatsAppForm() {
 
-function closeWhatsAppCustomerForm() {
-
-    const overlay =
-        document.getElementById(
-            "cartWhatsAppFormOverlay"
-        );
+    cartWhatsAppFormOverlay?.classList.remove(
+        "show"
+    );
+}
 
 
-    if (!overlay) {
+function checkoutFromCart() {
 
+    if (
+        !getCartItems().length
+    ) {
         return;
-
     }
 
 
-    overlay.classList.remove(
-        "open"
-    );
-
+    openCartWhatsAppForm();
 }
 
 
 /* ============================================================
-   CHECKOUT FROM CART
+   CUSTOMER FORM VALIDATION
    ============================================================ */
 
-async function checkoutFromCart() {
+function getCustomerFormData() {
 
-    const items =
-        getCart();
+    const name =
+        String(
+            document
+                .getElementById(
+                    "cartCustomerName"
+                )
+                ?.value ||
+            ""
+        ).trim();
+
+
+    const phone =
+        String(
+            document
+                .getElementById(
+                    "cartCustomerPhone"
+                )
+                ?.value ||
+            ""
+        ).replace(
+            /\D/g,
+            ""
+        );
+
+
+    const address =
+        String(
+            document
+                .getElementById(
+                    "cartCustomerAddress"
+                )
+                ?.value ||
+            ""
+        ).trim();
+
+
+    const pincode =
+        String(
+            document
+                .getElementById(
+                    "cartCustomerPincode"
+                )
+                ?.value ||
+            ""
+        ).replace(
+            /\D/g,
+            ""
+        );
+
+
+    if (!name) {
+
+        alert(
+            "Please enter your name."
+        );
+
+        return null;
+    }
 
 
     if (
-        !items.length
+        !/^[6-9]\d{9}$/.test(
+            phone
+        )
     ) {
+
+        alert(
+            "Please enter a valid 10-digit mobile number."
+        );
+
+        return null;
+    }
+
+
+    if (!address) {
+
+        alert(
+            "Please enter your address."
+        );
+
+        return null;
+    }
+
+
+    if (
+        !/^\d{6}$/.test(
+            pincode
+        )
+    ) {
+
+        alert(
+            "Please enter a valid 6-digit pincode."
+        );
+
+        return null;
+    }
+
+
+    return {
+        name,
+        phone,
+        address,
+        pincode
+    };
+}
+
+
+/* ============================================================
+   WHATSAPP PRODUCT BLOCK
+   ============================================================ */
+
+function buildWhatsAppProductBlock(
+    item,
+    index
+) {
+
+    const productId =
+        getProductId(item);
+
+
+    const productName =
+        getProductName(item);
+
+
+    const quantity =
+        Math.max(
+            1,
+            Number(
+                item?.quantity || 1
+            )
+        );
+
+
+    const unitPrice =
+        getCartItemUnitPrice(
+            item
+        );
+
+
+    const productTotal =
+        getCartItemTotal(
+            item
+        );
+
+
+    const shipping =
+        getCartItemShipping(
+            item
+        );
+
+
+    const color =
+        getColorValue(item);
+
+
+    const size =
+        getSizeValue(item);
+
+
+    const options =
+        getCustomOptionEntries(
+            item
+        );
+
+
+    const productUrl =
+        productId
+            ? `${window.location.origin}/product?id=${encodeURIComponent(productId)}`
+            : "";
+
+
+    let block =
+        `*${index + 1}. ${productName}*\n`;
+
+
+    block +=
+        `Quantity: ${quantity}\n`;
+
+
+    block +=
+        `Unit Price: ₹${formatMoney(unitPrice)}\n`;
+
+
+    if (color) {
+
+        block +=
+            `Color: ${color}\n`;
+    }
+
+
+    if (size) {
+
+        block +=
+            `Size: ${size}\n`;
+    }
+
+
+    options.forEach(
+        option => {
+
+            block +=
+                `${option.label}: ${option.value}\n`;
+
+
+            if (option.imageLink) {
+
+                block +=
+                    `Image: ${option.imageLink}\n`;
+            }
+        }
+    );
+
+
+    block +=
+        `Shipping: ${
+            shipping <= 0
+                ? "FREE"
+                : `₹${formatMoney(shipping)}`
+        }\n`;
+
+
+    block +=
+        `Product Total: ₹${formatMoney(productTotal)}\n`;
+
+
+    if (productUrl) {
+
+        block +=
+            `Product Link: ${productUrl}\n`;
+    }
+
+
+    return block;
+}
+
+
+/* ============================================================
+   WHATSAPP MESSAGE
+   ============================================================ */
+
+function buildCartWhatsAppMessage(
+    customer,
+    orderNumber,
+    items,
+    totals
+) {
+
+    const companyName =
+        String(
+            siteSettings.companyName ||
+            "Imaginary Gifts"
+        ).trim();
+
+
+    let message =
+        `*NEW ORDER — ${companyName}*\n`;
+
+
+    message +=
+        `*Order No:* ${orderNumber}\n\n`;
+
+
+    message +=
+        `*CUSTOMER DETAILS*\n`;
+
+
+    message +=
+        `Name: ${customer.name}\n`;
+
+
+    message +=
+        `Mobile: ${customer.phone}\n`;
+
+
+    message +=
+        `Address: ${customer.address}\n`;
+
+
+    message +=
+        `Pincode: ${customer.pincode}\n\n`;
+
+
+    message +=
+        `------------------------------\n`;
+
+
+    message +=
+        `*ORDER DETAILS*\n`;
+
+
+    message +=
+        `------------------------------\n\n`;
+
+
+    items.forEach(
+        (item, index) => {
+
+            message +=
+                buildWhatsAppProductBlock(
+                    item,
+                    index
+                );
+
+
+            message +=
+                `\n------------------------------\n\n`;
+        }
+    );
+
+
+    message +=
+        `*PRICE BREAKDOWN*\n`;
+
+
+    message +=
+        `Subtotal: ₹${formatMoney(
+            totals.subtotal
+        )}\n`;
+
+
+    message +=
+        `Shipping: ${
+            totals.shipping <= 0
+                ? "FREE"
+                : `₹${formatMoney(
+                    totals.shipping
+                )}`
+        }\n`;
+
+
+    message +=
+        `*Grand Total: ₹${formatMoney(
+            totals.total
+        )}*\n\n`;
+
+
+    message +=
+        `Please confirm my order. Thank you!`;
+
+
+    return message;
+}
+
+
+/* ============================================================
+   BUILD FIRESTORE ORDER ITEMS
+
+   IMPORTANT:
+   The existing normal checkout stores each item with:
+   productId
+   productName
+   productImage
+   quantity
+   variants
+   customOptions
+   lineSubtotal
+   shipping
+
+   We use the same structure here.
+   ============================================================ */
+
+function buildOrderItems(items) {
+
+    return items.map(
+        item => {
+
+            const product =
+                getProductSnapshot(
+                    item
+                );
+
+
+            const productId =
+                getProductId(item);
+
+
+            const productName =
+                getProductName(item);
+
+
+            const productImage =
+                getCartItemImage(item);
+
+
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        item?.quantity || 1
+                    )
+                );
+
+
+            const lineTotal =
+                getCartItemTotal(
+                    item
+                );
+
+
+            const shipping =
+                getCartItemShipping(
+                    item
+                );
+
+
+            const optionValues =
+                item?.optionValues ||
+                {};
+
+
+            const optionPrices =
+                item?.customOptionPrices ||
+                item?.options ||
+                {};
+
+
+            const imageLinks =
+                item?.imageLinks ||
+                {};
+
+
+            const customOptions =
+                Array.isArray(
+                    product?.customOptions
+                )
+                    ? product.customOptions
+                    : [];
+
+
+            const optionKeys = [
+                ...new Set([
+                    ...Object.keys(
+                        optionValues
+                    ),
+
+                    ...Object.keys(
+                        optionPrices
+                    ),
+
+                    ...Object.keys(
+                        imageLinks
+                    )
+                ])
+            ];
+
+
+            const normalizedCustomOptions =
+                optionKeys
+                    .map(
+                        key => {
+
+                            const index =
+                                Number(
+                                    key
+                                );
+
+
+                            const option =
+                                Number.isInteger(
+                                    index
+                                )
+                                    ? customOptions[
+                                        index
+                                    ]
+                                    : null;
+
+
+                            let value =
+                                optionValues[
+                                    key
+                                ];
+
+
+                            if (
+                                value ===
+                                    undefined ||
+                                value ===
+                                    null ||
+                                value ===
+                                    ""
+                            ) {
+
+                                value =
+                                    optionPrices[
+                                        key
+                                    ];
+                            }
+
+
+                            if (
+                                value &&
+                                typeof value ===
+                                    "object"
+                            ) {
+
+                                value =
+                                    value.name ??
+                                    value.value ??
+                                    value.label ??
+                                    "";
+                            }
+
+
+                            value =
+                                String(
+                                    value ??
+                                    ""
+                                ).trim();
+
+
+                            const image =
+                                imageLinks[
+                                    key
+                                ] ||
+                                null;
+
+
+                            if (
+                                !value &&
+                                !image
+                            ) {
+
+                                return null;
+                            }
+
+
+                            return {
+
+                                label:
+                                    String(
+                                        option?.label ||
+                                        `Option ${
+                                            Number.isInteger(
+                                                index
+                                            )
+                                                ? index + 1
+                                                : key
+                                        }`
+                                    ).trim(),
+
+                                value:
+                                    value ||
+                                    "Selected",
+
+                                image
+
+                            };
+                        }
+                    )
+                    .filter(
+                        Boolean
+                    );
+
+
+            return {
+
+                cartItemKey:
+                    item?.cartItemKey ||
+                    null,
+
+
+                productId:
+                    productId ||
+                    null,
+
+
+                productName:
+                    productName ||
+                    "",
+
+
+                productImage:
+                    productImage ||
+                    "",
+
+
+                categoryId:
+                    product?.categoryId ||
+                    null,
+
+
+                tags:
+                    Array.isArray(
+                        product?.tags
+                    )
+                        ? product.tags
+                        : [],
+
+
+                quantity,
+
+
+                unitPrice:
+                    getCartItemUnitPrice(
+                        item
+                    ),
+
+
+                /*
+                   IMPORTANT:
+                   Normal checkout calls this
+                   lineSubtotal.
+                */
+
+                lineSubtotal:
+                    Number(
+                        lineTotal
+                    ),
+
+
+                /*
+                   Keep lineTotal too.
+                */
+
+                lineTotal:
+                    Number(
+                        lineTotal
+                    ),
+
+
+                variants: {
+
+                    color:
+                        item?.color ||
+                        null,
+
+                    size:
+                        item?.size ||
+                        null
+
+                },
+
+
+                /*
+                   IMPORTANT:
+                   Admin expects an ARRAY here,
+                   not the raw options object.
+                */
+
+                customOptions:
+                    normalizedCustomOptions,
+
+
+                /*
+                   Preserve raw cart configuration.
+                */
+
+                options:
+                    item?.options ||
+                    {},
+
+
+                optionValues,
+
+
+                customOptionPrices:
+                    item?.customOptionPrices ||
+                    Object.values(
+                        item?.options ||
+                        {}
+                    ),
+
+
+                imageLinks,
+
+
+                shipping:
+                    Number(
+                        shipping
+                    ),
+
+
+                productLink:
+                    productId
+
+                        ? `${window.location.origin}/product?id=${encodeURIComponent(productId)}`
+
+                        : ""
+
+            };
+        }
+    );
+}
+
+
+/* ============================================================
+   SAVE CART ORDER
+
+   This is the main fix for the admin Orders page.
+   ============================================================ */
+
+async function saveCartOrder(
+    customer,
+    orderNumber,
+    items,
+    totals
+) {
+
+    const orderItems =
+        buildOrderItems(
+            items
+        );
+
+
+    /*
+       The existing admin Order Details page
+       still reads the old top-level product fields.
+
+       Therefore we populate them from the
+       first cart item.
+
+       The complete cart is still stored
+       inside order.items.
+    */
+
+    const firstItem =
+        orderItems[0] ||
+        null;
+
+
+    const orderData = {
+
+        orderNumber,
+
+
+        /* ====================================================
+           CUSTOMER
+           ==================================================== */
+
+        customer: {
+
+            name:
+                customer.name,
+
+            phone:
+                customer.phone,
+
+            address:
+                customer.address,
+
+            pincode:
+                customer.pincode
+
+        },
+
+
+        /* ====================================================
+           LEGACY / ADMIN TOP-LEVEL FIELDS
+           ==================================================== */
+
+        productId:
+            firstItem?.productId ||
+            null,
+
+
+        productName:
+            firstItem?.productName ||
+            "",
+
+
+        productImage:
+            firstItem?.productImage ||
+            "",
+
+
+        categoryId:
+            firstItem?.categoryId ||
+            null,
+
+
+        tags:
+            Array.isArray(
+                firstItem?.tags
+            )
+                ? firstItem.tags
+                : [],
+
+
+        variants:
+            firstItem?.variants ||
+            {
+                color: null,
+                size: null
+            },
+
+
+        customOptions:
+            firstItem?.customOptions ||
+            [],
+
+
+        productLink:
+            firstItem?.productLink ||
+            "",
+
+
+        /* ====================================================
+           COMPLETE CART
+           ==================================================== */
+
+        items:
+            orderItems,
+
+
+        /* ====================================================
+           PRICING
+           ==================================================== */
+
+        pricing: {
+
+            subTotal:
+                Number(
+                    totals.subtotal
+                ),
+
+            /*
+               Keep lowercase alias too.
+            */
+
+            subtotal:
+                Number(
+                    totals.subtotal
+                ),
+
+
+            shipping:
+                Number(
+                    totals.shipping
+                ),
+
+
+            finalAmount:
+                Number(
+                    totals.total
+                ),
+
+
+            totalAmount:
+                Number(
+                    totals.total
+                )
+
+        },
+
+
+        /* ====================================================
+           PAYMENT
+           ==================================================== */
+
+        payment: {
+
+            mode:
+                "whatsapp",
+
+            status:
+                "pending",
+
+            paymentId:
+                null,
+
+            paidAmount:
+                0,
+
+            balanceAmount:
+                Number(
+                    totals.total
+                )
+
+        },
+
+
+        /* ====================================================
+           ORDER META
+           ==================================================== */
+
+        orderStatus:
+            "pending",
+
+
+        source:
+            "cart-whatsapp",
+
+
+        companyName:
+            siteSettings.companyName ||
+            "Imaginary Gifts",
+
+
+        orderPrefix:
+            siteSettings.orderPrefix ||
+            "IG",
+
+
+        createdAt:
+            Date.now()
+
+    };
+
+
+    const orderRef =
+        await addDoc(
+            collection(
+                db,
+                "orders"
+            ),
+            orderData
+        );
+
+
+    return orderRef.id;
+}
+
+
+/* ============================================================
+   SUBMIT WHATSAPP CHECKOUT
+   ============================================================ */
+
+async function submitCartWhatsAppForm(
+    event
+) {
+
+    event.preventDefault();
+
+
+    const customer =
+        getCustomerFormData();
+
+
+    if (!customer) {
+        return;
+    }
+
+
+    const items =
+        getCartItems();
+
+
+    if (!items.length) {
+
+        closeCartWhatsAppForm();
+
+        renderCartSidebar();
 
         alert(
             "Your cart is empty."
         );
 
         return;
-
     }
 
 
-    /*
-       Reload settings before deciding
-       which checkout mode to use.
-    */
-
-    await loadSiteSettings();
+    const submitButton =
+        document.getElementById(
+            "cartWhatsAppSubmitButton"
+        );
 
 
-    const orderButton =
-        String(
-            siteSettings.orderButton ||
-            "buyNow"
-        )
-            .trim()
-            .toLowerCase();
+    if (submitButton) {
+
+        submitButton.disabled =
+            true;
 
 
-    /*
-       WHATSAPP CHECKOUT
-    */
+        submitButton.innerHTML = `
 
-    if (
-        orderButton === "whatsapp"
-    ) {
+            <span>
+                Creating Order...
+            </span>
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+        `;
+    }
+
+
+    try {
+
+        /*
+           Load latest settings first.
+        */
+
+        await loadSiteSettings();
+
+
+        /*
+           Validate WhatsApp before creating
+           the Firestore order.
+        */
 
         const whatsappNumber =
             String(
@@ -2854,255 +2668,13 @@ async function checkoutFromCart() {
             );
 
 
-        if (
-            !whatsappNumber
-        ) {
+        if (!whatsappNumber) {
 
-            alert(
+            throw new Error(
                 "WhatsApp number is not configured in Site Settings."
             );
-
-            return;
-
         }
 
-
-        openWhatsAppCustomerForm();
-
-        return;
-
-    }
-
-
-    /*
-       NORMAL BUY NOW CHECKOUT
-    */
-
-    const checkoutData = {
-
-        cart:
-            items,
-
-        items:
-            items,
-
-        site: {
-
-            companyName:
-                siteSettings.companyName ||
-                "",
-
-            email:
-                siteSettings.email ||
-                "",
-
-            logoUrl:
-                siteSettings.logoUrl ||
-                "",
-
-            razorpayKeyId:
-                siteSettings.razorpayKeyId ||
-                ""
-
-        }
-
-    };
-
-
-    localStorage.setItem(
-        "checkoutData",
-        JSON.stringify(
-            checkoutData
-        )
-    );
-
-
-    location.href =
-        CHECKOUT_PAGE;
-
-}
-
-
-/* ============================================================
-   SUBMIT CART WHATSAPP ORDER
-   ============================================================ */
-
-async function submitCartWhatsAppOrder(
-    event
-) {
-
-    event.preventDefault();
-
-
-    const name =
-        document
-            .getElementById(
-                "cartCustomerName"
-            )
-            ?.value
-            .trim();
-
-
-    const phone =
-        document
-            .getElementById(
-                "cartCustomerPhone"
-            )
-            ?.value
-            .trim();
-
-
-    const address =
-        document
-            .getElementById(
-                "cartCustomerAddress"
-            )
-            ?.value
-            .trim();
-
-
-    const pincode =
-        document
-            .getElementById(
-                "cartCustomerPincode"
-            )
-            ?.value
-            .trim();
-
-
-    /*
-       BASIC VALIDATION
-    */
-
-    if (
-        !name ||
-        !phone ||
-        !address ||
-        !pincode
-    ) {
-
-        alert(
-            "⚠ Please fill all customer details."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !/^[6-9]\d{9}$/.test(
-            phone
-        )
-    ) {
-
-        alert(
-            "⚠ Enter a valid 10-digit mobile number."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !/^\d{6}$/.test(
-            pincode
-        )
-    ) {
-
-        alert(
-            "⚠ Enter a valid 6-digit pincode."
-        );
-
-        return;
-
-    }
-
-
-    const whatsappNumber =
-        String(
-            siteSettings.whatsapp ||
-            ""
-        ).replace(
-            /\D/g,
-            ""
-        );
-
-
-    if (
-        !whatsappNumber
-    ) {
-
-        alert(
-            "WhatsApp number is not configured in Site Settings."
-        );
-
-        return;
-
-    }
-
-
-    const items =
-        getCart();
-
-
-    if (
-        !items.length
-    ) {
-
-        alert(
-            "Your cart is empty."
-        );
-
-        closeWhatsAppCustomerForm();
-
-        renderCartSidebar();
-
-        return;
-
-    }
-
-
-    const submitButton =
-        document.getElementById(
-            "cartWhatsAppSubmitButton"
-        );
-
-
-    if (
-        submitButton
-    ) {
-
-        submitButton.disabled =
-            true;
-
-
-        submitButton.innerHTML = `
-            <span>
-                Creating Order...
-            </span>
-
-            <i class="fa-solid fa-spinner fa-spin"></i>
-        `;
-
-    }
-
-
-    try {
-
-        /* =====================================================
-           MAKE SURE CURRENT FIRESTORE PRODUCTS ARE LOADED
-           ===================================================== */
-
-        await loadCartProducts(
-            items
-        );
-
-
-        /* =====================================================
-           TOTALS
-           ===================================================== */
 
         const totals =
             calculateCartTotals(
@@ -3110,525 +2682,48 @@ async function submitCartWhatsAppOrder(
             );
 
 
-        /* =====================================================
-           ORDER NUMBER
-
-           Transaction prevents duplicate order numbers
-           when two customers checkout at the same time.
-           ===================================================== */
-
-        const counterRef =
-            doc(
-                db,
-                "counters",
-                "orders"
-            );
-
-
-        const nextNumber =
-            await runTransaction(
-                db,
-                async transaction => {
-
-                    const counterSnap =
-                        await transaction.get(
-                            counterRef
-                        );
-
-
-                    let current =
-                        1000;
-
-
-                    if (
-                        counterSnap.exists()
-                    ) {
-
-                        current =
-                            Number(
-                                counterSnap.data()?.current ||
-                                1000
-                            );
-
-                    }
-
-
-                    const next =
-                        current + 1;
-
-
-                    transaction.set(
-                        counterRef,
-                        {
-                            current:
-                                next
-                        },
-                        {
-                            merge:
-                                true
-                        }
-                    );
-
-
-                    return next;
-
-                }
-            );
-
-
-        /* =====================================================
-           ORDER PREFIX
-           ===================================================== */
-
-        const prefix =
-            String(
-                siteSettings.orderPrefix ||
-                "IG"
-            )
-                .replace(
-                    /\s+/g,
-                    ""
-                )
-                .toUpperCase();
-
+        /*
+           Generate unique order number.
+        */
 
         const orderNumber =
-            `${prefix}-${nextNumber}`;
-
-
-        /* =====================================================
-           BUILD ORDER ITEMS
-           ===================================================== */
-
-        const orderItems =
-            items.map(
-                item => {
-
-                    /*
-                       IMPORTANT:
-
-                       getCartItemProduct()
-                       now returns the latest Firestore
-                       product because it was loaded above.
-                    */
-
-                    const product =
-                        getCartItemProduct(
-                            item
-                        );
-
-
-                    const quantity =
-                        getCartItemQuantity(
-                            item
-                        );
-
-
-                    const unitPrice =
-                        getCartItemUnitPrice(
-                            item
-                        );
-
-
-                    const lineTotal =
-                        getCartItemTotal(
-                            item
-                        );
-
-
-                    const shipping =
-                        getCartItemShipping(
-                            item
-                        );
-
-
-                    const options =
-                        getCartItemOptions(
-                            item
-                        );
-
-
-                    return {
-
-                        productId:
-                            getCartItemProductId(
-                                item
-                            ),
-
-                        productName:
-                            getCartItemProductName(
-                                item
-                            ),
-
-                        productImage:
-                            getCartItemImage(
-                                item
-                            ),
-
-                        productLink:
-                            getProductLink(
-                                item
-                            ),
-
-                        categoryId:
-                            product?.categoryId ||
-                            null,
-
-                        tags:
-                            Array.isArray(
-                                product?.tags
-                            )
-                                ? product.tags
-                                : [],
-
-                        quantity,
-
-                        unitPrice,
-
-                        lineTotal,
-
-                        shipping,
-
-                        color:
-                            getCartItemColor(
-                                item
-                            ) || null,
-
-                        size:
-                            getCartItemSize(
-                                item
-                            ) || null,
-
-                        options:
-                            options.map(
-                                option => ({
-
-                                    label:
-                                        option.label,
-
-                                    value:
-                                        option.value,
-
-                                    image:
-                                        option.image ||
-                                        null
-
-                                })
-                            ),
-
-                        cartItemKey:
-                            item.cartItemKey ||
-                            item.id ||
-                            null
-
-                    };
-
-                }
-            );
-
-
-        /* =====================================================
-           SAVE ORDER TO FIRESTORE
-           ===================================================== */
-
-        const orderData = {
-
-            orderNumber,
-
-
-            customer: {
-
-                name,
-
-                phone,
-
-                address,
-
-                pincode
-
-            },
-
-
-            items:
-                orderItems,
-
-
-            pricing: {
-
-                subtotal:
-                    Number(
-                        totals.subtotal
-                    ),
-
-                shipping:
-                    Number(
-                        totals.shipping
-                    ),
-
-                finalAmount:
-                    Number(
-                        totals.total
-                    )
-
-            },
-
-
-            payment: {
-
-                mode:
-                    "whatsapp",
-
-                status:
-                    "pending",
-
-                paidAmount:
-                    0
-
-            },
-
-
-            orderStatus:
-                "pending",
-
-
-            /*
-               Kept in Firestore for your
-               admin/order-management system.
-
-               It is NOT sent in WhatsApp.
-            */
-
-            source:
-                "cart-whatsapp",
-
-
-            companyName:
-                siteSettings.companyName ||
-                "Imaginary Gifts",
-
-
-            createdAt:
-                Date.now()
-
-        };
-
-
-        await addDoc(
-            collection(
-                db,
-                "orders"
-            ),
-            orderData
-        );
-
-
-        /* =====================================================
-           WHATSAPP MESSAGE
-           ===================================================== */
-
-        const companyName =
-            siteSettings.companyName ||
-            "Imaginary Gifts";
+            await generateOrderNumber();
 
 
         /*
-           Clean professional message.
-
-           IMPORTANT:
-           - NO Order ID
-           - NO Order Source
+           Save corrected order structure.
         */
 
-        let message =
-            `🛍️ *NEW ORDER — ${companyName}*\n\n`;
+        await saveCartOrder(
 
+            customer,
 
-        message +=
-            `🧾 *Order No:* ${orderNumber}\n\n`;
+            orderNumber,
 
+            items,
 
-        /* =====================================================
-           CUSTOMER DETAILS
-           ===================================================== */
+            totals
 
-        message +=
-            `👤 *CUSTOMER DETAILS*\n`;
-
-        message +=
-            `━━━━━━━━━━━━━━━━━━\n`;
-
-        message +=
-            `Name: ${name}\n`;
-
-        message +=
-            `Mobile: ${phone}\n`;
-
-        message +=
-            `Address: ${address}\n`;
-
-        message +=
-            `Pincode: ${pincode}\n\n`;
-
-
-        /* =====================================================
-           ORDER DETAILS
-           ===================================================== */
-
-        message +=
-            `📦 *ORDER DETAILS*\n`;
-
-        message +=
-            `━━━━━━━━━━━━━━━━━━\n\n`;
-
-
-        orderItems.forEach(
-            (
-                item,
-                index
-            ) => {
-
-                message +=
-                    `*${index + 1}. ${item.productName}*\n`;
-
-
-                message +=
-                    `Quantity: ${item.quantity}\n`;
-
-
-                message +=
-                    `Unit Price: ₹${formatMoney(
-                        item.unitPrice
-                    )}\n`;
-
-
-                /* COLOR */
-
-                if (
-                    item.color
-                ) {
-
-                    message +=
-                        `Color: ${item.color}\n`;
-
-                }
-
-
-                /* SIZE */
-
-                if (
-                    item.size
-                ) {
-
-                    message +=
-                        `Size: ${item.size}\n`;
-
-                }
-
-
-                /* CUSTOM OPTIONS */
-
-                if (
-                    Array.isArray(
-                        item.options
-                    ) &&
-                    item.options.length
-                ) {
-
-                    item.options.forEach(
-                        option => {
-
-                            message +=
-                                `${option.label}: ${option.value}\n`;
-
-                        }
-                    );
-
-                }
-
-
-                /* SHIPPING */
-
-                message +=
-                    `Shipping: ${
-                        item.shipping > 0
-                            ? `₹${formatMoney(
-                                item.shipping
-                            )}`
-                            : "FREE"
-                    }\n`;
-
-
-                /* PRODUCT TOTAL */
-
-                message +=
-                    `Product Total: ₹${formatMoney(
-                        item.lineTotal
-                    )}\n`;
-
-
-                /* PRODUCT LINK */
-
-                if (
-                    item.productLink
-                ) {
-
-                    message +=
-                        `Product Link: ${item.productLink}\n`;
-
-                }
-
-
-                message +=
-                    `\n`;
-
-            }
         );
 
 
-        /* =====================================================
-           PRICE BREAKDOWN
-           ===================================================== */
+        /*
+           Build complete WhatsApp message.
+        */
 
-        message +=
-            `💰 *PRICE BREAKDOWN*\n`;
+        const message =
+            buildCartWhatsAppMessage(
 
-        message +=
-            `━━━━━━━━━━━━━━━━━━\n`;
+                customer,
 
+                orderNumber,
 
-        message +=
-            `Subtotal: ₹${formatMoney(
-                totals.subtotal
-            )}\n`;
+                items,
 
+                totals
 
-        message +=
-            `Shipping: ${
-                totals.shipping > 0
-                    ? `₹${formatMoney(
-                        totals.shipping
-                    )}`
-                    : "FREE"
-            }\n`;
+            );
 
-
-        message +=
-            `*GRAND TOTAL: ₹${formatMoney(
-                totals.total
-            )}*\n\n`;
-
-
-        message +=
-            `━━━━━━━━━━━━━━━━━━\n`;
-
-
-        message +=
-            `Please confirm my order. Thank you!`;
-
-
-        /* =====================================================
-           WHATSAPP URL
-           ===================================================== */
 
         const whatsappUrl =
             `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
@@ -3636,93 +2731,77 @@ async function submitCartWhatsAppOrder(
             )}`;
 
 
-        /* =====================================================
-           CLOSE FORM
-           ===================================================== */
+        /*
+           Clear cart ONLY after the Firestore
+           order has successfully been saved.
+        */
 
-        closeWhatsAppCustomerForm();
+        items.forEach(
+            item => {
+
+                const key =
+                    item?.cartItemKey ||
+                    item?.id;
 
 
-        /* =====================================================
-           OPEN WHATSAPP
-           ===================================================== */
+                if (key) {
 
-        window.open(
-            whatsappUrl,
-            "_blank"
+                    removeCartItem(
+                        key
+                    );
+                }
+            }
         );
 
 
-        /* =====================================================
-           RESTORE BUTTON
-           ===================================================== */
+        closeCartWhatsAppForm();
 
-        if (
-            submitButton
-        ) {
+        closeCartSidebar();
 
-            submitButton.disabled =
-                false;
-
-
-            submitButton.innerHTML = `
-                <span>
-                    Continue to WhatsApp
-                </span>
-
-                <i class="fa-brands fa-whatsapp"></i>
-            `;
-
-        }
+        renderCartSidebar();
 
 
         /*
-           DO NOT CLEAR CART.
-
-           Customer can still see the cart after
-           returning from WhatsApp.
+           Open WhatsApp.
         */
 
-        renderCartSidebar();
+        window.location.href =
+            whatsappUrl;
 
     }
     catch (error) {
 
         console.error(
-            "Cart WhatsApp order error:",
+            "Cart WhatsApp checkout failed:",
             error
         );
 
 
-        if (
-            submitButton
-        ) {
+        alert(
+            error?.message ||
+            "Order failed. Please try again."
+        );
+
+    }
+    finally {
+
+        if (submitButton) {
 
             submitButton.disabled =
                 false;
 
 
             submitButton.innerHTML = `
+
                 <span>
                     Continue to WhatsApp
                 </span>
 
                 <i class="fa-brands fa-whatsapp"></i>
+
             `;
-
         }
-
-
-        alert(
-            "Order failed: " +
-            (
-                error?.message ||
-                "Unknown error"
-            )
-        );
-
     }
-
 }
 
 
@@ -3736,29 +2815,14 @@ window.addEventListener(
 
         updateCartCount();
 
-        renderCartSidebar();
-
-    }
-);
-
-
-/* ============================================================
-   STORAGE EVENT
-   ============================================================ */
-
-window.addEventListener(
-    "storage",
-    event => {
 
         if (
-            event.key ===
-            "storeCart"
+            cartSidebar?.classList.contains(
+                "open"
+            )
         ) {
 
-            updateCartCount();
-
             renderCartSidebar();
-
         }
 
     }
@@ -3766,54 +2830,62 @@ window.addEventListener(
 
 
 /* ============================================================
-   ESC KEY
+   ESCAPE KEY
    ============================================================ */
 
-document.addEventListener(
+window.addEventListener(
     "keydown",
     event => {
 
         if (
-            event.key !== "Escape"
+            event.key !==
+            "Escape"
         ) {
 
             return;
-
         }
 
 
-        closeCartSidebar();
+        closeCartWhatsAppForm();
 
-        closeWhatsAppCustomerForm();
+        closeCartSidebar();
 
     }
 );
 
 
 /* ============================================================
-   INITIALIZE
+   INIT
    ============================================================ */
 
-async function initializeCartSidebar() {
-
-    await loadSiteSettings();
+function initCartSidebar() {
 
     createCartSidebar();
 
-    createWhatsAppCustomerForm();
+    createCartWhatsAppForm();
 
     connectCartButton();
 
     updateCartCount();
 
-    renderCartSidebar();
 
+    /*
+       Topbar markup may be inserted shortly
+       after page load.
+    */
+
+    setTimeout(
+        connectCartButton,
+        100
+    );
+
+
+    setTimeout(
+        connectCartButton,
+        500
+    );
 }
 
-
-/* ============================================================
-   INITIALIZE AFTER DOM
-   ============================================================ */
 
 if (
     document.readyState ===
@@ -3821,53 +2893,34 @@ if (
 ) {
 
     document.addEventListener(
+
         "DOMContentLoaded",
-        initializeCartSidebar,
+
+        initCartSidebar,
+
         {
             once: true
         }
+
     );
 
 }
 else {
 
-    initializeCartSidebar();
+    initCartSidebar();
 
 }
 
 
 /* ============================================================
-   GLOBAL FUNCTIONS
+   GLOBAL ACCESS
    ============================================================ */
 
 window.openCartSidebar =
     openCartSidebar;
 
-
 window.closeCartSidebar =
     closeCartSidebar;
 
-
-window.openWhatsAppCustomerForm =
-    openWhatsAppCustomerForm;
-
-
-window.closeWhatsAppCustomerForm =
-    closeWhatsAppCustomerForm;
-
-
-/* ============================================================
-   EXPORTS
-   ============================================================ */
-
-export {
-
-    openCartSidebar,
-
-    closeCartSidebar,
-
-    renderCartSidebar,
-
-    updateCartCount
-
-};
+window.renderCartSidebar =
+    renderCartSidebar;
