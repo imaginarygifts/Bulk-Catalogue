@@ -395,124 +395,137 @@ async function loadCategories(){
     `<option value="">Select category</option>`;
 
 
-  const snap =
-    await getDocs(
-      query(
-        collection(
-          db,
-          "categories"
-        ),
-        orderBy(
-          "order"
+  try{
+
+    const snap =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "categories"
+          ),
+          orderBy(
+            "order"
+          )
         )
-      )
-    );
-
-
-  const categories =
-    [];
-
-
-  snap.forEach(
-    docSnap => {
-
-      categories.push({
-
-        id:
-          docSnap.id,
-
-        ...docSnap.data()
-
-      });
-
-    }
-  );
-
-
-  const mains =
-    categories.filter(
-      c =>
-        !c.parentId
-    );
-
-
-  mains.forEach(
-    main => {
-
-      /*==========================================
-          MAIN CATEGORY
-      ==========================================*/
-
-      const opt =
-        document.createElement(
-          "option"
-        );
-
-
-      opt.value =
-        main.id;
-
-
-      opt.textContent =
-        main.name;
-
-
-      opt.dataset.type =
-        "main";
-
-
-      catSelect.appendChild(
-        opt
       );
 
 
-      /*==========================================
-          SUB CATEGORIES
-      ==========================================*/
-
-      const subs =
-        categories.filter(
-          c =>
-            c.parentId ===
-            main.id
-        );
+    const categories =
+      [];
 
 
-      subs.forEach(
-        sub => {
+    snap.forEach(
+      docSnap => {
 
-          const subOpt =
-            document.createElement(
-              "option"
-            );
+        categories.push({
 
+          id:
+            docSnap.id,
 
-          subOpt.value =
-            sub.id;
+          ...docSnap.data()
 
+        });
 
-          subOpt.textContent =
-            "— " +
-            sub.name;
+      }
+    );
 
 
-          subOpt.dataset.type =
-            "sub";
+    const mains =
+      categories.filter(
+        c =>
+          !c.parentId
+      );
 
 
-          subOpt.dataset.parent =
-            main.id;
+    mains.forEach(
+      main => {
 
+        /*==========================================
+            MAIN CATEGORY
+        ==========================================*/
 
-          catSelect.appendChild(
-            subOpt
+        const opt =
+          document.createElement(
+            "option"
           );
 
-        }
-      );
 
-    }
-  );
+        opt.value =
+          main.id;
+
+
+        opt.textContent =
+          main.name;
+
+
+        opt.dataset.type =
+          "main";
+
+
+        catSelect.appendChild(
+          opt
+        );
+
+
+        /*==========================================
+            SUB CATEGORIES
+        ==========================================*/
+
+        const subs =
+          categories.filter(
+            c =>
+              c.parentId ===
+              main.id
+          );
+
+
+        subs.forEach(
+          sub => {
+
+            const subOpt =
+              document.createElement(
+                "option"
+              );
+
+
+            subOpt.value =
+              sub.id;
+
+
+            subOpt.textContent =
+              "— " +
+              sub.name;
+
+
+            subOpt.dataset.type =
+              "sub";
+
+
+            subOpt.dataset.parent =
+              main.id;
+
+
+            catSelect.appendChild(
+              subOpt
+            );
+
+          }
+        );
+
+      }
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Category loading error:",
+      error
+    );
+
+  }
 
 }
 
@@ -1083,6 +1096,7 @@ window.addSize = () => {
 
 /*==================================================
     RENDER SIZES
+    EDIT + REMOVE + DRAG & DROP
 ==================================================*/
 
 function renderSizes(){
@@ -1120,6 +1134,18 @@ function renderSizes(){
         "size-item";
 
 
+      /*
+        Allow this variant to be dragged.
+      */
+
+      div.draggable =
+        true;
+
+
+      div.dataset.index =
+        index;
+
+
       let shippingText =
         "Common Shipping";
 
@@ -1151,42 +1177,250 @@ function renderSizes(){
 
       div.innerHTML = `
 
-        <strong>
-          ${escapeHtml(
-            size.name
-          )}
-        </strong>
-
-        <span>
-          +₹${Number(
-            size.price ||
-            0
-          )}
-        </span>
-
-        <span>
-          ${
-            size.required
-            ?
-            "Required"
-            :
-            "Optional"
-          }
-        </span>
-
-        <span>
-          ${shippingText}
-        </span>
-
-        <button
-          type="button"
-          class="btn-outline"
-          onclick="removeSize(${index})"
+        <div
+          class="variant-drag-handle"
+          title="Drag to reorder"
         >
-          Remove
-        </button>
+          ☰
+        </div>
+
+        <div class="variant-info">
+
+          <strong>
+            ${escapeHtml(
+              size.name
+            )}
+          </strong>
+
+          <span>
+            +₹${Number(
+              size.price ||
+              0
+            )}
+          </span>
+
+          <span>
+            ${
+              size.required
+              ?
+              "Required"
+              :
+              "Optional"
+            }
+          </span>
+
+          <span>
+            ${shippingText}
+          </span>
+
+        </div>
+
+        <div class="variant-actions">
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="editSize(${index})"
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="removeSize(${index})"
+          >
+            Remove
+          </button>
+
+        </div>
 
       `;
+
+
+      /*============================================
+          DRAG START
+      ============================================*/
+
+      div.addEventListener(
+        "dragstart",
+        event => {
+
+          event.dataTransfer.effectAllowed =
+            "move";
+
+
+          event.dataTransfer.setData(
+            "text/plain",
+            String(index)
+          );
+
+
+          div.classList.add(
+            "dragging"
+          );
+
+        }
+      );
+
+
+      /*============================================
+          DRAG END
+      ============================================*/
+
+      div.addEventListener(
+        "dragend",
+        () => {
+
+          div.classList.remove(
+            "dragging"
+          );
+
+
+          document
+            .querySelectorAll(
+              ".size-item"
+            )
+            .forEach(
+              item => {
+
+                item.classList.remove(
+                  "drag-over"
+                );
+
+              }
+            );
+
+        }
+      );
+
+
+      /*============================================
+          DRAG OVER
+      ============================================*/
+
+      div.addEventListener(
+        "dragover",
+        event => {
+
+          event.preventDefault();
+
+
+          event.dataTransfer.dropEffect =
+            "move";
+
+
+          div.classList.add(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      /*============================================
+          DRAG LEAVE
+      ============================================*/
+
+      div.addEventListener(
+        "dragleave",
+        () => {
+
+          div.classList.remove(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      /*============================================
+          DROP
+      ============================================*/
+
+      div.addEventListener(
+        "drop",
+        event => {
+
+          event.preventDefault();
+
+
+          div.classList.remove(
+            "drag-over"
+          );
+
+
+          const fromIndex =
+            Number(
+              event.dataTransfer.getData(
+                "text/plain"
+              )
+            );
+
+
+          const toIndex =
+            Number(
+              div.dataset.index
+            );
+
+
+          if(
+            Number.isNaN(
+              fromIndex
+            ) ||
+            Number.isNaN(
+              toIndex
+            )
+          ){
+
+            return;
+
+          }
+
+
+          if(
+            fromIndex ===
+            toIndex
+          ){
+
+            return;
+
+          }
+
+
+          /*
+            Take the dragged size
+            out of the array.
+          */
+
+          const movedSize =
+            sizes.splice(
+              fromIndex,
+              1
+            )[0];
+
+
+          /*
+            Insert it at the
+            new position.
+          */
+
+          sizes.splice(
+            toIndex,
+            0,
+            movedSize
+          );
+
+
+          /*
+            Re-render so the UI
+            shows the new order.
+          */
+
+          renderSizes();
+
+        }
+      );
 
 
       list.appendChild(
@@ -1200,13 +1434,450 @@ function renderSizes(){
 
 
 /*==================================================
+    EDIT SIZE
+==================================================*/
+
+window.editSize =
+  function(index){
+
+    const size =
+      sizes[index];
+
+
+    if(!size){
+
+      return;
+
+    }
+
+
+    const list =
+      document.getElementById(
+        "sizeList"
+      );
+
+
+    if(!list){
+
+      return;
+
+    }
+
+
+    const item =
+      list.children[index];
+
+
+    if(!item){
+
+      return;
+
+    }
+
+
+    /*
+      Disable dragging while editing.
+    */
+
+    item.draggable =
+      false;
+
+
+    item.innerHTML = `
+
+      <div class="variant-edit-box">
+
+        <input
+          type="text"
+          class="edit-size-name"
+          value="${escapeAttribute(
+            size.name
+          )}"
+          placeholder="Size"
+        >
+
+        <input
+          type="number"
+          class="edit-size-price"
+          value="${Number(
+            size.price ||
+            0
+          )}"
+          placeholder="Extra price"
+          min="0"
+        >
+
+        <select
+          class="edit-size-shipping"
+        >
+
+          <option
+            value="common"
+            ${
+              size.shippingMode ===
+              "common"
+              ?
+              "selected"
+              :
+              ""
+            }
+          >
+            Common Shipping
+          </option>
+
+          <option
+            value="free"
+            ${
+              size.shippingMode ===
+              "free"
+              ?
+              "selected"
+              :
+              ""
+            }
+          >
+            Free Shipping
+          </option>
+
+          <option
+            value="paid"
+            ${
+              size.shippingMode ===
+              "paid"
+              ?
+              "selected"
+              :
+              ""
+            }
+          >
+            Paid Shipping
+          </option>
+
+        </select>
+
+        <input
+          type="number"
+          class="edit-size-shipping-amount"
+          value="${
+            size.shippingAmount ??
+            ""
+          }"
+          placeholder="Shipping amount"
+          min="0"
+          ${
+            size.shippingMode !==
+            "paid"
+            ?
+            "style='display:none'"
+            :
+            ""
+          }
+        >
+
+        <label class="edit-required">
+
+          <input
+            type="checkbox"
+            class="edit-size-required"
+            ${
+              size.required
+              ?
+              "checked"
+              :
+              ""
+            }
+          >
+
+          Required
+
+        </label>
+
+        <div class="variant-actions">
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="saveEditedSize(${index})"
+          >
+            Save
+          </button>
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="renderSizes()"
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    /*============================================
+        SHIPPING CHANGE
+    ============================================*/
+
+    const shippingSelect =
+      item.querySelector(
+        ".edit-size-shipping"
+      );
+
+
+    const shippingInput =
+      item.querySelector(
+        ".edit-size-shipping-amount"
+      );
+
+
+    if(
+      shippingSelect &&
+      shippingInput
+    ){
+
+      shippingSelect.addEventListener(
+        "change",
+        () => {
+
+          if(
+            shippingSelect.value ===
+            "paid"
+          ){
+
+            shippingInput.style.display =
+              "block";
+
+          }
+          else{
+
+            shippingInput.style.display =
+              "none";
+
+            shippingInput.value =
+              "";
+
+          }
+
+        }
+      );
+
+    }
+
+  };
+
+
+/*==================================================
+    SAVE EDITED SIZE
+==================================================*/
+
+window.saveEditedSize =
+  function(index){
+
+    const list =
+      document.getElementById(
+        "sizeList"
+      );
+
+
+    if(!list){
+
+      return;
+
+    }
+
+
+    const item =
+      list.children[index];
+
+
+    if(!item){
+
+      return;
+
+    }
+
+
+    const name =
+      item
+        .querySelector(
+          ".edit-size-name"
+        )
+        ?.value
+        .trim();
+
+
+    const price =
+      Number(
+        item
+          .querySelector(
+            ".edit-size-price"
+          )
+          ?.value ||
+        0
+      );
+
+
+    const shippingMode =
+      item
+        .querySelector(
+          ".edit-size-shipping"
+        )
+        ?.value ||
+      "common";
+
+
+    const shippingAmountInput =
+      item
+        .querySelector(
+          ".edit-size-shipping-amount"
+        );
+
+
+    const required =
+      item
+        .querySelector(
+          ".edit-size-required"
+        )
+        ?.checked ||
+      false;
+
+
+    /*============================================
+        VALIDATE NAME
+    ============================================*/
+
+    if(!name){
+
+      showPopup(
+        "⚠ Please enter size."
+      );
+
+
+      setTimeout(
+        hidePopup,
+        1500
+      );
+
+
+      return;
+
+    }
+
+
+    /*============================================
+        SHIPPING
+    ============================================*/
+
+    let shippingAmount =
+      null;
+
+
+    if(
+      shippingMode ===
+      "free"
+    ){
+
+      shippingAmount =
+        0;
+
+    }
+
+
+    if(
+      shippingMode ===
+      "paid"
+    ){
+
+      shippingAmount =
+        Number(
+          shippingAmountInput?.value ||
+          0
+        );
+
+
+      if(
+        shippingAmount <=
+        0
+      ){
+
+        showPopup(
+          "⚠ Please enter shipping amount."
+        );
+
+
+        setTimeout(
+          hidePopup,
+          1800
+        );
+
+
+        return;
+
+      }
+
+    }
+
+
+    /*============================================
+        UPDATE EXISTING VARIANT
+    ============================================*/
+
+    sizes[index] = {
+
+      ...sizes[index],
+
+      name,
+
+      price,
+
+      required,
+
+      shippingMode,
+
+      shippingAmount
+
+    };
+
+
+    /*============================================
+        RENDER UPDATED VARIANT
+    ============================================*/
+
+    renderSizes();
+
+
+    showPopup(
+      "✅ Variant updated"
+    );
+
+
+    setTimeout(
+      hidePopup,
+      1200
+    );
+
+  };
+
+
+/*==================================================
     REMOVE SIZE
 ==================================================*/
 
 window.removeSize =
-  function(
-    index
-  ){
+  function(index){
+
+    if(
+      index < 0 ||
+      index >= sizes.length
+    ){
+
+      return;
+
+    }
+
 
     sizes.splice(
       index,
@@ -1430,38 +2101,51 @@ function renderCustomOptions(){
 
 async function loadDesignProducts(){
 
-  const snap =
-    await getDocs(
-      collection(
-        db,
-        "products"
-      )
+  try{
+
+    const snap =
+      await getDocs(
+        collection(
+          db,
+          "products"
+        )
+      );
+
+
+    allProducts =
+      [];
+
+
+    snap.forEach(
+      docSnap => {
+
+        allProducts.push({
+
+          id:
+            docSnap.id,
+
+          ...docSnap.data()
+
+        });
+
+      }
     );
 
 
-  allProducts =
-    [];
+    renderDesignList(
+      allProducts
+    );
 
+  }
 
-  snap.forEach(
-    docSnap => {
+  catch(error){
 
-      allProducts.push({
+    console.error(
+      "Loading design products error:",
+      error
+    );
 
-        id:
-          docSnap.id,
-
-        ...docSnap.data()
-
-      });
-
-    }
-  );
-
-
-  renderDesignList(
-    allProducts
-  );
+  }
 
 }
 
@@ -1639,68 +2323,81 @@ async function loadTags(){
   }
 
 
-  const snap =
-    await getDocs(
-      collection(
-        db,
-        "tags"
-      )
-    );
+  try{
 
-
-  tagBox.innerHTML =
-    "";
-
-
-  snap.forEach(
-    docSnap => {
-
-      const tag =
-        docSnap.data();
-
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-
-      row.className =
-        "design-item";
-
-
-      row.innerHTML = `
-
-        <input
-          type="checkbox"
-          onchange="
-            toggleTag(
-              '${escapeAttribute(
-                tag.slug
-              )}',
-              this.checked
-            )
-          "
-        >
-
-        <span>
-          ${
-            escapeHtml(
-              tag.name ||
-              ""
-            )
-          }
-        </span>
-
-      `;
-
-
-      tagBox.appendChild(
-        row
+    const snap =
+      await getDocs(
+        collection(
+          db,
+          "tags"
+        )
       );
 
-    }
-  );
+
+    tagBox.innerHTML =
+      "";
+
+
+    snap.forEach(
+      docSnap => {
+
+        const tag =
+          docSnap.data();
+
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.className =
+          "design-item";
+
+
+        row.innerHTML = `
+
+          <input
+            type="checkbox"
+            onchange="
+              toggleTag(
+                '${escapeAttribute(
+                  tag.slug
+                )}',
+                this.checked
+              )
+            "
+          >
+
+          <span>
+            ${
+              escapeHtml(
+                tag.name ||
+                ""
+              )
+            }
+          </span>
+
+        `;
+
+
+        tagBox.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Tags loading error:",
+      error
+    );
+
+  }
 
 }
 
@@ -2569,6 +3266,10 @@ window.saveProduct =
 
             /*======================================
                 VARIANTS
+
+                IMPORTANT:
+                sizes array is already in the
+                user's drag-and-drop order.
             ======================================*/
 
             variants: {
@@ -2713,6 +3414,7 @@ window.saveProduct =
         () => {
 
           hidePopup();
+
 
           location.href =
             "products.html";
