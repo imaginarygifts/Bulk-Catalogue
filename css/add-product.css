@@ -1,0 +1,2005 @@
+/* =========================================================
+   ADD PRODUCT PAGE CSS
+   Separate stylesheet
+   ========================================================= */
+
+:root {
+  --ap-bg: #0b0c10;
+  --ap-panel: #11141c;
+  --ap-panel-2: #161a23;
+  --ap-panel-3: #1a1e28;
+
+  --ap-border: rgba(255,255,255,0.12);
+  --ap-border-soft: rgba(255,255,255,0.07);
+
+  --ap-text: #ffffff;
+  --ap-muted: #9aa0aa;
+
+  --ap-gradient:
+    linear-gradient(
+      135deg,
+      #feda75,
+      #fa7e1e,
+      #d62976,
+      #962fbf,
+      #4f5bd5
+    );
+
+  --ap-radius: 14px;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  background: var(--ap-bg);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(
+      1200px 600px at 10% -10%,
+      #1b1e2b 0%,
+      var(--ap-bg) 60%
+    );
+
+  color: var(--ap-text);
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.topbar {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  background: rgba(255,255,255,0.03);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-bottom:
+    1px solid var(--ap-border);
+
+  position: sticky;
+  top: 0;
+
+  z-index: 100;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.06);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  border-radius: 10px;
+
+  color: #fff;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  flex-shrink: 0;
+}
+
+.back-btn:active {
+  transform: scale(0.95);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PAGE CONTAINER
+   ========================================================= */
+
+.container {
+  width: 100%;
+
+  max-width: 720px;
+
+  margin: 0 auto;
+
+  padding: 16px;
+
+  padding-bottom: 110px;
+}
+
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+.container > label,
+.container label:not(.image-picker) {
+
+  display: block;
+
+  margin-top: 15px;
+  margin-bottom: 6px;
+
+  color: var(--ap-muted);
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   INPUTS / SELECT / TEXTAREA
+   ========================================================= */
+
+.container input:not([type="checkbox"]),
+.container select,
+.container textarea {
+
+  width: 100%;
+
+  display: block;
+
+  padding: 12px 14px;
+
+  margin-top: 6px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.045);
+
+  border:
+    1px solid var(--ap-border);
+
+  color: #fff;
+
+  outline: none;
+
+  font-size: 14px;
+
+  font-family: inherit;
+
+  transition:
+    border-color .2s ease,
+    background .2s ease,
+    box-shadow .2s ease;
+}
+
+.container textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.container input:not([type="checkbox"]):focus,
+.container select:focus,
+.container textarea:focus {
+
+  border-color: #962fbf;
+
+  background: rgba(255,255,255,0.06);
+
+  box-shadow:
+    0 0 0 2px rgba(150,47,191,0.12);
+}
+
+
+/* =========================================================
+   SELECT OPTION
+   ========================================================= */
+
+select option {
+  background: #151922;
+  color: #fff;
+}
+
+
+/* =========================================================
+   NUMBER INPUT
+   ========================================================= */
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.6;
+}
+
+
+/* =========================================================
+   TOP ACTION BUTTONS
+   ========================================================= */
+
+.add-category-btn {
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 9px 14px;
+
+  margin: 12px 0 0 8px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #feda75,
+      #fa7e1e,
+      #d62976,
+      #962fbf
+    );
+
+  color: #fff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
+
+.add-category-btn:active {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
+.container h3 {
+  margin-top: 22px;
+  margin-bottom: 10px;
+
+  font-size: 16px;
+
+  font-weight: 700;
+}
+
+.container h4 {
+  margin-top: 18px;
+  margin-bottom: 10px;
+
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TAG SECTION
+   ========================================================= */
+
+.section {
+  margin-top: 20px;
+}
+
+.tag-box {
+  width: 100%;
+}
+
+.tag-list,
+#tagCheckboxes {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  max-height: 220px;
+
+  overflow-y: auto;
+
+  padding: 10px;
+
+  background: rgba(255,255,255,0.035);
+
+  border:
+    1px solid var(--ap-border-soft);
+
+  border-radius: 12px;
+}
+
+.tag-list::-webkit-scrollbar,
+#tagCheckboxes::-webkit-scrollbar {
+  width: 5px;
+}
+
+.tag-list::-webkit-scrollbar-thumb,
+#tagCheckboxes::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,0.18);
+
+  border-radius: 10px;
+}
+
+
+/* Tag row */
+
+.tag-item,
+#tagCheckboxes .design-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  margin: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255,255,255,0.035);
+}
+
+
+/* =========================================================
+   CHECKBOXES
+   ========================================================= */
+
+.container input[type="checkbox"] {
+
+  width: 18px;
+  height: 18px;
+
+  margin: 0;
+
+  padding: 0;
+
+  flex-shrink: 0;
+
+  accent-color: #962fbf;
+
+  cursor: pointer;
+}
+
+
+/* Checkbox label */
+
+.container label:has(input[type="checkbox"]) {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 10px;
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW
+   ========================================================= */
+
+.image-row {
+
+  display: flex;
+
+  gap: 10px;
+
+  overflow-x: auto;
+
+  padding: 10px 0;
+
+  min-height: 10px;
+
+  scrollbar-width: thin;
+}
+
+.image-row::-webkit-scrollbar {
+  height: 5px;
+}
+
+.image-row::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,0.18);
+
+  border-radius: 10px;
+}
+
+.image-card {
+
+  position: relative;
+
+  flex-shrink: 0;
+}
+
+.image-card img {
+
+  width: 80px;
+  height: 80px;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+
+  display: block;
+}
+
+.image-card span {
+
+  position: absolute;
+
+  top: -6px;
+  right: -6px;
+
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #ff3b3b;
+
+  color: #fff;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   IMAGE PICKER
+   ========================================================= */
+
+.image-picker-group {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-top: 8px;
+}
+
+.image-picker {
+
+  display: block;
+
+  width: 100%;
+
+  margin: 0 !important;
+
+  cursor: pointer;
+}
+
+.image-picker input {
+  display: none !important;
+}
+
+.image-pick-box {
+
+  width: 100%;
+
+  padding: 14px;
+
+  text-align: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  border:
+    1px dashed rgba(255,255,255,0.28);
+
+  color: #ddd;
+
+  font-size: 14px;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.image-pick-box:hover {
+
+  background:
+    rgba(255,255,255,0.08);
+
+  border-color:
+    rgba(255,255,255,0.45);
+}
+
+
+/* =========================================================
+   RELATED DESIGNS
+   ========================================================= */
+
+#relatedDesignsList {
+
+  max-height: 280px;
+
+  overflow-y: auto;
+
+  padding-right: 4px;
+
+  margin-top: 10px;
+}
+
+#relatedDesignsList::-webkit-scrollbar {
+  width: 5px;
+}
+
+#relatedDesignsList::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,0.18);
+
+  border-radius: 10px;
+}
+
+.design-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.design-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255,255,255,0.035);
+}
+
+.design-item img {
+
+  width: 42px;
+  height: 42px;
+
+  object-fit: cover;
+
+  border-radius: 8px;
+
+  flex-shrink: 0;
+}
+
+.design-item span {
+
+  font-size: 13px;
+
+  line-height: 1.3;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.design-item input[type="checkbox"] {
+
+  width: 18px;
+  height: 18px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   ACCORDIONS
+   ========================================================= */
+
+.accordion {
+
+  width: 100%;
+
+  margin-top: 18px;
+
+  padding: 15px 16px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #11141c,
+      #0e1118
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  color: #fff;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.accordion:hover {
+
+  background:
+    linear-gradient(
+      180deg,
+      #171a23,
+      #10131a
+    );
+}
+
+
+/* =========================================================
+   ACCORDION CONTENT
+   ========================================================= */
+
+#shippingSection,
+#variantsSection,
+#customSection {
+
+  width: 100%;
+
+  padding: 16px;
+
+  margin-bottom: 14px;
+
+  background: #0e1118;
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  border-top: none;
+
+  border-radius:
+    0 0 14px 14px;
+}
+
+
+/* =========================================================
+   PAYMENT ACCORDION
+   ========================================================= */
+
+.accordion-body {
+
+  width: 100%;
+
+  padding: 16px;
+
+  background: #0e1118;
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  border-top: none;
+
+  border-radius:
+    0 0 14px 14px;
+}
+
+
+/* =========================================================
+   HIDDEN
+   ========================================================= */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-outline {
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 14px;
+
+  margin-top: 10px;
+
+  border-radius: 11px;
+
+  background: transparent;
+
+  border:
+    1px solid rgba(255,255,255,0.16);
+
+  color: #fff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .15s ease;
+}
+
+.btn-outline:hover {
+
+  background:
+    rgba(255,255,255,0.07);
+
+  border-color:
+    rgba(255,255,255,0.28);
+}
+
+.btn-outline:active {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   SAVE PRODUCT BUTTON
+   ========================================================= */
+
+.btn {
+
+  width: 100%;
+
+  padding: 15px;
+
+  margin-top: 24px;
+
+  border: none;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #feda75,
+      #fa7e1e,
+      #d62976,
+      #962fbf,
+      #4f5bd5
+    );
+
+  color: #fff;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px
+    rgba(214,41,118,0.35);
+
+  transition:
+    transform .15s ease,
+    box-shadow .2s ease;
+}
+
+.btn:active {
+
+  transform: scale(0.98);
+
+  box-shadow:
+    0 5px 15px
+    rgba(214,41,118,0.25);
+}
+
+
+/* =========================================================
+   SHIPPING
+   ========================================================= */
+
+#commonShippingAmountBox small {
+
+  display: block;
+
+  margin-top: 8px;
+
+  color: #777;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+#sizeShippingAmountBox {
+  margin-top: 8px;
+}
+
+
+/* =========================================================
+   VARIANT LIST
+   ========================================================= */
+
+#colorList,
+#sizeList,
+#customList {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+
+/* =========================================================
+   NEW EDITABLE / DRAGGABLE VARIANT LIST
+========================================================= */
+
+.variant-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-top: 12px;
+
+  width: 100%;
+}
+
+
+/* =========================================================
+   VARIANT ITEM
+   ========================================================= */
+
+.variant-item {
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    34px
+    minmax(0, 1fr)
+    auto;
+
+  gap: 10px;
+
+  align-items: center;
+
+  padding: 12px;
+
+  background:
+    #161a23;
+
+  border:
+    1px solid rgba(255,255,255,0.07);
+
+  border-radius: 12px;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    opacity .2s ease,
+    transform .2s ease;
+}
+
+
+/* =========================================================
+   OLD / FALLBACK LIST ITEM
+   ========================================================= */
+
+#colorList > div,
+#sizeList > div,
+#customList > div {
+
+  width: 100%;
+
+  background:
+    #161a23;
+
+  padding: 12px;
+
+  border-radius: 11px;
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  font-size: 13px;
+
+  color: #fff;
+}
+
+
+/* =========================================================
+   DRAG HANDLE
+   ========================================================= */
+
+.variant-drag {
+
+  width: 34px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  color: #888;
+
+  font-size: 20px;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+
+  flex-shrink: 0;
+}
+
+.variant-drag:hover {
+
+  color: #fff;
+
+  background:
+    rgba(255,255,255,0.07);
+}
+
+.variant-drag:active {
+  cursor: grabbing;
+}
+
+
+/* =========================================================
+   VARIANT CONTENT
+   ========================================================= */
+
+.variant-content {
+
+  min-width: 0;
+
+  width: 100%;
+}
+
+.variant-name {
+
+  color: #fff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  line-height: 1.3;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.variant-details {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 5px;
+
+  color: #999;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+.variant-price {
+
+  color: #fff;
+
+  font-weight: 600;
+}
+
+.variant-required {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 3px 7px;
+
+  border-radius: 6px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  color: #ccc;
+
+  font-size: 11px;
+}
+
+.variant-shipping {
+
+  color: #999;
+}
+
+
+/* =========================================================
+   VARIANT ACTIONS
+   ========================================================= */
+
+.variant-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   VARIANT EDIT / DELETE BUTTONS
+   ========================================================= */
+
+.variant-edit-btn,
+.variant-delete-btn {
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  margin: 0;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  border:
+    1px solid rgba(255,255,255,0.12);
+
+  color: #fff;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .15s ease;
+}
+
+.variant-edit-btn:hover {
+
+  background:
+    rgba(255,255,255,0.08);
+
+  border-color:
+    rgba(255,255,255,0.22);
+}
+
+.variant-delete-btn:hover {
+
+  background:
+    rgba(255,59,59,0.12);
+
+  border-color:
+    rgba(255,59,59,0.35);
+}
+
+.variant-edit-btn:active,
+.variant-delete-btn:active {
+
+  transform: scale(0.94);
+}
+
+
+/* =========================================================
+   VARIANT EDIT FORM
+   ========================================================= */
+
+.variant-edit-form {
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(100px, 1fr)
+    100px
+    auto;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+.variant-edit-form input,
+.variant-edit-form select {
+
+  width: 100%;
+
+  min-width: 0;
+
+  margin: 0 !important;
+
+  padding: 9px 10px;
+
+  border-radius: 9px;
+
+  background:
+    #11141b;
+
+  border:
+    1px solid rgba(255,255,255,0.12);
+
+  color: #fff;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+.variant-edit-form input:focus,
+.variant-edit-form select:focus {
+
+  border-color:
+    #962fbf;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(150,47,191,0.1);
+}
+
+
+/* =========================================================
+   EDIT FORM BUTTONS
+   ========================================================= */
+
+.variant-save-btn,
+.variant-cancel-btn {
+
+  height: 36px;
+
+  padding: 0 12px;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  margin: 0;
+}
+
+.variant-save-btn {
+
+  border: none;
+
+  color: #fff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #feda75,
+      #fa7e1e,
+      #d62976,
+      #962fbf
+    );
+}
+
+.variant-cancel-btn {
+
+  background: transparent;
+
+  border:
+    1px solid rgba(255,255,255,0.15);
+
+  color: #fff;
+}
+
+
+/* =========================================================
+   DRAGGING STATE
+   ========================================================= */
+
+.variant-item.dragging {
+
+  opacity: 0.4;
+
+  transform:
+    scale(0.98);
+}
+
+.variant-item.drag-over {
+
+  background:
+    rgba(150,47,191,0.12);
+
+  border-color:
+    rgba(150,47,191,0.7);
+}
+
+
+/* =========================================================
+   EMPTY VARIANT LIST
+   ========================================================= */
+
+.variant-empty {
+
+  width: 100%;
+
+  padding: 14px;
+
+  text-align: center;
+
+  border:
+    1px dashed rgba(255,255,255,0.12);
+
+  border-radius: 10px;
+
+  color: #777;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   CUSTOM OPTIONS
+   ========================================================= */
+
+#customList > div {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+/* =========================================================
+   PAYMENT
+   ========================================================= */
+
+.payment-check {
+
+  padding: 5px 0;
+}
+
+.payment-check label {
+
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin: 5px 0 !important;
+
+  color: #ddd;
+
+  font-size: 14px;
+}
+
+.payment-check input[type="checkbox"] {
+
+  width: 18px;
+
+  height: 18px;
+
+  margin: 0;
+}
+
+
+/* =========================================================
+   PAYMENT ROW
+   ========================================================= */
+
+.row {
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    90px
+    120px;
+
+  gap: 10px;
+
+  align-items: center;
+
+  margin-bottom: 12px;
+}
+
+.row label {
+
+  margin: 0 !important;
+
+  color: #ccc;
+
+  font-size: 13px;
+}
+
+.row input,
+.row select {
+
+  width: 100%;
+
+  margin: 0 !important;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background:
+    #151922;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  color: #fff;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.accordion-body hr,
+#paymentSection hr {
+
+  border: none;
+
+  height: 1px;
+
+  margin: 18px 0;
+
+  background:
+    rgba(255,255,255,0.08);
+}
+
+
+/* =========================================================
+   GALLERY PICKER
+   ========================================================= */
+
+.gallery-picker {
+
+  position: fixed;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100dvh;
+
+  background: #000;
+
+  z-index: 9999;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.gallery-picker.hidden {
+  display: none !important;
+}
+
+
+/* Gallery header */
+
+.gallery-header {
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding: 14px 15px;
+
+  background: #111;
+
+  border-bottom:
+    1px solid #222;
+
+  flex-shrink: 0;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 20;
+}
+
+.gallery-header h3 {
+
+  margin: 0;
+
+  font-size: 16px;
+
+  white-space: nowrap;
+}
+
+.gallery-header button {
+
+  padding: 8px 12px;
+
+  border-radius: 9px;
+
+  border:
+    1px solid rgba(255,255,255,0.15);
+
+  background:
+    rgba(255,255,255,0.06);
+
+  color: #fff;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   GALLERY BREADCRUMBS
+   ========================================================= */
+
+.gallery-breadcrumbs {
+
+  width: 100%;
+
+  padding: 10px 15px;
+
+  background: #111;
+
+  border-bottom:
+    1px solid #222;
+
+  font-size: 13px;
+
+  white-space: nowrap;
+
+  overflow-x: auto;
+
+  flex-shrink: 0;
+}
+
+.gallery-breadcrumbs span {
+
+  color: #aaa;
+
+  cursor: pointer;
+}
+
+.gallery-breadcrumbs span:hover {
+  color: #fff;
+}
+
+
+/* =========================================================
+   GALLERY GRID
+   ========================================================= */
+
+.gallery-picker-grid {
+
+  width: 100%;
+
+  padding: 15px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  align-content: start;
+}
+
+
+/* =========================================================
+   GALLERY IMAGE
+   ========================================================= */
+
+.gallery-img {
+
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  overflow: hidden;
+
+  border-radius: 10px;
+
+  background: #111;
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.gallery-img img {
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+
+/* Gallery checkbox */
+
+.gallery-check {
+
+  position: absolute;
+
+  top: 7px;
+  left: 7px;
+
+  width: 20px !important;
+  height: 20px !important;
+
+  margin: 0 !important;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   GALLERY FOLDER
+   ========================================================= */
+
+.gallery-folder {
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 10px;
+
+  background: #1a1a1a;
+
+  border-radius: 10px;
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  cursor: pointer;
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+.folder-icon {
+
+  font-size: 30px;
+
+  margin-bottom: 6px;
+}
+
+
+/* =========================================================
+   POPUP
+   ========================================================= */
+
+.popup {
+
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(0,0,0,0.72);
+
+  color: #fff;
+
+  font-size: 17px;
+
+  text-align: center;
+
+  z-index: 10000;
+}
+
+.popup.hidden {
+  display: none !important;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+#variantsSection::-webkit-scrollbar,
+#customSection::-webkit-scrollbar,
+#shippingSection::-webkit-scrollbar {
+
+  width: 5px;
+}
+
+#variantsSection::-webkit-scrollbar-thumb,
+#customSection::-webkit-scrollbar-thumb,
+#shippingSection::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,0.15);
+
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .container {
+
+    padding: 14px;
+
+    padding-bottom: 110px;
+  }
+
+
+  /* Top buttons */
+
+  .add-category-btn {
+
+    margin-left: 6px;
+
+    margin-top: 10px;
+
+    padding: 8px 11px;
+
+    font-size: 12px;
+  }
+
+
+  /* Variant row */
+
+  .variant-item {
+
+    grid-template-columns:
+      30px
+      minmax(0, 1fr)
+      auto;
+
+    gap: 8px;
+
+    padding: 10px;
+  }
+
+
+  .variant-drag {
+
+    width: 30px;
+
+    height: 34px;
+
+    font-size: 18px;
+  }
+
+
+  .variant-edit-btn,
+  .variant-delete-btn {
+
+    width: 34px;
+    height: 34px;
+  }
+
+
+  .variant-details {
+
+    gap: 5px;
+
+    font-size: 11px;
+  }
+
+
+  /* Edit form */
+
+  .variant-edit-form {
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      90px;
+  }
+
+
+  .variant-edit-form input:first-child {
+
+    grid-column:
+      1 / -1;
+  }
+
+
+  .variant-edit-form .variant-save-btn,
+  .variant-edit-form .variant-cancel-btn {
+
+    width: 100%;
+  }
+
+
+  /* Payment rows */
+
+  .row {
+
+    grid-template-columns:
+      1fr 70px 90px;
+
+    gap: 7px;
+  }
+
+
+  .row label {
+
+    font-size: 12px;
+  }
+
+
+  /* Gallery */
+
+  .gallery-picker-grid {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+
+    padding: 10px;
+  }
+
+
+  .gallery-header {
+
+    padding: 12px 10px;
+  }
+
+
+  .gallery-header h3 {
+
+    font-size: 14px;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .container {
+
+    padding: 12px;
+
+    padding-bottom: 105px;
+  }
+
+
+  .topbar {
+
+    padding: 12px;
+  }
+
+
+  .title {
+
+    font-size: 16px;
+  }
+
+
+  /* Variant becomes two-line layout */
+
+  .variant-item {
+
+    grid-template-columns:
+      28px
+      minmax(0, 1fr);
+  }
+
+
+  .variant-actions {
+
+    grid-column: 2;
+
+    justify-content: flex-end;
+
+    margin-top: 5px;
+  }
+
+
+  .variant-edit-form {
+
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .variant-edit-form input:first-child {
+
+    grid-column: auto;
+  }
+
+
+  .variant-save-btn,
+  .variant-cancel-btn {
+
+    width: 100%;
+  }
+
+
+  /* Payment */
+
+  .row {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 6px;
+  }
+
+
+  .row label {
+
+    margin-bottom: 2px !important;
+  }
+
+
+  /* Gallery */
+
+  .gallery-picker-grid {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 6px;
+
+    padding: 8px;
+  }
+
+}
+
+
+/* =========================================================
+   SAFE AREA FOR MOBILE DEVICES
+   ========================================================= */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+
+  .container {
+
+    padding-bottom:
+      calc(
+        110px +
+        env(safe-area-inset-bottom)
+      );
+  }
+
+}
