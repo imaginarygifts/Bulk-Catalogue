@@ -477,15 +477,13 @@ if(imagesInput){
 
 /*==================================================
     IMAGE PREVIEW
-    DRAG + DROP + DELETE
+    IMAGE-ONLY DRAG + DROP + DELETE
 ==================================================*/
 
 function renderImagePreview(){
 
   if(!preview){
-
     return;
-
   }
 
   preview.innerHTML = "";
@@ -526,40 +524,12 @@ function renderImagePreview(){
 
       }
 
-
-      /*--------------------------------------------
-          DRAG HANDLE
-      --------------------------------------------*/
-
-      const handle =
-        document.createElement("div");
-
-      handle.className =
-        "image-drag-handle";
-
-      handle.innerHTML =
-        "☰";
-
-      handle.title =
-        "Drag to reorder";
+      img.draggable =
+        false;
 
 
       /*--------------------------------------------
-          NUMBER
-      --------------------------------------------*/
-
-      const number =
-        document.createElement("span");
-
-      number.className =
-        "image-number";
-
-      number.innerText =
-        index + 1;
-
-
-      /*--------------------------------------------
-          DELETE
+          DELETE BUTTON
       --------------------------------------------*/
 
       const del =
@@ -578,7 +548,8 @@ function renderImagePreview(){
         "Remove image";
 
 
-      del.onclick =
+      del.addEventListener(
+        "click",
         event => {
 
           event.stopPropagation();
@@ -601,18 +572,15 @@ function renderImagePreview(){
 
           renderImagePreview();
 
-        };
+        }
+      );
 
 
       /*--------------------------------------------
-          APPEND
+          APPEND ONLY IMAGE + DELETE
       --------------------------------------------*/
 
-      card.appendChild(handle);
-
       card.appendChild(img);
-
-      card.appendChild(number);
 
       card.appendChild(del);
 
@@ -772,12 +740,19 @@ function renderImagePreview(){
       );
 
 
-      preview.appendChild(card);
+      /*--------------------------------------------
+          ADD CARD
+      --------------------------------------------*/
+
+      preview.appendChild(
+        card
+      );
 
     }
   );
 
 }
+
 
 
 /*==================================================
