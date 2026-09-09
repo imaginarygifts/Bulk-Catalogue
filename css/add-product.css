@@ -2264,3 +2264,70 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 
 }
+
+
+
+/* =========================================================
+   IMAGE DELETE BUTTON
+   ========================================================= */
+
+.image-card .image-delete {
+
+  position: absolute;
+
+  top: -6px;
+  right: -6px;
+
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin: 0;
+
+  border: none;
+
+  background: #ff3b3b;
+
+  color: #fff;
+
+  border-radius: 50%;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  z-index: 5;
+
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.35);
+}
+
+.image-card .image-delete:active {
+  transform: scale(.9);
+}
+
+
+/* Image itself is the drag area */
+
+.image-card {
+  cursor: grab;
+  touch-action: none;
+}
+
+.image-card:active {
+  cursor: grabbing;
+}
+
+.image-card img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
