@@ -53,34 +53,22 @@ const stockStatus =
 ==================================================*/
 
 const shippingType =
-  document.getElementById(
-    "shippingType"
-  );
+  document.getElementById("shippingType");
 
 const shippingAmount =
-  document.getElementById(
-    "shippingAmount"
-  );
+  document.getElementById("shippingAmount");
 
 const commonShippingAmountBox =
-  document.getElementById(
-    "commonShippingAmountBox"
-  );
+  document.getElementById("commonShippingAmountBox");
 
 const sizeShippingType =
-  document.getElementById(
-    "sizeShippingType"
-  );
+  document.getElementById("sizeShippingType");
 
 const sizeShippingAmount =
-  document.getElementById(
-    "sizeShippingAmount"
-  );
+  document.getElementById("sizeShippingAmount");
 
 const sizeShippingAmountBox =
-  document.getElementById(
-    "sizeShippingAmountBox"
-  );
+  document.getElementById("sizeShippingAmountBox");
 
 
 /*==================================================
@@ -88,14 +76,10 @@ const sizeShippingAmountBox =
 ==================================================*/
 
 const tagBox =
-  document.getElementById(
-    "tagCheckboxes"
-  );
+  document.getElementById("tagCheckboxes");
 
 const bestsellerCheckbox =
-  document.getElementById(
-    "isBestseller"
-  );
+  document.getElementById("isBestseller");
 
 
 /*==================================================
@@ -103,63 +87,37 @@ const bestsellerCheckbox =
 ==================================================*/
 
 const allowOnline =
-  document.getElementById(
-    "allowOnline"
-  );
+  document.getElementById("allowOnline");
 
 const allowCOD =
-  document.getElementById(
-    "allowCOD"
-  );
+  document.getElementById("allowCOD");
 
 const allowAdvance =
-  document.getElementById(
-    "allowAdvance"
-  );
-
+  document.getElementById("allowAdvance");
 
 const onlineDiscountType =
-  document.getElementById(
-    "onlineDiscountType"
-  );
+  document.getElementById("onlineDiscountType");
 
 const onlineDiscountValue =
-  document.getElementById(
-    "onlineDiscountValue"
-  );
-
+  document.getElementById("onlineDiscountValue");
 
 const codDiscountType =
-  document.getElementById(
-    "codDiscountType"
-  );
+  document.getElementById("codDiscountType");
 
 const codDiscountValue =
-  document.getElementById(
-    "codDiscountValue"
-  );
-
+  document.getElementById("codDiscountValue");
 
 const advanceDiscountType =
-  document.getElementById(
-    "advanceDiscountType"
-  );
+  document.getElementById("advanceDiscountType");
 
 const advanceDiscountValue =
-  document.getElementById(
-    "advanceDiscountValue"
-  );
-
+  document.getElementById("advanceDiscountValue");
 
 const advanceType =
-  document.getElementById(
-    "advanceType"
-  );
+  document.getElementById("advanceType");
 
 const advanceValue =
-  document.getElementById(
-    "advanceValue"
-  );
+  document.getElementById("advanceValue");
 
 
 /*==================================================
@@ -172,16 +130,33 @@ let sizes = [];
 
 let customOptions = [];
 
-let images = [];
+/*
+  Product images are stored as objects internally.
 
-let galleryImages = [];
+  Example:
+
+  {
+    type: "file",
+    file: File,
+    preview: "blob:..."
+  }
+
+  OR
+
+  {
+    type: "url",
+    url: "https://..."
+  }
+
+  This makes drag/reorder much easier.
+*/
+
+let productImages = [];
 
 let gallerySelected = [];
 
 let currentGalleryPath =
   "product-images";
-
-let galleryBreadcrumbs;
 
 let relatedDesigns = [];
 
@@ -194,20 +169,14 @@ let selectedTags = [];
     ACCORDION
 ==================================================*/
 
-window.toggleSection = (
-  id
-) => {
+window.toggleSection = (id) => {
 
   const section =
-    document.getElementById(
-      id
-    );
+    document.getElementById(id);
 
   if(section){
 
-    section.classList.toggle(
-      "hidden"
-    );
+    section.classList.toggle("hidden");
 
   }
 
@@ -218,25 +187,18 @@ window.toggleSection = (
     POPUP
 ==================================================*/
 
-function showPopup(
-  msg
-){
+function showPopup(msg){
 
   const p =
-    document.getElementById(
-      "popup"
-    );
+    document.getElementById("popup");
 
   if(!p){
     return;
   }
 
-  p.innerText =
-    msg;
+  p.innerText = msg;
 
-  p.classList.remove(
-    "hidden"
-  );
+  p.classList.remove("hidden");
 
 }
 
@@ -244,15 +206,11 @@ function showPopup(
 function hidePopup(){
 
   const p =
-    document.getElementById(
-      "popup"
-    );
+    document.getElementById("popup");
 
   if(p){
 
-    p.classList.add(
-      "hidden"
-    );
+    p.classList.add("hidden");
 
   }
 
@@ -274,10 +232,8 @@ function updateCommonShippingUI(){
 
   }
 
-
   if(
-    shippingType.value ===
-    "paid"
+    shippingType.value === "paid"
   ){
 
     commonShippingAmountBox.style.display =
@@ -291,8 +247,7 @@ function updateCommonShippingUI(){
 
     if(shippingAmount){
 
-      shippingAmount.value =
-        "";
+      shippingAmount.value = "";
 
     }
 
@@ -316,10 +271,8 @@ function updateSizeShippingUI(){
 
   }
 
-
   if(
-    sizeShippingType.value ===
-    "paid"
+    sizeShippingType.value === "paid"
   ){
 
     sizeShippingAmountBox.classList.remove(
@@ -335,8 +288,7 @@ function updateSizeShippingUI(){
 
     if(sizeShippingAmount){
 
-      sizeShippingAmount.value =
-        "";
+      sizeShippingAmount.value = "";
 
     }
 
@@ -369,10 +321,6 @@ if(sizeShippingType){
 }
 
 
-/*==================================================
-    INITIAL SHIPPING STATE
-==================================================*/
-
 updateCommonShippingUI();
 
 updateSizeShippingUI();
@@ -390,131 +338,85 @@ async function loadCategories(){
 
   }
 
-
   catSelect.innerHTML =
     `<option value="">Select category</option>`;
-
 
   try{
 
     const snap =
       await getDocs(
         query(
-          collection(
-            db,
-            "categories"
-          ),
-          orderBy(
-            "order"
-          )
+          collection(db, "categories"),
+          orderBy("order")
         )
       );
 
+    const categories = [];
 
-    const categories =
-      [];
+    snap.forEach(docSnap => {
 
+      categories.push({
 
-    snap.forEach(
-      docSnap => {
+        id: docSnap.id,
 
-        categories.push({
+        ...docSnap.data()
 
-          id:
-            docSnap.id,
+      });
 
-          ...docSnap.data()
-
-        });
-
-      }
-    );
-
+    });
 
     const mains =
       categories.filter(
-        c =>
-          !c.parentId
+        c => !c.parentId
       );
 
+    mains.forEach(main => {
 
-    mains.forEach(
-      main => {
+      const opt =
+        document.createElement("option");
 
-        /*==========================================
-            MAIN CATEGORY
-        ==========================================*/
+      opt.value =
+        main.id;
 
-        const opt =
-          document.createElement(
-            "option"
-          );
+      opt.textContent =
+        main.name;
+
+      opt.dataset.type =
+        "main";
+
+      catSelect.appendChild(opt);
 
 
-        opt.value =
+      const subs =
+        categories.filter(
+          c =>
+            c.parentId === main.id
+        );
+
+      subs.forEach(sub => {
+
+        const subOpt =
+          document.createElement("option");
+
+        subOpt.value =
+          sub.id;
+
+        subOpt.textContent =
+          "— " + sub.name;
+
+        subOpt.dataset.type =
+          "sub";
+
+        subOpt.dataset.parent =
           main.id;
 
-
-        opt.textContent =
-          main.name;
-
-
-        opt.dataset.type =
-          "main";
-
-
         catSelect.appendChild(
-          opt
+          subOpt
         );
 
+      });
 
-        /*==========================================
-            SUB CATEGORIES
-        ==========================================*/
-
-        const subs =
-          categories.filter(
-            c =>
-              c.parentId ===
-              main.id
-          );
-
-
-        subs.forEach(
-          sub => {
-
-            const subOpt =
-              document.createElement(
-                "option"
-              );
-
-
-            subOpt.value =
-              sub.id;
-
-
-            subOpt.textContent =
-              "— " +
-              sub.name;
-
-
-            subOpt.dataset.type =
-              "sub";
-
-
-            subOpt.dataset.parent =
-              main.id;
-
-
-            catSelect.appendChild(
-              subOpt
-            );
-
-          }
-        );
-
-      }
-    );
+    });
 
   }
 
@@ -534,7 +436,7 @@ loadCategories();
 
 
 /*==================================================
-    IMAGE PICKER
+    PRODUCT IMAGE PICKER
 ==================================================*/
 
 if(imagesInput){
@@ -545,24 +447,27 @@ if(imagesInput){
 
       const files =
         Array.from(
-          event.target.files ||
-          []
+          event.target.files || []
         );
 
+      files.forEach(file => {
 
-      files.forEach(
-        file =>
-          images.push(
-            file
-          )
-      );
+        productImages.push({
 
+          type: "file",
+
+          file: file,
+
+          preview:
+            URL.createObjectURL(file)
+
+        });
+
+      });
 
       renderImagePreview();
 
-
-      imagesInput.value =
-        "";
+      imagesInput.value = "";
 
     }
   );
@@ -572,6 +477,7 @@ if(imagesInput){
 
 /*==================================================
     IMAGE PREVIEW
+    DRAG + DROP + DELETE
 ==================================================*/
 
 function renderImagePreview(){
@@ -582,152 +488,291 @@ function renderImagePreview(){
 
   }
 
+  preview.innerHTML = "";
 
-  preview.innerHTML =
-    "";
+  productImages.forEach(
+    (image, index) => {
 
+      const card =
+        document.createElement("div");
 
-  /*==============================================
-      UPLOADED IMAGES
-  ==============================================*/
-
-  images.forEach(
-    (
-      file,
-      index
-    ) => {
-
-      const div =
-        document.createElement(
-          "div"
-        );
-
-
-      div.className =
+      card.className =
         "image-card";
 
+      card.draggable =
+        true;
+
+      card.dataset.index =
+        index;
+
+
+      /*--------------------------------------------
+          IMAGE
+      --------------------------------------------*/
 
       const img =
-        document.createElement(
-          "img"
-        );
+        document.createElement("img");
+
+      if(image.type === "file"){
+
+        img.src =
+          image.preview;
+
+      }
+      else{
+
+        img.src =
+          image.url;
+
+      }
 
 
-      img.src =
-        URL.createObjectURL(
-          file
-        );
+      /*--------------------------------------------
+          DRAG HANDLE
+      --------------------------------------------*/
 
+      const handle =
+        document.createElement("div");
+
+      handle.className =
+        "image-drag-handle";
+
+      handle.innerHTML =
+        "☰";
+
+      handle.title =
+        "Drag to reorder";
+
+
+      /*--------------------------------------------
+          NUMBER
+      --------------------------------------------*/
+
+      const number =
+        document.createElement("span");
+
+      number.className =
+        "image-number";
+
+      number.innerText =
+        index + 1;
+
+
+      /*--------------------------------------------
+          DELETE
+      --------------------------------------------*/
 
       const del =
-        document.createElement(
-          "span"
-        );
+        document.createElement("button");
 
+      del.type =
+        "button";
+
+      del.className =
+        "image-delete";
 
       del.innerText =
         "×";
 
+      del.title =
+        "Remove image";
+
 
       del.onclick =
-        () => {
+        event => {
 
-          images.splice(
+          event.stopPropagation();
+
+          if(
+            image.type === "file" &&
+            image.preview
+          ){
+
+            URL.revokeObjectURL(
+              image.preview
+            );
+
+          }
+
+          productImages.splice(
             index,
             1
           );
-
 
           renderImagePreview();
 
         };
 
 
-      div.appendChild(
-        img
+      /*--------------------------------------------
+          APPEND
+      --------------------------------------------*/
+
+      card.appendChild(handle);
+
+      card.appendChild(img);
+
+      card.appendChild(number);
+
+      card.appendChild(del);
+
+
+      /*============================================
+          DRAG START
+      ============================================*/
+
+      card.addEventListener(
+        "dragstart",
+        event => {
+
+          event.dataTransfer.effectAllowed =
+            "move";
+
+          event.dataTransfer.setData(
+            "text/plain",
+            String(index)
+          );
+
+          card.classList.add(
+            "dragging"
+          );
+
+        }
       );
 
 
-      div.appendChild(
-        del
-      );
+      /*============================================
+          DRAG END
+      ============================================*/
 
-
-      preview.appendChild(
-        div
-      );
-
-    }
-  );
-
-
-  /*==============================================
-      GALLERY IMAGES
-  ==============================================*/
-
-  galleryImages.forEach(
-    (
-      url,
-      index
-    ) => {
-
-      const div =
-        document.createElement(
-          "div"
-        );
-
-
-      div.className =
-        "image-card";
-
-
-      const img =
-        document.createElement(
-          "img"
-        );
-
-
-      img.src =
-        url;
-
-
-      const del =
-        document.createElement(
-          "span"
-        );
-
-
-      del.innerText =
-        "×";
-
-
-      del.onclick =
+      card.addEventListener(
+        "dragend",
         () => {
 
-          galleryImages.splice(
-            index,
-            1
+          card.classList.remove(
+            "dragging"
+          );
+
+          document
+            .querySelectorAll(
+              "#imagePreview .image-card"
+            )
+            .forEach(item => {
+
+              item.classList.remove(
+                "drag-over"
+              );
+
+            });
+
+        }
+      );
+
+
+      /*============================================
+          DRAG OVER
+      ============================================*/
+
+      card.addEventListener(
+        "dragover",
+        event => {
+
+          event.preventDefault();
+
+          event.dataTransfer.dropEffect =
+            "move";
+
+          card.classList.add(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      /*============================================
+          DRAG LEAVE
+      ============================================*/
+
+      card.addEventListener(
+        "dragleave",
+        () => {
+
+          card.classList.remove(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      /*============================================
+          DROP
+      ============================================*/
+
+      card.addEventListener(
+        "drop",
+        event => {
+
+          event.preventDefault();
+
+          card.classList.remove(
+            "drag-over"
+          );
+
+          const fromIndex =
+            Number(
+              event.dataTransfer.getData(
+                "text/plain"
+              )
+            );
+
+          const toIndex =
+            Number(
+              card.dataset.index
+            );
+
+
+          if(
+            Number.isNaN(fromIndex) ||
+            Number.isNaN(toIndex)
+          ){
+
+            return;
+
+          }
+
+
+          if(
+            fromIndex === toIndex
+          ){
+
+            return;
+
+          }
+
+
+          const moved =
+            productImages.splice(
+              fromIndex,
+              1
+            )[0];
+
+
+          productImages.splice(
+            toIndex,
+            0,
+            moved
           );
 
 
           renderImagePreview();
 
-        };
-
-
-      div.appendChild(
-        img
+        }
       );
 
 
-      div.appendChild(
-        del
-      );
-
-
-      preview.appendChild(
-        div
-      );
+      preview.appendChild(card);
 
     }
   );
@@ -743,39 +788,28 @@ window.addColor = () => {
 
   const name =
     document
-      .getElementById(
-        "colorName"
-      )
+      .getElementById("colorName")
       .value
       .trim();
-
 
   const price =
     Number(
       document
-        .getElementById(
-          "colorPrice"
-        )
-        .value ||
-      0
+        .getElementById("colorPrice")
+        .value || 0
     );
-
 
   const required =
     document
-      .getElementById(
-        "colorRequired"
-      )
+      .getElementById("colorRequired")
       ?.checked ||
     false;
-
 
   if(!name){
 
     return;
 
   }
-
 
   colors.push({
 
@@ -787,27 +821,20 @@ window.addColor = () => {
 
   });
 
-
   renderColors();
-
 
   document.getElementById(
     "colorName"
-  ).value =
-    "";
-
+  ).value = "";
 
   document.getElementById(
     "colorPrice"
-  ).value =
-    "";
-
+  ).value = "";
 
   const requiredInput =
     document.getElementById(
       "colorRequired"
     );
-
 
   if(requiredInput){
 
@@ -830,62 +857,262 @@ function renderColors(){
       "colorList"
     );
 
-
   if(!list){
 
     return;
 
   }
 
-
-  list.innerHTML =
-    "";
-
+  list.innerHTML = "";
 
   colors.forEach(
-    (
-      color,
-      index
-    ) => {
+    (color, index) => {
 
       const div =
         document.createElement(
           "div"
         );
 
+      div.className =
+        "variant-item";
 
-      div.innerText =
-        `${color.name} (+₹${color.price}) ${
-          color.required
-          ?
-          "(Required)"
-          :
-          ""
-        } ❌`;
+      div.innerHTML = `
 
+        <div class="variant-drag-handle">
+          ☰
+        </div>
 
-      div.onclick =
-        () => {
+        <div class="variant-info">
 
-          colors.splice(
-            index,
-            1
-          );
+          <strong>
+            ${escapeHtml(color.name)}
+          </strong>
 
+          <span>
+            +₹${Number(color.price || 0)}
+          </span>
 
-          renderColors();
+          <span>
+            ${
+              color.required
+              ? "Required"
+              : "Optional"
+            }
+          </span>
 
-        };
+        </div>
 
+        <div class="variant-actions">
 
-      list.appendChild(
-        div
-      );
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="editColor(${index})"
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="removeColor(${index})"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `;
+
+      list.appendChild(div);
 
     }
   );
 
 }
+
+
+/*==================================================
+    EDIT COLOR
+==================================================*/
+
+window.editColor =
+function(index){
+
+  const color =
+    colors[index];
+
+  if(!color){
+
+    return;
+
+  }
+
+  const list =
+    document.getElementById(
+      "colorList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+  item.innerHTML = `
+
+    <div class="variant-edit-box">
+
+      <input
+        type="text"
+        class="edit-color-name"
+        value="${escapeAttribute(color.name)}"
+        placeholder="Color"
+      >
+
+      <input
+        type="number"
+        class="edit-color-price"
+        value="${Number(color.price || 0)}"
+        placeholder="Extra price"
+        min="0"
+      >
+
+      <label>
+
+        <input
+          type="checkbox"
+          class="edit-color-required"
+          ${color.required ? "checked" : ""}
+        >
+
+        Required
+
+      </label>
+
+      <div class="variant-actions">
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="saveEditedColor(${index})"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="renderColors()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+};
+
+
+/*==================================================
+    SAVE COLOR
+==================================================*/
+
+window.saveEditedColor =
+function(index){
+
+  const list =
+    document.getElementById(
+      "colorList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+  const name =
+    item
+      .querySelector(
+        ".edit-color-name"
+      )
+      ?.value
+      .trim();
+
+  const price =
+    Number(
+      item
+        .querySelector(
+          ".edit-color-price"
+        )
+        ?.value || 0
+    );
+
+  const required =
+    item
+      .querySelector(
+        ".edit-color-required"
+      )
+      ?.checked ||
+    false;
+
+  if(!name){
+
+    showPopup(
+      "⚠ Please enter color."
+    );
+
+    setTimeout(
+      hidePopup,
+      1500
+    );
+
+    return;
+
+  }
+
+  colors[index] = {
+
+    ...colors[index],
+
+    name,
+
+    price,
+
+    required
+
+  };
+
+  renderColors();
+
+};
+
+
+/*==================================================
+    REMOVE COLOR
+==================================================*/
+
+window.removeColor =
+function(index){
+
+  colors.splice(
+    index,
+    1
+  );
+
+  renderColors();
+
+};
 
 
 /*==================================================
@@ -896,49 +1123,32 @@ window.addSize = () => {
 
   const name =
     document
-      .getElementById(
-        "sizeName"
-      )
+      .getElementById("sizeName")
       .value
       .trim();
-
 
   const price =
     Number(
       document
-        .getElementById(
-          "sizePrice"
-        )
-        .value ||
-      0
+        .getElementById("sizePrice")
+        .value || 0
     );
-
 
   const required =
     document
-      .getElementById(
-        "sizeRequired"
-      )
+      .getElementById("sizeRequired")
       ?.checked ||
     false;
 
-
   const shippingMode =
     document
-      .getElementById(
-        "sizeShippingType"
-      )
+      .getElementById("sizeShippingType")
       ?.value ||
     "common";
-
 
   let sizeShippingValue =
     null;
 
-
-  /*==============================================
-      VALIDATE SIZE
-  ==============================================*/
 
   if(!name){
 
@@ -946,25 +1156,18 @@ window.addSize = () => {
       "⚠ Please enter size."
     );
 
-
     setTimeout(
       hidePopup,
       1500
     );
-
 
     return;
 
   }
 
 
-  /*==============================================
-      VALIDATE SIZE SHIPPING
-  ==============================================*/
-
   if(
-    shippingMode ===
-    "paid"
+    shippingMode === "paid"
   ){
 
     sizeShippingValue =
@@ -973,26 +1176,21 @@ window.addSize = () => {
           .getElementById(
             "sizeShippingAmount"
           )
-          ?.value ||
-        0
+          ?.value || 0
       );
 
-
     if(
-      sizeShippingValue <=
-      0
+      sizeShippingValue <= 0
     ){
 
       showPopup(
         "⚠ Please enter shipping amount for this size."
       );
 
-
       setTimeout(
         hidePopup,
         1800
       );
-
 
       return;
 
@@ -1000,10 +1198,6 @@ window.addSize = () => {
 
   }
 
-
-  /*==============================================
-      ADD SIZE
-  ==============================================*/
 
   sizes.push({
 
@@ -1017,25 +1211,11 @@ window.addSize = () => {
 
     shippingAmount:
 
-      shippingMode ===
-      "free"
-
-      ?
-
-      0
-
-      :
-
-      shippingMode ===
-      "paid"
-
-      ?
-
-      sizeShippingValue
-
-      :
-
-      null
+      shippingMode === "free"
+      ? 0
+      : shippingMode === "paid"
+      ? sizeShippingValue
+      : null
 
   });
 
@@ -1043,27 +1223,19 @@ window.addSize = () => {
   renderSizes();
 
 
-  /*==============================================
-      RESET INPUTS
-  ==============================================*/
-
   document.getElementById(
     "sizeName"
-  ).value =
-    "";
-
+  ).value = "";
 
   document.getElementById(
     "sizePrice"
-  ).value =
-    "";
+  ).value = "";
 
 
   const requiredInput =
     document.getElementById(
       "sizeRequired"
     );
-
 
   if(requiredInput){
 
@@ -1088,7 +1260,6 @@ window.addSize = () => {
 
   }
 
-
   updateSizeShippingUI();
 
 };
@@ -1096,7 +1267,6 @@ window.addSize = () => {
 
 /*==================================================
     RENDER SIZES
-    EDIT + REMOVE + DRAG & DROP
 ==================================================*/
 
 function renderSizes(){
@@ -1106,41 +1276,27 @@ function renderSizes(){
       "sizeList"
     );
 
-
   if(!list){
 
     return;
 
   }
 
-
-  list.innerHTML =
-    "";
-
+  list.innerHTML = "";
 
   sizes.forEach(
-    (
-      size,
-      index
-    ) => {
+    (size, index) => {
 
       const div =
         document.createElement(
           "div"
         );
 
-
       div.className =
         "size-item";
 
-
-      /*
-        Allow this variant to be dragged.
-      */
-
       div.draggable =
         true;
-
 
       div.dataset.index =
         index;
@@ -1149,10 +1305,8 @@ function renderSizes(){
       let shippingText =
         "Common Shipping";
 
-
       if(
-        size.shippingMode ===
-        "free"
+        size.shippingMode === "free"
       ){
 
         shippingText =
@@ -1160,16 +1314,13 @@ function renderSizes(){
 
       }
 
-
       if(
-        size.shippingMode ===
-        "paid"
+        size.shippingMode === "paid"
       ){
 
         shippingText =
           `Shipping ₹${Number(
-            size.shippingAmount ||
-            0
+            size.shippingAmount || 0
           )}`;
 
       }
@@ -1187,25 +1338,18 @@ function renderSizes(){
         <div class="variant-info">
 
           <strong>
-            ${escapeHtml(
-              size.name
-            )}
+            ${escapeHtml(size.name)}
           </strong>
 
           <span>
-            +₹${Number(
-              size.price ||
-              0
-            )}
+            +₹${Number(size.price || 0)}
           </span>
 
           <span>
             ${
               size.required
-              ?
-              "Required"
-              :
-              "Optional"
+              ? "Required"
+              : "Optional"
             }
           </span>
 
@@ -1238,6 +1382,712 @@ function renderSizes(){
       `;
 
 
+      /* DRAG */
+
+      div.addEventListener(
+        "dragstart",
+        event => {
+
+          event.dataTransfer.effectAllowed =
+            "move";
+
+          event.dataTransfer.setData(
+            "text/plain",
+            String(index)
+          );
+
+          div.classList.add(
+            "dragging"
+          );
+
+        }
+      );
+
+
+      div.addEventListener(
+        "dragend",
+        () => {
+
+          div.classList.remove(
+            "dragging"
+          );
+
+        }
+      );
+
+
+      div.addEventListener(
+        "dragover",
+        event => {
+
+          event.preventDefault();
+
+          div.classList.add(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      div.addEventListener(
+        "dragleave",
+        () => {
+
+          div.classList.remove(
+            "drag-over"
+          );
+
+        }
+      );
+
+
+      div.addEventListener(
+        "drop",
+        event => {
+
+          event.preventDefault();
+
+          div.classList.remove(
+            "drag-over"
+          );
+
+          const fromIndex =
+            Number(
+              event.dataTransfer.getData(
+                "text/plain"
+              )
+            );
+
+          const toIndex =
+            Number(
+              div.dataset.index
+            );
+
+          if(
+            Number.isNaN(fromIndex) ||
+            Number.isNaN(toIndex) ||
+            fromIndex === toIndex
+          ){
+
+            return;
+
+          }
+
+          const moved =
+            sizes.splice(
+              fromIndex,
+              1
+            )[0];
+
+          sizes.splice(
+            toIndex,
+            0,
+            moved
+          );
+
+          renderSizes();
+
+        }
+      );
+
+
+      list.appendChild(div);
+
+    }
+  );
+
+}
+
+
+/*==================================================
+    EDIT SIZE
+==================================================*/
+
+window.editSize =
+function(index){
+
+  const size =
+    sizes[index];
+
+  if(!size){
+
+    return;
+
+  }
+
+  const list =
+    document.getElementById(
+      "sizeList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+  item.draggable =
+    false;
+
+  item.innerHTML = `
+
+    <div class="variant-edit-box">
+
+      <input
+        type="text"
+        class="edit-size-name"
+        value="${escapeAttribute(size.name)}"
+        placeholder="Size"
+      >
+
+      <input
+        type="number"
+        class="edit-size-price"
+        value="${Number(size.price || 0)}"
+        placeholder="Extra price"
+        min="0"
+      >
+
+      <select
+        class="edit-size-shipping"
+      >
+
+        <option
+          value="common"
+          ${size.shippingMode === "common" ? "selected" : ""}
+        >
+          Common Shipping
+        </option>
+
+        <option
+          value="free"
+          ${size.shippingMode === "free" ? "selected" : ""}
+        >
+          Free Shipping
+        </option>
+
+        <option
+          value="paid"
+          ${size.shippingMode === "paid" ? "selected" : ""}
+        >
+          Paid Shipping
+        </option>
+
+      </select>
+
+      <input
+        type="number"
+        class="edit-size-shipping-amount"
+        value="${size.shippingAmount ?? ""}"
+        placeholder="Shipping amount"
+        min="0"
+        ${
+          size.shippingMode !== "paid"
+          ? "style='display:none'"
+          : ""
+        }
+      >
+
+      <label>
+
+        <input
+          type="checkbox"
+          class="edit-size-required"
+          ${size.required ? "checked" : ""}
+        >
+
+        Required
+
+      </label>
+
+      <div class="variant-actions">
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="saveEditedSize(${index})"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="renderSizes()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  const shippingSelect =
+    item.querySelector(
+      ".edit-size-shipping"
+    );
+
+  const shippingInput =
+    item.querySelector(
+      ".edit-size-shipping-amount"
+    );
+
+
+  if(
+    shippingSelect &&
+    shippingInput
+  ){
+
+    shippingSelect.addEventListener(
+      "change",
+      () => {
+
+        if(
+          shippingSelect.value === "paid"
+        ){
+
+          shippingInput.style.display =
+            "block";
+
+        }
+        else{
+
+          shippingInput.style.display =
+            "none";
+
+          shippingInput.value =
+            "";
+
+        }
+
+      }
+    );
+
+  }
+
+};
+
+
+/*==================================================
+    SAVE EDITED SIZE
+==================================================*/
+
+window.saveEditedSize =
+function(index){
+
+  const list =
+    document.getElementById(
+      "sizeList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+  const name =
+    item
+      .querySelector(
+        ".edit-size-name"
+      )
+      ?.value
+      .trim();
+
+  const price =
+    Number(
+      item
+        .querySelector(
+          ".edit-size-price"
+        )
+        ?.value || 0
+    );
+
+  const shippingMode =
+    item
+      .querySelector(
+        ".edit-size-shipping"
+      )
+      ?.value ||
+    "common";
+
+  const shippingAmountInput =
+    item.querySelector(
+      ".edit-size-shipping-amount"
+    );
+
+  const required =
+    item
+      .querySelector(
+        ".edit-size-required"
+      )
+      ?.checked ||
+    false;
+
+
+  if(!name){
+
+    showPopup(
+      "⚠ Please enter size."
+    );
+
+    setTimeout(
+      hidePopup,
+      1500
+    );
+
+    return;
+
+  }
+
+
+  let shippingAmount =
+    null;
+
+  if(
+    shippingMode === "free"
+  ){
+
+    shippingAmount =
+      0;
+
+  }
+
+
+  if(
+    shippingMode === "paid"
+  ){
+
+    shippingAmount =
+      Number(
+        shippingAmountInput?.value ||
+        0
+      );
+
+    if(
+      shippingAmount <= 0
+    ){
+
+      showPopup(
+        "⚠ Please enter shipping amount."
+      );
+
+      setTimeout(
+        hidePopup,
+        1800
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  sizes[index] = {
+
+    ...sizes[index],
+
+    name,
+
+    price,
+
+    required,
+
+    shippingMode,
+
+    shippingAmount
+
+  };
+
+
+  renderSizes();
+
+  showPopup(
+    "✅ Variant updated"
+  );
+
+  setTimeout(
+    hidePopup,
+    1200
+  );
+
+};
+
+
+/*==================================================
+    REMOVE SIZE
+==================================================*/
+
+window.removeSize =
+function(index){
+
+  if(
+    index < 0 ||
+    index >= sizes.length
+  ){
+
+    return;
+
+  }
+
+  sizes.splice(
+    index,
+    1
+  );
+
+  renderSizes();
+
+};
+
+
+/*==================================================
+    CUSTOM OPTIONS
+==================================================*/
+
+window.addCustomOption =
+function(){
+
+  const type =
+    document
+      .getElementById(
+        "customType"
+      )
+      .value;
+
+  const label =
+    document
+      .getElementById(
+        "customLabel"
+      )
+      .value
+      .trim();
+
+  const price =
+    Number(
+      document
+        .getElementById(
+          "customPrice"
+        )
+        .value || 0
+    );
+
+  const choicesRaw =
+    document
+      .getElementById(
+        "customChoices"
+      )
+      .value;
+
+  const required =
+    document
+      .getElementById(
+        "customRequired"
+      )
+      ?.checked ||
+    false;
+
+
+  if(!label){
+
+    showPopup(
+      "⚠ Please enter option label."
+    );
+
+    setTimeout(
+      hidePopup,
+      1500
+    );
+
+    return;
+
+  }
+
+
+  const option = {
+
+    type,
+
+    label,
+
+    price,
+
+    required
+
+  };
+
+
+  if(
+    type === "dropdown"
+  ){
+
+    option.choices =
+      choicesRaw
+        .split(",")
+        .map(
+          value =>
+            value.trim()
+        )
+        .filter(Boolean);
+
+  }
+
+
+  customOptions.push(
+    option
+  );
+
+
+  renderCustomOptions();
+
+
+  document.getElementById(
+    "customLabel"
+  ).value = "";
+
+  document.getElementById(
+    "customPrice"
+  ).value = "";
+
+  document.getElementById(
+    "customChoices"
+  ).value = "";
+
+
+  const requiredInput =
+    document.getElementById(
+      "customRequired"
+    );
+
+  if(requiredInput){
+
+    requiredInput.checked =
+      false;
+
+  }
+
+};
+
+
+/*==================================================
+    RENDER CUSTOM OPTIONS
+    DRAG + EDIT + REMOVE
+==================================================*/
+
+function renderCustomOptions(){
+
+  const list =
+    document.getElementById(
+      "customList"
+    );
+
+  if(!list){
+
+    return;
+
+  }
+
+  list.innerHTML = "";
+
+
+  customOptions.forEach(
+    (option, index) => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "custom-option-item";
+
+      div.draggable =
+        true;
+
+      div.dataset.index =
+        index;
+
+
+      div.innerHTML = `
+
+        <div
+          class="custom-drag-handle"
+          title="Drag to reorder"
+        >
+          ☰
+        </div>
+
+        <div class="custom-option-info">
+
+          <strong>
+            ${escapeHtml(option.type)}
+          </strong>
+
+          <span>
+            ${escapeHtml(option.label)}
+          </span>
+
+          <span>
+            +₹${Number(option.price || 0)}
+          </span>
+
+          <span>
+            ${
+              option.required
+              ? "Required"
+              : "Optional"
+            }
+          </span>
+
+          ${
+            option.type === "dropdown"
+            ?
+            `
+              <small>
+                ${escapeHtml(
+                  (option.choices || []).join(", ")
+                )}
+              </small>
+            `
+            :
+            ""
+          }
+
+        </div>
+
+        <div class="custom-option-actions">
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="editCustomOption(${index})"
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            class="btn-outline"
+            onclick="removeCustomOption(${index})"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `;
+
+
       /*============================================
           DRAG START
       ============================================*/
@@ -1249,12 +2099,10 @@ function renderSizes(){
           event.dataTransfer.effectAllowed =
             "move";
 
-
           event.dataTransfer.setData(
             "text/plain",
             String(index)
           );
-
 
           div.classList.add(
             "dragging"
@@ -1276,20 +2124,17 @@ function renderSizes(){
             "dragging"
           );
 
-
           document
             .querySelectorAll(
-              ".size-item"
+              ".custom-option-item"
             )
-            .forEach(
-              item => {
+            .forEach(item => {
 
-                item.classList.remove(
-                  "drag-over"
-                );
+              item.classList.remove(
+                "drag-over"
+              );
 
-              }
-            );
+            });
 
         }
       );
@@ -1305,10 +2150,8 @@ function renderSizes(){
 
           event.preventDefault();
 
-
           event.dataTransfer.dropEffect =
             "move";
-
 
           div.classList.add(
             "drag-over"
@@ -1344,7 +2187,6 @@ function renderSizes(){
 
           event.preventDefault();
 
-
           div.classList.remove(
             "drag-over"
           );
@@ -1357,7 +2199,6 @@ function renderSizes(){
               )
             );
 
-
           const toIndex =
             Number(
               div.dataset.index
@@ -1365,12 +2206,8 @@ function renderSizes(){
 
 
           if(
-            Number.isNaN(
-              fromIndex
-            ) ||
-            Number.isNaN(
-              toIndex
-            )
+            Number.isNaN(fromIndex) ||
+            Number.isNaN(toIndex)
           ){
 
             return;
@@ -1379,8 +2216,7 @@ function renderSizes(){
 
 
           if(
-            fromIndex ===
-            toIndex
+            fromIndex === toIndex
           ){
 
             return;
@@ -1388,36 +2224,21 @@ function renderSizes(){
           }
 
 
-          /*
-            Take the dragged size
-            out of the array.
-          */
-
-          const movedSize =
-            sizes.splice(
+          const moved =
+            customOptions.splice(
               fromIndex,
               1
             )[0];
 
 
-          /*
-            Insert it at the
-            new position.
-          */
-
-          sizes.splice(
+          customOptions.splice(
             toIndex,
             0,
-            movedSize
+            moved
           );
 
 
-          /*
-            Re-render so the UI
-            shows the new order.
-          */
-
-          renderSizes();
+          renderCustomOptions();
 
         }
       );
@@ -1434,521 +2255,291 @@ function renderSizes(){
 
 
 /*==================================================
-    EDIT SIZE
+    EDIT CUSTOM OPTION
+
+    IMPORTANT:
+    This edits the SAME card.
 ==================================================*/
 
-window.editSize =
-  function(index){
+window.editCustomOption =
+function(index){
 
-    const size =
-      sizes[index];
+  const option =
+    customOptions[index];
 
-
-    if(!size){
-
-      return;
-
-    }
-
-
-    const list =
-      document.getElementById(
-        "sizeList"
-      );
-
-
-    if(!list){
-
-      return;
-
-    }
-
-
-    const item =
-      list.children[index];
-
-
-    if(!item){
-
-      return;
-
-    }
-
-
-    /*
-      Disable dragging while editing.
-    */
-
-    item.draggable =
-      false;
-
-
-    item.innerHTML = `
-
-      <div class="variant-edit-box">
-
-        <input
-          type="text"
-          class="edit-size-name"
-          value="${escapeAttribute(
-            size.name
-          )}"
-          placeholder="Size"
-        >
-
-        <input
-          type="number"
-          class="edit-size-price"
-          value="${Number(
-            size.price ||
-            0
-          )}"
-          placeholder="Extra price"
-          min="0"
-        >
-
-        <select
-          class="edit-size-shipping"
-        >
-
-          <option
-            value="common"
-            ${
-              size.shippingMode ===
-              "common"
-              ?
-              "selected"
-              :
-              ""
-            }
-          >
-            Common Shipping
-          </option>
-
-          <option
-            value="free"
-            ${
-              size.shippingMode ===
-              "free"
-              ?
-              "selected"
-              :
-              ""
-            }
-          >
-            Free Shipping
-          </option>
-
-          <option
-            value="paid"
-            ${
-              size.shippingMode ===
-              "paid"
-              ?
-              "selected"
-              :
-              ""
-            }
-          >
-            Paid Shipping
-          </option>
-
-        </select>
-
-        <input
-          type="number"
-          class="edit-size-shipping-amount"
-          value="${
-            size.shippingAmount ??
-            ""
-          }"
-          placeholder="Shipping amount"
-          min="0"
-          ${
-            size.shippingMode !==
-            "paid"
-            ?
-            "style='display:none'"
-            :
-            ""
-          }
-        >
-
-        <label class="edit-required">
-
-          <input
-            type="checkbox"
-            class="edit-size-required"
-            ${
-              size.required
-              ?
-              "checked"
-              :
-              ""
-            }
-          >
-
-          Required
-
-        </label>
-
-        <div class="variant-actions">
-
-          <button
-            type="button"
-            class="btn-outline"
-            onclick="saveEditedSize(${index})"
-          >
-            Save
-          </button>
-
-          <button
-            type="button"
-            class="btn-outline"
-            onclick="renderSizes()"
-          >
-            Cancel
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-
-
-    /*============================================
-        SHIPPING CHANGE
-    ============================================*/
-
-    const shippingSelect =
-      item.querySelector(
-        ".edit-size-shipping"
-      );
-
-
-    const shippingInput =
-      item.querySelector(
-        ".edit-size-shipping-amount"
-      );
-
-
-    if(
-      shippingSelect &&
-      shippingInput
-    ){
-
-      shippingSelect.addEventListener(
-        "change",
-        () => {
-
-          if(
-            shippingSelect.value ===
-            "paid"
-          ){
-
-            shippingInput.style.display =
-              "block";
-
-          }
-          else{
-
-            shippingInput.style.display =
-              "none";
-
-            shippingInput.value =
-              "";
-
-          }
-
-        }
-      );
-
-    }
-
-  };
-
-
-/*==================================================
-    SAVE EDITED SIZE
-==================================================*/
-
-window.saveEditedSize =
-  function(index){
-
-    const list =
-      document.getElementById(
-        "sizeList"
-      );
-
-
-    if(!list){
-
-      return;
-
-    }
-
-
-    const item =
-      list.children[index];
-
-
-    if(!item){
-
-      return;
-
-    }
-
-
-    const name =
-      item
-        .querySelector(
-          ".edit-size-name"
-        )
-        ?.value
-        .trim();
-
-
-    const price =
-      Number(
-        item
-          .querySelector(
-            ".edit-size-price"
-          )
-          ?.value ||
-        0
-      );
-
-
-    const shippingMode =
-      item
-        .querySelector(
-          ".edit-size-shipping"
-        )
-        ?.value ||
-      "common";
-
-
-    const shippingAmountInput =
-      item
-        .querySelector(
-          ".edit-size-shipping-amount"
-        );
-
-
-    const required =
-      item
-        .querySelector(
-          ".edit-size-required"
-        )
-        ?.checked ||
-      false;
-
-
-    /*============================================
-        VALIDATE NAME
-    ============================================*/
-
-    if(!name){
-
-      showPopup(
-        "⚠ Please enter size."
-      );
-
-
-      setTimeout(
-        hidePopup,
-        1500
-      );
-
-
-      return;
-
-    }
-
-
-    /*============================================
-        SHIPPING
-    ============================================*/
-
-    let shippingAmount =
-      null;
-
-
-    if(
-      shippingMode ===
-      "free"
-    ){
-
-      shippingAmount =
-        0;
-
-    }
-
-
-    if(
-      shippingMode ===
-      "paid"
-    ){
-
-      shippingAmount =
-        Number(
-          shippingAmountInput?.value ||
-          0
-        );
-
-
-      if(
-        shippingAmount <=
-        0
-      ){
-
-        showPopup(
-          "⚠ Please enter shipping amount."
-        );
-
-
-        setTimeout(
-          hidePopup,
-          1800
-        );
-
-
-        return;
-
-      }
-
-    }
-
-
-    /*============================================
-        UPDATE EXISTING VARIANT
-    ============================================*/
-
-    sizes[index] = {
-
-      ...sizes[index],
-
-      name,
-
-      price,
-
-      required,
-
-      shippingMode,
-
-      shippingAmount
-
-    };
-
-
-    /*============================================
-        RENDER UPDATED VARIANT
-    ============================================*/
-
-    renderSizes();
-
-
-    showPopup(
-      "✅ Variant updated"
-    );
-
-
-    setTimeout(
-      hidePopup,
-      1200
-    );
-
-  };
-
-
-/*==================================================
-    REMOVE SIZE
-==================================================*/
-
-window.removeSize =
-  function(index){
-
-    if(
-      index < 0 ||
-      index >= sizes.length
-    ){
-
-      return;
-
-    }
-
-
-    sizes.splice(
-      index,
-      1
-    );
-
-
-    renderSizes();
-
-  };
-
-
-/*==================================================
-    CUSTOM OPTIONS
-==================================================*/
-
-window.addCustomOption = () => {
-
-  const type =
-    document
-      .getElementById(
-        "customType"
-      )
-      .value;
-
-
-  const label =
-    document
-      .getElementById(
-        "customLabel"
-      )
-      .value
-      .trim();
-
-
-  const price =
-    Number(
-      document
-        .getElementById(
-          "customPrice"
-        )
-        .value ||
-      0
-    );
-
-
-  const choicesRaw =
-    document
-      .getElementById(
-        "customChoices"
-      )
-      .value;
-
-
-  const required =
-    document
-      .getElementById(
-        "customRequired"
-      )
-      ?.checked ||
-    false;
-
-
-  if(!label){
+  if(!option){
 
     return;
 
   }
 
 
-  const option = {
+  const list =
+    document.getElementById(
+      "customList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+
+  item.draggable =
+    false;
+
+
+  item.innerHTML = `
+
+    <div class="custom-option-edit-box">
+
+      <select
+        class="edit-custom-type"
+      >
+
+        <option
+          value="text"
+          ${option.type === "text" ? "selected" : ""}
+        >
+          Text
+        </option>
+
+        <option
+          value="checkbox"
+          ${option.type === "checkbox" ? "selected" : ""}
+        >
+          Checkbox
+        </option>
+
+        <option
+          value="dropdown"
+          ${option.type === "dropdown" ? "selected" : ""}
+        >
+          Dropdown
+        </option>
+
+        <option
+          value="image"
+          ${option.type === "image" ? "selected" : ""}
+        >
+          Image
+        </option>
+
+      </select>
+
+
+      <input
+        type="text"
+        class="edit-custom-label"
+        value="${escapeAttribute(option.label)}"
+        placeholder="Option label"
+      >
+
+
+      <input
+        type="number"
+        class="edit-custom-price"
+        value="${Number(option.price || 0)}"
+        placeholder="Extra price"
+        min="0"
+      >
+
+
+      <input
+        type="text"
+        class="edit-custom-choices"
+        value="${escapeAttribute(
+          (option.choices || []).join(", ")
+        )}"
+        placeholder="Dropdown choices (comma separated)"
+        ${
+          option.type !== "dropdown"
+          ? "style='display:none'"
+          : ""
+        }
+      >
+
+
+      <label>
+
+        <input
+          type="checkbox"
+          class="edit-custom-required"
+          ${option.required ? "checked" : ""}
+        >
+
+        Required
+
+      </label>
+
+
+      <div class="custom-option-actions">
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="saveEditedCustomOption(${index})"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          class="btn-outline"
+          onclick="renderCustomOptions()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  /*============================================
+      TYPE CHANGE
+  ============================================*/
+
+  const typeSelect =
+    item.querySelector(
+      ".edit-custom-type"
+    );
+
+  const choicesInput =
+    item.querySelector(
+      ".edit-custom-choices"
+    );
+
+
+  if(
+    typeSelect &&
+    choicesInput
+  ){
+
+    typeSelect.addEventListener(
+      "change",
+      () => {
+
+        if(
+          typeSelect.value ===
+          "dropdown"
+        ){
+
+          choicesInput.style.display =
+            "block";
+
+        }
+        else{
+
+          choicesInput.style.display =
+            "none";
+
+          choicesInput.value =
+            "";
+
+        }
+
+      }
+    );
+
+  }
+
+};
+
+
+/*==================================================
+    SAVE EDITED CUSTOM OPTION
+==================================================*/
+
+window.saveEditedCustomOption =
+function(index){
+
+  const list =
+    document.getElementById(
+      "customList"
+    );
+
+  const item =
+    list?.children[index];
+
+  if(!item){
+
+    return;
+
+  }
+
+
+  const type =
+    item
+      .querySelector(
+        ".edit-custom-type"
+      )
+      ?.value ||
+    "text";
+
+
+  const label =
+    item
+      .querySelector(
+        ".edit-custom-label"
+      )
+      ?.value
+      .trim();
+
+
+  const price =
+    Number(
+      item
+        .querySelector(
+          ".edit-custom-price"
+        )
+        ?.value || 0
+    );
+
+
+  const required =
+    item
+      .querySelector(
+        ".edit-custom-required"
+      )
+      ?.checked ||
+    false;
+
+
+  const choicesRaw =
+    item
+      .querySelector(
+        ".edit-custom-choices"
+      )
+      ?.value ||
+    "";
+
+
+  if(!label){
+
+    showPopup(
+      "⚠ Please enter option label."
+    );
+
+    setTimeout(
+      hidePopup,
+      1500
+    );
+
+    return;
+
+  }
+
+
+  const updated = {
+
+    ...customOptions[index],
 
     type,
 
@@ -1962,137 +2553,69 @@ window.addCustomOption = () => {
 
 
   if(
-    type ===
-    "dropdown"
+    type === "dropdown"
   ){
 
-    option.choices =
+    updated.choices =
       choicesRaw
         .split(",")
         .map(
           value =>
             value.trim()
         )
-        .filter(
-          Boolean
-        );
+        .filter(Boolean);
+
+  }
+  else{
+
+    delete updated.choices;
 
   }
 
 
-  customOptions.push(
-    option
-  );
+  customOptions[index] =
+    updated;
 
 
   renderCustomOptions();
 
 
-  document.getElementById(
-    "customLabel"
-  ).value =
-    "";
+  showPopup(
+    "✅ Custom option updated"
+  );
 
-
-  document.getElementById(
-    "customPrice"
-  ).value =
-    "";
-
-
-  document.getElementById(
-    "customChoices"
-  ).value =
-    "";
-
-
-  const requiredInput =
-    document.getElementById(
-      "customRequired"
-    );
-
-
-  if(requiredInput){
-
-    requiredInput.checked =
-      false;
-
-  }
+  setTimeout(
+    hidePopup,
+    1200
+  );
 
 };
 
 
 /*==================================================
-    RENDER CUSTOM OPTIONS
+    REMOVE CUSTOM OPTION
 ==================================================*/
 
-function renderCustomOptions(){
+window.removeCustomOption =
+function(index){
 
-  const list =
-    document.getElementById(
-      "customList"
-    );
-
-
-  if(!list){
+  if(
+    index < 0 ||
+    index >= customOptions.length
+  ){
 
     return;
 
   }
 
-
-  list.innerHTML =
-    "";
-
-
-  customOptions.forEach(
-    (
-      option,
-      index
-    ) => {
-
-      const div =
-        document.createElement(
-          "div"
-        );
-
-
-      div.innerText =
-        `${option.type}: ${
-          option.label
-        } (+₹${
-          option.price
-        }) ${
-          option.required
-          ?
-          "(Required)"
-          :
-          ""
-        } ❌`;
-
-
-      div.onclick =
-        () => {
-
-          customOptions.splice(
-            index,
-            1
-          );
-
-
-          renderCustomOptions();
-
-        };
-
-
-      list.appendChild(
-        div
-      );
-
-    }
+  customOptions.splice(
+    index,
+    1
   );
 
-}
+  renderCustomOptions();
+
+};
 
 
 /*==================================================
@@ -2111,10 +2634,7 @@ async function loadDesignProducts(){
         )
       );
 
-
-    allProducts =
-      [];
-
+    allProducts = [];
 
     snap.forEach(
       docSnap => {
@@ -2150,15 +2670,12 @@ async function loadDesignProducts(){
 }
 
 
-function renderDesignList(
-  list
-){
+function renderDesignList(list){
 
   const box =
     document.getElementById(
       "designList"
     );
-
 
   if(!box){
 
@@ -2166,145 +2683,119 @@ function renderDesignList(
 
   }
 
-
-  box.innerHTML =
-    "";
+  box.innerHTML = "";
 
 
-  list.forEach(
-    product => {
+  list.forEach(product => {
 
-      const row =
-        document.createElement(
-          "div"
-        );
-
-
-      row.className =
-        "design-item";
-
-
-      const checked =
-        relatedDesigns.includes(
-          product.id
-        );
-
-
-      row.innerHTML = `
-
-        <input
-          type="checkbox"
-          ${
-            checked
-            ?
-            "checked"
-            :
-            ""
-          }
-          onchange="
-            toggleDesign(
-              '${product.id}'
-            )
-          "
-        >
-
-        <img
-          src="${
-            product.images?.[0] ||
-            ""
-          }"
-        >
-
-        <span>
-          ${
-            escapeHtml(
-              product.name ||
-              ""
-            )
-          }
-        </span>
-
-      `;
-
-
-      box.appendChild(
-        row
+    const row =
+      document.createElement(
+        "div"
       );
 
-    }
-  );
+    row.className =
+      "design-item";
+
+
+    const checked =
+      relatedDesigns.includes(
+        product.id
+      );
+
+
+    row.innerHTML = `
+
+      <input
+        type="checkbox"
+        ${checked ? "checked" : ""}
+        onchange="
+          toggleDesign(
+            '${product.id}'
+          )
+        "
+      >
+
+      <img
+        src="${
+          product.images?.[0] || ""
+        }"
+      >
+
+      <span>
+        ${escapeHtml(
+          product.name || ""
+        )}
+      </span>
+
+    `;
+
+
+    box.appendChild(row);
+
+  });
 
 }
 
 
 window.toggleDesign =
-  function(
-    productId
+function(productId){
+
+  if(
+    relatedDesigns.includes(
+      productId
+    )
   ){
 
-    if(
-      relatedDesigns.includes(
-        productId
-      )
-    ){
-
-      relatedDesigns =
-        relatedDesigns.filter(
-          id =>
-            id !==
-            productId
-        );
-
-    }
-    else{
-
-      relatedDesigns.push(
-        productId
+    relatedDesigns =
+      relatedDesigns.filter(
+        id => id !== productId
       );
 
-    }
+  }
+  else{
 
-  };
+    relatedDesigns.push(
+      productId
+    );
+
+  }
+
+};
 
 
 window.filterDesigns =
-  function(){
+function(){
 
-    const searchInput =
-      document.getElementById(
-        "designSearch"
-      );
-
-
-    const q =
-      searchInput
-      ?
-      searchInput.value
-        .toLowerCase()
-      :
-      "";
-
-
-    const filtered =
-      allProducts.filter(
-        product =>
-
-          String(
-            product.name ||
-            ""
-          )
-          .toLowerCase()
-          .includes(
-            q
-          )
-      );
-
-
-    renderDesignList(
-      filtered
+  const searchInput =
+    document.getElementById(
+      "designSearch"
     );
 
-  };
+  const q =
+    searchInput
+    ?
+    searchInput.value.toLowerCase()
+    :
+    "";
+
+
+  const filtered =
+    allProducts.filter(
+      product =>
+
+        String(
+          product.name || ""
+        )
+        .toLowerCase()
+        .includes(q)
+    );
+
+
+  renderDesignList(
+    filtered
+  );
+
+};
 
 
 loadDesignProducts();
@@ -2322,7 +2813,6 @@ async function loadTags(){
 
   }
 
-
   try{
 
     const snap =
@@ -2333,9 +2823,7 @@ async function loadTags(){
         )
       );
 
-
-    tagBox.innerHTML =
-      "";
+    tagBox.innerHTML = "";
 
 
     snap.forEach(
@@ -2344,12 +2832,10 @@ async function loadTags(){
         const tag =
           docSnap.data();
 
-
         const row =
           document.createElement(
             "div"
           );
-
 
         row.className =
           "design-item";
@@ -2361,29 +2847,22 @@ async function loadTags(){
             type="checkbox"
             onchange="
               toggleTag(
-                '${escapeAttribute(
-                  tag.slug
-                )}',
+                '${escapeAttribute(tag.slug)}',
                 this.checked
               )
             "
           >
 
           <span>
-            ${
-              escapeHtml(
-                tag.name ||
-                ""
-              )
-            }
+            ${escapeHtml(
+              tag.name || ""
+            )}
           </span>
 
         `;
 
 
-        tagBox.appendChild(
-          row
-        );
+        tagBox.appendChild(row);
 
       }
     );
@@ -2403,38 +2882,29 @@ async function loadTags(){
 
 
 window.toggleTag =
-  function(
-    slug,
-    checked
-  ){
+function(slug, checked){
 
-    if(checked){
+  if(checked){
 
-      if(
-        !selectedTags.includes(
-          slug
-        )
-      ){
+    if(
+      !selectedTags.includes(slug)
+    ){
 
-        selectedTags.push(
-          slug
-        );
-
-      }
-
-    }
-    else{
-
-      selectedTags =
-        selectedTags.filter(
-          tag =>
-            tag !==
-            slug
-        );
+      selectedTags.push(slug);
 
     }
 
-  };
+  }
+  else{
+
+    selectedTags =
+      selectedTags.filter(
+        tag => tag !== slug
+      );
+
+  }
+
+};
 
 
 loadTags();
@@ -2445,47 +2915,43 @@ loadTags();
 ==================================================*/
 
 window.openGalleryPicker =
-  function(){
+function(){
 
-    const picker =
-      document.getElementById(
-        "galleryPicker"
+  const picker =
+    document.getElementById(
+      "galleryPicker"
+    );
+
+  if(!picker){
+
+    return;
+
+  }
+
+  picker.classList.remove(
+    "hidden"
+  );
+
+
+  setTimeout(
+    () => {
+
+      loadGalleryFolder(
+        "product-images"
       );
 
+    },
+    10
+  );
 
-    if(!picker){
-
-      return;
-
-    }
-
-
-    picker.classList.remove(
-      "hidden"
-    );
-
-
-    setTimeout(
-      () => {
-
-        loadGalleryFolder(
-          "product-images"
-        );
-
-      },
-      10
-    );
-
-  };
+};
 
 
 /*==================================================
     LOAD GALLERY FOLDER
 ==================================================*/
 
-async function loadGalleryFolder(
-  path
-){
+async function loadGalleryFolder(path){
 
   try{
 
@@ -2503,16 +2969,13 @@ async function loadGalleryFolder(
         "galleryPickerGrid"
       );
 
-
     if(!grid){
 
       return;
 
     }
 
-
-    grid.innerHTML =
-      "";
+    grid.innerHTML = "";
 
 
     const folderRef =
@@ -2528,9 +2991,7 @@ async function loadGalleryFolder(
       );
 
 
-    /*==============================================
-        FOLDERS
-    ==============================================*/
+    /* FOLDERS */
 
     result.prefixes.forEach(
       folder => {
@@ -2539,7 +3000,6 @@ async function loadGalleryFolder(
           document.createElement(
             "div"
           );
-
 
         div.className =
           "gallery-folder";
@@ -2552,11 +3012,9 @@ async function loadGalleryFolder(
           </div>
 
           <span>
-            ${
-              escapeHtml(
-                folder.name
-              )
-            }
+            ${escapeHtml(
+              folder.name
+            )}
           </span>
 
         `;
@@ -2569,17 +3027,13 @@ async function loadGalleryFolder(
             );
 
 
-        grid.appendChild(
-          div
-        );
+        grid.appendChild(div);
 
       }
     );
 
 
-    /*==============================================
-        IMAGES
-    ==============================================*/
+    /* IMAGES */
 
     for(
       const file of result.items
@@ -2595,7 +3049,6 @@ async function loadGalleryFolder(
         document.createElement(
           "div"
         );
-
 
       div.className =
         "gallery-img";
@@ -2620,9 +3073,7 @@ async function loadGalleryFolder(
         >
 
         <img
-          src="${escapeAttribute(
-            url
-          )}"
+          src="${escapeAttribute(url)}"
         >
 
       `;
@@ -2658,9 +3109,7 @@ async function loadGalleryFolder(
 
             gallerySelected =
               gallerySelected.filter(
-                item =>
-                  item !==
-                  url
+                item => item !== url
               );
 
           }
@@ -2668,9 +3117,7 @@ async function loadGalleryFolder(
         };
 
 
-      grid.appendChild(
-        div
-      );
+      grid.appendChild(div);
 
     }
 
@@ -2703,9 +3150,7 @@ async function loadGalleryFolder(
     GALLERY BREADCRUMBS
 ==================================================*/
 
-function updateGalleryBreadcrumbs(
-  path
-){
+function updateGalleryBreadcrumbs(path){
 
   let breadcrumbs =
     document.getElementById(
@@ -2719,7 +3164,6 @@ function updateGalleryBreadcrumbs(
       document.getElementById(
         "galleryPicker"
       );
-
 
     if(!picker){
 
@@ -2736,7 +3180,6 @@ function updateGalleryBreadcrumbs(
 
     breadcrumbs.id =
       "galleryBreadcrumbs";
-
 
     breadcrumbs.className =
       "gallery-breadcrumbs";
@@ -2756,8 +3199,7 @@ function updateGalleryBreadcrumbs(
   }
 
 
-  breadcrumbs.innerHTML =
-    "";
+  breadcrumbs.innerHTML = "";
 
 
   const parts =
@@ -2767,9 +3209,7 @@ function updateGalleryBreadcrumbs(
         ""
       )
       .split("/")
-      .filter(
-        Boolean
-      );
+      .filter(Boolean);
 
 
   const home =
@@ -2777,14 +3217,11 @@ function updateGalleryBreadcrumbs(
       "span"
     );
 
-
   home.innerText =
     "Home";
 
-
   home.style.cursor =
     "pointer";
-
 
   home.onclick =
     () =>
@@ -2792,58 +3229,46 @@ function updateGalleryBreadcrumbs(
         "product-images"
       );
 
-
-  breadcrumbs.appendChild(
-    home
-  );
+  breadcrumbs.appendChild(home);
 
 
   let current =
     "product-images";
 
 
-  parts.forEach(
-    part => {
+  parts.forEach(part => {
 
-      current +=
-        "/" +
-        part;
+    current +=
+      "/" + part;
 
 
-      const span =
-        document.createElement(
-          "span"
-        );
-
-
-      span.innerText =
-        " / " +
-        decodeURIComponent(
-          part
-        );
-
-
-      span.style.cursor =
-        "pointer";
-
-
-      const pathCopy =
-        current;
-
-
-      span.onclick =
-        () =>
-          loadGalleryFolder(
-            pathCopy
-          );
-
-
-      breadcrumbs.appendChild(
-        span
+    const span =
+      document.createElement(
+        "span"
       );
 
-    }
-  );
+    span.innerText =
+      " / " +
+      decodeURIComponent(part);
+
+    span.style.cursor =
+      "pointer";
+
+
+    const pathCopy =
+      current;
+
+
+    span.onclick =
+      () =>
+        loadGalleryFolder(
+          pathCopy
+        );
+
+
+    breadcrumbs.appendChild(span);
+
+  });
 
 }
 
@@ -2853,23 +3278,22 @@ function updateGalleryBreadcrumbs(
 ==================================================*/
 
 window.closeGalleryPicker =
-  function(){
+function(){
 
-    const picker =
-      document.getElementById(
-        "galleryPicker"
-      );
+  const picker =
+    document.getElementById(
+      "galleryPicker"
+    );
 
+  if(picker){
 
-    if(picker){
+    picker.classList.add(
+      "hidden"
+    );
 
-      picker.classList.add(
-        "hidden"
-      );
+  }
 
-    }
-
-  };
+};
 
 
 /*==================================================
@@ -2877,63 +3301,67 @@ window.closeGalleryPicker =
 ==================================================*/
 
 window.addSelectedImages =
-  function(){
+function(){
 
-    if(
-      !gallerySelected.length
-    ){
+  if(
+    !gallerySelected.length
+  ){
 
-      alert(
-        "Select images first"
+    alert(
+      "Select images first"
+    );
+
+    return;
+
+  }
+
+
+  gallerySelected.forEach(url => {
+
+    const alreadyExists =
+      productImages.some(
+        image =>
+          image.type === "url" &&
+          image.url === url
       );
 
 
-      return;
+    if(!alreadyExists){
+
+      productImages.push({
+
+        type: "url",
+
+        url
+
+      });
 
     }
 
+  });
 
-    gallerySelected.forEach(
-      url => {
 
-        if(
-          !galleryImages.includes(
-            url
-          )
-        ){
+  gallerySelected = [];
 
-          galleryImages.push(
-            url
-          );
 
-        }
+  renderImagePreview();
 
-      }
+
+  const picker =
+    document.getElementById(
+      "galleryPicker"
     );
 
 
-    gallerySelected =
-      [];
+  if(picker){
 
+    picker.classList.add(
+      "hidden"
+    );
 
-    renderImagePreview();
+  }
 
-
-    const picker =
-      document.getElementById(
-        "galleryPicker"
-      );
-
-
-    if(picker){
-
-      picker.classList.add(
-        "hidden"
-      );
-
-    }
-
-  };
+};
 
 
 /*==================================================
@@ -2941,168 +3369,187 @@ window.addSelectedImages =
 ==================================================*/
 
 window.saveProduct =
-  async () => {
+async () => {
 
-    const name =
-      nameInput
-      ?
-      nameInput.value.trim()
-      :
-      "";
-
-
-    const price =
-      priceInput
-      ?
-      priceInput.value
-      :
-      "";
+  const name =
+    nameInput
+    ?
+    nameInput.value.trim()
+    :
+    "";
 
 
-    const selectedOption =
-      catSelect?.options[
-        catSelect.selectedIndex
-      ];
+  const price =
+    priceInput
+    ?
+    priceInput.value
+    :
+    "";
 
 
-    let categoryId =
-      null;
+  const selectedOption =
+    catSelect?.options[
+      catSelect.selectedIndex
+    ];
 
 
-    let subCategoryId =
-      null;
+  let categoryId =
+    null;
+
+  let subCategoryId =
+    null;
+
+
+  if(
+    selectedOption?.dataset.type ===
+    "main"
+  ){
+
+    categoryId =
+      selectedOption.value;
+
+  }
+
+
+  if(
+    selectedOption?.dataset.type ===
+    "sub"
+  ){
+
+    subCategoryId =
+      selectedOption.value;
+
+    categoryId =
+      selectedOption.dataset.parent;
+
+  }
+
+
+  const isBestseller =
+    bestsellerCheckbox?.checked ||
+    false;
+
+
+  /* REQUIRED */
+
+  if(
+    !name ||
+    !price ||
+    !selectedOption?.value
+  ){
+
+    showPopup(
+      "⚠ Fill all required fields"
+    );
+
+    setTimeout(
+      hidePopup,
+      1500
+    );
+
+    return;
+
+  }
+
+
+  /* COMMON SHIPPING */
+
+  const commonShippingType =
+    shippingType?.value ||
+    "free";
+
+
+  let commonShippingAmount =
+    0;
+
+
+  if(
+    commonShippingType ===
+    "paid"
+  ){
+
+    commonShippingAmount =
+      Number(
+        shippingAmount?.value ||
+        0
+      );
 
 
     if(
-      selectedOption?.dataset.type ===
-      "main"
-    ){
-
-      categoryId =
-        selectedOption.value;
-
-    }
-
-
-    if(
-      selectedOption?.dataset.type ===
-      "sub"
-    ){
-
-      subCategoryId =
-        selectedOption.value;
-
-
-      categoryId =
-        selectedOption.dataset.parent;
-
-    }
-
-
-    const isBestseller =
-      bestsellerCheckbox?.checked ||
-      false;
-
-
-    /*==============================================
-        REQUIRED FIELDS
-    ==============================================*/
-
-    if(
-      !name ||
-      !price ||
-      !selectedOption?.value
+      commonShippingAmount <= 0
     ){
 
       showPopup(
-        "⚠ Fill all required fields"
+        "⚠ Please enter common shipping amount."
       );
-
 
       setTimeout(
         hidePopup,
-        1500
+        1800
       );
-
 
       return;
 
     }
 
-
-    /*==============================================
-        COMMON SHIPPING
-    ==============================================*/
-
-    const commonShippingType =
-      shippingType?.value ||
-      "free";
+  }
 
 
-    let commonShippingAmount =
-      0;
+  try{
+
+    /*============================================
+        UPLOAD PRODUCT IMAGES
+    ============================================*/
+
+    showPopup(
+      "Uploading images..."
+    );
 
 
-    if(
-      commonShippingType ===
-      "paid"
+    const uploadedImages = [];
+
+
+    /*
+      IMPORTANT:
+
+      We loop through productImages
+      in the exact drag/drop order.
+
+      Therefore Firestore images[]
+      gets the same order as the UI.
+    */
+
+    for(
+      const image of productImages
     ){
 
-      commonShippingAmount =
-        Number(
-          shippingAmount?.value ||
-          0
-        );
-
-
       if(
-        commonShippingAmount <=
-        0
+        image.type === "url"
       ){
 
-        showPopup(
-          "⚠ Please enter common shipping amount."
+        uploadedImages.push(
+          image.url
         );
 
-
-        setTimeout(
-          hidePopup,
-          1800
-        );
-
-
-        return;
+        continue;
 
       }
 
-    }
 
-
-    try{
-
-      /*============================================
-          UPLOAD IMAGES
-      ============================================*/
-
-      showPopup(
-        "Uploading images..."
-      );
-
-
-      const uploadedImages =
-        [
-          ...galleryImages
-        ];
-
-
-      for(
-        const file of images
+      if(
+        image.type === "file"
       ){
+
+        const file =
+          image.file;
+
 
         const imgRef =
           ref(
             storage,
-            `products/${Date.now()}-${file.name}`
+            `products/${Date.now()}-${Math.random()
+              .toString(36)
+              .substring(2, 8)}-${file.name}`
           );
 
 
@@ -3124,339 +3571,322 @@ window.saveProduct =
 
       }
 
-
-      /*============================================
-          PAYMENT SETTINGS
-      ============================================*/
-
-      const paymentSettings = {
-
-        online: {
-
-          enabled:
-            allowOnline?.checked ||
-            false,
-
-          discountType:
-            onlineDiscountType?.value ||
-            "none",
-
-          discountValue:
-            Number(
-              onlineDiscountValue?.value ||
-              0
-            )
-
-        },
+    }
 
 
-        cod: {
+    /*============================================
+        PAYMENT SETTINGS
+    ============================================*/
 
-          enabled:
-            allowCOD?.checked ||
-            false,
+    const paymentSettings = {
 
-          discountType:
-            codDiscountType?.value ||
-            "none",
+      online: {
 
-          discountValue:
-            Number(
-              codDiscountValue?.value ||
-              0
-            )
+        enabled:
+          allowOnline?.checked ||
+          false,
 
-        },
+        discountType:
+          onlineDiscountType?.value ||
+          "none",
 
+        discountValue:
+          Number(
+            onlineDiscountValue?.value ||
+            0
+          )
 
-        advance: {
-
-          enabled:
-            allowAdvance?.checked ||
-            false,
-
-          discountType:
-            advanceDiscountType?.value ||
-            "none",
-
-          discountValue:
-            Number(
-              advanceDiscountValue?.value ||
-              0
-            ),
-
-          type:
-            advanceType?.value ||
-            "percent",
-
-          value:
-            Number(
-              advanceValue?.value ||
-              0
-            )
-
-        }
-
-      };
+      },
 
 
-      /*============================================
-          SHIPPING OBJECT
-      ============================================*/
+      cod: {
 
-      const productShipping = {
+        enabled:
+          allowCOD?.checked ||
+          false,
+
+        discountType:
+          codDiscountType?.value ||
+          "none",
+
+        discountValue:
+          Number(
+            codDiscountValue?.value ||
+            0
+          )
+
+      },
+
+
+      advance: {
+
+        enabled:
+          allowAdvance?.checked ||
+          false,
+
+        discountType:
+          advanceDiscountType?.value ||
+          "none",
+
+        discountValue:
+          Number(
+            advanceDiscountValue?.value ||
+            0
+          ),
 
         type:
-          commonShippingType,
+          advanceType?.value ||
+          "percent",
 
-        amount:
-          commonShippingAmount
+        value:
+          Number(
+            advanceValue?.value ||
+            0
+          )
 
-      };
+      }
+
+    };
 
 
-      /*============================================
-          SAVE PRODUCT
-      ============================================*/
+    /*============================================
+        SHIPPING
+    ============================================*/
 
-      showPopup(
-        "Saving product..."
+    const productShipping = {
+
+      type:
+        commonShippingType,
+
+      amount:
+        commonShippingAmount
+
+    };
+
+
+    /*============================================
+        SAVE PRODUCT
+    ============================================*/
+
+    showPopup(
+      "Saving product..."
+    );
+
+
+    const docRef =
+      await addDoc(
+        collection(
+          db,
+          "products"
+        ),
+        {
+
+          name,
+
+          description:
+            descInput?.value ||
+            "",
+
+          basePrice:
+            Number(price),
+
+          salePrice:
+            Number(
+              salePriceInput?.value ||
+              price
+            ),
+
+          inStock:
+            stockStatus
+            ?
+            stockStatus.value ===
+              "true"
+            :
+            true,
+
+          categoryId,
+
+          subCategoryId,
+
+          /*
+            Images are saved in the
+            exact drag/drop order.
+          */
+
+          images:
+            uploadedImages,
+
+
+          /* VARIANTS */
+
+          variants: {
+
+            colors,
+
+            sizes
+
+          },
+
+
+          /* SHIPPING */
+
+          shipping:
+            productShipping,
+
+
+          /* CUSTOM OPTIONS */
+
+          customOptions,
+
+
+          /* PAYMENT */
+
+          paymentSettings,
+
+
+          /* RELATED */
+
+          relatedDesigns,
+
+
+          /* TAGS */
+
+          tags:
+            selectedTags,
+
+
+          /* BESTSELLER */
+
+          isBestseller,
+
+
+          /* CREATED */
+
+          createdAt:
+            Date.now()
+
+        }
       );
 
 
-      const docRef =
-        await addDoc(
-          collection(
-            db,
-            "products"
-          ),
-          {
+    const newId =
+      docRef.id;
 
-            name,
 
-            description:
-              descInput?.value ||
-              "",
+    /*============================================
+        BIDIRECTIONAL RELATED DESIGNS
+    ============================================*/
 
-            basePrice:
-              Number(
-                price
-              ),
+    for(
+      const rid of relatedDesigns
+    ){
 
-            salePrice:
-              Number(
-                salePriceInput?.value ||
-                price
-              ),
-
-            inStock:
-              stockStatus
-              ?
-              stockStatus.value ===
-                "true"
-              :
-              true,
-
-            categoryId,
-
-            subCategoryId,
-
-            images:
-              uploadedImages,
-
-            /*======================================
-                VARIANTS
-
-                IMPORTANT:
-                sizes array is already in the
-                user's drag-and-drop order.
-            ======================================*/
-
-            variants: {
-
-              colors,
-
-              sizes
-
-            },
-
-            /*======================================
-                SHIPPING
-            ======================================*/
-
-            shipping:
-              productShipping,
-
-            /*======================================
-                CUSTOM OPTIONS
-            ======================================*/
-
-            customOptions,
-
-            /*======================================
-                PAYMENT
-            ======================================*/
-
-            paymentSettings,
-
-            /*======================================
-                RELATED DESIGNS
-            ======================================*/
-
-            relatedDesigns,
-
-            /*======================================
-                TAGS
-            ======================================*/
-
-            tags:
-              selectedTags,
-
-            /*======================================
-                BESTSELLER
-            ======================================*/
-
-            isBestseller,
-
-            /*======================================
-                CREATED
-            ======================================*/
-
-            createdAt:
-              Date.now()
-
-          }
+      const refDoc =
+        doc(
+          db,
+          "products",
+          rid
         );
 
 
-      const newId =
-        docRef.id;
+      const snap =
+        await getDoc(
+          refDoc
+        );
 
 
-      /*============================================
-          BIDIRECTIONAL RELATED DESIGNS
-      ============================================*/
-
-      for(
-        const rid of relatedDesigns
+      if(
+        snap.exists()
       ){
 
-        const refDoc =
-          doc(
-            db,
-            "products",
-            rid
-          );
+        const data =
+          snap.data();
 
 
-        const snap =
-          await getDoc(
-            refDoc
-          );
+        const arr =
+          Array.isArray(
+            data.relatedDesigns
+          )
+          ?
+          [
+            ...data.relatedDesigns
+          ]
+          :
+          [];
 
 
         if(
-          snap.exists()
+          !arr.includes(newId)
         ){
 
-          const data =
-            snap.data();
+          arr.push(newId);
 
 
-          const arr =
-            Array.isArray(
-              data.relatedDesigns
-            )
-            ?
-            [
-              ...data.relatedDesigns
-            ]
-            :
-            [];
-
-
-          if(
-            !arr.includes(
-              newId
-            )
-          ){
-
-            arr.push(
-              newId
-            );
-
-
-            await updateDoc(
-              refDoc,
-              {
-                relatedDesigns:
-                  arr
-              }
-            );
-
-          }
+          await updateDoc(
+            refDoc,
+            {
+              relatedDesigns:
+                arr
+            }
+          );
 
         }
 
       }
 
-
-      /*============================================
-          SUCCESS
-      ============================================*/
-
-      showPopup(
-        "✅ Product saved"
-      );
-
-
-      setTimeout(
-        () => {
-
-          hidePopup();
-
-
-          location.href =
-            "products.html";
-
-        },
-        1200
-      );
-
     }
 
-    catch(error){
 
-      console.error(
-        "Save product error:",
-        error
-      );
+    /* SUCCESS */
+
+    showPopup(
+      "✅ Product saved"
+    );
 
 
-      showPopup(
-        "❌ " +
-        (
-          error?.message ||
-          "Unable to save product."
-        )
-      );
+    setTimeout(
+      () => {
 
-    }
+        hidePopup();
 
-  };
+        location.href =
+          "products.html";
+
+      },
+      1200
+    );
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Save product error:",
+      error
+    );
+
+
+    showPopup(
+      "❌ " +
+      (
+        error?.message ||
+        "Unable to save product."
+      )
+    );
+
+  }
+
+};
 
 
 /*==================================================
     ESCAPE HTML
 ==================================================*/
 
-function escapeHtml(
-  value
-){
+function escapeHtml(value){
 
   return String(
-    value ??
-    ""
+    value ?? ""
   )
   .replace(
     /&/g,
@@ -3486,12 +3916,8 @@ function escapeHtml(
     ESCAPE ATTRIBUTE
 ==================================================*/
 
-function escapeAttribute(
-  value
-){
+function escapeAttribute(value){
 
-  return escapeHtml(
-    value
-  );
+  return escapeHtml(value);
 
 }
