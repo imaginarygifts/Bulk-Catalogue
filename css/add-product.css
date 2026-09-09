@@ -1,6 +1,6 @@
 /* =========================================================
    ADD PRODUCT PAGE CSS
-   Separate stylesheet
+   FULL UPDATED VERSION
    ========================================================= */
 
 :root {
@@ -9,11 +9,14 @@
   --ap-panel-2: #161a23;
   --ap-panel-3: #1a1e28;
 
-  --ap-border: rgba(255,255,255,0.12);
-  --ap-border-soft: rgba(255,255,255,0.07);
+  --ap-border: rgba(255, 255, 255, 0.12);
+  --ap-border-soft: rgba(255, 255, 255, 0.07);
 
   --ap-text: #ffffff;
   --ap-muted: #9aa0aa;
+
+  --ap-purple: #962fbf;
+  --ap-pink: #d62976;
 
   --ap-gradient:
     linear-gradient(
@@ -41,11 +44,15 @@ html {
   margin: 0;
   padding: 0;
   background: var(--ap-bg);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
+
+  min-height: 100vh;
+
   background:
     radial-gradient(
       1200px 600px at 10% -10%,
@@ -63,7 +70,18 @@ body {
     "Segoe UI",
     sans-serif;
 
-  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
 }
 
 
@@ -81,7 +99,8 @@ body {
 
   padding: 14px 16px;
 
-  background: rgba(255,255,255,0.03);
+  background:
+    rgba(255, 255, 255, 0.03);
 
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -103,10 +122,11 @@ body {
   align-items: center;
   justify-content: center;
 
-  background: rgba(255,255,255,0.06);
+  background:
+    rgba(255, 255, 255, 0.06);
 
   border:
-    1px solid rgba(255,255,255,0.08);
+    1px solid rgba(255, 255, 255, 0.08);
 
   border-radius: 10px;
 
@@ -119,6 +139,15 @@ body {
   user-select: none;
 
   flex-shrink: 0;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.back-btn:hover {
+  background:
+    rgba(255, 255, 255, 0.1);
 }
 
 .back-btn:active {
@@ -126,8 +155,14 @@ body {
 }
 
 .title {
+  min-width: 0;
+
   font-size: 17px;
   font-weight: 700;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 
@@ -137,7 +172,6 @@ body {
 
 .container {
   width: 100%;
-
   max-width: 720px;
 
   margin: 0 auto;
@@ -154,7 +188,6 @@ body {
 
 .container > label,
 .container label:not(.image-picker) {
-
   display: block;
 
   margin-top: 15px;
@@ -173,9 +206,9 @@ body {
    ========================================================= */
 
 .container input:not([type="checkbox"]),
+.container input:not([type="radio"]),
 .container select,
 .container textarea {
-
   width: 100%;
 
   display: block;
@@ -186,7 +219,8 @@ body {
 
   border-radius: 12px;
 
-  background: rgba(255,255,255,0.045);
+  background:
+    rgba(255, 255, 255, 0.045);
 
   border:
     1px solid var(--ap-border);
@@ -200,9 +234,9 @@ body {
   font-family: inherit;
 
   transition:
-    border-color .2s ease,
-    background .2s ease,
-    box-shadow .2s ease;
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .container textarea {
@@ -211,15 +245,16 @@ body {
 }
 
 .container input:not([type="checkbox"]):focus,
+.container input:not([type="radio"]):focus,
 .container select:focus,
 .container textarea:focus {
+  border-color: var(--ap-purple);
 
-  border-color: #962fbf;
-
-  background: rgba(255,255,255,0.06);
+  background:
+    rgba(255, 255, 255, 0.06);
 
   box-shadow:
-    0 0 0 2px rgba(150,47,191,0.12);
+    0 0 0 2px rgba(150, 47, 191, 0.12);
 }
 
 
@@ -253,7 +288,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .add-category-btn {
-
   display: inline-flex;
 
   align-items: center;
@@ -285,8 +319,12 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 
   transition:
-    transform .2s ease,
-    opacity .2s ease;
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.add-category-btn:hover {
+  opacity: 0.92;
 }
 
 .add-category-btn:active {
@@ -303,7 +341,6 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-bottom: 10px;
 
   font-size: 16px;
-
   font-weight: 700;
 }
 
@@ -312,7 +349,6 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-bottom: 10px;
 
   font-size: 15px;
-
   font-weight: 600;
 }
 
@@ -331,7 +367,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .tag-list,
 #tagCheckboxes {
-
   display: flex;
 
   flex-direction: column;
@@ -344,7 +379,8 @@ input[type="number"]::-webkit-outer-spin-button {
 
   padding: 10px;
 
-  background: rgba(255,255,255,0.035);
+  background:
+    rgba(255, 255, 255, 0.035);
 
   border:
     1px solid var(--ap-border-soft);
@@ -359,19 +395,19 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .tag-list::-webkit-scrollbar-thumb,
 #tagCheckboxes::-webkit-scrollbar-thumb {
-
   background:
-    rgba(255,255,255,0.18);
+    rgba(255, 255, 255, 0.18);
 
   border-radius: 10px;
 }
 
 
-/* Tag row */
+/* =========================================================
+   TAG ROW
+   ========================================================= */
 
 .tag-item,
 #tagCheckboxes .design-item {
-
   display: flex;
 
   align-items: center;
@@ -385,7 +421,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 9px;
 
   background:
-    rgba(255,255,255,0.035);
+    rgba(255, 255, 255, 0.035);
 }
 
 
@@ -394,26 +430,25 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .container input[type="checkbox"] {
-
   width: 18px;
   height: 18px;
 
   margin: 0;
-
   padding: 0;
 
   flex-shrink: 0;
 
-  accent-color: #962fbf;
+  accent-color: var(--ap-purple);
 
   cursor: pointer;
 }
 
 
-/* Checkbox label */
+/* =========================================================
+   CHECKBOX LABEL
+   ========================================================= */
 
 .container label:has(input[type="checkbox"]) {
-
   display: flex;
 
   align-items: center;
@@ -429,18 +464,21 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .image-row {
-
   display: flex;
 
   gap: 10px;
 
   overflow-x: auto;
 
-  padding: 10px 0;
+  padding: 10px 2px;
 
   min-height: 10px;
 
   scrollbar-width: thin;
+
+  align-items: center;
+
+  touch-action: pan-x;
 }
 
 .image-row::-webkit-scrollbar {
@@ -448,22 +486,44 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .image-row::-webkit-scrollbar-thumb {
-
   background:
-    rgba(255,255,255,0.18);
+    rgba(255, 255, 255, 0.18);
 
   border-radius: 10px;
 }
 
-.image-card {
 
+/* =========================================================
+   DRAGGABLE IMAGE CARD
+   ========================================================= */
+
+.image-card {
   position: relative;
 
   flex-shrink: 0;
+
+  width: 80px;
+  height: 80px;
+
+  border-radius: 10px;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.image-card:active {
+  cursor: grabbing;
 }
 
 .image-card img {
-
   width: 80px;
   height: 80px;
 
@@ -472,10 +532,40 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 10px;
 
   display: block;
+
+  pointer-events: none;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
 }
 
-.image-card span {
 
+/* Image being dragged */
+
+.image-card.dragging {
+  opacity: 0.45;
+
+  transform:
+    scale(0.94);
+}
+
+
+/* Image drop target */
+
+.image-card.drag-over {
+  transform:
+    scale(1.05);
+
+  outline:
+    2px solid var(--ap-purple);
+
+  outline-offset: 2px;
+}
+
+
+/* Remove image */
+
+.image-card span {
   position: absolute;
 
   top: -6px;
@@ -500,6 +590,9 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 
   z-index: 2;
+
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.35);
 }
 
 
@@ -508,7 +601,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .image-picker-group {
-
   display: flex;
 
   flex-direction: column;
@@ -519,7 +611,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .image-picker {
-
   display: block;
 
   width: 100%;
@@ -534,7 +625,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .image-pick-box {
-
   width: 100%;
 
   padding: 14px;
@@ -544,27 +634,26 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 12px;
 
   background:
-    rgba(255,255,255,0.05);
+    rgba(255, 255, 255, 0.05);
 
   border:
-    1px dashed rgba(255,255,255,0.28);
+    1px dashed rgba(255, 255, 255, 0.28);
 
   color: #ddd;
 
   font-size: 14px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease;
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .image-pick-box:hover {
-
   background:
-    rgba(255,255,255,0.08);
+    rgba(255, 255, 255, 0.08);
 
   border-color:
-    rgba(255,255,255,0.45);
+    rgba(255, 255, 255, 0.45);
 }
 
 
@@ -573,7 +662,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 #relatedDesignsList {
-
   max-height: 280px;
 
   overflow-y: auto;
@@ -588,15 +676,13 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 #relatedDesignsList::-webkit-scrollbar-thumb {
-
   background:
-    rgba(255,255,255,0.18);
+    rgba(255, 255, 255, 0.18);
 
   border-radius: 10px;
 }
 
 .design-list {
-
   display: flex;
 
   flex-direction: column;
@@ -605,7 +691,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .design-item {
-
   display: flex;
 
   align-items: center;
@@ -617,11 +702,10 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 10px;
 
   background:
-    rgba(255,255,255,0.035);
+    rgba(255, 255, 255, 0.035);
 }
 
 .design-item img {
-
   width: 42px;
   height: 42px;
 
@@ -633,7 +717,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .design-item span {
-
   font-size: 13px;
 
   line-height: 1.3;
@@ -648,7 +731,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .design-item input[type="checkbox"] {
-
   width: 18px;
   height: 18px;
 
@@ -661,7 +743,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .accordion {
-
   width: 100%;
 
   margin-top: 18px;
@@ -678,7 +759,7 @@ input[type="number"]::-webkit-outer-spin-button {
     );
 
   border:
-    1px solid rgba(255,255,255,0.08);
+    1px solid rgba(255, 255, 255, 0.08);
 
   color: #fff;
 
@@ -688,13 +769,14 @@ input[type="number"]::-webkit-outer-spin-button {
 
   cursor: pointer;
 
+  text-align: left;
+
   transition:
-    background .2s ease,
-    border-color .2s ease;
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .accordion:hover {
-
   background:
     linear-gradient(
       180deg,
@@ -711,7 +793,6 @@ input[type="number"]::-webkit-outer-spin-button {
 #shippingSection,
 #variantsSection,
 #customSection {
-
   width: 100%;
 
   padding: 16px;
@@ -721,7 +802,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #0e1118;
 
   border:
-    1px solid rgba(255,255,255,0.06);
+    1px solid rgba(255, 255, 255, 0.06);
 
   border-top: none;
 
@@ -735,7 +816,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .accordion-body {
-
   width: 100%;
 
   padding: 16px;
@@ -743,7 +823,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #0e1118;
 
   border:
-    1px solid rgba(255,255,255,0.06);
+    1px solid rgba(255, 255, 255, 0.06);
 
   border-top: none;
 
@@ -766,7 +846,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .btn-outline {
-
   display: inline-flex;
 
   align-items: center;
@@ -781,7 +860,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background: transparent;
 
   border:
-    1px solid rgba(255,255,255,0.16);
+    1px solid rgba(255, 255, 255, 0.16);
 
   color: #fff;
 
@@ -792,18 +871,17 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    transform .15s ease;
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .btn-outline:hover {
-
   background:
-    rgba(255,255,255,0.07);
+    rgba(255, 255, 255, 0.07);
 
   border-color:
-    rgba(255,255,255,0.28);
+    rgba(255, 255, 255, 0.28);
 }
 
 .btn-outline:active {
@@ -816,7 +894,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .btn {
-
   width: 100%;
 
   padding: 15px;
@@ -847,20 +924,24 @@ input[type="number"]::-webkit-outer-spin-button {
 
   box-shadow:
     0 8px 25px
-    rgba(214,41,118,0.35);
+    rgba(214, 41, 118, 0.35);
 
   transition:
-    transform .15s ease,
-    box-shadow .2s ease;
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.95;
 }
 
 .btn:active {
-
   transform: scale(0.98);
 
   box-shadow:
     0 5px 15px
-    rgba(214,41,118,0.25);
+    rgba(214, 41, 118, 0.25);
 }
 
 
@@ -869,7 +950,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 #commonShippingAmountBox small {
-
   display: block;
 
   margin-top: 8px;
@@ -887,13 +967,12 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
 /* =========================================================
-   VARIANT LIST
+   VARIANT LISTS
    ========================================================= */
 
 #colorList,
 #sizeList,
 #customList {
-
   display: flex;
 
   flex-direction: column;
@@ -901,15 +980,16 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 10px;
 
   margin-top: 12px;
+
+  width: 100%;
 }
 
 
 /* =========================================================
    NEW EDITABLE / DRAGGABLE VARIANT LIST
-========================================================= */
+   ========================================================= */
 
 .variant-list {
-
   display: flex;
 
   flex-direction: column;
@@ -927,7 +1007,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-item {
-
   width: 100%;
 
   display: grid;
@@ -947,15 +1026,29 @@ input[type="number"]::-webkit-outer-spin-button {
     #161a23;
 
   border:
-    1px solid rgba(255,255,255,0.07);
+    1px solid rgba(255, 255, 255, 0.07);
 
   border-radius: 12px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    opacity .2s ease,
-    transform .2s ease;
+    background 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   VARIANT ITEM HOVER
+   ========================================================= */
+
+.variant-item:hover {
+  background:
+    #191d27;
+
+  border-color:
+    rgba(255, 255, 255, 0.11);
 }
 
 
@@ -966,7 +1059,6 @@ input[type="number"]::-webkit-outer-spin-button {
 #colorList > div,
 #sizeList > div,
 #customList > div {
-
   width: 100%;
 
   background:
@@ -977,7 +1069,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 11px;
 
   border:
-    1px solid rgba(255,255,255,0.06);
+    1px solid rgba(255, 255, 255, 0.06);
 
   font-size: 13px;
 
@@ -990,7 +1082,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-drag {
-
   width: 34px;
   height: 36px;
 
@@ -1009,17 +1100,22 @@ input[type="number"]::-webkit-outer-spin-button {
 
   user-select: none;
 
+  -webkit-user-select: none;
+
   touch-action: none;
 
   flex-shrink: 0;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .variant-drag:hover {
-
   color: #fff;
 
   background:
-    rgba(255,255,255,0.07);
+    rgba(255, 255, 255, 0.07);
 }
 
 .variant-drag:active {
@@ -1032,14 +1128,12 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-content {
-
   min-width: 0;
 
   width: 100%;
 }
 
 .variant-name {
-
   color: #fff;
 
   font-size: 14px;
@@ -1056,7 +1150,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .variant-details {
-
   display: flex;
 
   flex-wrap: wrap;
@@ -1073,14 +1166,12 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .variant-price {
-
   color: #fff;
 
   font-weight: 600;
 }
 
 .variant-required {
-
   display: inline-flex;
 
   align-items: center;
@@ -1090,7 +1181,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 6px;
 
   background:
-    rgba(255,255,255,0.08);
+    rgba(255, 255, 255, 0.08);
 
   color: #ccc;
 
@@ -1098,7 +1189,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .variant-shipping {
-
   color: #999;
 }
 
@@ -1108,7 +1198,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-actions {
-
   display: flex;
 
   align-items: center;
@@ -1125,7 +1214,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .variant-edit-btn,
 .variant-delete-btn {
-
   width: 36px;
   height: 36px;
 
@@ -1143,7 +1231,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background: transparent;
 
   border:
-    1px solid rgba(255,255,255,0.12);
+    1px solid rgba(255, 255, 255, 0.12);
 
   color: #fff;
 
@@ -1152,33 +1240,59 @@ input[type="number"]::-webkit-outer-spin-button {
   font-size: 15px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    transform .15s ease;
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .variant-edit-btn:hover {
-
   background:
-    rgba(255,255,255,0.08);
+    rgba(255, 255, 255, 0.08);
 
   border-color:
-    rgba(255,255,255,0.22);
+    rgba(255, 255, 255, 0.22);
 }
 
 .variant-delete-btn:hover {
-
   background:
-    rgba(255,59,59,0.12);
+    rgba(255, 59, 59, 0.12);
 
   border-color:
-    rgba(255,59,59,0.35);
+    rgba(255, 59, 59, 0.35);
 }
 
 .variant-edit-btn:active,
 .variant-delete-btn:active {
-
   transform: scale(0.94);
+}
+
+
+/* =========================================================
+   INLINE VARIANT EDIT MODE
+   ========================================================= */
+
+.variant-item.is-editing {
+  grid-template-columns:
+    34px
+    minmax(0, 1fr);
+
+  align-items: start;
+
+  border-color:
+    rgba(150, 47, 191, 0.45);
+
+  background:
+    #181b26;
+
+  box-shadow:
+    0 0 0 1px rgba(150, 47, 191, 0.08);
+}
+
+
+/* Hide normal actions while inline editing */
+
+.variant-item.is-editing > .variant-actions {
+  display: none;
 }
 
 
@@ -1187,7 +1301,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-edit-form {
-
   width: 100%;
 
   display: grid;
@@ -1204,7 +1317,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .variant-edit-form input,
 .variant-edit-form select {
-
   width: 100%;
 
   min-width: 0;
@@ -1219,24 +1331,27 @@ input[type="number"]::-webkit-outer-spin-button {
     #11141b;
 
   border:
-    1px solid rgba(255,255,255,0.12);
+    1px solid rgba(255, 255, 255, 0.12);
 
   color: #fff;
 
   font-size: 13px;
 
   outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .variant-edit-form input:focus,
 .variant-edit-form select:focus {
-
   border-color:
-    #962fbf;
+    var(--ap-purple);
 
   box-shadow:
     0 0 0 2px
-    rgba(150,47,191,0.1);
+    rgba(150, 47, 191, 0.1);
 }
 
 
@@ -1246,7 +1361,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .variant-save-btn,
 .variant-cancel-btn {
-
   height: 36px;
 
   padding: 0 12px;
@@ -1260,10 +1374,11 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 
   margin: 0;
+
+  white-space: nowrap;
 }
 
 .variant-save-btn {
-
   border: none;
 
   color: #fff;
@@ -1279,13 +1394,48 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .variant-cancel-btn {
-
-  background: transparent;
+  background:
+    transparent;
 
   border:
-    1px solid rgba(255,255,255,0.15);
+    1px solid rgba(255, 255, 255, 0.15);
 
   color: #fff;
+}
+
+.variant-save-btn:hover {
+  opacity: 0.9;
+}
+
+.variant-cancel-btn:hover {
+  background:
+    rgba(255, 255, 255, 0.06);
+}
+
+
+/* =========================================================
+   INLINE EDIT FORM EXTRA ROW
+   ========================================================= */
+
+.variant-edit-fields {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.variant-edit-actions {
+  display: flex;
+
+  gap: 7px;
+
+  align-items: center;
+
+  justify-content: flex-end;
 }
 
 
@@ -1294,20 +1444,32 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-item.dragging {
-
   opacity: 0.4;
 
   transform:
     scale(0.98);
-}
-
-.variant-item.drag-over {
-
-  background:
-    rgba(150,47,191,0.12);
 
   border-color:
-    rgba(150,47,191,0.7);
+    rgba(150, 47, 191, 0.45);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   DROP TARGET
+   ========================================================= */
+
+.variant-item.drag-over {
+  background:
+    rgba(150, 47, 191, 0.12);
+
+  border-color:
+    rgba(150, 47, 191, 0.7);
+
+  transform:
+    translateY(-2px);
 }
 
 
@@ -1316,7 +1478,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .variant-empty {
-
   width: 100%;
 
   padding: 14px;
@@ -1324,7 +1485,7 @@ input[type="number"]::-webkit-outer-spin-button {
   text-align: center;
 
   border:
-    1px dashed rgba(255,255,255,0.12);
+    1px dashed rgba(255, 255, 255, 0.12);
 
   border-radius: 10px;
 
@@ -1339,7 +1500,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 #customList > div {
-
   display: flex;
 
   align-items: center;
@@ -1355,12 +1515,10 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .payment-check {
-
   padding: 5px 0;
 }
 
 .payment-check label {
-
   display: flex !important;
 
   align-items: center;
@@ -1375,9 +1533,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .payment-check input[type="checkbox"] {
-
   width: 18px;
-
   height: 18px;
 
   margin: 0;
@@ -1389,7 +1545,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .row {
-
   width: 100%;
 
   display: grid;
@@ -1407,7 +1562,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .row label {
-
   margin: 0 !important;
 
   color: #ccc;
@@ -1417,7 +1571,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .row input,
 .row select {
-
   width: 100%;
 
   margin: 0 !important;
@@ -1430,7 +1583,7 @@ input[type="number"]::-webkit-outer-spin-button {
     #151922;
 
   border:
-    1px solid rgba(255,255,255,0.08);
+    1px solid rgba(255, 255, 255, 0.08);
 
   color: #fff;
 }
@@ -1442,7 +1595,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .accordion-body hr,
 #paymentSection hr {
-
   border: none;
 
   height: 1px;
@@ -1450,7 +1602,7 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 18px 0;
 
   background:
-    rgba(255,255,255,0.08);
+    rgba(255, 255, 255, 0.08);
 }
 
 
@@ -1459,7 +1611,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .gallery-picker {
-
   position: fixed;
 
   inset: 0;
@@ -1486,10 +1637,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 
-/* Gallery header */
+/* =========================================================
+   GALLERY HEADER
+   ========================================================= */
 
 .gallery-header {
-
   width: 100%;
 
   display: flex;
@@ -1517,7 +1669,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .gallery-header h3 {
-
   margin: 0;
 
   font-size: 16px;
@@ -1526,16 +1677,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .gallery-header button {
-
   padding: 8px 12px;
 
   border-radius: 9px;
 
   border:
-    1px solid rgba(255,255,255,0.15);
+    1px solid rgba(255, 255, 255, 0.15);
 
   background:
-    rgba(255,255,255,0.06);
+    rgba(255, 255, 255, 0.06);
 
   color: #fff;
 
@@ -1550,7 +1700,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .gallery-breadcrumbs {
-
   width: 100%;
 
   padding: 10px 15px;
@@ -1570,7 +1719,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .gallery-breadcrumbs span {
-
   color: #aaa;
 
   cursor: pointer;
@@ -1586,7 +1734,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .gallery-picker-grid {
-
   width: 100%;
 
   padding: 15px;
@@ -1607,7 +1754,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .gallery-img {
-
   position: relative;
 
   width: 100%;
@@ -1621,11 +1767,10 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #111;
 
   border:
-    1px solid rgba(255,255,255,0.05);
+    1px solid rgba(255, 255, 255, 0.05);
 }
 
 .gallery-img img {
-
   width: 100%;
   height: 100%;
 
@@ -1635,10 +1780,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 
-/* Gallery checkbox */
+/* =========================================================
+   GALLERY CHECKBOX
+   ========================================================= */
 
 .gallery-check {
-
   position: absolute;
 
   top: 7px;
@@ -1658,7 +1804,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .gallery-folder {
-
   width: 100%;
 
   aspect-ratio: 1 / 1;
@@ -1678,7 +1823,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 10px;
 
   border:
-    1px solid rgba(255,255,255,0.06);
+    1px solid rgba(255, 255, 255, 0.06);
 
   cursor: pointer;
 
@@ -1688,7 +1833,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .folder-icon {
-
   font-size: 30px;
 
   margin-bottom: 6px;
@@ -1700,7 +1844,6 @@ input[type="number"]::-webkit-outer-spin-button {
    ========================================================= */
 
 .popup {
-
   position: fixed;
 
   inset: 0;
@@ -1714,7 +1857,7 @@ input[type="number"]::-webkit-outer-spin-button {
   padding: 20px;
 
   background:
-    rgba(0,0,0,0.72);
+    rgba(0, 0, 0, 0.72);
 
   color: #fff;
 
@@ -1731,22 +1874,20 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
 /* =========================================================
-   SCROLLBAR
+   SCROLLBARS
    ========================================================= */
 
 #variantsSection::-webkit-scrollbar,
 #customSection::-webkit-scrollbar,
 #shippingSection::-webkit-scrollbar {
-
   width: 5px;
 }
 
 #variantsSection::-webkit-scrollbar-thumb,
 #customSection::-webkit-scrollbar-thumb,
 #shippingSection::-webkit-scrollbar-thumb {
-
   background:
-    rgba(255,255,255,0.15);
+    rgba(255, 255, 255, 0.15);
 
   border-radius: 10px;
 }
@@ -1759,17 +1900,17 @@ input[type="number"]::-webkit-outer-spin-button {
 @media (max-width: 600px) {
 
   .container {
-
     padding: 14px;
 
     padding-bottom: 110px;
   }
 
 
-  /* Top buttons */
+  /* -----------------------------------------
+     Top buttons
+  ----------------------------------------- */
 
   .add-category-btn {
-
     margin-left: 6px;
 
     margin-top: 10px;
@@ -1780,10 +1921,11 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 
 
-  /* Variant row */
+  /* -----------------------------------------
+     Variant row
+  ----------------------------------------- */
 
   .variant-item {
-
     grid-template-columns:
       30px
       minmax(0, 1fr)
@@ -1796,7 +1938,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .variant-drag {
-
     width: 30px;
 
     height: 34px;
@@ -1807,24 +1948,23 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .variant-edit-btn,
   .variant-delete-btn {
-
     width: 34px;
     height: 34px;
   }
 
 
   .variant-details {
-
     gap: 5px;
 
     font-size: 11px;
   }
 
 
-  /* Edit form */
+  /* -----------------------------------------
+     Inline edit
+  ----------------------------------------- */
 
   .variant-edit-form {
-
     grid-template-columns:
       minmax(0, 1fr)
       90px;
@@ -1832,7 +1972,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .variant-edit-form input:first-child {
-
     grid-column:
       1 / -1;
   }
@@ -1840,32 +1979,62 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .variant-edit-form .variant-save-btn,
   .variant-edit-form .variant-cancel-btn {
-
     width: 100%;
   }
 
 
-  /* Payment rows */
+  .variant-edit-fields {
+    grid-template-columns:
+      1fr;
+  }
 
-  .row {
+
+  .variant-edit-actions {
+    width: 100%;
+
+    display: grid;
 
     grid-template-columns:
-      1fr 70px 90px;
+      1fr 1fr;
 
     gap: 7px;
   }
 
 
-  .row label {
+  /* -----------------------------------------
+     Image preview
+  ----------------------------------------- */
 
+  .image-card,
+  .image-card img {
+    width: 74px;
+    height: 74px;
+  }
+
+
+  /* -----------------------------------------
+     Payment rows
+  ----------------------------------------- */
+
+  .row {
+    grid-template-columns:
+      1fr
+      70px
+      90px;
+
+    gap: 7px;
+  }
+
+  .row label {
     font-size: 12px;
   }
 
 
-  /* Gallery */
+  /* -----------------------------------------
+     Gallery
+  ----------------------------------------- */
 
   .gallery-picker-grid {
-
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
 
@@ -1876,13 +2045,11 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .gallery-header {
-
     padding: 12px 10px;
   }
 
 
   .gallery-header h3 {
-
     font-size: 14px;
   }
 
@@ -1896,7 +2063,6 @@ input[type="number"]::-webkit-outer-spin-button {
 @media (max-width: 400px) {
 
   .container {
-
     padding: 12px;
 
     padding-bottom: 105px;
@@ -1904,21 +2070,20 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .topbar {
-
     padding: 12px;
   }
 
 
   .title {
-
     font-size: 16px;
   }
 
 
-  /* Variant becomes two-line layout */
+  /* -----------------------------------------
+     Variant becomes two-row layout
+  ----------------------------------------- */
 
   .variant-item {
-
     grid-template-columns:
       28px
       minmax(0, 1fr);
@@ -1926,7 +2091,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .variant-actions {
-
     grid-column: 2;
 
     justify-content: flex-end;
@@ -1936,29 +2100,44 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .variant-edit-form {
-
     grid-template-columns:
       1fr;
   }
 
 
   .variant-edit-form input:first-child {
-
     grid-column: auto;
   }
 
 
   .variant-save-btn,
   .variant-cancel-btn {
-
     width: 100%;
   }
 
 
-  /* Payment */
+  .variant-edit-actions {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  /* -----------------------------------------
+     Images
+  ----------------------------------------- */
+
+  .image-card,
+  .image-card img {
+    width: 68px;
+    height: 68px;
+  }
+
+
+  /* -----------------------------------------
+     Payment
+  ----------------------------------------- */
 
   .row {
-
     grid-template-columns:
       1fr;
 
@@ -1967,15 +2146,15 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
   .row label {
-
     margin-bottom: 2px !important;
   }
 
 
-  /* Gallery */
+  /* -----------------------------------------
+     Gallery
+  ----------------------------------------- */
 
   .gallery-picker-grid {
-
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
 
@@ -1988,18 +2167,100 @@ input[type="number"]::-webkit-outer-spin-button {
 
 
 /* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 340px) {
+
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .variant-item {
+    padding: 8px;
+  }
+
+  .variant-name {
+    font-size: 13px;
+  }
+
+  .variant-details {
+    font-size: 10px;
+  }
+
+  .variant-edit-btn,
+  .variant-delete-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .image-card,
+  .image-card img {
+    width: 62px;
+    height: 62px;
+  }
+
+}
+
+
+/* =========================================================
    SAFE AREA FOR MOBILE DEVICES
    ========================================================= */
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
 
   .container {
-
     padding-bottom:
       calc(
         110px +
         env(safe-area-inset-bottom)
       );
+  }
+
+}
+
+
+/* =========================================================
+   TOUCH DEVICES
+   ========================================================= */
+
+@media (hover: none) {
+
+  .variant-drag:hover {
+    background: transparent;
+    color: #888;
+  }
+
+  .variant-edit-btn:hover,
+  .variant-delete-btn:hover {
+    background: transparent;
+  }
+
+  .btn-outline:hover,
+  .add-category-btn:hover {
+    opacity: 1;
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    transition:
+      none !important;
+
+    animation:
+      none !important;
   }
 
 }
