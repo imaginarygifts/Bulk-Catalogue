@@ -1,12 +1,4 @@
-/* ==================================================
-   EDIT PRODUCT
-   SAME SYSTEM AS ADD PRODUCT
-================================================== */
-
-import {
-  db,
-  storage
-} from "./firebase.js";
+import { db, storage } from "./firebase.js";
 
 import {
   doc,
@@ -26,348 +18,403 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 
-/* ==================================================
-   PRODUCT ID
-================================================== */
+// ============================================================
+// PRODUCT ID
+// ============================================================
 
-const params =
-  new URLSearchParams(
-    window.location.search
-  );
-
-const id =
-  params.get("id");
-
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
 if (!id) {
-
-  alert(
-    "Product ID missing"
-  );
-
+  alert("Product ID missing");
 }
 
 
-/* ==================================================
-   INPUTS
-================================================== */
+// ============================================================
+// INPUTS
+// ============================================================
 
-const nameInput =
-  document.getElementById("name");
+const nameInput = document.getElementById("name");
+const descInput = document.getElementById("desc");
+const priceInput = document.getElementById("price");
+const catSelect = document.getElementById("category");
+const salePriceInput = document.getElementById("salePrice");
+const stockStatus = document.getElementById("stockStatus");
 
-const descInput =
-  document.getElementById("desc");
+const preview = document.getElementById("imagePreview");
+const newImagesInput = document.getElementById("newImages");
 
-const priceInput =
-  document.getElementById("price");
-
-const salePriceInput =
-  document.getElementById("salePrice");
-
-const catSelect =
-  document.getElementById("category");
-
-const stockStatus =
-  document.getElementById("stockStatus");
-
-const preview =
-  document.getElementById("imagePreview");
-
-const newImagesInput =
-  document.getElementById("newImages");
-
-const allowOnline =
-  document.getElementById("allowOnline");
-
-const allowCOD =
-  document.getElementById("allowCOD");
-
-const allowAdvance =
-  document.getElementById("allowAdvance");
+const allowOnline = document.getElementById("allowOnline");
+const allowCOD = document.getElementById("allowCOD");
+const allowAdvance = document.getElementById("allowAdvance");
 
 const onlineDiscountType =
-  document.getElementById(
-    "onlineDiscountType"
-  );
+  document.getElementById("onlineDiscountType");
 
 const onlineDiscountValue =
-  document.getElementById(
-    "onlineDiscountValue"
-  );
+  document.getElementById("onlineDiscountValue");
 
 const codDiscountType =
-  document.getElementById(
-    "codDiscountType"
-  );
+  document.getElementById("codDiscountType");
 
 const codDiscountValue =
-  document.getElementById(
-    "codDiscountValue"
-  );
+  document.getElementById("codDiscountValue");
 
 const advanceDiscountType =
-  document.getElementById(
-    "advanceDiscountType"
-  );
+  document.getElementById("advanceDiscountType");
 
 const advanceDiscountValue =
-  document.getElementById(
-    "advanceDiscountValue"
-  );
+  document.getElementById("advanceDiscountValue");
 
 const advanceType =
-  document.getElementById(
-    "advanceType"
-  );
+  document.getElementById("advanceType");
 
 const advanceValue =
-  document.getElementById(
-    "advanceValue"
-  );
+  document.getElementById("advanceValue");
 
 const bestsellerCheckbox =
-  document.getElementById(
-    "isBestseller"
-  );
+  document.getElementById("isBestseller");
 
 
-/* ==================================================
-   STATE
-================================================== */
+// ============================================================
+// STATE
+// ============================================================
 
 let existingImages = [];
-
 let newImages = [];
 
 let colors = [];
-
 let sizes = [];
-
 let customOptions = [];
 
 let relatedDesigns = [];
-
 let allProducts = [];
 
 let selectedTags = [];
 
 let gallerySelected = [];
-
-let draggedImageIndex =
-  null;
+let currentGalleryPath = "product-images";
 
 const galleryBreadcrumbs =
-  document.getElementById(
-    "galleryBreadcrumbs"
-  );
+  document.getElementById("galleryBreadcrumbs");
 
 
-/* ==================================================
-   POPUP
-================================================== */
+// ============================================================
+// POPUP
+// ============================================================
 
-function showPopup(message) {
+function showPopup(msg) {
 
-  const popup =
-    document.getElementById(
-      "popup"
-    );
+  const p = document.getElementById("popup");
 
-  if (!popup) return;
+  if (!p) return;
 
-  popup.innerText =
-    message;
-
-  popup.classList.remove(
-    "hidden"
-  );
-
+  p.innerText = msg;
+  p.classList.remove("hidden");
 }
 
 
 function hidePopup() {
 
-  document
-    .getElementById("popup")
-    ?.classList.add(
-      "hidden"
-    );
+  const p = document.getElementById("popup");
 
+  if (!p) return;
+
+  p.classList.add("hidden");
 }
 
 
-/* ==================================================
-   ACCORDION
-================================================== */
+// ============================================================
+// ESCAPE HTML
+// ============================================================
 
-window.toggleSection =
-function(sectionId) {
+function escapeHTML(value) {
 
-  document
-    .getElementById(sectionId)
-    ?.classList.toggle(
-      "hidden"
-    );
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
+
+// ============================================================
+// ACCORDION
+// ============================================================
+
+window.toggleSection = function(id) {
+
+  const el = document.getElementById(id);
+
+  if (!el) return;
+
+  el.classList.toggle("hidden");
 };
 
 
-/* ==================================================
-   ESCAPE HTML
-================================================== */
+// ============================================================
+// CATEGORIES
+// ============================================================
 
-function escapeHtml(value) {
+async function loadCategories() {
 
-  return String(
-    value ?? ""
-  )
+  if (!catSelect) return;
 
-    .replace(
-      /&/g,
-      "&amp;"
+  catSelect.innerHTML =
+    `<option value="">Select category</option>`;
+
+  const snap = await getDocs(
+    query(
+      collection(db, "categories"),
+      orderBy("order")
     )
+  );
 
-    .replace(
-      /</g,
-      "&lt;"
-    )
+  const categories = [];
 
-    .replace(
-      />/g,
-      "&gt;"
-    )
+  snap.forEach(d => {
 
-    .replace(
-      /"/g,
-      "&quot;"
-    )
+    categories.push({
+      id: d.id,
+      ...d.data()
+    });
 
-    .replace(
-      /'/g,
-      "&#039;"
+  });
+
+
+  const mains =
+    categories.filter(c => !c.parentId);
+
+
+  mains.forEach(main => {
+
+    const opt =
+      document.createElement("option");
+
+    opt.value = main.id;
+    opt.textContent = main.name;
+    opt.dataset.type = "main";
+
+    catSelect.appendChild(opt);
+
+
+    const subs =
+      categories.filter(
+        c => c.parentId === main.id
+      );
+
+
+    subs.forEach(sub => {
+
+      const subOpt =
+        document.createElement("option");
+
+      subOpt.value = sub.id;
+      subOpt.textContent = "— " + sub.name;
+
+      subOpt.dataset.type = "sub";
+      subOpt.dataset.parent = main.id;
+
+      catSelect.appendChild(subOpt);
+
+    });
+
+  });
+
+}
+
+
+// ============================================================
+// NORMALIZE COLORS
+// ============================================================
+
+function normalizeColor(color) {
+
+  if (!color) {
+
+    return {
+      name: "",
+      price: 0,
+      required: false
+    };
+
+  }
+
+  return {
+
+    name:
+      color.name ??
+      color.label ??
+      "",
+
+    price:
+      Number(color.price ?? 0),
+
+    required:
+      Boolean(color.required)
+
+  };
+
+}
+
+
+// ============================================================
+// NORMALIZE SIZES
+// ============================================================
+
+function normalizeSize(size) {
+
+  if (!size) {
+
+    return {
+      name: "",
+      price: 0,
+      required: false
+    };
+
+  }
+
+  return {
+
+    name:
+      size.name ??
+      size.label ??
+      "",
+
+    price:
+      Number(size.price ?? 0),
+
+    required:
+      Boolean(size.required),
+
+    shipping:
+      size.shipping ??
+      null,
+
+    shippingMode:
+      size.shippingMode ??
+      size.shippingType ??
+      null,
+
+    shippingAmount:
+      Number(
+        size.shippingAmount ??
+        size.shippingPrice ??
+        0
+      )
+
+  };
+
+}
+
+
+// ============================================================
+// NORMALIZE CUSTOM CHOICES
+// ============================================================
+
+function normalizeDropdownChoices(choices) {
+
+  if (!Array.isArray(choices)) {
+    return [];
+  }
+
+
+  return choices
+    .map(choice => {
+
+      // Old format:
+      // ["Design 1", "Design 2"]
+
+      if (typeof choice === "string") {
+
+        return {
+
+          name: choice.trim(),
+
+          price: 0
+
+        };
+
+      }
+
+
+      // New format:
+      // { name: "Design 1", price: 100 }
+
+      if (choice && typeof choice === "object") {
+
+        return {
+
+          name:
+            choice.name ??
+            choice.label ??
+            "",
+
+          price:
+            Number(choice.price ?? 0)
+
+        };
+
+      }
+
+
+      return null;
+
+    })
+    .filter(choice =>
+      choice &&
+      choice.name
     );
 
 }
 
 
-/* ==================================================
-   ESCAPE ATTRIBUTE
-================================================== */
+// ============================================================
+// NORMALIZE CUSTOM OPTION
+// ============================================================
 
-function escapeAttribute(value) {
+function normalizeCustomOption(option) {
 
-  return escapeHtml(
-    value
-  );
-
-}
-
-
-/* ==================================================
-   NORMALIZE DROPDOWN CHOICE
-================================================== */
-
-function normalizeDropdownChoice(
-  choice
-) {
-
-  if (
-    choice &&
-    typeof choice === "object"
-  ) {
+  if (!option) {
 
     return {
 
-      name:
-        String(
-          choice.name ??
-          choice.label ??
-          choice.value ??
-          ""
-        ).trim(),
-
-      price:
-        Number(
-          choice.price || 0
-        )
+      type: "text",
+      label: "",
+      price: 0,
+      required: false
 
     };
 
   }
 
 
-  return {
-
-    name:
-      String(
-        choice ?? ""
-      ).trim(),
-
-    price:
-      0
-
-  };
-
-}
-
-
-/* ==================================================
-   NORMALIZE CUSTOM OPTION
-================================================== */
-
-function normalizeCustomOption(
-  option
-) {
-
   const normalized = {
 
     type:
-      option?.type ||
+      option.type ??
       "text",
 
     label:
-      String(
-        option?.label ||
-        ""
-      ).trim(),
+      option.label ??
+      "",
 
     price:
-      Number(
-        option?.price || 0
-      ),
+      Number(option.price ?? 0),
 
     required:
-      Boolean(
-        option?.required
-      )
+      Boolean(option.required)
 
   };
 
 
-  if (
-    normalized.type ===
-    "dropdown"
-  ) {
+  if (normalized.type === "dropdown") {
 
     normalized.choices =
-      Array.isArray(
-        option?.choices
-      )
-
-      ?
-
-      option.choices
-        .map(
-          normalizeDropdownChoice
-        )
-        .filter(
-          choice =>
-            choice.name
-        )
-
-      :
-
-      [];
+      normalizeDropdownChoices(
+        option.choices
+      );
 
   }
 
@@ -377,537 +424,258 @@ function normalizeCustomOption(
 }
 
 
-/* ==================================================
-   LOAD CATEGORIES
-================================================== */
-
-async function loadCategories() {
-
-  if (!catSelect) return;
-
-
-  catSelect.innerHTML = `
-
-    <option value="">
-      Select category
-    </option>
-
-  `;
-
-
-  try {
-
-    const snap =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "categories"
-          ),
-          orderBy("order")
-        )
-      );
-
-
-    const categories = [];
-
-
-    snap.forEach(
-      categoryDoc => {
-
-        categories.push({
-
-          id:
-            categoryDoc.id,
-
-          ...categoryDoc.data()
-
-        });
-
-      }
-    );
-
-
-    const mains =
-      categories.filter(
-        category =>
-          !category.parentId
-      );
-
-
-    mains.forEach(
-      main => {
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          main.id;
-
-        option.textContent =
-          main.name;
-
-        option.dataset.type =
-          "main";
-
-
-        catSelect.appendChild(
-          option
-        );
-
-
-        const subs =
-          categories.filter(
-            sub =>
-              sub.parentId ===
-              main.id
-          );
-
-
-        subs.forEach(
-          sub => {
-
-            const subOption =
-              document.createElement(
-                "option"
-              );
-
-
-            subOption.value =
-              sub.id;
-
-            subOption.textContent =
-              "— " +
-              sub.name;
-
-            subOption.dataset.type =
-              "sub";
-
-            subOption.dataset.parent =
-              main.id;
-
-
-            catSelect.appendChild(
-              subOption
-            );
-
-          }
-        );
-
-      }
-    );
-
-  }
-
-  catch(error) {
-
-    console.error(
-      "Category loading error:",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   LOAD PRODUCT
-================================================== */
+// ============================================================
+// LOAD PRODUCT
+// ============================================================
 
 async function loadProduct() {
 
   if (!id) return;
 
 
-  try {
+  const snap =
+    await getDoc(
+      doc(db, "products", id)
+    );
 
-    const snap =
-      await getDoc(
-        doc(
-          db,
-          "products",
-          id
+
+  if (!snap.exists()) {
+
+    alert("Product not found");
+    return;
+
+  }
+
+
+  const p = snap.data();
+
+
+  // ----------------------------------------------------------
+  // BASIC PRODUCT
+  // ----------------------------------------------------------
+
+  nameInput.value =
+    p.name || "";
+
+  descInput.value =
+    p.description || "";
+
+  priceInput.value =
+    p.basePrice ?? "";
+
+  salePriceInput.value =
+    p.salePrice ?? "";
+
+  if (stockStatus) {
+
+    stockStatus.value =
+      p.inStock === false
+        ? "false"
+        : "true";
+
+  }
+
+
+  catSelect.value =
+    p.subCategoryId ||
+    p.categoryId ||
+    "";
+
+
+  // ----------------------------------------------------------
+  // IMAGES
+  // ----------------------------------------------------------
+
+  existingImages =
+    Array.isArray(p.images)
+      ? [...p.images]
+      : [];
+
+  newImages = [];
+
+
+  // ----------------------------------------------------------
+  // VARIANTS
+  // ----------------------------------------------------------
+
+  colors =
+    Array.isArray(p.variants?.colors)
+      ? p.variants.colors.map(normalizeColor)
+      : [];
+
+
+  sizes =
+    Array.isArray(p.variants?.sizes)
+      ? p.variants.sizes.map(normalizeSize)
+      : [];
+
+
+  // ----------------------------------------------------------
+  // CUSTOM OPTIONS
+  // ----------------------------------------------------------
+
+  customOptions =
+    Array.isArray(p.customOptions)
+      ? p.customOptions.map(
+          normalizeCustomOption
         )
-      );
+      : [];
 
 
-    if (
-      !snap.exists()
-    ) {
+  // ----------------------------------------------------------
+  // RELATED DESIGNS
+  // ----------------------------------------------------------
 
-      alert(
-        "Product not found"
-      );
+  relatedDesigns =
+    Array.isArray(p.relatedDesigns)
+      ? [...p.relatedDesigns]
+      : [];
 
-      return;
 
-    }
+  // ----------------------------------------------------------
+  // TAGS
+  // ----------------------------------------------------------
 
+  selectedTags =
+    Array.isArray(p.tags)
+      ? [...p.tags]
+      : [];
 
-    const p =
-      snap.data();
 
+  // ----------------------------------------------------------
+  // BESTSELLER
+  // ----------------------------------------------------------
 
-    /* BASIC */
+  if (bestsellerCheckbox) {
 
-    nameInput.value =
-      p.name || "";
-
-    descInput.value =
-      p.description || "";
-
-    priceInput.value =
-      p.basePrice ?? "";
-
-    salePriceInput.value =
-      p.salePrice ?? "";
-
-
-    if (stockStatus) {
-
-      stockStatus.value =
-        p.inStock === false
-        ?
-        "false"
-        :
-        "true";
-
-    }
-
-
-    catSelect.value =
-      p.subCategoryId ||
-      p.categoryId ||
-      "";
-
-
-    /* IMAGES */
-
-    existingImages =
-      Array.isArray(p.images)
-      ?
-      [...p.images]
-      :
-      [];
-
-
-    newImages = [];
-
-
-    /* VARIANTS */
-
-    colors =
-      Array.isArray(
-        p.variants?.colors
-      )
-
-      ?
-
-      p.variants.colors.map(
-        color => ({
-
-          name:
-            color.name || "",
-
-          price:
-            Number(
-              color.price || 0
-            ),
-
-          required:
-            Boolean(
-              color.required
-            )
-
-        })
-      )
-
-      :
-
-      [];
-
-
-    sizes =
-      Array.isArray(
-        p.variants?.sizes
-      )
-
-      ?
-
-      p.variants.sizes.map(
-        size => ({
-
-          name:
-            size.name || "",
-
-          price:
-            Number(
-              size.price || 0
-            ),
-
-          required:
-            Boolean(
-              size.required
-            )
-
-        })
-      )
-
-      :
-
-      [];
-
-
-    /* CUSTOM OPTIONS */
-
-    customOptions =
-      Array.isArray(
-        p.customOptions
-      )
-
-      ?
-
-      p.customOptions.map(
-        normalizeCustomOption
-      )
-
-      :
-
-      [];
-
-
-    /* RELATED */
-
-    relatedDesigns =
-      Array.isArray(
-        p.relatedDesigns
-      )
-
-      ?
-
-      [...p.relatedDesigns]
-
-      :
-
-      [];
-
-
-    /* TAGS */
-
-    selectedTags =
-      Array.isArray(
-        p.tags
-      )
-
-      ?
-
-      [...p.tags]
-
-      :
-
-      [];
-
-
-    /* BESTSELLER */
-
-    if (
-      bestsellerCheckbox
-    ) {
-
-      bestsellerCheckbox.checked =
-        Boolean(
-          p.isBestseller
-        );
-
-    }
-
-
-    /* PAYMENT */
-
-    const ps =
-      p.paymentSettings ||
-      {};
-
-
-    if (ps.online) {
-
-      allowOnline.checked =
-        ps.online.enabled ??
-        true;
-
-      onlineDiscountType.value =
-        ps.online.discountType ||
-        "none";
-
-      onlineDiscountValue.value =
-        ps.online.discountValue ??
-        "";
-
-    }
-
-    else {
-
-      allowOnline.checked =
-        true;
-
-    }
-
-
-    if (ps.cod) {
-
-      allowCOD.checked =
-        ps.cod.enabled ??
-        false;
-
-      codDiscountType.value =
-        ps.cod.discountType ||
-        "none";
-
-      codDiscountValue.value =
-        ps.cod.discountValue ??
-        "";
-
-    }
-
-
-    if (ps.advance) {
-
-      allowAdvance.checked =
-        ps.advance.enabled ??
-        false;
-
-      advanceDiscountType.value =
-        ps.advance.discountType ||
-        "none";
-
-      advanceDiscountValue.value =
-        ps.advance.discountValue ??
-        "";
-
-      advanceType.value =
-        ps.advance.type ||
-        "percent";
-
-      advanceValue.value =
-        ps.advance.value ??
-        "";
-
-    }
-
-
-    /* RENDER */
-
-    renderImagePreview();
-
-    renderColors();
-
-    renderSizes();
-
-    renderCustomOptions();
-
-    await loadDesignProducts();
-
-    await loadTags();
-
-
-    console.log(
-      "Edit product loaded:",
-      p
-    );
+    bestsellerCheckbox.checked =
+      p.isBestseller || false;
 
   }
 
-  catch(error) {
 
-    console.error(
-      "Product loading error:",
-      error
-    );
+  // ----------------------------------------------------------
+  // PAYMENT
+  // ----------------------------------------------------------
 
-    showPopup(
-      "❌ " +
-      (
-        error.message ||
-        "Unable to load product"
-      )
-    );
+  const ps =
+    p.paymentSettings || {};
+
+
+  if (ps.online) {
+
+    allowOnline.checked =
+      ps.online.enabled ?? true;
+
+    onlineDiscountType.value =
+      ps.online.discountType || "none";
+
+    onlineDiscountValue.value =
+      ps.online.discountValue ?? "";
 
   }
+
+
+  if (ps.cod) {
+
+    allowCOD.checked =
+      ps.cod.enabled ?? false;
+
+    codDiscountType.value =
+      ps.cod.discountType || "none";
+
+    codDiscountValue.value =
+      ps.cod.discountValue ?? "";
+
+  }
+
+
+  if (ps.advance) {
+
+    allowAdvance.checked =
+      ps.advance.enabled ?? false;
+
+    advanceDiscountType.value =
+      ps.advance.discountType || "none";
+
+    advanceDiscountValue.value =
+      ps.advance.discountValue ?? "";
+
+    advanceType.value =
+      ps.advance.type || "percent";
+
+    advanceValue.value =
+      ps.advance.value ?? "";
+
+  }
+
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
+
+  renderImagePreview();
+
+  renderColors();
+
+  renderSizes();
+
+  renderCustomOptions();
 
 }
 
 
-/* ==================================================
-   IMAGE PREVIEW
-================================================== */
+// ============================================================
+// IMAGE PREVIEW
+// ============================================================
 
 function renderImagePreview() {
 
   if (!preview) return;
 
-
-  preview.innerHTML =
-    "";
+  preview.innerHTML = "";
 
 
-  /* EXISTING */
+  // ----------------------------------------------------------
+  // EXISTING IMAGES
+  // ----------------------------------------------------------
 
   existingImages.forEach(
     (url, index) => {
 
-      const card =
-        document.createElement(
-          "div"
-        );
+      const div =
+        document.createElement("div");
 
-
-      card.className =
+      div.className =
         "image-card";
 
+      div.draggable = true;
 
-      card.draggable =
-        true;
+      div.dataset.type =
+        "existing";
 
-
-      card.dataset.index =
+      div.dataset.index =
         index;
 
 
       const img =
-        document.createElement(
-          "img"
-        );
+        document.createElement("img");
+
+      img.src = url;
 
 
-      img.src =
-        url;
+      const del =
+        document.createElement("span");
 
-      img.alt =
-        "Product image";
-
-
-      const deleteButton =
-        document.createElement(
-          "span"
-        );
-
-
-      deleteButton.className =
+      del.className =
         "image-delete";
 
-
-      deleteButton.innerText =
-        "×";
+      del.innerText = "×";
 
 
-      deleteButton.onclick =
-      event => {
+      del.onclick = (e) => {
 
-        event.stopPropagation();
+        e.stopPropagation();
 
         existingImages.splice(
           index,
@@ -919,165 +687,59 @@ function renderImagePreview() {
       };
 
 
-      card.appendChild(
-        img
-      );
+      div.appendChild(img);
 
-      card.appendChild(
-        deleteButton
-      );
+      div.appendChild(del);
 
+      setupImageDrag(div, "existing", index);
 
-      /* DRAG START */
-
-      card.addEventListener(
-        "dragstart",
-        () => {
-
-          draggedImageIndex =
-            index;
-
-          card.classList.add(
-            "dragging"
-          );
-
-        }
-      );
-
-
-      card.addEventListener(
-        "dragend",
-        () => {
-
-          draggedImageIndex =
-            null;
-
-          card.classList.remove(
-            "dragging"
-          );
-
-        }
-      );
-
-
-      card.addEventListener(
-        "dragover",
-        event => {
-
-          event.preventDefault();
-
-        }
-      );
-
-
-      card.addEventListener(
-        "drop",
-        event => {
-
-          event.preventDefault();
-
-          event.stopPropagation();
-
-
-          const targetIndex =
-            Number(
-              card.dataset.index
-            );
-
-
-          if (
-            draggedImageIndex ===
-            null ||
-            draggedImageIndex ===
-            targetIndex
-          ) {
-
-            return;
-
-          }
-
-
-          const moved =
-            existingImages.splice(
-              draggedImageIndex,
-              1
-            )[0];
-
-
-          existingImages.splice(
-            targetIndex,
-            0,
-            moved
-          );
-
-
-          renderImagePreview();
-
-        }
-      );
-
-
-      preview.appendChild(
-        card
-      );
+      preview.appendChild(div);
 
     }
   );
 
 
-  /* NEW */
+  // ----------------------------------------------------------
+  // NEW IMAGES
+  // ----------------------------------------------------------
 
   newImages.forEach(
     (file, index) => {
 
-      const card =
-        document.createElement(
-          "div"
-        );
+      const div =
+        document.createElement("div");
 
+      div.className =
+        "image-card";
 
-      card.className =
-        "image-card new-image-card";
+      div.draggable = true;
 
+      div.dataset.type =
+        "new";
 
-      card.draggable =
-        true;
+      div.dataset.index =
+        index;
 
 
       const img =
-        document.createElement(
-          "img"
-        );
-
+        document.createElement("img");
 
       img.src =
-        URL.createObjectURL(
-          file
-        );
+        URL.createObjectURL(file);
 
 
-      img.alt =
-        file.name;
+      const del =
+        document.createElement("span");
 
-
-      const deleteButton =
-        document.createElement(
-          "span"
-        );
-
-
-      deleteButton.className =
+      del.className =
         "image-delete";
 
-
-      deleteButton.innerText =
-        "×";
+      del.innerText = "×";
 
 
-      deleteButton.onclick =
-      event => {
+      del.onclick = (e) => {
 
-        event.stopPropagation();
+        e.stopPropagation();
 
         newImages.splice(
           index,
@@ -1089,18 +751,13 @@ function renderImagePreview() {
       };
 
 
-      card.appendChild(
-        img
-      );
+      div.appendChild(img);
 
-      card.appendChild(
-        deleteButton
-      );
+      div.appendChild(del);
 
+      setupImageDrag(div, "new", index);
 
-      preview.appendChild(
-        card
-      );
+      preview.appendChild(div);
 
     }
   );
@@ -1108,36 +765,179 @@ function renderImagePreview() {
 }
 
 
-/* ==================================================
-   NEW IMAGE UPLOAD
-================================================== */
+// ============================================================
+// IMAGE DRAG / DROP
+// ============================================================
 
-if (newImagesInput) {
+let draggedImage = null;
 
-  newImagesInput.addEventListener(
-    "change",
+
+function setupImageDrag(
+  element,
+  type,
+  index
+) {
+
+  element.addEventListener(
+    "dragstart",
     () => {
 
-      const files =
-        Array.from(
-          newImagesInput.files ||
-          []
-        );
+      draggedImage = {
+        type,
+        index
+      };
+
+      element.classList.add(
+        "dragging"
+      );
+
+    }
+  );
 
 
-      files.forEach(
-        file => {
+  element.addEventListener(
+    "dragend",
+    () => {
 
-          newImages.push(
-            file
-          );
+      draggedImage = null;
+
+      element.classList.remove(
+        "dragging"
+      );
+
+    }
+  );
+
+
+  element.addEventListener(
+    "dragover",
+    e => {
+
+      e.preventDefault();
+
+    }
+  );
+
+
+  element.addEventListener(
+    "drop",
+    e => {
+
+      e.preventDefault();
+
+      if (!draggedImage) return;
+
+
+      const targetType =
+        type;
+
+      const targetIndex =
+        index;
+
+
+      // Build one unified ordered list
+
+      const combined = [];
+
+
+      existingImages.forEach(
+        value => {
+
+          combined.push({
+            type: "existing",
+            value
+          });
 
         }
       );
 
 
-      newImagesInput.value =
-        "";
+      newImages.forEach(
+        value => {
+
+          combined.push({
+            type: "new",
+            value
+          });
+
+        }
+      );
+
+
+      const fromIndex =
+        combined.findIndex(
+          item =>
+            item.type ===
+              draggedImage.type &&
+            item.value ===
+              (
+                draggedImage.type === "existing"
+                  ? existingImages[draggedImage.index]
+                  : newImages[draggedImage.index]
+              )
+        );
+
+
+      if (
+        fromIndex === -1
+      ) return;
+
+
+      const targetValue =
+        targetType === "existing"
+          ? existingImages[targetIndex]
+          : newImages[targetIndex];
+
+
+      const toIndex =
+        combined.findIndex(
+          item =>
+            item.type ===
+              targetType &&
+            item.value ===
+              targetValue
+        );
+
+
+      if (toIndex === -1) return;
+
+
+      const moved =
+        combined.splice(
+          fromIndex,
+          1
+        )[0];
+
+
+      combined.splice(
+        toIndex,
+        0,
+        moved
+      );
+
+
+      existingImages =
+        combined
+          .filter(
+            item =>
+              item.type === "existing"
+          )
+          .map(
+            item =>
+              item.value
+          );
+
+
+      newImages =
+        combined
+          .filter(
+            item =>
+              item.type === "new"
+          )
+          .map(
+            item =>
+              item.value
+          );
 
 
       renderImagePreview();
@@ -1148,48 +948,80 @@ if (newImagesInput) {
 }
 
 
-/* ==================================================
-   COLORS
-================================================== */
+// ============================================================
+// NEW IMAGE FILES
+// ============================================================
 
-window.addEditColor =
-function() {
+if (newImagesInput) {
 
-  const nameInput =
-    document.getElementById(
-      "editColorName"
-    );
+  newImagesInput.addEventListener(
+    "change",
+    () => {
 
-  const priceInput =
-    document.getElementById(
-      "editColorPrice"
-    );
+      const files =
+        Array.from(
+          newImagesInput.files || []
+        );
 
-  const requiredInput =
-    document.getElementById(
-      "colorRequired"
-    );
 
+      files.forEach(
+        file => {
+
+          if (
+            file.type &&
+            file.type.startsWith("image/")
+          ) {
+
+            newImages.push(file);
+
+          }
+
+        }
+      );
+
+
+      newImagesInput.value = "";
+
+      renderImagePreview();
+
+    }
+  );
+
+}
+
+
+// ============================================================
+// COLORS
+// ============================================================
+
+window.addEditColor = function() {
 
   const name =
-    nameInput.value.trim();
+    document
+      .getElementById("editColorName")
+      ?.value
+      .trim();
 
 
   const price =
     Number(
-      priceInput.value || 0
+      document
+        .getElementById("editColorPrice")
+        ?.value || 0
     );
 
 
   const required =
-    requiredInput?.checked ||
+    document
+      .getElementById("colorRequired")
+      ?.checked ||
     false;
 
 
   if (!name) {
 
     showPopup(
-      "Enter color name"
+      "⚠ Enter color name"
     );
 
     setTimeout(
@@ -1206,7 +1038,8 @@ function() {
 
     name,
 
-    price,
+    price:
+      Math.max(0, price),
 
     required
 
@@ -1216,17 +1049,26 @@ function() {
   renderColors();
 
 
-  nameInput.value =
-    "";
+  document.getElementById(
+    "editColorName"
+  ).value = "";
 
-  priceInput.value =
-    "";
 
-  requiredInput.checked =
-    false;
+  document.getElementById(
+    "editColorPrice"
+  ).value = "";
+
+
+  document.getElementById(
+    "colorRequired"
+  ).checked = false;
 
 };
 
+
+// ============================================================
+// RENDER COLORS
+// ============================================================
 
 function renderColors() {
 
@@ -1235,75 +1077,52 @@ function renderColors() {
       "editColorList"
     );
 
-
   if (!list) return;
 
-
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
 
   colors.forEach(
     (color, index) => {
 
-      const item =
-        document.createElement(
-          "div"
-        );
+      const div =
+        document.createElement("div");
 
-
-      item.className =
+      div.className =
         "variant-item";
 
+      div.draggable = true;
 
-      item.innerHTML = `
+      div.dataset.index =
+        index;
 
-        <div>
+
+      div.innerHTML = `
+
+        <div class="variant-info">
 
           <strong>
-            ${escapeHtml(
-              color.name
-            )}
+            ${escapeHTML(color.name)}
           </strong>
 
-          <small>
+          <span>
+            +₹${Number(color.price || 0)}
+          </span>
 
-            ${
-              Number(
-                color.price || 0
-              ) > 0
-
-              ?
-
-              `+₹${Number(
-                color.price || 0
-              )}`
-
-              :
-
-              "No extra price"
-
-            }
-
-            ${
-              color.required
-              ?
-              " • Required"
-              :
-              ""
-            }
-
-          </small>
+          ${
+            color.required
+              ? `<small>(Required)</small>`
+              : ""
+          }
 
         </div>
 
-
-        <div>
+        <div class="variant-actions">
 
           <button
             type="button"
             class="btn-outline"
-            data-edit="${index}"
+            data-edit
           >
             Edit
           </button>
@@ -1311,9 +1130,9 @@ function renderColors() {
           <button
             type="button"
             class="btn-outline"
-            data-delete="${index}"
+            data-delete
           >
-            ×
+            Delete
           </button>
 
         </div>
@@ -1321,42 +1140,37 @@ function renderColors() {
       `;
 
 
-      item
-        .querySelector(
-          "[data-delete]"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
+      div.querySelector(
+        "[data-edit]"
+      ).onclick = () => {
 
-            colors.splice(
-              index,
-              1
-            );
+        editColor(index);
 
-            renderColors();
+      };
 
-          }
+
+      div.querySelector(
+        "[data-delete]"
+      ).onclick = () => {
+
+        colors.splice(
+          index,
+          1
         );
 
+        renderColors();
 
-      item
-        .querySelector(
-          "[data-edit]"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
-
-            editColor(index);
-
-          }
-        );
+      };
 
 
-      list.appendChild(
-        item
+      setupVariantDrag(
+        div,
+        colors,
+        renderColors
       );
+
+
+      list.appendChild(div);
 
     }
   );
@@ -1364,17 +1178,66 @@ function renderColors() {
 }
 
 
-/* ==================================================
-   EDIT COLOR
-================================================== */
+// ============================================================
+// EDIT COLOR
+// ============================================================
 
 function editColor(index) {
 
   const color =
     colors[index];
 
-
   if (!color) return;
+
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "variant-edit-form";
+
+
+  div.innerHTML = `
+
+    <input
+      type="text"
+      class="edit-name"
+      value="${escapeHTML(color.name)}"
+      placeholder="Color name"
+    >
+
+    <input
+      type="number"
+      class="edit-price"
+      value="${Number(color.price || 0)}"
+      placeholder="Extra price"
+      min="0"
+    >
+
+    <label>
+      <input
+        type="checkbox"
+        class="edit-required"
+        ${color.required ? "checked" : ""}
+      >
+      Required
+    </label>
+
+    <button
+      type="button"
+      class="btn-outline save-btn"
+    >
+      Save
+    </button>
+
+    <button
+      type="button"
+      class="btn-outline cancel-btn"
+    >
+      Cancel
+    </button>
+
+  `;
 
 
   const list =
@@ -1383,170 +1246,100 @@ function editColor(index) {
     );
 
 
-  const item =
+  const old =
     list.children[index];
 
 
-  if (!item) return;
+  if (old) {
+
+    old.replaceWith(div);
+
+  }
 
 
-  item.innerHTML = `
+  div.querySelector(
+    ".save-btn"
+  ).onclick = () => {
 
-    <input
-      type="text"
-      class="variant-edit-name"
-      value="${escapeAttribute(
-        color.name
-      )}"
-    >
-
-    <input
-      type="number"
-      min="0"
-      class="variant-edit-price"
-      value="${Number(
-        color.price || 0
-      )}"
-    >
-
-    <label>
-
-      <input
-        type="checkbox"
-        class="variant-edit-required"
-        ${
-          color.required
-          ?
-          "checked"
-          :
-          ""
-        }
-      >
-
-      Required
-
-    </label>
-
-    <button
-      type="button"
-      class="btn-outline"
-      data-save
-    >
-      Save
-    </button>
-
-    <button
-      type="button"
-      class="btn-outline"
-      data-cancel
-    >
-      Cancel
-    </button>
-
-  `;
+    const name =
+      div.querySelector(
+        ".edit-name"
+      ).value.trim();
 
 
-  item
-    .querySelector(
-      "[data-save]"
-    )
-    .onclick =
-    () => {
+    if (!name) return;
 
-      const name =
-        item
-          .querySelector(
-            ".variant-edit-name"
+
+    colors[index] = {
+
+      name,
+
+      price:
+        Math.max(
+          0,
+          Number(
+            div.querySelector(
+              ".edit-price"
+            ).value || 0
           )
-          .value
-          .trim();
+        ),
 
-
-      if (!name) return;
-
-
-      color.name =
-        name;
-
-      color.price =
-        Number(
-          item
-            .querySelector(
-              ".variant-edit-price"
-            )
-            .value ||
-          0
-        );
-
-      color.required =
-        item
-          .querySelector(
-            ".variant-edit-required"
-          )
-          .checked;
-
-
-      renderColors();
+      required:
+        div.querySelector(
+          ".edit-required"
+        ).checked
 
     };
 
 
-  item
-    .querySelector(
-      "[data-cancel]"
-    )
-    .onclick =
-    () => {
+    renderColors();
 
-      renderColors();
+  };
 
-    };
+
+  div.querySelector(
+    ".cancel-btn"
+  ).onclick = () => {
+
+    renderColors();
+
+  };
 
 }
 
 
-/* ==================================================
-   SIZES / QUANTITY
-================================================== */
+// ============================================================
+// SIZES / QUANTITY
+// ============================================================
 
-window.addEditSize =
-function() {
-
-  const nameInput =
-    document.getElementById(
-      "editSizeName"
-    );
-
-  const priceInput =
-    document.getElementById(
-      "editSizePrice"
-    );
-
-  const requiredInput =
-    document.getElementById(
-      "sizeRequired"
-    );
-
+window.addEditSize = function() {
 
   const name =
-    nameInput.value.trim();
+    document
+      .getElementById("editSizeName")
+      ?.value
+      .trim();
 
 
   const price =
     Number(
-      priceInput.value || 0
+      document
+        .getElementById("editSizePrice")
+        ?.value || 0
     );
 
 
   const required =
-    requiredInput?.checked ||
+    document
+      .getElementById("sizeRequired")
+      ?.checked ||
     false;
 
 
   if (!name) {
 
     showPopup(
-      "Enter quantity"
+      "⚠ Enter quantity"
     );
 
     setTimeout(
@@ -1563,7 +1356,8 @@ function() {
 
     name,
 
-    price,
+    price:
+      Math.max(0, price),
 
     required
 
@@ -1573,17 +1367,26 @@ function() {
   renderSizes();
 
 
-  nameInput.value =
-    "";
+  document.getElementById(
+    "editSizeName"
+  ).value = "";
 
-  priceInput.value =
-    "";
 
-  requiredInput.checked =
-    false;
+  document.getElementById(
+    "editSizePrice"
+  ).value = "";
+
+
+  document.getElementById(
+    "sizeRequired"
+  ).checked = false;
 
 };
 
+
+// ============================================================
+// RENDER SIZES
+// ============================================================
 
 function renderSizes() {
 
@@ -1592,70 +1395,44 @@ function renderSizes() {
       "editSizeList"
     );
 
-
   if (!list) return;
 
-
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
 
   sizes.forEach(
     (size, index) => {
 
-      const item =
-        document.createElement(
-          "div"
-        );
+      const div =
+        document.createElement("div");
 
-
-      item.className =
+      div.className =
         "variant-item";
 
+      div.draggable = true;
 
-      item.innerHTML = `
 
-        <div>
+      div.innerHTML = `
+
+        <div class="variant-info">
 
           <strong>
-            ${escapeHtml(
-              size.name
-            )}
+            ${escapeHTML(size.name)}
           </strong>
 
-          <small>
+          <span>
+            +₹${Number(size.price || 0)}
+          </span>
 
-            ${
-              Number(
-                size.price || 0
-              ) > 0
-
-              ?
-
-              `+₹${Number(
-                size.price || 0
-              )}`
-
-              :
-
-              "No extra price"
-
-            }
-
-            ${
-              size.required
-              ?
-              " • Required"
-              :
-              ""
-            }
-
-          </small>
+          ${
+            size.required
+              ? `<small>(Required)</small>`
+              : ""
+          }
 
         </div>
 
-
-        <div>
+        <div class="variant-actions">
 
           <button
             type="button"
@@ -1670,7 +1447,7 @@ function renderSizes() {
             class="btn-outline"
             data-delete
           >
-            ×
+            Delete
           </button>
 
         </div>
@@ -1678,38 +1455,37 @@ function renderSizes() {
       `;
 
 
-      item
-        .querySelector(
-          "[data-delete]"
-        )
-        .onclick =
-        () => {
+      div.querySelector(
+        "[data-edit]"
+      ).onclick = () => {
 
-          sizes.splice(
-            index,
-            1
-          );
+        editSize(index);
 
-          renderSizes();
-
-        };
+      };
 
 
-      item
-        .querySelector(
-          "[data-edit]"
-        )
-        .onclick =
-        () => {
+      div.querySelector(
+        "[data-delete]"
+      ).onclick = () => {
 
-          editSize(index);
+        sizes.splice(
+          index,
+          1
+        );
 
-        };
+        renderSizes();
+
+      };
 
 
-      list.appendChild(
-        item
+      setupVariantDrag(
+        div,
+        sizes,
+        renderSizes
       );
+
+
+      list.appendChild(div);
 
     }
   );
@@ -1717,17 +1493,66 @@ function renderSizes() {
 }
 
 
-/* ==================================================
-   EDIT SIZE
-================================================== */
+// ============================================================
+// EDIT SIZE
+// ============================================================
 
 function editSize(index) {
 
   const size =
     sizes[index];
 
-
   if (!size) return;
+
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "variant-edit-form";
+
+
+  div.innerHTML = `
+
+    <input
+      type="text"
+      class="edit-name"
+      value="${escapeHTML(size.name)}"
+      placeholder="Quantity"
+    >
+
+    <input
+      type="number"
+      class="edit-price"
+      value="${Number(size.price || 0)}"
+      placeholder="Extra price"
+      min="0"
+    >
+
+    <label>
+      <input
+        type="checkbox"
+        class="edit-required"
+        ${size.required ? "checked" : ""}
+      >
+      Required
+    </label>
+
+    <button
+      type="button"
+      class="btn-outline save-btn"
+    >
+      Save
+    </button>
+
+    <button
+      type="button"
+      class="btn-outline cancel-btn"
+    >
+      Cancel
+    </button>
+
+  `;
 
 
   const list =
@@ -1736,297 +1561,358 @@ function editSize(index) {
     );
 
 
-  const item =
+  const old =
     list.children[index];
 
 
-  if (!item) return;
+  if (old) {
+
+    old.replaceWith(div);
+
+  }
 
 
-  item.innerHTML = `
+  div.querySelector(
+    ".save-btn"
+  ).onclick = () => {
 
-    <input
-      type="text"
-      class="variant-edit-name"
-      value="${escapeAttribute(
-        size.name
-      )}"
-    >
-
-    <input
-      type="number"
-      min="0"
-      class="variant-edit-price"
-      value="${Number(
-        size.price || 0
-      )}"
-    >
-
-    <label>
-
-      <input
-        type="checkbox"
-        class="variant-edit-required"
-        ${
-          size.required
-          ?
-          "checked"
-          :
-          ""
-        }
-      >
-
-      Required
-
-    </label>
+    const name =
+      div.querySelector(
+        ".edit-name"
+      ).value.trim();
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      data-save
-    >
-      Save
-    </button>
+    if (!name) return;
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      data-cancel
-    >
-      Cancel
-    </button>
+    sizes[index] = {
 
-  `;
+      ...sizes[index],
 
+      name,
 
-  item
-    .querySelector(
-      "[data-save]"
-    )
-    .onclick =
-    () => {
-
-      const name =
-        item
-          .querySelector(
-            ".variant-edit-name"
+      price:
+        Math.max(
+          0,
+          Number(
+            div.querySelector(
+              ".edit-price"
+            ).value || 0
           )
-          .value
-          .trim();
+        ),
 
-
-      if (!name) return;
-
-
-      size.name =
-        name;
-
-      size.price =
-        Number(
-          item
-            .querySelector(
-              ".variant-edit-price"
-            )
-            .value ||
-          0
-        );
-
-      size.required =
-        item
-          .querySelector(
-            ".variant-edit-required"
-          )
-          .checked;
-
-
-      renderSizes();
+      required:
+        div.querySelector(
+          ".edit-required"
+        ).checked
 
     };
 
 
-  item
-    .querySelector(
-      "[data-cancel]"
-    )
-    .onclick =
-    () => {
+    renderSizes();
 
-      renderSizes();
+  };
 
-    };
+
+  div.querySelector(
+    ".cancel-btn"
+  ).onclick = () => {
+
+    renderSizes();
+
+  };
 
 }
 
 
-/* ==================================================
-   CUSTOM DROPDOWN PRICE EDITOR
-================================================== */
+// ============================================================
+// VARIANT DRAG
+// ============================================================
 
-function getCustomChoicePriceEditor() {
+function setupVariantDrag(
+  element,
+  array,
+  renderFunction
+) {
 
-  return document.getElementById(
-    "editCustomChoicePrices"
+  let draggedIndex = null;
+
+
+  element.addEventListener(
+    "dragstart",
+    () => {
+
+      draggedIndex =
+        Number(
+          element.dataset.index
+        );
+
+      element.classList.add(
+        "dragging"
+      );
+
+    }
+  );
+
+
+  element.addEventListener(
+    "dragend",
+    () => {
+
+      element.classList.remove(
+        "dragging"
+      );
+
+      draggedIndex = null;
+
+    }
+  );
+
+
+  element.addEventListener(
+    "dragover",
+    e => {
+
+      e.preventDefault();
+
+    }
+  );
+
+
+  element.addEventListener(
+    "drop",
+    e => {
+
+      e.preventDefault();
+
+
+      const targetIndex =
+        Number(
+          element.dataset.index
+        );
+
+
+      if (
+        draggedIndex === null ||
+        draggedIndex === targetIndex
+      ) return;
+
+
+      const moved =
+        array.splice(
+          draggedIndex,
+          1
+        )[0];
+
+
+      array.splice(
+        targetIndex,
+        0,
+        moved
+      );
+
+
+      renderFunction();
+
+    }
   );
 
 }
 
 
-/* ==================================================
-   PARSE CHOICE NAMES
-================================================== */
+// ============================================================
+// CUSTOM OPTION CHOICE PRICE EDITOR
+// ============================================================
 
-function parseChoiceNames(
-  raw
+function ensureCustomChoicePriceEditor(
+  inputId,
+  editorId
 ) {
 
-  return String(
-    raw || ""
-  )
-
-    .split(",")
-
-    .map(
-      value =>
-        value.trim()
-    )
-
-    .filter(
-      Boolean
+  const input =
+    document.getElementById(
+      inputId
     );
+
+  if (!input) return null;
+
+
+  let editor =
+    document.getElementById(
+      editorId
+    );
+
+
+  if (!editor) {
+
+    editor =
+      document.createElement("div");
+
+    editor.id =
+      editorId;
+
+    editor.className =
+      "custom-choice-prices";
+
+    input.insertAdjacentElement(
+      "afterend",
+      editor
+    );
+
+  }
+
+
+  return editor;
 
 }
 
 
-/* ==================================================
-   RENDER ADD CHOICE PRICES
-================================================== */
+// ============================================================
+// PARSE CHOICE NAMES
+// ============================================================
 
-function renderCustomChoicePriceInputs(
-  raw,
-  existingChoices = []
-) {
+function parseChoiceNames(raw) {
 
-  const container =
-    getCustomChoicePriceEditor();
+  return String(raw || "")
+    .split(",")
+    .map(
+      value =>
+        value.trim()
+    )
+    .filter(Boolean);
+
+}
 
 
-  if (!container) return;
+// ============================================================
+// RENDER ADD CUSTOM CHOICE PRICES
+// ============================================================
+
+function renderAddChoicePriceInputs() {
+
+  const input =
+    document.getElementById(
+      "editCustomChoices"
+    );
+
+  const editor =
+    ensureCustomChoicePriceEditor(
+      "editCustomChoices",
+      "editCustomChoicePrices"
+    );
 
 
-  container.innerHTML =
-    "";
+  if (!input || !editor) return;
 
 
   const names =
     parseChoiceNames(
-      raw
+      input.value
     );
 
 
+  const previous = {};
+
+
+  editor
+    .querySelectorAll(
+      ".custom-choice-price-row"
+    )
+    .forEach(row => {
+
+      const name =
+        row.dataset.name;
+
+      const price =
+        row.querySelector(
+          "input"
+        )?.value;
+
+
+      if (name) {
+
+        previous[name] =
+          Number(price || 0);
+
+      }
+
+    });
+
+
+  editor.innerHTML = "";
+
+
   if (!names.length) {
+
+    editor.style.display =
+      "none";
 
     return;
 
   }
 
 
-  const oldMap =
-    new Map();
-
-
-  existingChoices.forEach(
-    choice => {
-
-      const normalized =
-        normalizeDropdownChoice(
-          choice
-        );
-
-
-      if (
-        normalized.name
-      ) {
-
-        oldMap.set(
-          normalized.name,
-          normalized.price
-        );
-
-      }
-
-    }
-  );
-
-
-  const heading =
-    document.createElement(
-      "div"
-    );
-
-
-  heading.innerHTML = `
-    <strong>
-      Price for each dropdown choice
-    </strong>
-  `;
-
-
-  container.appendChild(
-    heading
-  );
+  editor.style.display =
+    "block";
 
 
   names.forEach(
-    name => {
+    (name, index) => {
 
       const row =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       row.className =
         "custom-choice-price-row";
 
-
-      const oldPrice =
-        oldMap.has(name)
-        ?
-        oldMap.get(name)
-        :
-        0;
+      row.dataset.name =
+        name;
 
 
-      row.innerHTML = `
+      row.style.display =
+        "flex";
 
-        <span>
-          ${escapeHtml(
-            name
-          )}
-        </span>
+      row.style.alignItems =
+        "center";
 
-        <input
-          type="number"
-          min="0"
-          step="1"
-          class="custom-choice-price-input"
-          data-choice-name="${escapeAttribute(
-            name
-          )}"
-          value="${Number(
-            oldPrice || 0
-          )}"
-          placeholder="Price"
-        >
+      row.style.gap =
+        "8px";
 
-      `;
+      row.style.marginTop =
+        "8px";
 
 
-      container.appendChild(
-        row
-      );
+      const label =
+        document.createElement("span");
+
+      label.textContent =
+        name;
+
+      label.style.flex =
+        "1";
+
+
+      const price =
+        document.createElement("input");
+
+      price.type =
+        "number";
+
+      price.min =
+        "0";
+
+      price.placeholder =
+        "Price";
+
+      price.value =
+        previous[name] ?? 0;
+
+
+      row.appendChild(label);
+
+      row.appendChild(price);
+
+      editor.appendChild(row);
 
     }
   );
@@ -2034,25 +1920,29 @@ function renderCustomChoicePriceInputs(
 }
 
 
-/* ==================================================
-   GET CHOICE PRICE DATA
-================================================== */
+// ============================================================
+// READ CUSTOM CHOICE PRICES
+// ============================================================
 
-function getCustomChoicePriceData() {
+function getChoicePriceData(
+  inputId,
+  editorId
+) {
 
-  const choicesInput =
+  const input =
     document.getElementById(
-      "editCustomChoices"
+      inputId
     );
 
   const editor =
-    getCustomChoicePriceEditor();
+    document.getElementById(
+      editorId
+    );
 
 
   const names =
     parseChoiceNames(
-      choicesInput?.value ||
-      ""
+      input?.value || ""
     );
 
 
@@ -2063,39 +1953,31 @@ function getCustomChoicePriceData() {
   }
 
 
-  const rows =
-    editor
-      ?
-      [
-        ...editor.querySelectorAll(
-          ".custom-choice-price-row"
-        )
-      ]
-      :
-      [];
-
-
   return names.map(
-    name => {
+    (name, index) => {
 
-      const row =
-        rows.find(
-          currentRow =>
-            currentRow
-              .querySelector(
-                ".custom-choice-price-input"
-              )
-              ?.dataset
-              .choiceName ===
-            name
+      let price = 0;
+
+
+      const rows =
+        editor?.querySelectorAll(
+          ".custom-choice-price-row"
         );
 
 
-      const input =
-        row
-          ?.querySelector(
-            ".custom-choice-price-input"
+      if (rows && rows[index]) {
+
+        const input =
+          rows[index].querySelector(
+            "input"
           );
+
+        price =
+          Number(
+            input?.value || 0
+          );
+
+      }
 
 
       return {
@@ -2103,8 +1985,9 @@ function getCustomChoicePriceData() {
         name,
 
         price:
-          Number(
-            input?.value || 0
+          Math.max(
+            0,
+            price
           )
 
       };
@@ -2115,11 +1998,11 @@ function getCustomChoicePriceData() {
 }
 
 
-/* ==================================================
-   CUSTOM TYPE CHANGE
-================================================== */
+// ============================================================
+// CUSTOM OPTION TYPE UI
+// ============================================================
 
-function updateCustomTypeUI() {
+function updateCustomOptionForm() {
 
   const type =
     document.getElementById(
@@ -2132,23 +2015,32 @@ function updateCustomTypeUI() {
       "editCustomPrice"
     );
 
+
   const choicesInput =
     document.getElementById(
       "editCustomChoices"
     );
 
+
   const editor =
-    getCustomChoicePriceEditor();
+    ensureCustomChoicePriceEditor(
+      "editCustomChoices",
+      "editCustomChoicePrices"
+    );
 
 
-  if (
-    type === "dropdown"
-  ) {
+  if (!type) return;
+
+
+  if (type === "dropdown") {
 
     if (priceInput) {
 
       priceInput.style.display =
         "none";
+
+      priceInput.disabled =
+        true;
 
     }
 
@@ -2156,7 +2048,7 @@ function updateCustomTypeUI() {
     if (choicesInput) {
 
       choicesInput.style.display =
-        "";
+        "block";
 
     }
 
@@ -2164,23 +2056,22 @@ function updateCustomTypeUI() {
     if (editor) {
 
       editor.style.display =
-        "";
+        "block";
 
     }
 
 
-    renderCustomChoicePriceInputs(
-      choicesInput?.value || ""
-    );
+    renderAddChoicePriceInputs();
 
-  }
-
-  else {
+  } else {
 
     if (priceInput) {
 
       priceInput.style.display =
         "";
+
+      priceInput.disabled =
+        false;
 
     }
 
@@ -2205,119 +2096,85 @@ function updateCustomTypeUI() {
 }
 
 
-/* ==================================================
-   CHOICE INPUT LIVE UPDATE
-================================================== */
+// ============================================================
+// CUSTOM OPTION EVENTS
+// ============================================================
 
-const editCustomChoices =
+const customTypeInput =
+  document.getElementById(
+    "editCustomType"
+  );
+
+const customChoicesInput =
   document.getElementById(
     "editCustomChoices"
   );
 
 
-editCustomChoices?.addEventListener(
-  "input",
-  () => {
+if (customTypeInput) {
 
-    renderCustomChoicePriceInputs(
-      editCustomChoices.value
-    );
-
-  }
-);
-
-
-document
-  .getElementById(
-    "editCustomType"
-  )
-  ?.addEventListener(
+  customTypeInput.addEventListener(
     "change",
-    updateCustomTypeUI
+    updateCustomOptionForm
   );
 
+}
 
-/* ==================================================
-   ADD CUSTOM OPTION
-================================================== */
+
+if (customChoicesInput) {
+
+  customChoicesInput.addEventListener(
+    "input",
+    renderAddChoicePriceInputs
+  );
+
+}
+
+
+// ============================================================
+// ADD CUSTOM OPTION
+// ============================================================
 
 window.addEditCustomOption =
-function() {
+  function() {
 
-  const type =
-    document.getElementById(
-      "editCustomType"
-    ).value;
-
-
-  const label =
-    document.getElementById(
-      "editCustomLabel"
-    ).value
-    .trim();
-
-
-  const price =
-    Number(
+    const type =
       document.getElementById(
-        "editCustomPrice"
-      ).value ||
-      0
-    );
+        "editCustomType"
+      ).value;
 
 
-  const required =
-    document.getElementById(
-      "customRequired"
-    )?.checked ||
-    false;
+    const label =
+      document.getElementById(
+        "editCustomLabel"
+      ).value.trim();
 
 
-  if (!label) {
-
-    showPopup(
-      "Enter option label"
-    );
-
-    setTimeout(
-      hidePopup,
-      1200
-    );
-
-    return;
-
-  }
+    const price =
+      Number(
+        document.getElementById(
+          "editCustomPrice"
+        ).value || 0
+      );
 
 
-  const option = {
-
-    type,
-
-    label,
-
-    price,
-
-    required
-
-  };
+    const choicesRaw =
+      document.getElementById(
+        "editCustomChoices"
+      ).value;
 
 
-  /* ==================================================
-     DROPDOWN
-  ================================================== */
-
-  if (
-    type === "dropdown"
-  ) {
-
-    const choices =
-      getCustomChoicePriceData();
+    const required =
+      document.getElementById(
+        "customRequired"
+      )?.checked ||
+      false;
 
 
-    if (!choices.length) {
+    if (!label) {
 
       showPopup(
-        "Enter dropdown choices"
+        "⚠ Enter option label"
       );
 
       setTimeout(
@@ -2330,61 +2187,114 @@ function() {
     }
 
 
-    option.price =
-      0;
+    // --------------------------------------------------------
+    // DROPDOWN
+    // --------------------------------------------------------
+
+    if (type === "dropdown") {
+
+      const choices =
+        getChoicePriceData(
+          "editCustomChoices",
+          "editCustomChoicePrices"
+        );
 
 
-    option.choices =
-      choices;
+      if (!choices.length) {
 
-  }
+        showPopup(
+          "⚠ Add at least one dropdown choice"
+        );
 
+        setTimeout(
+          hidePopup,
+          1500
+        );
 
-  customOptions.push(
-    option
-  );
+        return;
 
-
-  renderCustomOptions();
-
-
-  document.getElementById(
-    "editCustomLabel"
-  ).value =
-    "";
+      }
 
 
-  document.getElementById(
-    "editCustomPrice"
-  ).value =
-    "";
+      customOptions.push({
+
+        type,
+
+        label,
+
+        price: 0,
+
+        required,
+
+        choices
+
+      });
+
+    }
 
 
-  document.getElementById(
-    "editCustomChoices"
-  ).value =
-    "";
+    // --------------------------------------------------------
+    // OTHER OPTIONS
+    // --------------------------------------------------------
+
+    else {
+
+      customOptions.push({
+
+        type,
+
+        label,
+
+        price:
+          Math.max(
+            0,
+            price
+          ),
+
+        required
+
+      });
+
+    }
 
 
-  document.getElementById(
-    "customRequired"
-  ).checked =
-    false;
+    renderCustomOptions();
 
 
-  renderCustomChoicePriceInputs(
-    ""
-  );
+    // --------------------------------------------------------
+    // RESET
+    // --------------------------------------------------------
+
+    document.getElementById(
+      "editCustomLabel"
+    ).value = "";
 
 
-  updateCustomTypeUI();
+    document.getElementById(
+      "editCustomPrice"
+    ).value = "";
 
-};
+
+    document.getElementById(
+      "editCustomChoices"
+    ).value = "";
 
 
-/* ==================================================
-   RENDER CUSTOM OPTIONS
-================================================== */
+    document.getElementById(
+      "customRequired"
+    ).checked = false;
+
+
+    renderAddChoicePriceInputs();
+
+    updateCustomOptionForm();
+
+  };
+
+
+// ============================================================
+// RENDER CUSTOM OPTIONS
+// ============================================================
 
 function renderCustomOptions() {
 
@@ -2393,39 +2303,28 @@ function renderCustomOptions() {
       "editCustomList"
     );
 
-
   if (!list) return;
 
 
-  list.innerHTML =
-    "";
+  list.innerHTML = "";
 
 
   customOptions.forEach(
-    (rawOption, index) => {
+    (option, index) => {
 
-      const option =
-        normalizeCustomOption(
-          rawOption
-        );
+      const div =
+        document.createElement("div");
 
-
-      customOptions[index] =
-        option;
-
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
+      div.className =
         "custom-option-item";
 
+      div.draggable = true;
 
-      let details =
-        "";
+      div.dataset.index =
+        index;
+
+
+      let details = "";
 
 
       if (
@@ -2433,57 +2332,32 @@ function renderCustomOptions() {
         "dropdown"
       ) {
 
-        const choiceText =
-          option.choices
-            .map(
-              choice => {
-
-                const price =
-                  Number(
-                    choice.price || 0
-                  );
-
-
-                return (
-
-                  `${escapeHtml(
-                    choice.name
-                  )}` +
-
-                  (
-                    price > 0
-                    ?
-                    ` (+₹${price})`
-                    :
-                    ""
-                  )
-
-                );
-
-              }
-            )
-            .join(
-              ", "
-            );
+        const choices =
+          normalizeDropdownChoices(
+            option.choices
+          );
 
 
         details = `
 
-          <div>
+          <div class="custom-choice-summary">
 
-            <strong>
-              ${escapeHtml(
-                option.label
-              )}
-            </strong>
-
-            <small>
-              Dropdown
-            </small>
-
-            <div>
-              ${choiceText}
-            </div>
+            ${choices
+              .map(
+                choice => `
+                  <div>
+                    ${escapeHTML(
+                      choice.name
+                    )}
+                    <strong>
+                      +₹${Number(
+                        choice.price || 0
+                      )}
+                    </strong>
+                  </div>
+                `
+              )
+              .join("")}
 
           </div>
 
@@ -2491,63 +2365,56 @@ function renderCustomOptions() {
 
       }
 
-      else {
 
-        details = `
+      const overallPrice =
+        option.type ===
+        "dropdown"
+          ? ""
+          : `+₹${Number(
+              option.price || 0
+            )}`;
+
+
+      div.innerHTML = `
+
+        <div class="custom-option-main">
 
           <div>
 
             <strong>
-              ${escapeHtml(
+              ${escapeHTML(
                 option.label
               )}
             </strong>
 
-            <small>
-
-              ${escapeHtml(
+            <span>
+              ${escapeHTML(
                 option.type
               )}
+            </span>
 
-              ${
-                Number(
-                  option.price || 0
-                ) > 0
+            ${
+              overallPrice
+                ? `<span>${overallPrice}</span>`
+                : ""
+            }
 
-                ?
-
-                ` • +₹${Number(
-                  option.price || 0
-                )}`
-
-                :
-
-                ""
-
-              }
-
-              ${
-                option.required
-                ?
-                " • Required"
-                :
-                ""
-              }
-
-            </small>
+            ${
+              option.required
+                ? `<small>(Required)</small>`
+                : ""
+            }
 
           </div>
 
-        `;
+          ${
+            details
+          }
 
-      }
+        </div>
 
 
-      item.innerHTML = `
-
-        ${details}
-
-        <div>
+        <div class="custom-option-actions">
 
           <button
             type="button"
@@ -2562,7 +2429,7 @@ function renderCustomOptions() {
             class="btn-outline"
             data-delete
           >
-            ×
+            Delete
           </button>
 
         </div>
@@ -2570,40 +2437,37 @@ function renderCustomOptions() {
       `;
 
 
-      item
-        .querySelector(
-          "[data-delete]"
-        )
-        .onclick =
-        () => {
+      div.querySelector(
+        "[data-edit]"
+      ).onclick = () => {
 
-          customOptions.splice(
-            index,
-            1
-          );
+        editCustomOption(index);
 
-          renderCustomOptions();
-
-        };
+      };
 
 
-      item
-        .querySelector(
-          "[data-edit]"
-        )
-        .onclick =
-        () => {
+      div.querySelector(
+        "[data-delete]"
+      ).onclick = () => {
 
-          editCustomOption(
-            index
-          );
+        customOptions.splice(
+          index,
+          1
+        );
 
-        };
+        renderCustomOptions();
+
+      };
 
 
-      list.appendChild(
-        item
+      setupVariantDrag(
+        div,
+        customOptions,
+        renderCustomOptions
       );
+
+
+      list.appendChild(div);
 
     }
   );
@@ -2611,9 +2475,9 @@ function renderCustomOptions() {
 }
 
 
-/* ==================================================
-   EDIT CUSTOM OPTION
-================================================== */
+// ============================================================
+// EDIT CUSTOM OPTION
+// ============================================================
 
 function editCustomOption(index) {
 
@@ -2623,109 +2487,41 @@ function editCustomOption(index) {
     );
 
 
-  const list =
-    document.getElementById(
-      "editCustomList"
-    );
+  if (!option) return;
 
 
-  const item =
-    list.children[index];
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "custom-option-edit";
 
 
-  if (!item) return;
-
-
-  let choicesHTML =
-    "";
-
-
-  if (
-    option.type ===
-    "dropdown"
-  ) {
-
-    choicesHTML = `
-
-      <input
-        type="text"
-        class="edit-option-choices"
-        value="${escapeAttribute(
+  const choices =
+    option.type === "dropdown"
+      ? normalizeDropdownChoices(
           option.choices
-            .map(
-              choice =>
-                choice.name
-            )
-            .join(", ")
-        )}"
-        placeholder="Dropdown choices"
-      >
+        )
+      : [];
 
 
-      <div
-        class="edit-option-choice-prices"
-      ></div>
+  div.innerHTML = `
 
-    `;
+    <select class="edit-option-type">
 
-  }
-
-
-  item.innerHTML = `
-
-    <select
-      class="edit-option-type"
-    >
-
-      <option
-        value="text"
-        ${
-          option.type === "text"
-          ?
-          "selected"
-          :
-          ""
-        }
-      >
+      <option value="text">
         Text
       </option>
 
-      <option
-        value="image"
-        ${
-          option.type === "image"
-          ?
-          "selected"
-          :
-          ""
-        }
-      >
+      <option value="image">
         Image Upload
       </option>
 
-      <option
-        value="checkbox"
-        ${
-          option.type === "checkbox"
-          ?
-          "selected"
-          :
-          ""
-        }
-      >
+      <option value="checkbox">
         Checkbox
       </option>
 
-      <option
-        value="dropdown"
-        ${
-          option.type === "dropdown"
-          ?
-          "selected"
-          :
-          ""
-        }
-      >
+      <option value="dropdown">
         Dropdown
       </option>
 
@@ -2733,27 +2529,41 @@ function editCustomOption(index) {
 
 
     <input
-      type="text"
       class="edit-option-label"
-      value="${escapeAttribute(
+      placeholder="Option label"
+      value="${escapeHTML(
         option.label
       )}"
-      placeholder="Option label"
     >
 
 
     <input
+      class="edit-option-price"
       type="number"
       min="0"
-      class="edit-option-price"
+      placeholder="Extra price"
       value="${Number(
         option.price || 0
       )}"
-      placeholder="Extra price"
     >
 
 
-    ${choicesHTML}
+    <input
+      class="edit-option-choices"
+      placeholder="Dropdown choices (comma separated)"
+      value="${escapeHTML(
+        choices
+          .map(
+            c => c.name
+          )
+          .join(", ")
+      )}"
+    >
+
+
+    <div
+      class="edit-option-choice-prices"
+    ></div>
 
 
     <label>
@@ -2763,10 +2573,8 @@ function editCustomOption(index) {
         class="edit-option-required"
         ${
           option.required
-          ?
-          "checked"
-          :
-          ""
+            ? "checked"
+            : ""
         }
       >
 
@@ -2775,509 +2583,516 @@ function editCustomOption(index) {
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      data-save
-    >
-      Save
-    </button>
+    <div>
 
+      <button
+        type="button"
+        class="btn-outline save-custom"
+      >
+        Save
+      </button>
 
-    <button
-      type="button"
-      class="btn-outline"
-      data-cancel
-    >
-      Cancel
-    </button>
+      <button
+        type="button"
+        class="btn-outline cancel-custom"
+      >
+        Cancel
+      </button>
+
+    </div>
 
   `;
 
 
+  const list =
+    document.getElementById(
+      "editCustomList"
+    );
+
+
+  const old =
+    list.children[index];
+
+
+  if (old) {
+
+    old.replaceWith(div);
+
+  }
+
+
   const typeSelect =
-    item.querySelector(
+    div.querySelector(
       ".edit-option-type"
     );
 
 
   const priceInput =
-    item.querySelector(
+    div.querySelector(
       ".edit-option-price"
     );
 
 
   const choicesInput =
-    item.querySelector(
+    div.querySelector(
       ".edit-option-choices"
     );
 
 
-  function updateEditChoiceUI() {
+  const choiceEditor =
+    div.querySelector(
+      ".edit-option-choice-prices"
+    );
 
-    const type =
-      typeSelect.value;
 
+  typeSelect.value =
+    option.type;
+
+
+  // ----------------------------------------------------------
+  // LOCAL CHOICE PRICE RENDERER
+  // ----------------------------------------------------------
+
+  function renderEditChoicePrices() {
 
     if (
-      type === "dropdown"
+      typeSelect.value !==
+      "dropdown"
     ) {
 
-      priceInput.style.display =
-        "none";
-
-
-      let choicesBox =
-        item.querySelector(
-          ".edit-option-choices"
-        );
-
-
-      if (!choicesBox) {
-
-        choicesBox =
-          document.createElement(
-            "input"
-          );
-
-        choicesBox.type =
-          "text";
-
-        choicesBox.className =
-          "edit-option-choices";
-
-        choicesBox.placeholder =
-          "Dropdown choices";
-
-
-        priceInput.insertAdjacentElement(
-          "afterend",
-          choicesBox
-        );
-
-      }
-
-
-      choicesBox.style.display =
+      choiceEditor.innerHTML =
         "";
 
+      choiceEditor.style.display =
+        "none";
 
-      let priceBox =
-        item.querySelector(
-          ".edit-option-choice-prices"
-        );
+      choicesInput.style.display =
+        "none";
 
+      priceInput.style.display =
+        "";
 
-      if (!priceBox) {
+      priceInput.disabled =
+        false;
 
-        priceBox =
-          document.createElement(
-            "div"
-          );
+      return;
 
-        priceBox.className =
-          "edit-option-choice-prices";
-
-
-        choicesBox.insertAdjacentElement(
-          "afterend",
-          priceBox
-        );
-
-      }
+    }
 
 
-      renderInlineChoicePrices(
-        item,
-        choicesBox.value,
-        option.choices
+    choicesInput.style.display =
+      "block";
+
+    priceInput.style.display =
+      "none";
+
+    priceInput.disabled =
+      true;
+
+
+    const names =
+      parseChoiceNames(
+        choicesInput.value
+      );
+
+
+    // Preserve current entered prices
+
+    const previous = {};
+
+
+    choiceEditor
+      .querySelectorAll(
+        ".custom-choice-price-row"
+      )
+      .forEach(row => {
+
+        const name =
+          row.dataset.name;
+
+        const price =
+          row.querySelector(
+            "input"
+          )?.value;
+
+
+        if (name) {
+
+          previous[name] =
+            Number(price || 0);
+
+        }
+
+      });
+
+
+    // First time: use original values
+
+    if (
+      !Object.keys(previous).length
+    ) {
+
+      choices.forEach(
+        choice => {
+
+          previous[
+            choice.name
+          ] =
+            Number(
+              choice.price || 0
+            );
+
+        }
       );
 
     }
 
-    else {
 
-      priceInput.style.display =
-        "";
+    choiceEditor.innerHTML =
+      "";
 
-      choicesInput?.remove();
+    choiceEditor.style.display =
+      "block";
 
-      item
-        .querySelector(
-          ".edit-option-choice-prices"
-        )
-        ?.remove();
 
-    }
+    names.forEach(
+      name => {
+
+        const row =
+          document.createElement("div");
+
+        row.className =
+          "custom-choice-price-row";
+
+        row.dataset.name =
+          name;
+
+
+        row.style.display =
+          "flex";
+
+        row.style.alignItems =
+          "center";
+
+        row.style.gap =
+          "8px";
+
+        row.style.marginTop =
+          "8px";
+
+
+        const label =
+          document.createElement(
+            "span"
+          );
+
+        label.textContent =
+          name;
+
+        label.style.flex =
+          "1";
+
+
+        const price =
+          document.createElement(
+            "input"
+          );
+
+        price.type =
+          "number";
+
+        price.min =
+          "0";
+
+        price.placeholder =
+          "Price";
+
+        price.value =
+          previous[name] ?? 0;
+
+
+        row.appendChild(
+          label
+        );
+
+        row.appendChild(
+          price
+        );
+
+        choiceEditor.appendChild(
+          row
+        );
+
+      }
+    );
 
   }
 
 
   typeSelect.addEventListener(
     "change",
-    updateEditChoiceUI
+    renderEditChoicePrices
   );
 
 
-  choicesInput?.addEventListener(
+  choicesInput.addEventListener(
     "input",
-    () => {
+    renderEditChoicePrices
+  );
 
-      renderInlineChoicePrices(
-        item,
-        choicesInput.value,
-        option.choices
+
+  renderEditChoicePrices();
+
+
+  // ----------------------------------------------------------
+  // SAVE
+  // ----------------------------------------------------------
+
+  div.querySelector(
+    ".save-custom"
+  ).onclick = () => {
+
+    const type =
+      typeSelect.value;
+
+
+    const label =
+      div.querySelector(
+        ".edit-option-label"
+      ).value.trim();
+
+
+    const required =
+      div.querySelector(
+        ".edit-option-required"
+      ).checked;
+
+
+    if (!label) {
+
+      showPopup(
+        "⚠ Enter option label"
       );
 
+      setTimeout(
+        hidePopup,
+        1200
+      );
+
+      return;
+
     }
-  );
 
 
-  updateEditChoiceUI();
+    // --------------------------------------------------------
+    // DROPDOWN
+    // --------------------------------------------------------
+
+    if (
+      type ===
+      "dropdown"
+    ) {
+
+      const names =
+        parseChoiceNames(
+          choicesInput.value
+        );
 
 
-  item
-    .querySelector(
-      "[data-save]"
-    )
-    .onclick =
-    () => {
+      if (!names.length) {
 
-      const newType =
-        typeSelect.value;
+        showPopup(
+          "⚠ Add dropdown choices"
+        );
 
-
-      const newLabel =
-        item
-          .querySelector(
-            ".edit-option-label"
-          )
-          .value
-          .trim();
-
-
-      const newRequired =
-        item
-          .querySelector(
-            ".edit-option-required"
-          )
-          .checked;
-
-
-      if (!newLabel) {
+        setTimeout(
+          hidePopup,
+          1200
+        );
 
         return;
 
       }
 
 
-      const updated = {
+      const rows =
+        choiceEditor.querySelectorAll(
+          ".custom-choice-price-row"
+        );
 
-        type:
-          newType,
 
-        label:
-          newLabel,
+      const finalChoices =
+        names.map(
+          (name, choiceIndex) => {
 
-        price:
-          Number(
-            priceInput.value ||
-            0
-          ),
+            const row =
+              rows[choiceIndex];
 
-        required:
-          newRequired
+
+            const input =
+              row?.querySelector(
+                "input"
+              );
+
+
+            const choicePrice =
+              Number(
+                input?.value || 0
+              );
+
+
+            return {
+
+              name,
+
+              price:
+                Math.max(
+                  0,
+                  choicePrice
+                )
+
+            };
+
+          }
+        );
+
+
+      customOptions[index] = {
+
+        type,
+
+        label,
+
+        price: 0,
+
+        required,
+
+        choices:
+          finalChoices
 
       };
 
-
-      if (
-        newType ===
-        "dropdown"
-      ) {
-
-        const input =
-          item.querySelector(
-            ".edit-option-choices"
-          );
+    }
 
 
-        const prices =
-          item.querySelectorAll(
-            ".inline-choice-price"
-          );
+    // --------------------------------------------------------
+    // OTHER TYPES
+    // --------------------------------------------------------
+
+    else {
+
+      const price =
+        Number(
+          priceInput.value || 0
+        );
 
 
-        const names =
-          parseChoiceNames(
-            input?.value ||
-            ""
-          );
+      customOptions[index] = {
+
+        type,
+
+        label,
+
+        price:
+          Math.max(
+            0,
+            price
+          ),
+
+        required
+
+      };
+
+    }
 
 
-        updated.price =
-          0;
+    renderCustomOptions();
+
+  };
 
 
-        updated.choices =
-          names.map(
-            name => {
+  // ----------------------------------------------------------
+  // CANCEL
+  // ----------------------------------------------------------
 
-              const priceInput =
-                [
-                  ...prices
-                ].find(
-                  current =>
-                    current.dataset.name ===
-                    name
-                );
+  div.querySelector(
+    ".cancel-custom"
+  ).onclick = () => {
 
+    renderCustomOptions();
 
-              return {
-
-                name,
-
-                price:
-                  Number(
-                    priceInput?.value ||
-                    0
-                  )
-
-              };
-
-            }
-          );
-
-      }
-
-
-      customOptions[index] =
-        updated;
-
-
-      renderCustomOptions();
-
-    };
-
-
-  item
-    .querySelector(
-      "[data-cancel]"
-    )
-    .onclick =
-    () => {
-
-      renderCustomOptions();
-
-    };
+  };
 
 }
 
 
-/* ==================================================
-   INLINE DROPDOWN PRICE EDITOR
-================================================== */
-
-function renderInlineChoicePrices(
-  item,
-  raw,
-  existingChoices = []
-) {
-
-  const box =
-    item.querySelector(
-      ".edit-option-choice-prices"
-    );
-
-
-  if (!box) return;
-
-
-  box.innerHTML =
-    "";
-
-
-  const names =
-    parseChoiceNames(
-      raw
-    );
-
-
-  const oldMap =
-    new Map();
-
-
-  existingChoices.forEach(
-    choice => {
-
-      const normalized =
-        normalizeDropdownChoice(
-          choice
-        );
-
-
-      if (
-        normalized.name
-      ) {
-
-        oldMap.set(
-          normalized.name,
-          normalized.price
-        );
-
-      }
-
-    }
-  );
-
-
-  names.forEach(
-    name => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-
-      row.className =
-        "custom-choice-price-row";
-
-
-      const oldPrice =
-        oldMap.get(
-          name
-        ) ??
-        0;
-
-
-      row.innerHTML = `
-
-        <span>
-          ${escapeHtml(
-            name
-          )}
-        </span>
-
-
-        <input
-          type="number"
-          min="0"
-          class="inline-choice-price"
-          data-name="${escapeAttribute(
-            name
-          )}"
-          value="${Number(
-            oldPrice || 0
-          )}"
-          placeholder="Price"
-        >
-
-      `;
-
-
-      box.appendChild(
-        row
-      );
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   RELATED PRODUCTS
-================================================== */
+// ============================================================
+// RELATED DESIGNS
+// ============================================================
 
 async function loadDesignProducts() {
 
-  try {
-
-    const snap =
-      await getDocs(
-        collection(
-          db,
-          "products"
-        )
-      );
-
-
-    allProducts = [];
-
-
-    snap.forEach(
-      productDoc => {
-
-        allProducts.push({
-
-          id:
-            productDoc.id,
-
-          ...productDoc.data()
-
-        });
-
-      }
+  const snap =
+    await getDocs(
+      collection(
+        db,
+        "products"
+      )
     );
 
 
-    renderDesignList(
-      allProducts
-    );
+  allProducts = [];
 
-  }
 
-  catch(error) {
+  snap.forEach(
+    d => {
 
-    console.error(
-      "Related products error:",
-      error
-    );
+      allProducts.push({
 
-  }
+        id: d.id,
+
+        ...d.data()
+
+      });
+
+    }
+  );
+
+
+  renderDesignList(
+    allProducts
+  );
 
 }
 
 
-/* ==================================================
-   RELATED DESIGN LIST
-================================================== */
+// ============================================================
+// RENDER RELATED DESIGNS
+// ============================================================
 
-function renderDesignList(
-  list
-) {
+function renderDesignList(list) {
 
   const box =
     document.getElementById(
       "designList"
     );
 
-
   if (!box) return;
 
 
-  box.innerHTML =
-    "";
+  box.innerHTML = "";
 
 
   list.forEach(
-    p => {
+    product => {
 
       if (
-        p.id === id
-      ) {
-
-        return;
-
-      }
+        product.id === id
+      ) return;
 
 
       const row =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       row.className =
         "design-item";
@@ -3285,7 +3100,7 @@ function renderDesignList(
 
       const checked =
         relatedDesigns.includes(
-          p.id
+          product.id
         );
 
 
@@ -3295,54 +3110,46 @@ function renderDesignList(
           type="checkbox"
           ${
             checked
-            ?
-            "checked"
-            :
-            ""
+              ? "checked"
+              : ""
           }
         >
 
         <img
-          src="${escapeAttribute(
-            p.images?.[0] ||
-            ""
-          )}"
-          alt="${escapeAttribute(
-            p.name ||
-            ""
+          src="${escapeHTML(
+            product.images?.[0] || ""
           )}"
         >
 
         <span>
-          ${escapeHtml(
-            p.name ||
-            ""
+          ${escapeHTML(
+            product.name || ""
           )}
         </span>
 
       `;
 
 
-      row
-        .querySelector(
+      const checkbox =
+        row.querySelector(
           "input"
-        )
-        .addEventListener(
-          "change",
-          event => {
-
-            toggleDesign(
-              p.id,
-              event.target.checked
-            );
-
-          }
         );
 
 
-      box.appendChild(
-        row
+      checkbox.addEventListener(
+        "change",
+        () => {
+
+          toggleDesign(
+            product.id,
+            checkbox.checked
+          );
+
+        }
       );
+
+
+      box.appendChild(row);
 
     }
   );
@@ -3350,89 +3157,88 @@ function renderDesignList(
 }
 
 
-/* ==================================================
-   TOGGLE RELATED DESIGN
-================================================== */
+// ============================================================
+// TOGGLE DESIGN
+// ============================================================
 
 window.toggleDesign =
-function(
-  productId,
-  checked
-) {
+  function(
+    productId,
+    checked
+  ) {
 
-  if (checked) {
+    if (checked) {
 
-    if (
-      !relatedDesigns.includes(
-        productId
-      )
-    ) {
+      if (
+        !relatedDesigns.includes(
+          productId
+        )
+      ) {
 
-      relatedDesigns.push(
-        productId
-      );
+        relatedDesigns.push(
+          productId
+        );
+
+      }
+
+    } else {
+
+      relatedDesigns =
+        relatedDesigns.filter(
+          value =>
+            value !==
+            productId
+        );
 
     }
 
-  }
-
-  else {
-
-    relatedDesigns =
-      relatedDesigns.filter(
-        id =>
-          id !== productId
-      );
-
-  }
-
-};
+  };
 
 
-/* ==================================================
-   SEARCH RELATED DESIGNS
-================================================== */
+// ============================================================
+// FILTER DESIGNS
+// ============================================================
 
 window.filterDesigns =
-function() {
+  function() {
 
-  const input =
-    document.getElementById(
-      "designSearch"
-    );
-
-
-  const queryText =
-    input?.value
-      ?.toLowerCase()
-      .trim() ||
-    "";
+    const input =
+      document.getElementById(
+        "designSearch"
+      );
 
 
-  const filtered =
-    allProducts.filter(
-      p =>
-        p.id !== id &&
-        String(
-          p.name || ""
-        )
-          .toLowerCase()
-          .includes(
-            queryText
+    const q =
+      (
+        input?.value ||
+        ""
+      )
+        .toLowerCase()
+        .trim();
+
+
+    const filtered =
+      allProducts.filter(
+        product =>
+          product.id !== id &&
+          String(
+            product.name || ""
           )
+            .toLowerCase()
+            .includes(q)
+      );
+
+
+    renderDesignList(
+      filtered
     );
 
-
-  renderDesignList(
-    filtered
-  );
-
-};
+  };
 
 
-/* ==================================================
-   TAGS
-================================================== */
+// ============================================================
+// TAGS
+// ============================================================
 
 async function loadTags() {
 
@@ -3441,193 +3247,159 @@ async function loadTags() {
       "tagCheckboxes"
     );
 
-
   if (!box) return;
 
 
-  try {
+  const snap =
+    await getDocs(
+      collection(
+        db,
+        "tags"
+      )
+    );
 
-    const snap =
-      await getDocs(
-        collection(
-          db,
-          "tags"
-        )
+
+  box.innerHTML = "";
+
+
+  snap.forEach(
+    d => {
+
+      const t =
+        d.data();
+
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "tag-item";
+
+
+      const checked =
+        selectedTags.includes(
+          t.slug
+        );
+
+
+      row.innerHTML = `
+
+        <input
+          type="checkbox"
+          ${
+            checked
+              ? "checked"
+              : ""
+          }
+        >
+
+        <span>
+          ${escapeHTML(
+            t.name || ""
+          )}
+        </span>
+
+      `;
+
+
+      const checkbox =
+        row.querySelector(
+          "input"
+        );
+
+
+      checkbox.addEventListener(
+        "change",
+        () => {
+
+          toggleTag(
+            t.slug,
+            checkbox.checked
+          );
+
+        }
       );
 
 
-    box.innerHTML =
-      "";
+      box.appendChild(row);
 
-
-    snap.forEach(
-      tagDoc => {
-
-        const tag =
-          tagDoc.data();
-
-
-        const row =
-          document.createElement(
-            "div"
-          );
-
-
-        row.className =
-          "tag-item";
-
-
-        const checked =
-          selectedTags.includes(
-            tag.slug
-          );
-
-
-        row.innerHTML = `
-
-          <input
-            type="checkbox"
-            ${
-              checked
-              ?
-              "checked"
-              :
-              ""
-            }
-          >
-
-          <span>
-            ${escapeHtml(
-              tag.name ||
-              ""
-            )}
-          </span>
-
-        `;
-
-
-        const checkbox =
-          row.querySelector(
-            "input"
-          );
-
-
-        checkbox.addEventListener(
-          "change",
-          () => {
-
-            toggleTag(
-              tag.slug,
-              checkbox.checked
-            );
-
-          }
-        );
-
-
-        box.appendChild(
-          row
-        );
-
-      }
-    );
-
-  }
-
-  catch(error) {
-
-    console.error(
-      "Tags loading error:",
-      error
-    );
-
-  }
+    }
+  );
 
 }
 
 
-/* ==================================================
-   TOGGLE TAG
-================================================== */
+// ============================================================
+// TAG TOGGLE
+// ============================================================
 
 window.toggleTag =
-function(
-  slug,
-  checked
-) {
+  function(
+    slug,
+    checked
+  ) {
 
-  if (checked) {
+    if (checked) {
 
-    if (
-      !selectedTags.includes(
-        slug
-      )
-    ) {
+      if (
+        !selectedTags.includes(
+          slug
+        )
+      ) {
 
-      selectedTags.push(
-        slug
-      );
+        selectedTags.push(
+          slug
+        );
+
+      }
+
+    } else {
+
+      selectedTags =
+        selectedTags.filter(
+          tag =>
+            tag !== slug
+        );
 
     }
 
-  }
-
-  else {
-
-    selectedTags =
-      selectedTags.filter(
-        tag =>
-          tag !== slug
-      );
-
-  }
-
-};
+  };
 
 
-/* ==================================================
-   STORAGE GALLERY
-================================================== */
-
-let currentGalleryPath =
-  "product-images";
-
-
-/* ==================================================
-   OPEN GALLERY
-================================================== */
+// ============================================================
+// STORAGE GALLERY
+// ============================================================
 
 window.openGalleryPicker =
-function() {
+  function() {
 
-  const picker =
-    document.getElementById(
-      "galleryPicker"
+    const picker =
+      document.getElementById(
+        "galleryPicker"
+      );
+
+
+    if (!picker) return;
+
+
+    picker.classList.remove(
+      "hidden"
     );
 
 
-  if (!picker) return;
+    gallerySelected = [];
 
 
-  gallerySelected =
-    [];
+    loadGalleryFolder(
+      "product-images"
+    );
+
+  };
 
 
-  picker.classList.remove(
-    "hidden"
-  );
-
-
-  loadGalleryFolder(
-    "product-images"
-  );
-
-};
-
-
-/* ==================================================
-   LOAD GALLERY FOLDER
-================================================== */
+// ============================================================
+// LOAD GALLERY FOLDER
+// ============================================================
 
 async function loadGalleryFolder(
   path
@@ -3651,8 +3423,7 @@ async function loadGalleryFolder(
   if (!grid) return;
 
 
-  grid.innerHTML =
-    "<p>Loading...</p>";
+  grid.innerHTML = "";
 
 
   try {
@@ -3664,26 +3435,21 @@ async function loadGalleryFolder(
       );
 
 
-    const result =
+    const res =
       await listAll(
         folderRef
       );
 
 
-    grid.innerHTML =
-      "";
+    // --------------------------------------------------------
+    // FOLDERS
+    // --------------------------------------------------------
 
-
-    /* FOLDERS */
-
-    result.prefixes.forEach(
+    res.prefixes.forEach(
       folder => {
 
         const div =
-          document.createElement(
-            "div"
-          );
-
+          document.createElement("div");
 
         div.className =
           "gallery-folder";
@@ -3696,7 +3462,7 @@ async function loadGalleryFolder(
           </div>
 
           <span>
-            ${escapeHtml(
+            ${escapeHTML(
               folder.name
             )}
           </span>
@@ -3722,10 +3488,12 @@ async function loadGalleryFolder(
     );
 
 
-    /* IMAGES */
+    // --------------------------------------------------------
+    // IMAGES
+    // --------------------------------------------------------
 
     for (
-      const file of result.items
+      const file of res.items
     ) {
 
       const url =
@@ -3735,13 +3503,16 @@ async function loadGalleryFolder(
 
 
       const div =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       div.className =
         "gallery-img";
+
+
+      const checked =
+        gallerySelected.includes(
+          url
+        );
 
 
       div.innerHTML = `
@@ -3749,13 +3520,17 @@ async function loadGalleryFolder(
         <input
           type="checkbox"
           class="gallery-check"
+          ${
+            checked
+              ? "checked"
+              : ""
+          }
         >
 
         <img
-          src="${escapeAttribute(
+          src="${escapeHTML(
             url
           )}"
-          alt=""
         >
 
       `;
@@ -3763,13 +3538,7 @@ async function loadGalleryFolder(
 
       const checkbox =
         div.querySelector(
-          ".gallery-check"
-        );
-
-
-      checkbox.checked =
-        gallerySelected.includes(
-          url
+          "input"
         );
 
 
@@ -3792,14 +3561,12 @@ async function loadGalleryFolder(
 
             }
 
-          }
-
-          else {
+          } else {
 
             gallerySelected =
               gallerySelected.filter(
-                item =>
-                  item !== url
+                x =>
+                  x !== url
               );
 
           }
@@ -3813,9 +3580,7 @@ async function loadGalleryFolder(
 
     }
 
-  }
-
-  catch(error) {
+  } catch (error) {
 
     console.error(
       "Gallery error:",
@@ -3824,24 +3589,23 @@ async function loadGalleryFolder(
 
 
     grid.innerHTML =
-      "<p>Unable to load gallery.</p>";
+      `<p>Unable to load gallery.</p>`;
 
   }
 
 }
 
 
-/* ==================================================
-   BREADCRUMBS
-================================================== */
+// ============================================================
+// BREADCRUMBS
+// ============================================================
 
 function updateGalleryBreadcrumbs(
   path
 ) {
 
-  if (!galleryBreadcrumbs) {
+  if (!galleryBreadcrumbs)
     return;
-  }
 
 
   galleryBreadcrumbs.innerHTML =
@@ -3855,9 +3619,7 @@ function updateGalleryBreadcrumbs(
         ""
       )
       .split("/")
-      .filter(
-        Boolean
-      );
+      .filter(Boolean);
 
 
   const home =
@@ -3868,7 +3630,6 @@ function updateGalleryBreadcrumbs(
 
   home.innerText =
     "Home";
-
 
   home.style.cursor =
     "pointer";
@@ -3897,8 +3658,7 @@ function updateGalleryBreadcrumbs(
     part => {
 
       currentPath +=
-        "/" +
-        part;
+        "/" + part;
 
 
       const span =
@@ -3942,619 +3702,630 @@ function updateGalleryBreadcrumbs(
 }
 
 
-/* ==================================================
-   CLOSE GALLERY
-================================================== */
+// ============================================================
+// CLOSE GALLERY
+// ============================================================
 
 window.closeGalleryPicker =
-function() {
+  function() {
 
-  document
-    .getElementById(
-      "galleryPicker"
-    )
-    ?.classList.add(
+    const picker =
+      document.getElementById(
+        "galleryPicker"
+      );
+
+
+    if (!picker) return;
+
+
+    picker.classList.add(
       "hidden"
     );
 
-};
+  };
 
 
-/* ==================================================
-   ADD SELECTED GALLERY IMAGES
-================================================== */
+// ============================================================
+// ADD SELECTED GALLERY IMAGES
+// ============================================================
 
 window.addSelectedImages =
-function() {
+  function() {
 
-  gallerySelected.forEach(
-    url => {
+    gallerySelected.forEach(
+      url => {
 
-      if (
-        !existingImages.includes(
-          url
-        )
-      ) {
+        if (
+          !existingImages.includes(
+            url
+          )
+        ) {
 
-        existingImages.push(
-          url
-        );
+          existingImages.push(
+            url
+          );
+
+        }
 
       }
-
-    }
-  );
+    );
 
 
-  gallerySelected =
-    [];
+    gallerySelected = [];
 
 
-  renderImagePreview();
+    renderImagePreview();
 
 
-  closeGalleryPicker();
+    closeGalleryPicker();
 
-};
+  };
 
 
-/* ==================================================
-   UPDATE PRODUCT
-================================================== */
+// ============================================================
+// UPDATE PRODUCT
+// ============================================================
 
 window.updateProduct =
-async function() {
+  async function() {
 
-  if (!id) {
-
-    return;
-
-  }
+    const name =
+      nameInput.value.trim();
 
 
-  const name =
-    nameInput.value.trim();
+    const price =
+      Number(
+        priceInput.value || 0
+      );
 
 
-  const price =
-    Number(
-      priceInput.value || 0
-    );
+    const selectedOption =
+      catSelect.options[
+        catSelect.selectedIndex
+      ];
 
 
-  const selectedCategory =
-    catSelect.options[
-      catSelect.selectedIndex
-    ];
+    let categoryId =
+      null;
 
+    let subCategoryId =
+      null;
 
-  if (
-    !selectedCategory ||
-    !selectedCategory.value
-  ) {
-
-    showPopup(
-      "⚠ Select category"
-    );
-
-    setTimeout(
-      hidePopup,
-      1500
-    );
-
-    return;
-
-  }
-
-
-  let categoryId =
-    null;
-
-
-  let subCategoryId =
-    null;
-
-
-  if (
-    selectedCategory.dataset.type ===
-    "main"
-  ) {
-
-    categoryId =
-      selectedCategory.value;
-
-  }
-
-
-  if (
-    selectedCategory.dataset.type ===
-    "sub"
-  ) {
-
-    subCategoryId =
-      selectedCategory.value;
-
-    categoryId =
-      selectedCategory.dataset.parent;
-
-  }
-
-
-  if (
-    !name ||
-    price <= 0
-  ) {
-
-    showPopup(
-      "⚠ Fill all required fields"
-    );
-
-    setTimeout(
-      hidePopup,
-      1500
-    );
-
-    return;
-
-  }
-
-
-  /* ==================================================
-     VALIDATE CUSTOM OPTIONS
-  ================================================== */
-
-  for (
-    const option of customOptions
-  ) {
 
     if (
-      !option.label
+      selectedOption &&
+      selectedOption.dataset.type ===
+        "main"
+    ) {
+
+      categoryId =
+        selectedOption.value;
+
+    }
+
+
+    if (
+      selectedOption &&
+      selectedOption.dataset.type ===
+        "sub"
+    ) {
+
+      subCategoryId =
+        selectedOption.value;
+
+      categoryId =
+        selectedOption.dataset.parent;
+
+    }
+
+
+    const isBestseller =
+      document.getElementById(
+        "isBestseller"
+      )?.checked ||
+      false;
+
+
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
+
+    if (
+      !name ||
+      !price ||
+      !selectedOption?.value
     ) {
 
       showPopup(
-        "⚠ Custom option label is missing"
+        "⚠ Fill all required fields"
       );
+
 
       setTimeout(
         hidePopup,
         1500
       );
 
+
       return;
 
     }
 
 
-    if (
-      option.type ===
-      "dropdown"
+    // Validate custom dropdown choices
+
+    for (
+      const option of customOptions
     ) {
 
       if (
-        !Array.isArray(
-          option.choices
-        ) ||
-        !option.choices.length
+        option.type ===
+        "dropdown"
       ) {
 
-        showPopup(
-          `⚠ Add choices for ${option.label}`
-        );
-
-        setTimeout(
-          hidePopup,
-          1500
-        );
-
-        return;
-
-      }
-
-
-      option.price =
-        0;
-
-
-      option.choices =
-        option.choices
-          .map(
-            normalizeDropdownChoice
-          )
-          .filter(
-            choice =>
-              choice.name
+        option.choices =
+          normalizeDropdownChoices(
+            option.choices
           );
 
-    }
 
-  }
+        if (
+          !option.choices.length
+        ) {
 
-
-  try {
-
-    showPopup(
-      "Uploading images..."
-    );
+          showPopup(
+            `⚠ Dropdown "${option.label}" has no choices`
+          );
 
 
-    /* ==================================================
-       UPLOAD NEW IMAGES
-    ================================================== */
-
-    const finalImages =
-      [...existingImages];
+          setTimeout(
+            hidePopup,
+            1800
+          );
 
 
-    for (
-      const file of newImages
-    ) {
+          return;
 
-      const storageRef =
-        ref(
-          storage,
-          `products/${Date.now()}-${file.name}`
-        );
+        }
 
 
-      await uploadBytes(
-        storageRef,
-        file
-      );
-
-
-      const url =
-        await getDownloadURL(
-          storageRef
-        );
-
-
-      finalImages.push(
-        url
-      );
-
-    }
-
-
-    showPopup(
-      "Saving changes..."
-    );
-
-
-    /* ==================================================
-       PAYMENT SETTINGS
-    ================================================== */
-
-    const paymentSettings = {
-
-      online: {
-
-        enabled:
-          allowOnline.checked,
-
-        discountType:
-          onlineDiscountType.value,
-
-        discountValue:
-          Number(
-            onlineDiscountValue.value ||
-            0
-          )
-
-      },
-
-
-      cod: {
-
-        enabled:
-          allowCOD.checked,
-
-        discountType:
-          codDiscountType.value,
-
-        discountValue:
-          Number(
-            codDiscountValue.value ||
-            0
-          )
-
-      },
-
-
-      advance: {
-
-        enabled:
-          allowAdvance.checked,
-
-        discountType:
-          advanceDiscountType.value,
-
-        discountValue:
-          Number(
-            advanceDiscountValue.value ||
-            0
-          ),
-
-        type:
-          advanceType.value,
-
-        value:
-          Number(
-            advanceValue.value ||
-            0
-          )
+        option.price = 0;
 
       }
 
-    };
+    }
 
 
-    /* ==================================================
-       CLEAN CUSTOM OPTIONS
-    ================================================== */
+    try {
 
-    const cleanCustomOptions =
-      customOptions.map(
-        option => {
+      // ------------------------------------------------------
+      // UPLOAD NEW IMAGES
+      // ------------------------------------------------------
 
-          const clean = {
+      showPopup(
+        "Uploading images..."
+      );
 
-            type:
-              option.type,
 
-            label:
-              option.label,
+      const finalImages =
+        [...existingImages];
 
-            required:
-              Boolean(
-                option.required
+
+      for (
+        const file of newImages
+      ) {
+
+        const safeName =
+          `${Date.now()}-${file.name}`;
+
+
+        const storageRef =
+          ref(
+            storage,
+            `products/${safeName}`
+          );
+
+
+        await uploadBytes(
+          storageRef,
+          file
+        );
+
+
+        const url =
+          await getDownloadURL(
+            storageRef
+          );
+
+
+        finalImages.push(
+          url
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // PAYMENT SETTINGS
+      // ------------------------------------------------------
+
+      const paymentSettings = {
+
+        online: {
+
+          enabled:
+            allowOnline.checked,
+
+          discountType:
+            onlineDiscountType.value,
+
+          discountValue:
+            Number(
+              onlineDiscountValue.value ||
+              0
+            )
+
+        },
+
+
+        cod: {
+
+          enabled:
+            allowCOD.checked,
+
+          discountType:
+            codDiscountType.value,
+
+          discountValue:
+            Number(
+              codDiscountValue.value ||
+              0
+            )
+
+        },
+
+
+        advance: {
+
+          enabled:
+            allowAdvance.checked,
+
+          discountType:
+            advanceDiscountType.value,
+
+          discountValue:
+            Number(
+              advanceDiscountValue.value ||
+              0
+            ),
+
+          type:
+            advanceType.value,
+
+          value:
+            Number(
+              advanceValue.value ||
+              0
+            )
+
+        }
+
+      };
+
+
+      // ------------------------------------------------------
+      // SAVE
+      // ------------------------------------------------------
+
+      showPopup(
+        "Saving changes..."
+      );
+
+
+      await updateDoc(
+        doc(
+          db,
+          "products",
+          id
+        ),
+        {
+
+          name,
+
+          description:
+            descInput.value,
+
+
+          basePrice:
+            price,
+
+
+          salePrice:
+            Number(
+              salePriceInput.value ||
+              price
+            ),
+
+
+          inStock:
+            stockStatus?.value ===
+            "true",
+
+
+          categoryId,
+
+          subCategoryId,
+
+
+          images:
+            finalImages,
+
+
+          variants: {
+
+            colors:
+              colors.map(
+                normalizeColor
+              ),
+
+            sizes:
+              sizes.map(
+                normalizeSize
               )
 
-          };
+          },
 
 
-          if (
-            option.type ===
-            "dropdown"
-          ) {
-
-            clean.price =
-              0;
-
-
-            clean.choices =
-              (
-                option.choices ||
-                []
-              )
-                .map(
-                  normalizeDropdownChoice
+          customOptions:
+            customOptions.map(
+              option =>
+                normalizeCustomOption(
+                  option
                 )
-                .filter(
-                  choice =>
-                    choice.name
-                );
-
-          }
-
-          else {
-
-            clean.price =
-              Number(
-                option.price ||
-                0
-              );
-
-          }
+            ),
 
 
-          return clean;
+          paymentSettings,
+
+
+          relatedDesigns,
+
+
+          tags:
+            selectedTags,
+
+
+          isBestseller
 
         }
       );
 
 
-    /* ==================================================
-       UPDATE FIRESTORE
-    ================================================== */
+      // ------------------------------------------------------
+      // BIDIRECTIONAL RELATED DESIGNS
+      // ------------------------------------------------------
 
-    await updateDoc(
-
-      doc(
-        db,
-        "products",
-        id
-      ),
-
-      {
-
-        name,
-
-        description:
-          descInput.value,
+      const allOldRelated =
+        new Set();
 
 
-        basePrice:
-          price,
+      // Get current product's old related designs
+
+      const currentSnap =
+        await getDoc(
+          doc(
+            db,
+            "products",
+            id
+          )
+        );
 
 
-        salePrice:
-          Number(
-            salePriceInput.value ||
-            price
-          ),
+      if (
+        currentSnap.exists()
+      ) {
+
+        const currentData =
+          currentSnap.data();
 
 
-        inStock:
-          stockStatus?.value ===
-          "true",
+        (
+          currentData.relatedDesigns ||
+          []
+        ).forEach(
+          rid =>
+            allOldRelated.add(
+              rid
+            )
+        );
+
+      }
 
 
-        categoryId,
+      // ------------------------------------------------------
+      // ADD NEW LINKS
+      // ------------------------------------------------------
+
+      for (
+        const rid of relatedDesigns
+      ) {
+
+        if (
+          rid === id
+        ) continue;
 
 
-        subCategoryId,
+        const refDoc =
+          doc(
+            db,
+            "products",
+            rid
+          );
 
 
-        images:
-          finalImages,
+        const snap =
+          await getDoc(
+            refDoc
+          );
 
 
-        variants: {
+        if (
+          !snap.exists()
+        ) continue;
 
-          colors,
 
-          sizes
+        const data =
+          snap.data();
+
+
+        const arr =
+          Array.isArray(
+            data.relatedDesigns
+          )
+            ? [
+                ...data.relatedDesigns
+              ]
+            : [];
+
+
+        if (
+          !arr.includes(id)
+        ) {
+
+          arr.push(id);
+
+
+          await updateDoc(
+            refDoc,
+            {
+              relatedDesigns:
+                arr
+            }
+          );
+
+        }
+
+      }
+
+
+      // ------------------------------------------------------
+      // REMOVE OLD LINKS
+      // ------------------------------------------------------
+
+      for (
+        const rid of allOldRelated
+      ) {
+
+        if (
+          relatedDesigns.includes(
+            rid
+          )
+        ) continue;
+
+
+        const refDoc =
+          doc(
+            db,
+            "products",
+            rid
+          );
+
+
+        const snap =
+          await getDoc(
+            refDoc
+          );
+
+
+        if (
+          !snap.exists()
+        ) continue;
+
+
+        const data =
+          snap.data();
+
+
+        const arr =
+          Array.isArray(
+            data.relatedDesigns
+          )
+            ? [
+                ...data.relatedDesigns
+              ]
+            : [];
+
+
+        const cleaned =
+          arr.filter(
+            value =>
+              value !== id
+          );
+
+
+        if (
+          cleaned.length !==
+          arr.length
+        ) {
+
+          await updateDoc(
+            refDoc,
+            {
+              relatedDesigns:
+                cleaned
+            }
+          );
+
+        }
+
+      }
+
+
+      // ------------------------------------------------------
+      // SUCCESS
+      // ------------------------------------------------------
+
+      showPopup(
+        "✅ Product updated"
+      );
+
+
+      setTimeout(
+        () => {
+
+          hidePopup();
+
+          location.href =
+            "products.html";
 
         },
+        1200
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Update product error:",
+        error
+      );
 
 
-        customOptions:
-          cleanCustomOptions,
-
-
-        paymentSettings,
-
-
-        relatedDesigns,
-
-
-        tags:
-          selectedTags,
-
-
-        isBestseller:
-          bestsellerCheckbox?.checked ||
-          false
-
-      }
-
-    );
-
-
-    /* ==================================================
-       BIDIRECTIONAL RELATED PRODUCTS
-    ================================================== */
-
-    for (
-      const relatedId of relatedDesigns
-    ) {
-
-      const relatedRef =
-        doc(
-          db,
-          "products",
-          relatedId
-        );
-
-
-      const relatedSnap =
-        await getDoc(
-          relatedRef
-        );
-
-
-      if (
-        !relatedSnap.exists()
-      ) {
-
-        continue;
-
-      }
-
-
-      const relatedData =
-        relatedSnap.data();
-
-
-      const relatedArray =
-        Array.isArray(
-          relatedData.relatedDesigns
+      showPopup(
+        "❌ " +
+        (
+          error.message ||
+          "Something went wrong"
         )
-
-        ?
-
-        [
-          ...relatedData.relatedDesigns
-        ]
-
-        :
-
-        [];
-
-
-      if (
-        !relatedArray.includes(
-          id
-        )
-      ) {
-
-        relatedArray.push(
-          id
-        );
-
-
-        await updateDoc(
-          relatedRef,
-          {
-
-            relatedDesigns:
-              relatedArray
-
-          }
-        );
-
-      }
+      );
 
     }
 
-
-    /* ==================================================
-       SUCCESS
-    ================================================== */
-
-    showPopup(
-      "✅ Product updated"
-    );
+  };
 
 
-    setTimeout(
-      () => {
-
-        hidePopup();
-
-        location.href =
-          "products.html";
-
-      },
-      1200
-    );
-
-  }
-
-  catch(error) {
-
-    console.error(
-      "Update product error:",
-      error
-    );
-
-
-    showPopup(
-      "❌ " +
-      (
-        error.message ||
-        "Update failed"
-      )
-    );
-
-  }
-
-};
-
-
-/* ==================================================
-   INITIALIZE
-================================================== */
+// ============================================================
+// INITIALIZE
+// ============================================================
 
 async function init() {
 
@@ -4564,15 +4335,26 @@ async function init() {
 
     await loadProduct();
 
-    updateCustomTypeUI();
+    await Promise.all([
+      loadDesignProducts(),
+      loadTags()
+    ]);
 
-  }
 
-  catch(error) {
+    // Initialize custom dropdown UI
+
+    updateCustomOptionForm();
+
+  } catch (error) {
 
     console.error(
-      "Edit page initialization error:",
+      "Edit product initialization error:",
       error
+    );
+
+
+    showPopup(
+      "❌ Failed to load product"
     );
 
   }
