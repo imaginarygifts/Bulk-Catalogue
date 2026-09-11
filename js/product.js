@@ -2585,6 +2585,135 @@ function(
 
 
 /* ==================================================
+   DROPDOWN HELPERS
+================================================== */
+
+/*
+   Supports both:
+
+   OLD DATA:
+   choices: [
+       "Design 1",
+       "Design 2"
+   ]
+
+   NEW DATA:
+   choices: [
+       {
+           name: "Design 1",
+           price: 100
+       },
+       {
+           name: "Design 2",
+           price: 200
+       }
+   ]
+*/
+
+function normalizeDropdownChoice(choice) {
+
+    /* NEW OBJECT FORMAT */
+
+    if (
+        choice &&
+        typeof choice === "object"
+    ) {
+
+        return {
+
+            name:
+                String(
+                    choice.name ??
+                    choice.label ??
+                    choice.value ??
+                    ""
+                ).trim(),
+
+            price:
+                Number(
+                    choice.price || 0
+                )
+
+        };
+
+    }
+
+
+    /* OLD STRING FORMAT */
+
+    return {
+
+        name:
+            String(
+                choice ?? ""
+            ).trim(),
+
+        price:
+            0
+
+    };
+
+}
+
+
+/* ==================================================
+   GET SELECTED DROPDOWN CHOICE
+================================================== */
+
+function getDropdownChoice(
+    option,
+    value
+) {
+
+    if (
+        !option ||
+        !Array.isArray(
+            option.choices
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    const selectedValue =
+        String(
+            value ?? ""
+        ).trim();
+
+
+    if (
+        !selectedValue
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+
+        option.choices
+            .map(
+                normalizeDropdownChoice
+            )
+            .find(
+                choice =>
+                    choice.name ===
+                    selectedValue
+            )
+
+        ||
+
+        null
+
+    );
+
+}
+
+
+/* ==================================================
    DROPDOWN
 ================================================== */
 
@@ -2593,6 +2722,23 @@ function(
     index,
     value
 ) {
+
+    const option =
+        product?.customOptions?.[index];
+
+
+    if (
+        !option
+    ) {
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       NOTHING SELECTED
+    ================================================== */
 
     if (
         !value
@@ -2611,13 +2757,55 @@ function(
     }
 
 
-    selected.options[index] =
-        product.customOptions[index].price;
+    /* ==================================================
+       FIND SELECTED CHOICE
+    ================================================== */
 
+    const choice =
+        getDropdownChoice(
+            option,
+            value
+        );
+
+
+    if (
+        !choice
+    ) {
+
+        delete selected.options[index];
+
+        delete selected.optionValues[index];
+
+        recalcPrice();
+
+        updateProductCartButton();
+
+        return;
+
+    }
+
+
+    /* ==================================================
+       SAVE CHOICE PRICE
+    ================================================== */
+
+    selected.options[index] =
+        Number(
+            choice.price || 0
+        );
+
+
+    /* ==================================================
+       SAVE CHOICE NAME
+    ================================================== */
 
     selected.optionValues[index] =
-        value;
+        choice.name;
 
+
+    /* ==================================================
+       RECALCULATE
+    ================================================== */
 
     recalcPrice();
 
@@ -3086,90 +3274,148 @@ function renderCustomizePopup() {
 
 
             /* ==================================================
-               DROPDOWN
-            ================================================== */
+   DROPDOWN
+================================================== */
 
-            else if (
-                option.type === "dropdown"
+else if (
+    option.type === "dropdown"
+) {
+
+    let optionsHTML = `
+
+        <option value="">
+
+            Select
+            ${escapeHtml(
+                option.label
+            )}
+
+        </option>
+
+    `;
+
+
+    /* ==================================================
+       NORMALIZE ALL CHOICES
+    ================================================== */
+
+    const choices =
+        Array.isArray(
+            option.choices
+        )
+
+        ?
+
+        option.choices.map(
+            normalizeDropdownChoice
+        )
+
+        :
+
+        [];
+
+
+    /* ==================================================
+       RENDER CHOICES
+    ================================================== */
+
+    choices.forEach(
+        choice => {
+
+            if (
+                !choice.name
             ) {
 
-                let optionsHTML = `
+                return;
 
-                    <option value="">
-
-                        Select
-                        ${escapeHtml(
-                            option.label
-                        )}
-
-                    </option>
-
-                `;
+            }
 
 
-                (
-                    option.choices ||
-                    []
-                ).forEach(
-                    choice => {
-
-                        optionsHTML += `
-
-                            <option
-
-                                value="${escapeAttribute(
-                                    choice
-                                )}"
-
-                                ${
-                                    selected.optionValues[index] ===
-                                    choice
-
-                                    ?
-
-                                    "selected"
-
-                                    :
-
-                                    ""
-                                }
-
-                            >
-
-                                ${escapeHtml(
-                                    choice
-                                )}
-
-                            </option>
-
-                        `;
-
-                    }
+            const choicePrice =
+                Number(
+                    choice.price || 0
                 );
 
 
-                wrap.innerHTML += `
+            const isSelected =
+                String(
+                    selected.optionValues[index] ??
+                    ""
+                ) ===
+                choice.name;
 
-                    <select
 
-                        class="custom-select"
+            optionsHTML += `
 
-                        onchange="
-                            addDropdownOption(
-                                ${index},
-                                this.value
-                            )
-                        "
+                <option
 
-                    >
+                    value="${escapeAttribute(
+                        choice.name
+                    )}"
 
-                        ${optionsHTML}
+                    data-price="${choicePrice}"
 
-                    </select>
+                    ${
+                        isSelected
+                        ?
+                        "selected"
+                        :
+                        ""
+                    }
 
-                `;
+                >
 
-            }
+                    ${escapeHtml(
+                        choice.name
+                    )}
+
+                    ${
+                        choicePrice > 0
+
+                        ?
+
+                        ` (+₹${choicePrice})`
+
+                        :
+
+                        ""
+
+                    }
+
+                </option>
+
+            `;
+
+        }
+    );
+
+
+    /* ==================================================
+       SELECT
+    ================================================== */
+
+    wrap.innerHTML += `
+
+        <select
+
+            class="custom-select"
+
+            onchange="
+                addDropdownOption(
+                    ${index},
+                    this.value
+                )
+            "
+
+        >
+
+            ${optionsHTML}
+
+        </select>
+
+    `;
+
+}
 
 
             /* ==================================================
