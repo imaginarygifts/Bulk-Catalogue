@@ -1,248 +1,782 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
+
   <title>Edit Product</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../css/admin.css?v=2026">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <!-- SAME CSS AS ADD PRODUCT -->
+
+  <link
+    rel="stylesheet"
+    href="../css/admin.css?v=2026"
+  >
+
 </head>
+
+
 <body>
 
+
+<!-- ==================================================
+     TOP BAR
+================================================== -->
+
 <div class="topbar">
-  <span class="back-btn" onclick="goBack()">←</span>
-  <span class="title">Edit Product</span>
+
+  <span
+    class="back-btn"
+    onclick="goBack()"
+  >
+    ←
+  </span>
+
+  <span class="title">
+    Edit Product
+  </span>
+
 </div>
+
+
 
 <div class="container">
 
-  <label>Product Name</label>
-  <input id="name">
 
-  <label>Description</label>
-  <textarea id="desc"></textarea>
+  <!-- ==================================================
+       PRODUCT INFORMATION
+  ================================================== -->
 
-  <label>Base Price</label>
-  <input id="price" type="number">
-
-  <label>Sale Price</label>
-  <input id="salePrice" type="number">
-
-  <label>Category</label>
-  <select id="category"></select>
-  
-  <label>Stock</label>
-
-<select id="stockStatus">
-<option value="true">In Stock</option>
-<option value="false">Out of Stock</option>
-</select>
-  
-<!-- TAGS -->
-<div class="section">
-  <h3>Tags</h3>
-
-  <div class="tag-box">
-    <div id="tagCheckboxes" class="tag-list">
-        <input type="checkbox" id="isBestseller">
-    </div>
-
-  </div>
-</div>
-
-
-  <!-- IMAGES -->
-  <h3>Images</h3>
-  <div id="imagePreview" class="image-row"></div>
-
-  <label class="image-picker">
-    
-<input type="file" id="newImages" multiple accept="image/*">
-    <div class="image-pick-box" onclick="openGalleryPicker()">
-      Tap to add images
-    </div>
+  <label>
+    Product Name
   </label>
 
-      <div><h4>Related Designs</h4>
-        <input type="text" id="designSearch" placeholder="Search products..." oninput="filterDesigns()">
-        </div>
-  <div id="relatedDesignsList" class="form-section">
+  <input
+    id="name"
+    type="text"
+  >
 
 
-  <div id="designList" class="design-list"></div>
-</div>
+  <label>
+    Description
+  </label>
 
-  <!-- VARIANTS -->
-  <div class="accordion" onclick="toggleSection('variantsSection')">
+  <textarea
+    id="desc"
+  ></textarea>
+
+
+  <label>
+    Base Price
+  </label>
+
+  <input
+    id="price"
+    type="number"
+    min="0"
+  >
+
+
+  <label>
+    Sale Price
+  </label>
+
+  <input
+    id="salePrice"
+    type="number"
+    min="0"
+  >
+
+
+  <label>
+    Category
+  </label>
+
+  <select id="category">
+
+    <option value="">
+      Select category
+    </option>
+
+  </select>
+
+
+  <label>
+    Stock
+  </label>
+
+  <select id="stockStatus">
+
+    <option value="true">
+      In Stock
+    </option>
+
+    <option value="false">
+      Out of Stock
+    </option>
+
+  </select>
+
+
+
+  <!-- ==================================================
+       TAGS
+  ================================================== -->
+
+  <div class="section">
+
+    <h3>
+      Tags
+    </h3>
+
+    <div class="tag-box">
+
+      <div
+        id="tagCheckboxes"
+        class="tag-list"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==================================================
+       IMAGES
+  ================================================== -->
+
+  <h3>
+    Images
+  </h3>
+
+  <div
+    id="imagePreview"
+    class="image-row"
+  ></div>
+
+
+  <label class="image-picker">
+
+    <input
+      type="file"
+      id="newImages"
+      multiple
+      accept="image/*"
+    >
+
+    <div
+      class="image-pick-box"
+      onclick="openGalleryPicker()"
+    >
+
+      Tap to add images
+
+    </div>
+
+  </label>
+
+
+
+  <!-- ==================================================
+       RELATED DESIGNS
+  ================================================== -->
+
+  <h4>
+    Related Designs
+  </h4>
+
+  <input
+    type="text"
+    id="designSearch"
+    placeholder="Search products..."
+    oninput="filterDesigns()"
+  >
+
+
+  <div
+    id="relatedDesignsList"
+    class="form-section"
+  >
+
+    <div
+      id="designList"
+      class="design-list"
+    ></div>
+
+  </div>
+
+
+
+  <!-- ==================================================
+       VARIANTS
+  ================================================== -->
+
+  <div
+    class="accordion"
+    onclick="toggleSection('variantsSection')"
+  >
+
     ▶ Variants
-  </div>
-
-  <div id="variantsSection" class="hidden">
-
-    <h4>Colors</h4>
-    <input id="editColorName" placeholder="Color name">
-    <input id="editColorPrice" placeholder="Extra price" type="number">
-    <button class="btn-outline" onclick="addEditColor()">Add Color</button>
-
-<label>
-  <input type="checkbox" id="colorRequired">
-  Required
-</label>
-
-    <div id="editColorList"></div>
-
-    <h4>Quantity</h4>
-    <input id="editSizeName" placeholder="Enter Quantity">
-    <input id="editSizePrice" placeholder="Extra price" type="number">
-    <button class="btn-outline" onclick="addEditSize()">Add Quantity</button>
-
-<label>
-  <input type="checkbox" id="sizeRequired">
-  Required
-</label>
-
-    <div id="editSizeList"></div>
 
   </div>
 
-  <!-- CUSTOM OPTIONS -->
-  <div class="accordion" onclick="toggleSection('customSection')">
+
+  <div
+    id="variantsSection"
+    class="hidden"
+  >
+
+
+    <!-- COLORS -->
+
+    <h4>
+      Colors
+    </h4>
+
+
+    <input
+      id="editColorName"
+      placeholder="Color name"
+    >
+
+
+    <input
+      id="editColorPrice"
+      placeholder="Extra price"
+      type="number"
+      min="0"
+    >
+
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="colorRequired"
+      >
+
+      Required
+
+    </label>
+
+
+    <button
+      type="button"
+      class="btn-outline"
+      onclick="addEditColor()"
+    >
+
+      Add Color
+
+    </button>
+
+
+    <div
+      id="editColorList"
+    ></div>
+
+
+
+    <!-- QUANTITY / SIZE -->
+
+    <h4>
+      Quantity
+    </h4>
+
+
+    <input
+      id="editSizeName"
+      placeholder="Enter Quantity"
+    >
+
+
+    <input
+      id="editSizePrice"
+      placeholder="Extra price"
+      type="number"
+      min="0"
+    >
+
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="sizeRequired"
+      >
+
+      Required
+
+    </label>
+
+
+    <button
+      type="button"
+      class="btn-outline"
+      onclick="addEditSize()"
+    >
+
+      Add Quantity
+
+    </button>
+
+
+    <div
+      id="editSizeList"
+    ></div>
+
+
+  </div>
+
+
+
+  <!-- ==================================================
+       CUSTOM OPTIONS
+  ================================================== -->
+
+  <div
+    class="accordion"
+    onclick="toggleSection('customSection')"
+  >
+
     ▶ Custom Options
+
   </div>
 
-  <div id="customSection" class="hidden">
 
-    <label>Option Type</label>
+  <div
+    id="customSection"
+    class="hidden"
+  >
+
+
+    <label>
+      Option Type
+    </label>
+
+
     <select id="editCustomType">
-      <option value="text">Text</option>
-      <option value="image">Image Upload</option>
-      <option value="checkbox">Checkbox</option>
-      <option value="dropdown">Dropdown</option>
+
+      <option value="text">
+        Text
+      </option>
+
+      <option value="image">
+        Image Upload
+      </option>
+
+      <option value="checkbox">
+        Checkbox
+      </option>
+
+      <option value="dropdown">
+        Dropdown
+      </option>
+
     </select>
 
-    <input id="editCustomLabel" placeholder="Option label">
-    <input id="editCustomPrice" placeholder="Extra price" type="number">
-    <input id="editCustomChoices" placeholder="Dropdown choices (comma separated)">
 
-    <button class="btn-outline" onclick="addEditCustomOption()">Add Option</button>
+    <input
+      id="editCustomLabel"
+      placeholder="Option label"
+    >
 
-<label>
-  <input type="checkbox" id="customRequired">
-  Required
-</label>
 
-    <div id="editCustomList"></div>
+    <input
+      id="editCustomPrice"
+      placeholder="Extra price"
+      type="number"
+      min="0"
+    >
 
-  </div>
-  
-  <!-- PAYMENT & DISCOUNTS -->
-<div class="accordion">
-  <div class="accordion-header" onclick="toggleSection('paymentSection')">
-    💳 Payment & Discounts
-  </div>
 
-  <div id="paymentSection" class="accordion-body hidden">
+    <input
+      id="editCustomChoices"
+      placeholder="Dropdown choices (comma separated)"
+    >
 
-    <h4>Payment Methods</h4>
+
+    <!-- Dynamic dropdown prices -->
+
+    <div
+      id="editCustomChoicePrices"
+      class="custom-choice-prices"
+    ></div>
+
 
     <label>
-      <input type="checkbox" id="allowOnline" checked>
-      Allow Online Payment
+
+      <input
+        type="checkbox"
+        id="customRequired"
+      >
+
+      Required
+
     </label>
 
-    <label>
-      <input type="checkbox" id="allowCOD">
-      Allow Cash on Delivery
-    </label>
 
-    <label>
-      <input type="checkbox" id="allowAdvance">
-      Allow Advance Payment
-    </label>
+    <button
+      type="button"
+      class="btn-outline"
+      onclick="addEditCustomOption()"
+    >
 
-    <hr>
+      Add Option
 
-    <h4>Discounts</h4>
+    </button>
 
-    <!-- Online Discount -->
-    <div class="row">
-      <label>Online Discount</label>
-      <select id="onlineDiscountType">
-        <option value="none">None</option>
-        <option value="percent">%</option>
-        <option value="flat">₹</option>
-      </select>
-      <input type="number" id="onlineDiscountValue" placeholder="Value">
+
+    <div
+      id="editCustomList"
+    ></div>
+
+
+  </div>
+
+
+
+  <!-- ==================================================
+       PAYMENT & DISCOUNTS
+  ================================================== -->
+
+  <div class="accordion">
+
+    <div
+      class="accordion-header"
+      onclick="toggleSection('paymentSection')"
+    >
+
+      💳 Payment & Discounts
+
     </div>
 
-    <!-- COD Discount -->
-    <div class="row">
-      <label>COD Discount</label>
-      <select id="codDiscountType">
-        <option value="none">None</option>
-        <option value="percent">%</option>
-        <option value="flat">₹</option>
-      </select>
-      <input type="number" id="codDiscountValue" placeholder="Value">
-    </div>
 
-    <!-- Advance Discount -->
-    <div class="row">
-      <label>Advance Discount</label>
-      <select id="advanceDiscountType">
-        <option value="none">None</option>
-        <option value="percent">%</option>
-        <option value="flat">₹</option>
-      </select>
-      <input type="number" id="advanceDiscountValue" placeholder="Value">
-    </div>
+    <div
+      id="paymentSection"
+      class="accordion-body hidden"
+    >
 
-    <hr>
 
-    <h4>Advance Booking</h4>
+      <h4>
+        Payment Methods
+      </h4>
 
-    <div class="row">
-      <label>Advance Amount</label>
-      <select id="advanceType">
-        <option value="percent">%</option>
-        <option value="flat">₹</option>
-      </select>
-      <input type="number" id="advanceValue" placeholder="Advance value">
+
+      <label>
+
+        <input
+          type="checkbox"
+          id="allowOnline"
+        >
+
+        Allow Online Payment
+
+      </label>
+
+
+      <label>
+
+        <input
+          type="checkbox"
+          id="allowCOD"
+        >
+
+        Allow Cash on Delivery
+
+      </label>
+
+
+      <label>
+
+        <input
+          type="checkbox"
+          id="allowAdvance"
+        >
+
+        Allow Advance Payment
+
+      </label>
+
+
+      <hr>
+
+
+      <h4>
+        Discounts
+      </h4>
+
+
+      <!-- ONLINE -->
+
+      <div class="row">
+
+        <label>
+          Online Discount
+        </label>
+
+        <select id="onlineDiscountType">
+
+          <option value="none">
+            None
+          </option>
+
+          <option value="percent">
+            %
+          </option>
+
+          <option value="flat">
+            ₹
+          </option>
+
+        </select>
+
+
+        <input
+          type="number"
+          id="onlineDiscountValue"
+          placeholder="Value"
+          min="0"
+        >
+
+      </div>
+
+
+
+      <!-- COD -->
+
+      <div class="row">
+
+        <label>
+          COD Discount
+        </label>
+
+        <select id="codDiscountType">
+
+          <option value="none">
+            None
+          </option>
+
+          <option value="percent">
+            %
+          </option>
+
+          <option value="flat">
+            ₹
+          </option>
+
+        </select>
+
+
+        <input
+          type="number"
+          id="codDiscountValue"
+          placeholder="Value"
+          min="0"
+        >
+
+      </div>
+
+
+
+      <!-- ADVANCE -->
+
+      <div class="row">
+
+        <label>
+          Advance Discount
+        </label>
+
+        <select id="advanceDiscountType">
+
+          <option value="none">
+            None
+          </option>
+
+          <option value="percent">
+            %
+          </option>
+
+          <option value="flat">
+            ₹
+          </option>
+
+        </select>
+
+
+        <input
+          type="number"
+          id="advanceDiscountValue"
+          placeholder="Value"
+          min="0"
+        >
+
+      </div>
+
+
+      <hr>
+
+
+      <h4>
+        Advance Booking
+      </h4>
+
+
+      <div class="row">
+
+        <label>
+          Advance Amount
+        </label>
+
+
+        <select id="advanceType">
+
+          <option value="percent">
+            %
+          </option>
+
+          <option value="flat">
+            ₹
+          </option>
+
+        </select>
+
+
+        <input
+          type="number"
+          id="advanceValue"
+          placeholder="Advance value"
+          min="0"
+        >
+
+      </div>
+
+
     </div>
 
   </div>
+
+
+
+  <!-- ==================================================
+       UPDATE
+  ================================================== -->
+
+  <button
+    type="button"
+    class="btn"
+    onclick="updateProduct()"
+  >
+
+    Update Product
+
+  </button>
+
+
 </div>
 
 
 
-  <button class="btn" onclick="updateProduct()">Update Product</button>
+<!-- ==================================================
+     POPUP
+================================================== -->
+
+<div
+  id="popup"
+  class="popup hidden"
+></div>
+
+
+
+<!-- ==================================================
+     GALLERY PICKER
+================================================== -->
+
+<div
+  id="galleryPicker"
+  class="gallery-picker hidden"
+>
+
+
+  <div class="gallery-header">
+
+    <button
+      type="button"
+      onclick="closeGalleryPicker()"
+    >
+
+      ← Back
+
+    </button>
+
+
+    <h3>
+      Select Images
+    </h3>
+
+
+    <button
+      type="button"
+      onclick="addSelectedImages()"
+    >
+
+      Add
+
+    </button>
+
+  </div>
+
+
+  <div
+    id="galleryBreadcrumbs"
+    class="gallery-breadcrumbs"
+  ></div>
+
+
+  <div
+    id="galleryPickerGrid"
+    class="gallery-picker-grid"
+  ></div>
+
 
 </div>
 
-<div id="popup" class="popup hidden"></div>
 
-<div id="galleryPicker" class="gallery-picker hidden">
 
-<div class="gallery-header">
-<button onclick="closeGalleryPicker()">← Back</button>
-<h3>Select Images</h3>
-<button onclick="addSelectedImages()">Add</button>
-</div>
+<!-- ==================================================
+     SCRIPTS
+================================================== -->
 
-<div id="galleryBreadcrumbs" class="gallery-breadcrumbs"></div>
+<script
+  type="module"
+  src="../js/guard.js"
+></script>
 
-<div id="galleryPickerGrid" class="gallery-picker-grid"></div>
 
-</div>
+<script
+  type="module"
+  src="../js/edit-product.js"
+></script>
 
-<!-- Guard -->
-<script type="module" src="../js/guard.js"></script>
 
-<!-- Logic -->
-<script type="module" src="../js/edit-product.js"></script>
 <script>
-  function goBack() {
-    location.href = "products.html";
-  }
+
+function goBack() {
+
+  location.href =
+    "products";
+
+}
+
 </script>
+
+
 </body>
 </html>
