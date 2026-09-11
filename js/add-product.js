@@ -130,6 +130,7 @@ let sizes = [];
 
 let customOptions = [];
 
+
 /*
   Product images are stored as objects internally.
 
@@ -147,8 +148,6 @@ let customOptions = [];
     type: "url",
     url: "https://..."
   }
-
-  This makes drag/reorder much easier.
 */
 
 let productImages = [];
@@ -576,10 +575,6 @@ function renderImagePreview(){
       );
 
 
-      /*--------------------------------------------
-          APPEND ONLY IMAGE + DELETE
-      --------------------------------------------*/
-
       card.appendChild(img);
 
       card.appendChild(del);
@@ -740,10 +735,6 @@ function renderImagePreview(){
       );
 
 
-      /*--------------------------------------------
-          ADD CARD
-      --------------------------------------------*/
-
       preview.appendChild(
         card
       );
@@ -752,7 +743,6 @@ function renderImagePreview(){
   );
 
 }
-
 
 
 /*==================================================
@@ -1827,6 +1817,453 @@ function(index){
 
 
 /*==================================================
+    CUSTOM DROPDOWN PRICE EDITOR
+==================================================*/
+
+/*
+  Dropdown choices are now stored as:
+
+  choices: [
+    {
+      name: "Design1",
+      price: 100
+    },
+    {
+      name: "Design2",
+      price: 200
+    },
+    {
+      name: "Design3",
+      price: 300
+    }
+  ]
+
+  The existing customChoices input can still be used
+  to enter comma-separated names:
+
+  Design1, Design2, Design3
+
+  Once entered, separate price fields are automatically
+  generated below it.
+*/
+
+
+let customChoiceEditor = null;
+
+
+/*==================================================
+    CREATE DROPDOWN PRICE EDITOR
+==================================================*/
+
+function createCustomChoiceEditor(){
+
+  const choicesInput =
+    document.getElementById(
+      "customChoices"
+    );
+
+  if(!choicesInput){
+
+    return null;
+
+  }
+
+
+  if(customChoiceEditor){
+
+    return customChoiceEditor;
+
+  }
+
+
+  customChoiceEditor =
+    document.createElement(
+      "div"
+    );
+
+  customChoiceEditor.className =
+    "custom-choice-price-editor";
+
+
+  customChoiceEditor.style.cssText = `
+    width:100%;
+    margin-top:10px;
+    display:none;
+  `;
+
+
+  choicesInput.insertAdjacentElement(
+    "afterend",
+    customChoiceEditor
+  );
+
+
+  choicesInput.addEventListener(
+    "input",
+    updateCustomChoicePriceEditor
+  );
+
+
+  return customChoiceEditor;
+
+}
+
+
+/*==================================================
+    GET DROPDOWN CHOICE NAMES
+==================================================*/
+
+function getChoiceNamesFromInput(){
+
+  const choicesInput =
+    document.getElementById(
+      "customChoices"
+    );
+
+  if(!choicesInput){
+
+    return [];
+
+  }
+
+
+  return choicesInput.value
+    .split(",")
+    .map(
+      value =>
+        value.trim()
+    )
+    .filter(Boolean);
+
+}
+
+
+/*==================================================
+    RENDER PRICE INPUTS FOR EACH CHOICE
+==================================================*/
+
+function updateCustomChoicePriceEditor(
+  existingChoices = null
+){
+
+  const editor =
+    createCustomChoiceEditor();
+
+  if(!editor){
+
+    return;
+
+  }
+
+
+  const names =
+    getChoiceNamesFromInput();
+
+
+  if(!names.length){
+
+    editor.innerHTML = "";
+
+    editor.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  editor.style.display =
+    "block";
+
+
+  editor.innerHTML = `
+
+    <div
+      style="
+        font-size:13px;
+        font-weight:600;
+        color:#ddd;
+        margin-bottom:8px;
+      "
+    >
+      Dropdown option prices
+    </div>
+
+  `;
+
+
+  names.forEach(
+    (name, index) => {
+
+      let price = 0;
+
+
+      if(
+        Array.isArray(existingChoices)
+      ){
+
+        const oldChoice =
+          existingChoices[index];
+
+
+        if(
+          oldChoice &&
+          typeof oldChoice === "object"
+        ){
+
+          price =
+            Number(
+              oldChoice.price || 0
+            );
+
+        }
+        else{
+
+          price = 0;
+
+        }
+
+      }
+
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "custom-choice-price-row";
+
+
+      row.style.cssText = `
+        display:grid;
+        grid-template-columns:minmax(0,1fr) 110px;
+        gap:8px;
+        align-items:center;
+        margin-bottom:8px;
+      `;
+
+
+      row.innerHTML = `
+
+        <div
+          style="
+            min-width:0;
+            padding:9px 10px;
+            border:1px solid rgba(255,255,255,0.10);
+            border-radius:9px;
+            background:#161a23;
+            color:#fff;
+            font-size:13px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+          "
+        >
+          ${escapeHtml(name)}
+        </div>
+
+        <input
+          type="number"
+          class="custom-choice-price-input"
+          data-choice-index="${index}"
+          value="${price}"
+          min="0"
+          step="0.01"
+          placeholder="Price"
+          style="
+            width:100%;
+            margin:0;
+            padding:9px 10px;
+            border-radius:9px;
+            background:#11141b;
+            border:1px solid rgba(255,255,255,0.12);
+            color:#fff;
+            font-size:13px;
+            outline:none;
+          "
+        >
+
+      `;
+
+
+      editor.appendChild(row);
+
+    }
+  );
+
+}
+
+
+/*==================================================
+    READ DROPDOWN CHOICES + PRICES
+==================================================*/
+
+function readCustomDropdownChoices(){
+
+  const names =
+    getChoiceNamesFromInput();
+
+
+  const editor =
+    createCustomChoiceEditor();
+
+
+  if(!names.length){
+
+    return [];
+
+  }
+
+
+  const priceInputs =
+    editor
+    ?
+    Array.from(
+      editor.querySelectorAll(
+        ".custom-choice-price-input"
+      )
+    )
+    :
+    [];
+
+
+  return names.map(
+    (name, index) => {
+
+      const input =
+        priceInputs[index];
+
+
+      const price =
+        Number(
+          input?.value || 0
+        );
+
+
+      return {
+
+        name,
+
+        price
+
+      };
+
+    }
+  );
+
+}
+
+
+/*==================================================
+    CUSTOM TYPE CHANGE
+==================================================*/
+
+const customTypeInput =
+  document.getElementById(
+    "customType"
+  );
+
+
+if(customTypeInput){
+
+  customTypeInput.addEventListener(
+    "change",
+    () => {
+
+      const customPrice =
+        document.getElementById(
+          "customPrice"
+        );
+
+      const choicesInput =
+        document.getElementById(
+          "customChoices"
+        );
+
+
+      if(
+        customTypeInput.value ===
+        "dropdown"
+      ){
+
+        if(customPrice){
+
+          customPrice.style.display =
+            "none";
+
+          customPrice.value =
+            "";
+
+        }
+
+        if(choicesInput){
+
+          choicesInput.style.display =
+            "block";
+
+        }
+
+
+        updateCustomChoicePriceEditor();
+
+      }
+      else{
+
+        if(customPrice){
+
+          customPrice.style.display =
+            "block";
+
+        }
+
+        if(choicesInput){
+
+          choicesInput.style.display =
+            "none";
+
+          choicesInput.value =
+            "";
+
+        }
+
+
+        if(customChoiceEditor){
+
+          customChoiceEditor.innerHTML =
+            "";
+
+          customChoiceEditor.style.display =
+            "none";
+
+        }
+
+      }
+
+    }
+  );
+
+
+  /*
+    Run once on page load.
+  */
+
+  setTimeout(
+    () => {
+
+      customTypeInput.dispatchEvent(
+        new Event("change")
+      );
+
+    },
+    0
+  );
+
+}
+
+
+/*==================================================
     CUSTOM OPTIONS
 ==================================================*/
 
@@ -1840,6 +2277,7 @@ function(){
       )
       .value;
 
+
   const label =
     document
       .getElementById(
@@ -1848,14 +2286,33 @@ function(){
       .value
       .trim();
 
-  const price =
-    Number(
-      document
-        .getElementById(
-          "customPrice"
-        )
-        .value || 0
-    );
+
+  /*
+    Normal price is used for:
+    text / checkbox / image
+
+    Dropdown uses individual
+    prices for every choice.
+  */
+
+  let price = 0;
+
+
+  if(
+    type !== "dropdown"
+  ){
+
+    price =
+      Number(
+        document
+          .getElementById(
+            "customPrice"
+          )
+          .value || 0
+      );
+
+  }
+
 
   const choicesRaw =
     document
@@ -1863,6 +2320,7 @@ function(){
         "customChoices"
       )
       .value;
+
 
   const required =
     document
@@ -1902,18 +2360,36 @@ function(){
   };
 
 
+  /*============================================
+      DROPDOWN
+  ============================================*/
+
   if(
     type === "dropdown"
   ){
 
+    const choices =
+      readCustomDropdownChoices();
+
+
+    if(!choices.length){
+
+      showPopup(
+        "⚠ Please enter dropdown options."
+      );
+
+      setTimeout(
+        hidePopup,
+        1800
+      );
+
+      return;
+
+    }
+
+
     option.choices =
-      choicesRaw
-        .split(",")
-        .map(
-          value =>
-            value.trim()
-        )
-        .filter(Boolean);
+      choices;
 
   }
 
@@ -1925,6 +2401,10 @@ function(){
 
   renderCustomOptions();
 
+
+  /*============================================
+      RESET FORM
+  ============================================*/
 
   document.getElementById(
     "customLabel"
@@ -1948,6 +2428,17 @@ function(){
 
     requiredInput.checked =
       false;
+
+  }
+
+
+  if(customChoiceEditor){
+
+    customChoiceEditor.innerHTML =
+      "";
+
+    customChoiceEditor.style.display =
+      "none";
 
   }
 
@@ -1993,6 +2484,105 @@ function renderCustomOptions(){
         index;
 
 
+      /*--------------------------------------------
+          NORMAL PRICE
+      --------------------------------------------*/
+
+      let priceHTML = "";
+
+
+      if(
+        option.type === "dropdown"
+      ){
+
+        priceHTML = "";
+
+      }
+      else{
+
+        priceHTML = `
+
+          <span>
+            +₹${Number(option.price || 0)}
+          </span>
+
+        `;
+
+      }
+
+
+      /*--------------------------------------------
+          DROPDOWN CHOICES
+      --------------------------------------------*/
+
+      let choicesHTML = "";
+
+
+      if(
+        option.type === "dropdown"
+      ){
+
+        const normalizedChoices =
+          normalizeDropdownChoices(
+            option.choices
+          );
+
+
+        choicesHTML = `
+
+          <div
+            class="custom-dropdown-choice-list"
+            style="
+              margin-top:8px;
+              display:flex;
+              flex-direction:column;
+              gap:5px;
+            "
+          >
+
+            ${
+              normalizedChoices
+                .map(
+                  choice => `
+
+                    <small
+                      style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:10px;
+                        padding:5px 7px;
+                        border-radius:6px;
+                        background:rgba(255,255,255,0.05);
+                        color:#bbb;
+                      "
+                    >
+
+                      <span>
+                        ${escapeHtml(choice.name)}
+                      </span>
+
+                      <strong
+                        style="color:#fff;"
+                      >
+                        +₹${Number(
+                          choice.price || 0
+                        )}
+                      </strong>
+
+                    </small>
+
+                  `
+                )
+                .join("")
+            }
+
+          </div>
+
+        `;
+
+      }
+
+
       div.innerHTML = `
 
         <div
@@ -2012,9 +2602,7 @@ function renderCustomOptions(){
             ${escapeHtml(option.label)}
           </span>
 
-          <span>
-            +₹${Number(option.price || 0)}
-          </span>
+          ${priceHTML}
 
           <span>
             ${
@@ -2024,19 +2612,7 @@ function renderCustomOptions(){
             }
           </span>
 
-          ${
-            option.type === "dropdown"
-            ?
-            `
-              <small>
-                ${escapeHtml(
-                  (option.choices || []).join(", ")
-                )}
-              </small>
-            `
-            :
-            ""
-          }
+          ${choicesHTML}
 
         </div>
 
@@ -2174,6 +2750,7 @@ function renderCustomOptions(){
               )
             );
 
+
           const toIndex =
             Number(
               div.dataset.index
@@ -2230,10 +2807,91 @@ function renderCustomOptions(){
 
 
 /*==================================================
-    EDIT CUSTOM OPTION
+    NORMALIZE DROPDOWN CHOICES
+==================================================*/
 
-    IMPORTANT:
-    This edits the SAME card.
+/*
+  This also keeps old dropdown data working.
+
+  Old:
+
+  [
+    "Design1",
+    "Design2"
+  ]
+
+  becomes internally:
+
+  [
+    {
+      name: "Design1",
+      price: 0
+    },
+    {
+      name: "Design2",
+      price: 0
+    }
+  ]
+*/
+
+function normalizeDropdownChoices(
+  choices
+){
+
+  if(
+    !Array.isArray(choices)
+  ){
+
+    return [];
+
+  }
+
+
+  return choices.map(
+    choice => {
+
+      if(
+        typeof choice === "string"
+      ){
+
+        return {
+
+          name:
+            choice,
+
+          price:
+            0
+
+        };
+
+      }
+
+
+      return {
+
+        name:
+          String(
+            choice?.name ??
+            choice?.value ??
+            ""
+          ),
+
+        price:
+          Number(
+            choice?.price || 0
+          )
+
+      };
+
+    }
+  );
+
+}
+
+
+/*==================================================
+    EDIT CUSTOM OPTION
+    SAME CARD
 ==================================================*/
 
 window.editCustomOption =
@@ -2266,6 +2924,21 @@ function(index){
 
   item.draggable =
     false;
+
+
+  const normalizedChoices =
+    normalizeDropdownChoices(
+      option.choices
+    );
+
+
+  const choicesNames =
+    normalizedChoices
+      .map(
+        choice =>
+          choice.name
+      )
+      .join(", ");
 
 
   item.innerHTML = `
@@ -2321,6 +2994,11 @@ function(index){
         value="${Number(option.price || 0)}"
         placeholder="Extra price"
         min="0"
+        ${
+          option.type === "dropdown"
+          ? "style='display:none'"
+          : ""
+        }
       >
 
 
@@ -2328,7 +3006,7 @@ function(index){
         type="text"
         class="edit-custom-choices"
         value="${escapeAttribute(
-          (option.choices || []).join(", ")
+          choicesNames
         )}"
         placeholder="Dropdown choices (comma separated)"
         ${
@@ -2337,6 +3015,19 @@ function(index){
           : ""
         }
       >
+
+
+      <div
+        class="edit-custom-choice-prices"
+        style="
+          width:100%;
+          display:${
+            option.type === "dropdown"
+            ? "block"
+            : "none"
+          };
+        "
+      ></div>
 
 
       <label>
@@ -2378,7 +3069,7 @@ function(index){
 
 
   /*============================================
-      TYPE CHANGE
+      ELEMENTS
   ============================================*/
 
   const typeSelect =
@@ -2386,16 +3077,191 @@ function(index){
       ".edit-custom-type"
     );
 
+
+  const priceInput =
+    item.querySelector(
+      ".edit-custom-price"
+    );
+
+
   const choicesInput =
     item.querySelector(
       ".edit-custom-choices"
     );
 
 
-  if(
-    typeSelect &&
-    choicesInput
+  const choicePriceEditor =
+    item.querySelector(
+      ".edit-custom-choice-prices"
+    );
+
+
+  /*============================================
+      RENDER EDIT CHOICE PRICES
+  ============================================*/
+
+  function renderEditChoicePrices(
+    oldChoices = normalizedChoices
   ){
+
+    if(
+      !choicePriceEditor
+    ){
+
+      return;
+
+    }
+
+
+    const names =
+      (choicesInput?.value || "")
+        .split(",")
+        .map(
+          value =>
+            value.trim()
+        )
+        .filter(Boolean);
+
+
+    if(!names.length){
+
+      choicePriceEditor.innerHTML =
+        "";
+
+      choicePriceEditor.style.display =
+        "none";
+
+      return;
+
+    }
+
+
+    choicePriceEditor.style.display =
+      "block";
+
+
+    choicePriceEditor.innerHTML = `
+
+      <div
+        style="
+          font-size:13px;
+          font-weight:600;
+          color:#ddd;
+          margin-bottom:8px;
+        "
+      >
+        Dropdown option prices
+      </div>
+
+    `;
+
+
+    names.forEach(
+      (name, choiceIndex) => {
+
+        const oldChoice =
+          oldChoices?.[choiceIndex];
+
+
+        const oldPrice =
+          oldChoice &&
+          typeof oldChoice === "object"
+          ?
+          Number(
+            oldChoice.price || 0
+          )
+          :
+          0;
+
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.style.cssText = `
+          display:grid;
+          grid-template-columns:minmax(0,1fr) 110px;
+          gap:8px;
+          align-items:center;
+          margin-bottom:8px;
+        `;
+
+
+        row.innerHTML = `
+
+          <div
+            style="
+              min-width:0;
+              padding:9px 10px;
+              border:1px solid rgba(255,255,255,0.10);
+              border-radius:9px;
+              background:#161a23;
+              color:#fff;
+              font-size:13px;
+              overflow:hidden;
+              text-overflow:ellipsis;
+              white-space:nowrap;
+            "
+          >
+            ${escapeHtml(name)}
+          </div>
+
+          <input
+            type="number"
+            class="edit-custom-choice-price"
+            data-choice-index="${choiceIndex}"
+            value="${oldPrice}"
+            min="0"
+            step="0.01"
+            placeholder="Price"
+            style="
+              width:100%;
+              margin:0;
+              padding:9px 10px;
+              border-radius:9px;
+              background:#11141b;
+              border:1px solid rgba(255,255,255,0.12);
+              color:#fff;
+              font-size:13px;
+              outline:none;
+            "
+          >
+
+        `;
+
+
+        choicePriceEditor.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+
+  /*============================================
+      INITIAL EDIT PRICE FIELDS
+  ============================================*/
+
+  if(
+    option.type === "dropdown"
+  ){
+
+    renderEditChoicePrices(
+      normalizedChoices
+    );
+
+  }
+
+
+  /*============================================
+      TYPE CHANGE
+  ============================================*/
+
+  if(typeSelect){
 
     typeSelect.addEventListener(
       "change",
@@ -2406,19 +3272,95 @@ function(index){
           "dropdown"
         ){
 
-          choicesInput.style.display =
-            "block";
+          if(priceInput){
+
+            priceInput.style.display =
+              "none";
+
+            priceInput.value =
+              "";
+
+          }
+
+          if(choicesInput){
+
+            choicesInput.style.display =
+              "block";
+
+          }
+
+
+          renderEditChoicePrices([]);
 
         }
         else{
 
-          choicesInput.style.display =
-            "none";
+          if(priceInput){
 
-          choicesInput.value =
-            "";
+            priceInput.style.display =
+              "block";
+
+          }
+
+          if(choicesInput){
+
+            choicesInput.style.display =
+              "none";
+
+            choicesInput.value =
+              "";
+
+          }
+
+
+          if(choicePriceEditor){
+
+            choicePriceEditor.innerHTML =
+              "";
+
+            choicePriceEditor.style.display =
+              "none";
+
+          }
 
         }
+
+      }
+    );
+
+  }
+
+
+  /*============================================
+      CHOICES CHANGE
+  ============================================*/
+
+  if(choicesInput){
+
+    choicesInput.addEventListener(
+      "input",
+      () => {
+
+        const currentPrices =
+          Array.from(
+            item.querySelectorAll(
+              ".edit-custom-choice-price"
+            )
+          )
+          .map(
+            input => ({
+              name: "",
+              price:
+                Number(
+                  input.value || 0
+                )
+            })
+          );
+
+
+        renderEditChoicePrices(
+          currentPrices
+        );
 
       }
     );
@@ -2468,16 +3410,6 @@ function(index){
       .trim();
 
 
-  const price =
-    Number(
-      item
-        .querySelector(
-          ".edit-custom-price"
-        )
-        ?.value || 0
-    );
-
-
   const required =
     item
       .querySelector(
@@ -2485,15 +3417,6 @@ function(index){
       )
       ?.checked ||
     false;
-
-
-  const choicesRaw =
-    item
-      .querySelector(
-        ".edit-custom-choices"
-      )
-      ?.value ||
-    "";
 
 
   if(!label){
@@ -2520,19 +3443,27 @@ function(index){
 
     label,
 
-    price,
-
     required
 
   };
 
 
+  /*============================================
+      DROPDOWN
+  ============================================*/
+
   if(
     type === "dropdown"
   ){
 
-    updated.choices =
-      choicesRaw
+    const choicesInput =
+      item.querySelector(
+        ".edit-custom-choices"
+      );
+
+
+    const names =
+      (choicesInput?.value || "")
         .split(",")
         .map(
           value =>
@@ -2540,8 +3471,82 @@ function(index){
         )
         .filter(Boolean);
 
+
+    if(!names.length){
+
+      showPopup(
+        "⚠ Please enter dropdown options."
+      );
+
+      setTimeout(
+        hidePopup,
+        1800
+      );
+
+      return;
+
+    }
+
+
+    const priceInputs =
+      Array.from(
+        item.querySelectorAll(
+          ".edit-custom-choice-price"
+        )
+      );
+
+
+    updated.choices =
+      names.map(
+        (name, choiceIndex) => {
+
+          const price =
+            Number(
+              priceInputs[choiceIndex]
+                ?.value || 0
+            );
+
+
+          return {
+
+            name,
+
+            price
+
+          };
+
+        }
+      );
+
+
+    /*
+      Dropdown no longer uses
+      one common price.
+    */
+
+    updated.price =
+      0;
+
   }
   else{
+
+    /*==========================================
+        NON-DROPDOWN PRICE
+    ==========================================*/
+
+    const price =
+      Number(
+        item
+          .querySelector(
+            ".edit-custom-price"
+          )
+          ?.value || 0
+      );
+
+
+    updated.price =
+      price;
+
 
     delete updated.choices;
 
@@ -2558,6 +3563,7 @@ function(index){
   showPopup(
     "✅ Custom option updated"
   );
+
 
   setTimeout(
     hidePopup,
@@ -3485,13 +4491,8 @@ async () => {
 
 
     /*
-      IMPORTANT:
-
-      We loop through productImages
-      in the exact drag/drop order.
-
-      Therefore Firestore images[]
-      gets the same order as the UI.
+      Loop through productImages
+      in exact drag/drop order.
     */
 
     for(
@@ -3683,16 +4684,13 @@ async () => {
 
           subCategoryId,
 
-          /*
-            Images are saved in the
-            exact drag/drop order.
-          */
-
           images:
             uploadedImages,
 
 
-          /* VARIANTS */
+          /*======================================
+              VARIANTS
+          ======================================*/
 
           variants: {
 
@@ -3709,7 +4707,32 @@ async () => {
             productShipping,
 
 
-          /* CUSTOM OPTIONS */
+          /*======================================
+              CUSTOM OPTIONS
+
+              Dropdown example:
+
+              {
+                type: "dropdown",
+                label: "Choose Design",
+                price: 0,
+                required: true,
+                choices: [
+                  {
+                    name: "Design1",
+                    price: 100
+                  },
+                  {
+                    name: "Design2",
+                    price: 200
+                  },
+                  {
+                    name: "Design3",
+                    price: 300
+                  }
+                ]
+              }
+          ======================================*/
 
           customOptions,
 
