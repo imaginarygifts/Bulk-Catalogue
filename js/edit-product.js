@@ -1,6 +1,5 @@
 import { db, storage } from "./firebase.js";
 
-
 import {
   doc,
   getDoc,
