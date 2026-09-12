@@ -131,10 +131,27 @@ const galleryBreadcrumbs =
 
 // ============================================================
 // GLOBAL DRAG STATE
-// IMPORTANT: shared by ALL variant lists
+// SHARED BY IMAGES + ALL VARIANTS
 // ============================================================
 
 let activeDrag = null;
+
+
+// ============================================================
+// IMAGE SCROLL STATE
+// ============================================================
+
+let imageScrollState = {
+
+  dragging: false,
+
+  startX: 0,
+
+  startScrollLeft: 0,
+
+  moved: false
+
+};
 
 
 // ============================================================
@@ -222,8 +239,12 @@ async function loadCategories() {
     documentSnapshot => {
 
       categories.push({
-        id: documentSnapshot.id,
+
+        id:
+          documentSnapshot.id,
+
         ...documentSnapshot.data()
+
       });
 
     }
@@ -276,13 +297,16 @@ async function loadCategories() {
           subOption.dataset.parent =
             main.id;
 
-          catSelect.appendChild(subOption);
+          catSelect.appendChild(
+            subOption
+          );
 
         }
       );
 
     }
   );
+
 }
 
 
@@ -295,9 +319,13 @@ function normalizeColor(color) {
   if (!color) {
 
     return {
+
       name: "",
+
       price: 0,
+
       required: false
+
     };
 
   }
@@ -320,6 +348,7 @@ function normalizeColor(color) {
       )
 
   };
+
 }
 
 
@@ -332,12 +361,19 @@ function normalizeSize(size) {
   if (!size) {
 
     return {
+
       name: "",
+
       price: 0,
+
       required: false,
+
       shipping: null,
+
       shippingMode: null,
+
       shippingAmount: 0
+
     };
 
   }
@@ -376,6 +412,7 @@ function normalizeSize(size) {
       )
 
   };
+
 }
 
 
@@ -390,22 +427,29 @@ function normalizeDropdownChoices(choices) {
   }
 
   return choices
+
     .map(choice => {
 
       if (
-        typeof choice === "string"
+        typeof choice ===
+        "string"
       ) {
 
         return {
-          name: choice.trim(),
+
+          name:
+            choice.trim(),
+
           price: 0
+
         };
 
       }
 
       if (
         choice &&
-        typeof choice === "object"
+        typeof choice ===
+        "object"
       ) {
 
         return {
@@ -427,11 +471,13 @@ function normalizeDropdownChoices(choices) {
       return null;
 
     })
+
     .filter(
       choice =>
         choice &&
         choice.name
     );
+
 }
 
 
@@ -446,8 +492,11 @@ function normalizeCustomOption(option) {
     return {
 
       type: "text",
+
       label: "",
+
       price: 0,
+
       required: false
 
     };
@@ -489,6 +538,7 @@ function normalizeCustomOption(option) {
   }
 
   return normalized;
+
 }
 
 
@@ -514,6 +564,7 @@ async function loadProduct() {
     alert("Product not found");
 
     return;
+
   }
 
   const product =
@@ -525,23 +576,31 @@ async function loadProduct() {
   // ----------------------------------------------------------
 
   if (nameInput) {
+
     nameInput.value =
       product.name || "";
+
   }
 
   if (descInput) {
+
     descInput.value =
       product.description || "";
+
   }
 
   if (priceInput) {
+
     priceInput.value =
       product.basePrice ?? "";
+
   }
 
   if (salePriceInput) {
+
     salePriceInput.value =
       product.salePrice ?? "";
+
   }
 
   if (stockStatus) {
@@ -809,11 +868,21 @@ async function loadProduct() {
   renderSizes();
 
   renderCustomOptions();
+
 }
 
 
 // ============================================================
-// IMAGE PREVIEW SCROLL
+// IMAGE PREVIEW SCROLLING
+// FIXED
+//
+// Supports:
+// 1. Touch horizontal swipe
+// 2. Mouse wheel -> horizontal
+// 3. Shift + mouse wheel
+// 4. Mouse drag scrolling on empty gallery space
+// 5. Dragging image cards still works
+// 6. Auto-scroll while reordering near edges
 // ============================================================
 
 function setupImagePreviewScrolling() {
@@ -821,7 +890,10 @@ function setupImagePreviewScrolling() {
   if (!preview) return;
 
 
-  // Horizontal scrolling
+  // ----------------------------------------------------------
+  // BASE STYLES
+  // ----------------------------------------------------------
+
   preview.style.overflowX =
     "auto";
 
@@ -834,40 +906,82 @@ function setupImagePreviewScrolling() {
   preview.style.flexWrap =
     "nowrap";
 
+  preview.style.alignItems =
+    "flex-start";
+
   preview.style.touchAction =
     "pan-x";
 
   preview.style.webkitOverflowScrolling =
     "touch";
 
+  preview.style.scrollBehavior =
+    "smooth";
 
-  // Mouse wheel -> horizontal scroll
-  if (!preview.dataset.scrollSetup) {
+
+  // Important:
+  // Prevent children from shrinking into the available width.
+  Array.from(
+    preview.children
+  ).forEach(
+    child => {
+
+      child.style.flex =
+        "0 0 auto";
+
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // MOUSE WHEEL
+  // ----------------------------------------------------------
+
+  if (!preview.dataset.wheelScrollSetup) {
 
     preview.addEventListener(
       "wheel",
       event => {
 
-        if (
-          preview.scrollWidth <=
-          preview.clientWidth
-        ) {
+        const canScroll =
+          preview.scrollWidth >
+          preview.clientWidth;
+
+        if (!canScroll) {
           return;
         }
 
-        // Vertical mouse wheel
-        // becomes horizontal gallery scroll
+
+        let amount = 0;
+
+
+        // Shift + wheel
         if (
-          Math.abs(event.deltaY) >
-          Math.abs(event.deltaX)
+          Math.abs(event.deltaX) >
+          0
         ) {
 
-          event.preventDefault();
+          amount =
+            event.deltaX;
 
-          preview.scrollLeft +=
+        } else {
+
+          amount =
             event.deltaY;
 
         }
+
+
+        if (amount === 0) {
+          return;
+        }
+
+
+        event.preventDefault();
+
+
+        preview.scrollLeft +=
+          amount;
 
       },
       {
@@ -876,7 +990,176 @@ function setupImagePreviewScrolling() {
     );
 
 
-    preview.dataset.scrollSetup =
+    preview.dataset.wheelScrollSetup =
+      "true";
+
+  }
+
+
+  // ----------------------------------------------------------
+  // MOUSE DRAG SCROLL
+  // Only works when dragging the empty gallery area.
+  // Image cards remain draggable.
+  // ----------------------------------------------------------
+
+  if (!preview.dataset.pointerScrollSetup) {
+
+    preview.addEventListener(
+      "pointerdown",
+      event => {
+
+        if (
+          event.target.closest(
+            ".image-card"
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          preview.scrollWidth <=
+          preview.clientWidth
+        ) {
+
+          return;
+
+        }
+
+
+        imageScrollState.dragging =
+          true;
+
+        imageScrollState.startX =
+          event.clientX;
+
+        imageScrollState.startScrollLeft =
+          preview.scrollLeft;
+
+        imageScrollState.moved =
+          false;
+
+
+        preview.classList.add(
+          "image-preview-scrolling"
+        );
+
+
+        try {
+
+          preview.setPointerCapture(
+            event.pointerId
+          );
+
+        } catch (error) {
+          // Ignore pointer capture errors
+        }
+
+      }
+    );
+
+
+    preview.addEventListener(
+      "pointermove",
+      event => {
+
+        if (
+          !imageScrollState.dragging
+        ) {
+
+          return;
+
+        }
+
+
+        const distance =
+          event.clientX -
+          imageScrollState.startX;
+
+
+        if (
+          Math.abs(distance) >
+          3
+        ) {
+
+          imageScrollState.moved =
+            true;
+
+        }
+
+
+        preview.scrollLeft =
+          imageScrollState.startScrollLeft -
+          distance;
+
+      }
+    );
+
+
+    const stopPointerScroll =
+      event => {
+
+        if (
+          !imageScrollState.dragging
+        ) {
+
+          return;
+
+        }
+
+
+        imageScrollState.dragging =
+          false;
+
+
+        preview.classList.remove(
+          "image-preview-scrolling"
+        );
+
+
+        try {
+
+          preview.releasePointerCapture(
+            event.pointerId
+          );
+
+        } catch (error) {
+          // Ignore
+        }
+
+      };
+
+
+    preview.addEventListener(
+      "pointerup",
+      stopPointerScroll
+    );
+
+    preview.addEventListener(
+      "pointercancel",
+      stopPointerScroll
+    );
+
+    preview.addEventListener(
+      "pointerleave",
+      event => {
+
+        if (
+          event.pointerType ===
+          "mouse"
+        ) {
+
+          // Don't stop immediately;
+          // pointer may return.
+        }
+
+      }
+    );
+
+
+    preview.dataset.pointerScrollSetup =
       "true";
 
   }
@@ -892,7 +1175,9 @@ function renderImagePreview() {
 
   if (!preview) return;
 
+
   setupImagePreviewScrolling();
+
 
   preview.innerHTML = "";
 
@@ -920,6 +1205,10 @@ function renderImagePreview() {
         index;
 
 
+      card.style.flex =
+        "0 0 auto";
+
+
       const image =
         document.createElement("img");
 
@@ -945,10 +1234,12 @@ function renderImagePreview() {
 
           event.stopPropagation();
 
+
           existingImages.splice(
             index,
             1
           );
+
 
           renderImagePreview();
 
@@ -967,7 +1258,9 @@ function renderImagePreview() {
       );
 
 
-      preview.appendChild(card);
+      preview.appendChild(
+        card
+      );
 
     }
   );
@@ -996,6 +1289,10 @@ function renderImagePreview() {
         index;
 
 
+      card.style.flex =
+        "0 0 auto";
+
+
       const image =
         document.createElement("img");
 
@@ -1021,10 +1318,12 @@ function renderImagePreview() {
 
           event.stopPropagation();
 
+
           newImages.splice(
             index,
             1
           );
+
 
           renderImagePreview();
 
@@ -1043,17 +1342,22 @@ function renderImagePreview() {
       );
 
 
-      preview.appendChild(card);
+      preview.appendChild(
+        card
+      );
 
     }
   );
+
+
+  // Re-apply scrolling after children exist.
+  setupImagePreviewScrolling();
 
 }
 
 
 // ============================================================
 // IMAGE DRAG
-// FIXED: GLOBAL DRAG STATE
 // ============================================================
 
 function setupImageDrag(element) {
@@ -1076,6 +1380,7 @@ function setupImageDrag(element) {
 
       };
 
+
       element.classList.add(
         "dragging"
       );
@@ -1087,6 +1392,17 @@ function setupImageDrag(element) {
 
         event.dataTransfer.effectAllowed =
           "move";
+
+        try {
+
+          event.dataTransfer.setData(
+            "text/plain",
+            "image"
+          );
+
+        } catch (error) {
+          // Ignore
+        }
 
       }
 
@@ -1102,6 +1418,7 @@ function setupImageDrag(element) {
         "dragging"
       );
 
+
       activeDrag =
         null;
 
@@ -1115,6 +1432,7 @@ function setupImageDrag(element) {
 
       event.preventDefault();
 
+
       if (
         event.dataTransfer
       ) {
@@ -1123,6 +1441,15 @@ function setupImageDrag(element) {
           "move";
 
       }
+
+
+      // --------------------------------------------------------
+      // AUTO SCROLL WHILE DRAGGING
+      // --------------------------------------------------------
+
+      autoScrollImagePreview(
+        event.clientX
+      );
 
     }
   );
@@ -1133,6 +1460,7 @@ function setupImageDrag(element) {
     event => {
 
       event.preventDefault();
+
 
       if (
         !activeDrag ||
@@ -1167,6 +1495,48 @@ function setupImageDrag(element) {
 
     }
   );
+
+}
+
+
+// ============================================================
+// AUTO-SCROLL IMAGE PREVIEW
+// ============================================================
+
+function autoScrollImagePreview(clientX) {
+
+  if (!preview) return;
+
+
+  const rect =
+    preview.getBoundingClientRect();
+
+
+  const edgeSize =
+    70;
+
+
+  const scrollSpeed =
+    12;
+
+
+  if (
+    clientX <
+    rect.left + edgeSize
+  ) {
+
+    preview.scrollLeft -=
+      scrollSpeed;
+
+  } else if (
+    clientX >
+    rect.right - edgeSize
+  ) {
+
+    preview.scrollLeft +=
+      scrollSpeed;
+
+  }
 
 }
 
@@ -1245,6 +1615,16 @@ function reorderImages(
   }
 
 
+  if (
+    fromCombinedIndex ===
+    toCombinedIndex
+  ) {
+
+    return;
+
+  }
+
+
   const moved =
     combined.splice(
       fromCombinedIndex,
@@ -1275,11 +1655,13 @@ function reorderImages(
 
   existingImages =
     combined
+
       .filter(
         item =>
           item.type ===
           "existing"
       )
+
       .map(
         item =>
           item.value
@@ -1288,11 +1670,13 @@ function reorderImages(
 
   newImages =
     combined
+
       .filter(
         item =>
           item.type ===
           "new"
       )
+
       .map(
         item =>
           item.value
@@ -1300,6 +1684,7 @@ function reorderImages(
 
 
   renderImagePreview();
+
 }
 
 
@@ -1386,10 +1771,12 @@ window.addColor =
         "⚠ Enter color name"
       );
 
+
       setTimeout(
         hidePopup,
         1200
       );
+
 
       return;
 
@@ -1440,6 +1827,7 @@ function renderColors() {
 
   if (!list) return;
 
+
   list.innerHTML = "";
 
 
@@ -1482,7 +1870,6 @@ function renderColors() {
 
         </div>
 
-
         <div class="variant-actions">
 
           <button
@@ -1492,7 +1879,6 @@ function renderColors() {
           >
             Edit
           </button>
-
 
           <button
             type="button"
@@ -1510,19 +1896,28 @@ function renderColors() {
       div.querySelector(
         "[data-edit]"
       ).onclick =
-        () =>
+        event => {
+
+          event.stopPropagation();
+
           editColor(index);
+
+        };
 
 
       div.querySelector(
         "[data-delete]"
       ).onclick =
-        () => {
+        event => {
+
+          event.stopPropagation();
+
 
           colors.splice(
             index,
             1
           );
+
 
           renderColors();
 
@@ -1536,7 +1931,9 @@ function renderColors() {
       );
 
 
-      list.appendChild(div);
+      list.appendChild(
+        div
+      );
 
     }
   );
@@ -1546,7 +1943,6 @@ function renderColors() {
 
 // ============================================================
 // EDIT COLOR
-// Uses SAME edit CSS class as variants
 // ============================================================
 
 function editColor(index) {
@@ -1586,7 +1982,6 @@ function editColor(index) {
       placeholder="Color name"
     >
 
-
     <input
       type="number"
       class="edit-price"
@@ -1594,7 +1989,6 @@ function editColor(index) {
       min="0"
       placeholder="Extra price"
     >
-
 
     <label>
 
@@ -1612,7 +2006,6 @@ function editColor(index) {
 
     </label>
 
-
     <div class="variant-edit-actions">
 
       <button
@@ -1621,7 +2014,6 @@ function editColor(index) {
       >
         Save
       </button>
-
 
       <button
         type="button"
@@ -1659,10 +2051,12 @@ function editColor(index) {
           "⚠ Enter color name"
         );
 
+
         setTimeout(
           hidePopup,
           1200
         );
+
 
         return;
 
@@ -1759,10 +2153,12 @@ window.addSize =
         "⚠ Enter size"
       );
 
+
       setTimeout(
         hidePopup,
         1200
       );
+
 
       return;
 
@@ -1831,6 +2227,7 @@ function renderSizes() {
 
 
   if (!list) return;
+
 
   list.innerHTML = "";
 
@@ -1906,7 +2303,6 @@ function renderSizes() {
 
         </div>
 
-
         <div class="variant-actions">
 
           <button
@@ -1916,7 +2312,6 @@ function renderSizes() {
           >
             Edit
           </button>
-
 
           <button
             type="button"
@@ -1934,19 +2329,28 @@ function renderSizes() {
       div.querySelector(
         "[data-edit]"
       ).onclick =
-        () =>
+        event => {
+
+          event.stopPropagation();
+
           editSize(index);
+
+        };
 
 
       div.querySelector(
         "[data-delete]"
       ).onclick =
-        () => {
+        event => {
+
+          event.stopPropagation();
+
 
           sizes.splice(
             index,
             1
           );
+
 
           renderSizes();
 
@@ -1960,7 +2364,9 @@ function renderSizes() {
       );
 
 
-      list.appendChild(div);
+      list.appendChild(
+        div
+      );
 
     }
   );
@@ -1970,7 +2376,6 @@ function renderSizes() {
 
 // ============================================================
 // EDIT SIZE
-// SAME VARIANT EDIT CLASS
 // ============================================================
 
 function editSize(index) {
@@ -2010,7 +2415,6 @@ function editSize(index) {
       placeholder="Size"
     >
 
-
     <input
       type="number"
       class="edit-price"
@@ -2019,11 +2423,9 @@ function editSize(index) {
       placeholder="Extra price"
     >
 
-
     <label>
       Shipping for this Size
     </label>
-
 
     <select class="edit-shipping-type">
 
@@ -2041,14 +2443,12 @@ function editSize(index) {
 
     </select>
 
-
     <input
       type="number"
       class="edit-shipping-amount"
       min="0"
       placeholder="Shipping Amount"
     >
-
 
     <label>
 
@@ -2066,7 +2466,6 @@ function editSize(index) {
 
     </label>
 
-
     <div class="variant-edit-actions">
 
       <button
@@ -2075,7 +2474,6 @@ function editSize(index) {
       >
         Save
       </button>
-
 
       <button
         type="button"
@@ -2154,10 +2552,12 @@ function editSize(index) {
           "⚠ Enter size"
         );
 
+
         setTimeout(
           hidePopup,
           1200
         );
+
 
         return;
 
@@ -2216,7 +2616,7 @@ function editSize(index) {
 
 // ============================================================
 // VARIANT DRAG
-// FIXED GLOBAL DRAG
+// COLORS + SIZES + CUSTOM OPTIONS
 // ============================================================
 
 function setupVariantDrag(
@@ -2252,6 +2652,18 @@ function setupVariantDrag(
         event.dataTransfer.effectAllowed =
           "move";
 
+
+        try {
+
+          event.dataTransfer.setData(
+            "text/plain",
+            "variant"
+          );
+
+        } catch (error) {
+          // Ignore
+        }
+
       }
 
     }
@@ -2266,6 +2678,7 @@ function setupVariantDrag(
         "dragging"
       );
 
+
       activeDrag =
         null;
 
@@ -2278,6 +2691,7 @@ function setupVariantDrag(
     event => {
 
       event.preventDefault();
+
 
       if (
         event.dataTransfer
@@ -2297,6 +2711,7 @@ function setupVariantDrag(
     event => {
 
       event.preventDefault();
+
 
       if (
         !activeDrag ||
@@ -2330,7 +2745,8 @@ function setupVariantDrag(
 
 
       if (
-        fromIndex === targetIndex
+        fromIndex ===
+        targetIndex
       ) {
 
         activeDrag =
@@ -2435,12 +2851,49 @@ function setupVariantDrag(
 function parseChoiceNames(value) {
 
   return String(value || "")
+
     .split(",")
+
     .map(
       item =>
         item.trim()
     )
+
     .filter(Boolean);
+
+}
+
+
+// ============================================================
+// BUILD CHOICE PRICE MAP
+// ============================================================
+
+function getChoicePriceMap(choices) {
+
+  const map = {};
+
+
+  normalizeDropdownChoices(
+    choices
+  ).forEach(
+    choice => {
+
+      if (!map.hasOwnProperty(
+        choice.name
+      )) {
+
+        map[choice.name] =
+          Number(
+            choice.price || 0
+          );
+
+      }
+
+    }
+  );
+
+
+  return map;
 
 }
 
@@ -2463,8 +2916,9 @@ function renderAddChoicePriceInputs() {
     );
 
 
-  if (!input || !editor)
+  if (!input || !editor) {
     return;
+  }
 
 
   const names =
@@ -2581,17 +3035,23 @@ function renderAddChoicePriceInputs() {
       inputPrice.placeholder =
         "Price";
 
+
       inputPrice.value =
         previous[name] ?? 0;
 
 
-      row.appendChild(label);
+      row.appendChild(
+        label
+      );
 
       row.appendChild(
         inputPrice
       );
 
-      editor.appendChild(row);
+
+      editor.appendChild(
+        row
+      );
 
     }
   );
@@ -2623,13 +3083,19 @@ function getChoicePriceData() {
     );
 
 
+  const rows =
+    Array.from(
+      editor?.querySelectorAll(
+        ".custom-choice-price-row"
+      ) || []
+    );
+
+
   return names.map(
     (name, index) => {
 
       const row =
-        editor?.querySelectorAll(
-          ".custom-choice-price-row"
-        )?.[index];
+        rows[index];
 
 
       const price =
@@ -2827,10 +3293,12 @@ window.addCustomOption =
         "⚠ Enter option label"
       );
 
+
       setTimeout(
         hidePopup,
         1200
       );
+
 
       return;
 
@@ -2852,10 +3320,12 @@ window.addCustomOption =
           "⚠ Add at least one dropdown choice"
         );
 
+
         setTimeout(
           hidePopup,
           1500
         );
+
 
         return;
 
@@ -2923,7 +3393,6 @@ window.addCustomOption =
 
 // ============================================================
 // RENDER CUSTOM OPTIONS
-// NOW USES variant-item
 // ============================================================
 
 function renderCustomOptions() {
@@ -2959,8 +3428,6 @@ function renderCustomOptions() {
         );
 
 
-      // IMPORTANT:
-      // Same class as variants
       div.className =
         "variant-item";
 
@@ -3043,13 +3510,11 @@ function renderCustomOptions() {
             )}
           </strong>
 
-
           <span>
             ${escapeHTML(
               option.type
             )}
           </span>
-
 
           ${
             overallPrice
@@ -3057,18 +3522,15 @@ function renderCustomOptions() {
               : ""
           }
 
-
           ${
             option.required
               ? `<small>(Required)</small>`
               : ""
           }
 
-
           ${details}
 
         </div>
-
 
         <div class="variant-actions">
 
@@ -3079,7 +3541,6 @@ function renderCustomOptions() {
           >
             Edit
           </button>
-
 
           <button
             type="button"
@@ -3097,19 +3558,28 @@ function renderCustomOptions() {
       div.querySelector(
         "[data-edit]"
       ).onclick =
-        () =>
+        event => {
+
+          event.stopPropagation();
+
           editCustomOption(index);
+
+        };
 
 
       div.querySelector(
         "[data-delete]"
       ).onclick =
-        () => {
+        event => {
+
+          event.stopPropagation();
+
 
           customOptions.splice(
             index,
             1
           );
+
 
           renderCustomOptions();
 
@@ -3123,7 +3593,9 @@ function renderCustomOptions() {
       );
 
 
-      list.appendChild(div);
+      list.appendChild(
+        div
+      );
 
     }
   );
@@ -3133,24 +3605,42 @@ function renderCustomOptions() {
 
 // ============================================================
 // EDIT CUSTOM OPTION
-// SAME variant-edit-form CLASS
+// FIXED
+//
+// Important changes:
+//
+// - Saved choice prices are preserved.
+// - Typed choice prices are preserved while editing names.
+// - Changing Text -> Dropdown works.
+// - Changing Dropdown -> Text works.
+// - Changing Dropdown -> Checkbox/Image works.
+// - Changing choice names keeps matching prices.
+// - Removed choices are removed.
+// - New choices receive 0.
 // ============================================================
 
 function editCustomOption(index) {
 
+  const original =
+    customOptions[index];
+
+
+  if (!original) return;
+
+
   const option =
     normalizeCustomOption(
-      customOptions[index]
+      original
     );
-
-
-  if (!option) return;
 
 
   const list =
     document.getElementById(
       "customList"
     );
+
+
+  if (!list) return;
 
 
   const old =
@@ -3163,21 +3653,14 @@ function editCustomOption(index) {
     );
 
 
-  // IMPORTANT:
-  // Use the same edit class as variants
   div.className =
     "variant-edit-form";
 
 
-  const choices =
-    option.type ===
-    "dropdown"
-
-      ? normalizeDropdownChoices(
-          option.choices
-        )
-
-      : [];
+  const savedChoices =
+    normalizeDropdownChoices(
+      option.choices
+    );
 
 
   div.innerHTML = `
@@ -3209,9 +3692,6 @@ function editCustomOption(index) {
       type="text"
       class="edit-option-label"
       placeholder="Option label"
-      value="${escapeHTML(
-        option.label
-      )}"
     >
 
 
@@ -3220,9 +3700,6 @@ function editCustomOption(index) {
       class="edit-option-price"
       min="0"
       placeholder="Extra price"
-      value="${Number(
-        option.price || 0
-      )}"
     >
 
 
@@ -3230,14 +3707,6 @@ function editCustomOption(index) {
       type="text"
       class="edit-option-choices"
       placeholder="Dropdown choices (comma separated)"
-      value="${escapeHTML(
-        choices
-          .map(
-            choice =>
-              choice.name
-          )
-          .join(", ")
-      )}"
     >
 
 
@@ -3251,11 +3720,6 @@ function editCustomOption(index) {
       <input
         type="checkbox"
         class="edit-option-required"
-        ${
-          option.required
-            ? "checked"
-            : ""
-        }
       >
 
       Required
@@ -3298,6 +3762,12 @@ function editCustomOption(index) {
     );
 
 
+  const labelInput =
+    div.querySelector(
+      ".edit-option-label"
+    );
+
+
   const priceInput =
     div.querySelector(
       ".edit-option-price"
@@ -3316,18 +3786,121 @@ function editCustomOption(index) {
     );
 
 
-  typeSelect.value =
-    option.type;
+  const requiredInput =
+    div.querySelector(
+      ".edit-option-required"
+    );
 
 
   // ----------------------------------------------------------
-  // CHOICE PRICE RENDERER
+  // INITIAL VALUES
+  // ----------------------------------------------------------
+
+  typeSelect.value =
+    option.type || "text";
+
+
+  labelInput.value =
+    option.label || "";
+
+
+  priceInput.value =
+    Number(
+      option.price || 0
+    );
+
+
+  choicesInput.value =
+    savedChoices
+      .map(
+        choice =>
+          choice.name
+      )
+      .join(", ");
+
+
+  requiredInput.checked =
+    Boolean(
+      option.required
+    );
+
+
+  // ----------------------------------------------------------
+  // CHOICE PRICE STATE
+  //
+  // This is separate from the DOM.
+  // Therefore re-rendering the choice rows does not lose
+  // values the user already entered.
+  // ----------------------------------------------------------
+
+  let choicePriceMap =
+    getChoicePriceMap(
+      savedChoices
+    );
+
+
+  // ----------------------------------------------------------
+  // READ CURRENT EDITOR VALUES
+  // ----------------------------------------------------------
+
+  function captureChoicePrices() {
+
+    choiceEditor
+      .querySelectorAll(
+        ".custom-choice-price-row"
+      )
+      .forEach(
+        row => {
+
+          const name =
+            row.dataset.name;
+
+
+          const input =
+            row.querySelector(
+              "input"
+            );
+
+
+          if (!name || !input) {
+            return;
+          }
+
+
+          choicePriceMap[name] =
+            Math.max(
+              0,
+              Number(
+                input.value || 0
+              )
+            );
+
+        }
+      );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // RENDER CHOICE PRICE EDITOR
   // ----------------------------------------------------------
 
   function renderEditChoicePrices() {
 
+    // Save whatever is currently typed before rebuilding.
+    captureChoicePrices();
+
+
+    const type =
+      typeSelect.value;
+
+
+    // --------------------------------------------------------
+    // NON-DROPDOWN
+    // --------------------------------------------------------
+
     if (
-      typeSelect.value !==
+      type !==
       "dropdown"
     ) {
 
@@ -3337,8 +3910,10 @@ function editCustomOption(index) {
       choiceEditor.style.display =
         "none";
 
+
       choicesInput.style.display =
         "none";
+
 
       priceInput.style.display =
         "";
@@ -3346,10 +3921,15 @@ function editCustomOption(index) {
       priceInput.disabled =
         false;
 
+
       return;
 
     }
 
+
+    // --------------------------------------------------------
+    // DROPDOWN
+    // --------------------------------------------------------
 
     choicesInput.style.display =
       "block";
@@ -3367,61 +3947,6 @@ function editCustomOption(index) {
       parseChoiceNames(
         choicesInput.value
       );
-
-
-    const previous = {};
-
-
-    // Preserve current editor values
-    choiceEditor
-      .querySelectorAll(
-        ".custom-choice-price-row"
-      )
-      .forEach(
-        row => {
-
-          const name =
-            row.dataset.name;
-
-
-          const value =
-            row.querySelector(
-              "input"
-            )?.value;
-
-
-          if (name) {
-
-            previous[name] =
-              Number(
-                value || 0
-              );
-
-          }
-
-        }
-      );
-
-
-    // On first render use saved prices
-    if (
-      !Object.keys(previous).length
-    ) {
-
-      choices.forEach(
-        choice => {
-
-          previous[
-            choice.name
-          ] =
-            Number(
-              choice.price || 0
-            );
-
-        }
-      );
-
-    }
 
 
     choiceEditor.innerHTML =
@@ -3472,41 +3997,73 @@ function editCustomOption(index) {
           "8px";
 
 
-        const label =
+        const nameLabel =
           document.createElement(
             "span"
           );
 
 
-        label.textContent =
+        nameLabel.textContent =
           name;
 
-        label.style.flex =
+
+        nameLabel.style.flex =
           "1";
 
 
-        const input =
+        const priceInput =
           document.createElement(
             "input"
           );
 
 
-        input.type =
+        priceInput.type =
           "number";
 
-        input.min =
+
+        priceInput.min =
           "0";
 
-        input.placeholder =
+
+        priceInput.placeholder =
           "Price";
 
-        input.value =
-          previous[name] ?? 0;
+
+        priceInput.value =
+          choicePriceMap[name] ??
+          0;
 
 
-        row.appendChild(label);
+        // ----------------------------------------------------
+        // Keep map updated immediately while typing.
+        // ----------------------------------------------------
 
-        row.appendChild(input);
+        priceInput.addEventListener(
+          "input",
+          () => {
+
+            choicePriceMap[name] =
+              Math.max(
+                0,
+                Number(
+                  priceInput.value ||
+                  0
+                )
+              );
+
+          }
+        );
+
+
+        row.appendChild(
+          nameLabel
+        );
+
+
+        row.appendChild(
+          priceInput
+        );
+
 
         choiceEditor.appendChild(
           row
@@ -3518,44 +4075,66 @@ function editCustomOption(index) {
   }
 
 
+  // ----------------------------------------------------------
+  // TYPE CHANGE
+  // ----------------------------------------------------------
+
   typeSelect.addEventListener(
     "change",
-    renderEditChoicePrices
+    () => {
+
+      renderEditChoicePrices();
+
+    }
   );
 
+
+  // ----------------------------------------------------------
+  // CHOICE NAME CHANGE
+  // ----------------------------------------------------------
 
   choicesInput.addEventListener(
     "input",
-    renderEditChoicePrices
+    () => {
+
+      captureChoicePrices();
+
+      renderEditChoicePrices();
+
+    }
   );
 
+
+  // ----------------------------------------------------------
+  // FIRST RENDER
+  // ----------------------------------------------------------
 
   renderEditChoicePrices();
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // SAVE CUSTOM OPTION
-  // ----------------------------------------------------------
+  // ==========================================================
 
   div.querySelector(
     ".save-custom"
   ).onclick =
     () => {
 
+      // Capture the final values currently in the editor.
+      captureChoicePrices();
+
+
       const type =
         typeSelect.value;
 
 
       const label =
-        div.querySelector(
-          ".edit-option-label"
-        ).value.trim();
+        labelInput.value.trim();
 
 
       const required =
-        div.querySelector(
-          ".edit-option-required"
-        ).checked;
+        requiredInput.checked;
 
 
       if (!label) {
@@ -3564,15 +4143,21 @@ function editCustomOption(index) {
           "⚠ Enter option label"
         );
 
+
         setTimeout(
           hidePopup,
           1200
         );
 
+
         return;
 
       }
 
+
+      // ------------------------------------------------------
+      // DROPDOWN
+      // ------------------------------------------------------
 
       if (
         type ===
@@ -3591,33 +4176,21 @@ function editCustomOption(index) {
             "⚠ Add dropdown choices"
           );
 
+
           setTimeout(
             hidePopup,
             1200
           );
+
 
           return;
 
         }
 
 
-        const rows =
-          choiceEditor.querySelectorAll(
-            ".custom-choice-price-row"
-          );
-
-
         const finalChoices =
           names.map(
-            (name, choiceIndex) => {
-
-              const input =
-                rows[
-                  choiceIndex
-                ]?.querySelector(
-                  "input"
-                );
-
+            name => {
 
               return {
 
@@ -3627,8 +4200,9 @@ function editCustomOption(index) {
                   Math.max(
                     0,
                     Number(
-                      input?.value ||
-                      0
+                      choicePriceMap[
+                        name
+                      ] ?? 0
                     )
                   )
 
@@ -3640,7 +4214,7 @@ function editCustomOption(index) {
 
         customOptions[index] = {
 
-          type,
+          type: "dropdown",
 
           label,
 
@@ -3654,6 +4228,10 @@ function editCustomOption(index) {
         };
 
       } else {
+
+        // ----------------------------------------------------
+        // ALL OTHER TYPES
+        // ----------------------------------------------------
 
         customOptions[index] = {
 
@@ -3681,6 +4259,10 @@ function editCustomOption(index) {
 
     };
 
+
+  // ==========================================================
+  // CANCEL
+  // ==========================================================
 
   div.querySelector(
     ".cancel-custom"
@@ -3789,14 +4371,12 @@ function renderDesignList(products) {
           }
         >
 
-
         <img
           src="${escapeHTML(
             product.images?.[0] ||
             ""
           )}"
         >
-
 
         <span>
           ${escapeHTML(
@@ -3827,7 +4407,9 @@ function renderDesignList(products) {
       );
 
 
-      box.appendChild(row);
+      box.appendChild(
+        row
+      );
 
     }
   );
@@ -3977,7 +4559,6 @@ async function loadTags() {
           }
         >
 
-
         <span>
           ${escapeHTML(
             tag.name ||
@@ -4007,7 +4588,9 @@ async function loadTags() {
       );
 
 
-      box.appendChild(row);
+      box.appendChild(
+        row
+      );
 
     }
   );
@@ -4076,8 +4659,9 @@ function updateCommonShippingUI() {
     );
 
 
-  if (!box || !amount)
+  if (!box || !amount) {
     return;
+  }
 
 
   if (type === "paid") {
@@ -4277,7 +4861,9 @@ async function loadGalleryFolder(path) {
             );
 
 
-        grid.appendChild(div);
+        grid.appendChild(
+          div
+        );
 
       }
     );
@@ -4325,7 +4911,6 @@ async function loadGalleryFolder(path) {
           }
         >
 
-
         <img
           src="${escapeHTML(url)}"
         >
@@ -4371,7 +4956,9 @@ async function loadGalleryFolder(path) {
         };
 
 
-      grid.appendChild(div);
+      grid.appendChild(
+        div
+      );
 
     }
 
@@ -4397,8 +4984,9 @@ async function loadGalleryFolder(path) {
 
 function updateGalleryBreadcrumbs(path) {
 
-  if (!galleryBreadcrumbs)
+  if (!galleryBreadcrumbs) {
     return;
+  }
 
 
   galleryBreadcrumbs.innerHTML =
@@ -5141,6 +5729,7 @@ window.updateProduct =
         () => {
 
           hidePopup();
+
 
           location.href =
             "products.html";
