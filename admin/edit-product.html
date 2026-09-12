@@ -2,28 +2,14 @@
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
-
   <title>Edit Product</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <!-- SAME CSS AS ADD PRODUCT -->
-
-  <link
-    rel="stylesheet"
-    href="../css/admin.css?v=2026"
-  >
-
+  <link rel="stylesheet" href="../css/add-product.css?v=2026">
 </head>
 
-
 <body>
-
 
 <!-- ==================================================
      TOP BAR
@@ -45,12 +31,29 @@
 </div>
 
 
+<!-- ==================================================
+     CATEGORY / TAG MANAGEMENT
+================================================== -->
+
+<button
+  class="add-category-btn"
+  onclick="location.href='categories.html'"
+>
+  + Add Category
+</button>
+
+<button
+  class="add-category-btn"
+  onclick="location.href='tags.html'"
+>
+  Manage Tags
+</button>
+
 
 <div class="container">
 
-
   <!-- ==================================================
-       PRODUCT INFORMATION
+       BASIC INFORMATION
   ================================================== -->
 
   <label>
@@ -60,6 +63,7 @@
   <input
     id="name"
     type="text"
+    placeholder="Product name"
   >
 
 
@@ -69,6 +73,7 @@
 
   <textarea
     id="desc"
+    placeholder="Description"
   ></textarea>
 
 
@@ -80,6 +85,8 @@
     id="price"
     type="number"
     min="0"
+    step="1"
+    placeholder="Base Price"
   >
 
 
@@ -91,21 +98,26 @@
     id="salePrice"
     type="number"
     min="0"
+    step="1"
+    placeholder="Sale Price"
   >
 
+
+  <!-- ==================================================
+       CATEGORY
+  ================================================== -->
 
   <label>
     Category
   </label>
 
   <select id="category">
-
-    <option value="">
-      Select category
-    </option>
-
   </select>
 
+
+  <!-- ==================================================
+       STOCK
+  ================================================== -->
 
   <label>
     Stock
@@ -123,6 +135,25 @@
 
   </select>
 
+
+  <!-- ==================================================
+       BESTSELLER
+  ================================================== -->
+
+  <div class="section">
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="isBestseller"
+      >
+
+      Bestseller
+
+    </label>
+
+  </div>
 
 
   <!-- ==================================================
@@ -147,7 +178,6 @@
   </div>
 
 
-
   <!-- ==================================================
        IMAGES
   ================================================== -->
@@ -162,42 +192,60 @@
   ></div>
 
 
-  <label class="image-picker">
+  <div class="image-picker-group">
 
-    <input
-      type="file"
-      id="newImages"
-      multiple
-      accept="image/*"
-    >
+    <!-- Upload New Images -->
 
-    <div
-      class="image-pick-box"
+    <label class="image-picker">
+
+      <input
+        type="file"
+        id="newImages"
+        multiple
+        accept="image/*"
+      >
+
+      <div class="image-pick-box">
+        Tap to add images
+      </div>
+
+    </label>
+
+
+    <!-- Gallery -->
+
+    <label
+      class="image-picker"
       onclick="openGalleryPicker()"
     >
 
-      Tap to add images
+      <div class="image-pick-box">
+        Select from Gallery
+      </div>
 
-    </div>
+    </label>
 
-  </label>
-
+  </div>
 
 
   <!-- ==================================================
        RELATED DESIGNS
   ================================================== -->
 
-  <h4>
-    Related Designs
-  </h4>
+  <div>
 
-  <input
-    type="text"
-    id="designSearch"
-    placeholder="Search products..."
-    oninput="filterDesigns()"
-  >
+    <h4>
+      Related Designs
+    </h4>
+
+    <input
+      type="text"
+      id="designSearch"
+      placeholder="Search products..."
+      oninput="filterDesigns()"
+    >
+
+  </div>
 
 
   <div
@@ -213,6 +261,69 @@
   </div>
 
 
+  <!-- ==================================================
+       SHIPPING
+  ================================================== -->
+
+  <div
+    class="accordion"
+    onclick="toggleSection('shippingSection')"
+  >
+    ▶ Shipping
+  </div>
+
+
+  <div
+    id="shippingSection"
+    class="hidden"
+  >
+
+    <h4>
+      Common Shipping
+    </h4>
+
+
+    <label>
+      Shipping Type
+    </label>
+
+    <select id="shippingType">
+
+      <option value="free">
+        Free Shipping
+      </option>
+
+      <option value="paid">
+        Paid Shipping
+      </option>
+
+    </select>
+
+
+    <div id="commonShippingAmountBox">
+
+      <label>
+        Common Shipping Amount
+      </label>
+
+      <input
+        id="shippingAmount"
+        type="number"
+        min="0"
+        step="1"
+        placeholder="Shipping amount"
+      >
+
+      <small>
+        This amount will be used for all sizes unless
+        a different shipping amount is specified for
+        that size.
+      </small>
+
+    </div>
+
+  </div>
+
 
   <!-- ==================================================
        VARIANTS
@@ -222,9 +333,7 @@
     class="accordion"
     onclick="toggleSection('variantsSection')"
   >
-
     ▶ Variants
-
   </div>
 
 
@@ -233,8 +342,9 @@
     class="hidden"
   >
 
-
-    <!-- COLORS -->
+    <!-- ==================================================
+         COLORS
+    ================================================== -->
 
     <h4>
       Colors
@@ -242,17 +352,28 @@
 
 
     <input
-      id="editColorName"
+      id="colorName"
+      type="text"
       placeholder="Color name"
     >
 
 
     <input
-      id="editColorPrice"
-      placeholder="Extra price"
+      id="colorPrice"
       type="number"
       min="0"
+      step="1"
+      placeholder="Extra price"
     >
+
+
+    <button
+      class="btn-outline"
+      type="button"
+      onclick="addColor()"
+    >
+      Add Color
+    </button>
 
 
     <label>
@@ -267,42 +388,79 @@
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      onclick="addEditColor()"
-    >
-
-      Add Color
-
-    </button>
+    <div id="colorList"></div>
 
 
-    <div
-      id="editColorList"
-    ></div>
-
-
-
-    <!-- QUANTITY / SIZE -->
+    <!-- ==================================================
+         SIZES
+    ================================================== -->
 
     <h4>
-      Quantity
+      Size
     </h4>
 
 
     <input
-      id="editSizeName"
-      placeholder="Enter Quantity"
+      id="sizeName"
+      type="text"
+      placeholder="Enter Size"
     >
 
 
     <input
-      id="editSizePrice"
-      placeholder="Extra price"
+      id="sizePrice"
       type="number"
       min="0"
+      step="1"
+      placeholder="Extra price"
     >
+
+
+    <label>
+      Shipping for this Size
+    </label>
+
+
+    <select id="sizeShippingType">
+
+      <option value="common">
+        Use Common Shipping
+      </option>
+
+      <option value="free">
+        Free Shipping
+      </option>
+
+      <option value="paid">
+        Custom Shipping Amount
+      </option>
+
+    </select>
+
+
+    <div
+      id="sizeShippingAmountBox"
+      class="hidden"
+    >
+
+      <input
+        id="sizeShippingAmount"
+        type="number"
+        min="0"
+        step="1"
+        placeholder="Shipping Amount"
+      >
+
+    </div>
+
+
+    <button
+      class="btn-outline"
+      type="button"
+      onclick="addSize()"
+    >
+      Add Size
+    </button>
 
 
     <label>
@@ -317,24 +475,9 @@
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      onclick="addEditSize()"
-    >
-
-      Add Quantity
-
-    </button>
-
-
-    <div
-      id="editSizeList"
-    ></div>
-
+    <div id="sizeList"></div>
 
   </div>
-
 
 
   <!-- ==================================================
@@ -345,9 +488,7 @@
     class="accordion"
     onclick="toggleSection('customSection')"
   >
-
     ▶ Custom Options
-
   </div>
 
 
@@ -356,13 +497,12 @@
     class="hidden"
   >
 
-
     <label>
       Option Type
     </label>
 
 
-    <select id="editCustomType">
+    <select id="customType">
 
       <option value="text">
         Text
@@ -384,31 +524,41 @@
 
 
     <input
-      id="editCustomLabel"
+      id="customLabel"
+      type="text"
       placeholder="Option label"
     >
 
 
     <input
-      id="editCustomPrice"
-      placeholder="Extra price"
+      id="customPrice"
       type="number"
       min="0"
+      step="1"
+      placeholder="Extra price"
     >
 
 
     <input
-      id="editCustomChoices"
+      id="customChoices"
+      type="text"
       placeholder="Dropdown choices (comma separated)"
     >
 
 
-    <!-- Dynamic dropdown prices -->
-
     <div
-      id="editCustomChoicePrices"
+      id="customChoicePrices"
       class="custom-choice-prices"
     ></div>
+
+
+    <button
+      class="btn-outline"
+      type="button"
+      onclick="addCustomOption()"
+    >
+      Add Option
+    </button>
 
 
     <label>
@@ -423,24 +573,9 @@
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline"
-      onclick="addEditCustomOption()"
-    >
-
-      Add Option
-
-    </button>
-
-
-    <div
-      id="editCustomList"
-    ></div>
-
+    <div id="customList"></div>
 
   </div>
-
 
 
   <!-- ==================================================
@@ -453,9 +588,7 @@
       class="accordion-header"
       onclick="toggleSection('paymentSection')"
     >
-
       💳 Payment & Discounts
-
     </div>
 
 
@@ -464,46 +597,57 @@
       class="accordion-body hidden"
     >
 
-
       <h4>
         Payment Methods
       </h4>
 
 
-      <label>
+      <div class="payment-check">
 
-        <input
-          type="checkbox"
-          id="allowOnline"
-        >
+        <label>
 
-        Allow Online Payment
+          <input
+            type="checkbox"
+            id="allowOnline"
+          >
 
-      </label>
+          Allow Online Payment
 
+        </label>
 
-      <label>
-
-        <input
-          type="checkbox"
-          id="allowCOD"
-        >
-
-        Allow Cash on Delivery
-
-      </label>
+      </div>
 
 
-      <label>
+      <div class="payment-check">
 
-        <input
-          type="checkbox"
-          id="allowAdvance"
-        >
+        <label>
 
-        Allow Advance Payment
+          <input
+            type="checkbox"
+            id="allowCOD"
+          >
 
-      </label>
+          Allow Cash on Delivery
+
+        </label>
+
+      </div>
+
+
+      <div class="payment-check">
+
+        <label>
+
+          <input
+            type="checkbox"
+            id="allowAdvance"
+          >
+
+          Allow Advance Payment
+
+        </label>
+
+      </div>
 
 
       <hr>
@@ -513,8 +657,6 @@
         Discounts
       </h4>
 
-
-      <!-- ONLINE -->
 
       <div class="row">
 
@@ -542,15 +684,12 @@
         <input
           type="number"
           id="onlineDiscountValue"
-          placeholder="Value"
           min="0"
+          placeholder="Value"
         >
 
       </div>
 
-
-
-      <!-- COD -->
 
       <div class="row">
 
@@ -578,15 +717,12 @@
         <input
           type="number"
           id="codDiscountValue"
-          placeholder="Value"
           min="0"
+          placeholder="Value"
         >
 
       </div>
 
-
-
-      <!-- ADVANCE -->
 
       <div class="row">
 
@@ -614,8 +750,8 @@
         <input
           type="number"
           id="advanceDiscountValue"
-          placeholder="Value"
           min="0"
+          placeholder="Value"
         >
 
       </div>
@@ -652,36 +788,30 @@
         <input
           type="number"
           id="advanceValue"
-          placeholder="Advance value"
           min="0"
+          placeholder="Advance value"
         >
 
       </div>
-
 
     </div>
 
   </div>
 
 
-
   <!-- ==================================================
-       UPDATE
+       UPDATE BUTTON
   ================================================== -->
 
   <button
-    type="button"
     class="btn"
+    type="button"
     onclick="updateProduct()"
   >
-
     Update Product
-
   </button>
 
-
 </div>
-
 
 
 <!-- ==================================================
@@ -694,9 +824,8 @@
 ></div>
 
 
-
 <!-- ==================================================
-     GALLERY PICKER
+     IMAGE GALLERY PICKER
 ================================================== -->
 
 <div
@@ -704,16 +833,13 @@
   class="gallery-picker hidden"
 >
 
-
   <div class="gallery-header">
 
     <button
       type="button"
       onclick="closeGalleryPicker()"
     >
-
       ← Back
-
     </button>
 
 
@@ -726,9 +852,7 @@
       type="button"
       onclick="addSelectedImages()"
     >
-
-      Add
-
+      Add Selected
     </button>
 
   </div>
@@ -745,13 +869,11 @@
     class="gallery-picker-grid"
   ></div>
 
-
 </div>
 
 
-
 <!-- ==================================================
-     SCRIPTS
+     GUARD
 ================================================== -->
 
 <script
@@ -759,6 +881,10 @@
   src="../js/guard.js"
 ></script>
 
+
+<!-- ==================================================
+     EDIT PRODUCT LOGIC
+================================================== -->
 
 <script
   type="module"
@@ -770,13 +896,11 @@
 
 function goBack() {
 
-  location.href =
-    "products";
+  location.href = "products";
 
 }
 
 </script>
-
 
 </body>
 </html>
