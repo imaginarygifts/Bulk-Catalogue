@@ -28,11 +28,8 @@ const params =
 const id =
   params.get("id");
 
-
 if (!id) {
-
   alert("Product ID missing");
-
 }
 
 
@@ -64,7 +61,6 @@ const preview =
 const newImagesInput =
   document.getElementById("newImages");
 
-
 const allowOnline =
   document.getElementById("allowOnline");
 
@@ -74,55 +70,32 @@ const allowCOD =
 const allowAdvance =
   document.getElementById("allowAdvance");
 
-
 const onlineDiscountType =
-  document.getElementById(
-    "onlineDiscountType"
-  );
+  document.getElementById("onlineDiscountType");
 
 const onlineDiscountValue =
-  document.getElementById(
-    "onlineDiscountValue"
-  );
-
+  document.getElementById("onlineDiscountValue");
 
 const codDiscountType =
-  document.getElementById(
-    "codDiscountType"
-  );
+  document.getElementById("codDiscountType");
 
 const codDiscountValue =
-  document.getElementById(
-    "codDiscountValue"
-  );
-
+  document.getElementById("codDiscountValue");
 
 const advanceDiscountType =
-  document.getElementById(
-    "advanceDiscountType"
-  );
+  document.getElementById("advanceDiscountType");
 
 const advanceDiscountValue =
-  document.getElementById(
-    "advanceDiscountValue"
-  );
-
+  document.getElementById("advanceDiscountValue");
 
 const advanceType =
-  document.getElementById(
-    "advanceType"
-  );
+  document.getElementById("advanceType");
 
 const advanceValue =
-  document.getElementById(
-    "advanceValue"
-  );
-
+  document.getElementById("advanceValue");
 
 const bestsellerCheckbox =
-  document.getElementById(
-    "isBestseller"
-  );
+  document.getElementById("isBestseller");
 
 
 // ============================================================
@@ -150,11 +123,18 @@ let gallerySelected = [];
 let currentGalleryPath =
   "product-images";
 
-
-let galleryBreadcrumbs =
+const galleryBreadcrumbs =
   document.getElementById(
     "galleryBreadcrumbs"
   );
+
+
+// ============================================================
+// GLOBAL DRAG STATE
+// IMPORTANT: shared by ALL variant lists
+// ============================================================
+
+let activeDrag = null;
 
 
 // ============================================================
@@ -171,10 +151,7 @@ function showPopup(message) {
   popup.innerText =
     message;
 
-  popup.classList.remove(
-    "hidden"
-  );
-
+  popup.classList.remove("hidden");
 }
 
 
@@ -185,10 +162,7 @@ function hidePopup() {
 
   if (!popup) return;
 
-  popup.classList.add(
-    "hidden"
-  );
-
+  popup.classList.add("hidden");
 }
 
 
@@ -204,7 +178,6 @@ function escapeHTML(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-
 }
 
 
@@ -216,16 +189,11 @@ window.toggleSection =
   function(sectionId) {
 
     const element =
-      document.getElementById(
-        sectionId
-      );
+      document.getElementById(sectionId);
 
     if (!element) return;
 
-    element.classList.toggle(
-      "hidden"
-    );
-
+    element.classList.toggle("hidden");
   };
 
 
@@ -237,41 +205,29 @@ async function loadCategories() {
 
   if (!catSelect) return;
 
-
   catSelect.innerHTML =
     `<option value="">Select category</option>`;
-
 
   const snapshot =
     await getDocs(
       query(
-        collection(
-          db,
-          "categories"
-        ),
+        collection(db, "categories"),
         orderBy("order")
       )
     );
 
-
   const categories = [];
-
 
   snapshot.forEach(
     documentSnapshot => {
 
       categories.push({
-
-        id:
-          documentSnapshot.id,
-
+        id: documentSnapshot.id,
         ...documentSnapshot.data()
-
       });
 
     }
   );
-
 
   const mains =
     categories.filter(
@@ -279,15 +235,11 @@ async function loadCategories() {
         !category.parentId
     );
 
-
   mains.forEach(
     main => {
 
       const option =
-        document.createElement(
-          "option"
-        );
-
+        document.createElement("option");
 
       option.value =
         main.id;
@@ -298,28 +250,19 @@ async function loadCategories() {
       option.dataset.type =
         "main";
 
-
-      catSelect.appendChild(
-        option
-      );
-
+      catSelect.appendChild(option);
 
       const subCategories =
         categories.filter(
           category =>
-            category.parentId ===
-            main.id
+            category.parentId === main.id
         );
-
 
       subCategories.forEach(
         sub => {
 
           const subOption =
-            document.createElement(
-              "option"
-            );
-
+            document.createElement("option");
 
           subOption.value =
             sub.id;
@@ -333,17 +276,13 @@ async function loadCategories() {
           subOption.dataset.parent =
             main.id;
 
-
-          catSelect.appendChild(
-            subOption
-          );
+          catSelect.appendChild(subOption);
 
         }
       );
 
     }
   );
-
 }
 
 
@@ -356,17 +295,12 @@ function normalizeColor(color) {
   if (!color) {
 
     return {
-
       name: "",
-
       price: 0,
-
       required: false
-
     };
 
   }
-
 
   return {
 
@@ -386,7 +320,6 @@ function normalizeColor(color) {
       )
 
   };
-
 }
 
 
@@ -399,23 +332,15 @@ function normalizeSize(size) {
   if (!size) {
 
     return {
-
       name: "",
-
       price: 0,
-
       required: false,
-
       shipping: null,
-
       shippingMode: null,
-
       shippingAmount: 0
-
     };
 
   }
-
 
   return {
 
@@ -451,7 +376,6 @@ function normalizeSize(size) {
       )
 
   };
-
 }
 
 
@@ -459,19 +383,13 @@ function normalizeSize(size) {
 // NORMALIZE DROPDOWN CHOICES
 // ============================================================
 
-function normalizeDropdownChoices(
-  choices
-) {
+function normalizeDropdownChoices(choices) {
 
   if (!Array.isArray(choices)) {
-
     return [];
-
   }
 
-
   return choices
-
     .map(choice => {
 
       if (
@@ -479,16 +397,11 @@ function normalizeDropdownChoices(
       ) {
 
         return {
-
-          name:
-            choice.trim(),
-
+          name: choice.trim(),
           price: 0
-
         };
 
       }
-
 
       if (
         choice &&
@@ -511,17 +424,14 @@ function normalizeDropdownChoices(
 
       }
 
-
       return null;
 
     })
-
     .filter(
       choice =>
         choice &&
         choice.name
     );
-
 }
 
 
@@ -529,26 +439,20 @@ function normalizeDropdownChoices(
 // NORMALIZE CUSTOM OPTION
 // ============================================================
 
-function normalizeCustomOption(
-  option
-) {
+function normalizeCustomOption(option) {
 
   if (!option) {
 
     return {
 
       type: "text",
-
       label: "",
-
       price: 0,
-
       required: false
 
     };
 
   }
-
 
   const normalized = {
 
@@ -572,7 +476,6 @@ function normalizeCustomOption(
 
   };
 
-
   if (
     normalized.type ===
     "dropdown"
@@ -585,9 +488,7 @@ function normalizeCustomOption(
 
   }
 
-
   return normalized;
-
 }
 
 
@@ -599,7 +500,6 @@ async function loadProduct() {
 
   if (!id) return;
 
-
   const snapshot =
     await getDoc(
       doc(
@@ -609,17 +509,12 @@ async function loadProduct() {
       )
     );
 
-
   if (!snapshot.exists()) {
 
-    alert(
-      "Product not found"
-    );
+    alert("Product not found");
 
     return;
-
   }
-
 
   const product =
     snapshot.data();
@@ -629,21 +524,25 @@ async function loadProduct() {
   // BASIC
   // ----------------------------------------------------------
 
-  nameInput.value =
-    product.name || "";
+  if (nameInput) {
+    nameInput.value =
+      product.name || "";
+  }
 
+  if (descInput) {
+    descInput.value =
+      product.description || "";
+  }
 
-  descInput.value =
-    product.description || "";
+  if (priceInput) {
+    priceInput.value =
+      product.basePrice ?? "";
+  }
 
-
-  priceInput.value =
-    product.basePrice ?? "";
-
-
-  salePriceInput.value =
-    product.salePrice ?? "";
-
+  if (salePriceInput) {
+    salePriceInput.value =
+      product.salePrice ?? "";
+  }
 
   if (stockStatus) {
 
@@ -659,10 +558,14 @@ async function loadProduct() {
   // CATEGORY
   // ----------------------------------------------------------
 
-  catSelect.value =
-    product.subCategoryId ||
-    product.categoryId ||
-    "";
+  if (catSelect) {
+
+    catSelect.value =
+      product.subCategoryId ||
+      product.categoryId ||
+      "";
+
+  }
 
 
   // ----------------------------------------------------------
@@ -684,12 +587,9 @@ async function loadProduct() {
   // ----------------------------------------------------------
 
   existingImages =
-    Array.isArray(
-      product.images
-    )
+    Array.isArray(product.images)
       ? [...product.images]
       : [];
-
 
   newImages = [];
 
@@ -706,7 +606,6 @@ async function loadProduct() {
           normalizeColor
         )
       : [];
-
 
   sizes =
     Array.isArray(
@@ -725,18 +624,15 @@ async function loadProduct() {
   const shipping =
     product.shipping || {};
 
-
   const shippingType =
     document.getElementById(
       "shippingType"
     );
 
-
   const shippingAmount =
     document.getElementById(
       "shippingAmount"
     );
-
 
   if (shippingType) {
 
@@ -747,7 +643,6 @@ async function loadProduct() {
 
   }
 
-
   if (shippingAmount) {
 
     shippingAmount.value =
@@ -756,7 +651,6 @@ async function loadProduct() {
       "";
 
   }
-
 
   updateCommonShippingUI();
 
@@ -804,78 +698,104 @@ async function loadProduct() {
   // ----------------------------------------------------------
 
   const paymentSettings =
-    product.paymentSettings ||
-    {};
-
+    product.paymentSettings || {};
 
   const online =
-    paymentSettings.online ||
-    {};
-
+    paymentSettings.online || {};
 
   const cod =
-    paymentSettings.cod ||
-    {};
-
+    paymentSettings.cod || {};
 
   const advance =
-    paymentSettings.advance ||
-    {};
+    paymentSettings.advance || {};
 
+  if (allowOnline) {
 
-  allowOnline.checked =
-    online.enabled ??
-    true;
+    allowOnline.checked =
+      online.enabled ??
+      true;
 
+  }
 
-  onlineDiscountType.value =
-    online.discountType ||
-    "none";
+  if (onlineDiscountType) {
 
+    onlineDiscountType.value =
+      online.discountType ||
+      "none";
 
-  onlineDiscountValue.value =
-    online.discountValue ??
-    "";
+  }
 
+  if (onlineDiscountValue) {
 
-  allowCOD.checked =
-    cod.enabled ??
-    false;
+    onlineDiscountValue.value =
+      online.discountValue ??
+      "";
 
+  }
 
-  codDiscountType.value =
-    cod.discountType ||
-    "none";
+  if (allowCOD) {
 
+    allowCOD.checked =
+      cod.enabled ??
+      false;
 
-  codDiscountValue.value =
-    cod.discountValue ??
-    "";
+  }
 
+  if (codDiscountType) {
 
-  allowAdvance.checked =
-    advance.enabled ??
-    false;
+    codDiscountType.value =
+      cod.discountType ||
+      "none";
 
+  }
 
-  advanceDiscountType.value =
-    advance.discountType ||
-    "none";
+  if (codDiscountValue) {
 
+    codDiscountValue.value =
+      cod.discountValue ??
+      "";
 
-  advanceDiscountValue.value =
-    advance.discountValue ??
-    "";
+  }
 
+  if (allowAdvance) {
 
-  advanceType.value =
-    advance.type ||
-    "percent";
+    allowAdvance.checked =
+      advance.enabled ??
+      false;
 
+  }
 
-  advanceValue.value =
-    advance.value ??
-    "";
+  if (advanceDiscountType) {
+
+    advanceDiscountType.value =
+      advance.discountType ||
+      "none";
+
+  }
+
+  if (advanceDiscountValue) {
+
+    advanceDiscountValue.value =
+      advance.discountValue ??
+      "";
+
+  }
+
+  if (advanceType) {
+
+    advanceType.value =
+      advance.type ||
+      "percent";
+
+  }
+
+  if (advanceValue) {
+
+    advanceValue.value =
+      advance.value ??
+      "";
+
+  }
 
 
   // ----------------------------------------------------------
@@ -889,6 +809,77 @@ async function loadProduct() {
   renderSizes();
 
   renderCustomOptions();
+}
+
+
+// ============================================================
+// IMAGE PREVIEW SCROLL
+// ============================================================
+
+function setupImagePreviewScrolling() {
+
+  if (!preview) return;
+
+
+  // Horizontal scrolling
+  preview.style.overflowX =
+    "auto";
+
+  preview.style.overflowY =
+    "hidden";
+
+  preview.style.display =
+    "flex";
+
+  preview.style.flexWrap =
+    "nowrap";
+
+  preview.style.touchAction =
+    "pan-x";
+
+  preview.style.webkitOverflowScrolling =
+    "touch";
+
+
+  // Mouse wheel -> horizontal scroll
+  if (!preview.dataset.scrollSetup) {
+
+    preview.addEventListener(
+      "wheel",
+      event => {
+
+        if (
+          preview.scrollWidth <=
+          preview.clientWidth
+        ) {
+          return;
+        }
+
+        // Vertical mouse wheel
+        // becomes horizontal gallery scroll
+        if (
+          Math.abs(event.deltaY) >
+          Math.abs(event.deltaX)
+        ) {
+
+          event.preventDefault();
+
+          preview.scrollLeft +=
+            event.deltaY;
+
+        }
+
+      },
+      {
+        passive: false
+      }
+    );
+
+
+    preview.dataset.scrollSetup =
+      "true";
+
+  }
 
 }
 
@@ -901,22 +892,20 @@ function renderImagePreview() {
 
   if (!preview) return;
 
+  setupImagePreviewScrolling();
 
   preview.innerHTML = "";
 
 
   // ----------------------------------------------------------
-  // EXISTING
+  // EXISTING IMAGES
   // ----------------------------------------------------------
 
   existingImages.forEach(
     (url, index) => {
 
       const card =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       card.className =
         "image-card";
@@ -932,20 +921,17 @@ function renderImagePreview() {
 
 
       const image =
-        document.createElement(
-          "img"
-        );
-
+        document.createElement("img");
 
       image.src =
         url;
 
+      image.draggable =
+        false;
+
 
       const deleteButton =
-        document.createElement(
-          "span"
-        );
-
+        document.createElement("span");
 
       deleteButton.className =
         "image-delete";
@@ -959,21 +945,17 @@ function renderImagePreview() {
 
           event.stopPropagation();
 
-
           existingImages.splice(
             index,
             1
           );
-
 
           renderImagePreview();
 
         };
 
 
-      card.appendChild(
-        image
-      );
+      card.appendChild(image);
 
       card.appendChild(
         deleteButton
@@ -981,32 +963,25 @@ function renderImagePreview() {
 
 
       setupImageDrag(
-        card,
-        "existing",
-        index
-      );
-
-
-      preview.appendChild(
         card
       );
+
+
+      preview.appendChild(card);
 
     }
   );
 
 
   // ----------------------------------------------------------
-  // NEW
+  // NEW IMAGES
   // ----------------------------------------------------------
 
   newImages.forEach(
     (file, index) => {
 
       const card =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       card.className =
         "image-card";
@@ -1022,22 +997,17 @@ function renderImagePreview() {
 
 
       const image =
-        document.createElement(
-          "img"
-        );
-
+        document.createElement("img");
 
       image.src =
-        URL.createObjectURL(
-          file
-        );
+        URL.createObjectURL(file);
+
+      image.draggable =
+        false;
 
 
       const deleteButton =
-        document.createElement(
-          "span"
-        );
-
+        document.createElement("span");
 
       deleteButton.className =
         "image-delete";
@@ -1051,21 +1021,17 @@ function renderImagePreview() {
 
           event.stopPropagation();
 
-
           newImages.splice(
             index,
             1
           );
-
 
           renderImagePreview();
 
         };
 
 
-      card.appendChild(
-        image
-      );
+      card.appendChild(image);
 
       card.appendChild(
         deleteButton
@@ -1073,15 +1039,11 @@ function renderImagePreview() {
 
 
       setupImageDrag(
-        card,
-        "new",
-        index
-      );
-
-
-      preview.appendChild(
         card
       );
+
+
+      preview.appendChild(card);
 
     }
   );
@@ -1091,34 +1053,42 @@ function renderImagePreview() {
 
 // ============================================================
 // IMAGE DRAG
+// FIXED: GLOBAL DRAG STATE
 // ============================================================
 
-let draggedImage =
-  null;
-
-
-function setupImageDrag(
-  element,
-  type,
-  index
-) {
+function setupImageDrag(element) {
 
   element.addEventListener(
     "dragstart",
-    () => {
+    event => {
 
-      draggedImage = {
+      activeDrag = {
 
-        type,
+        kind: "image",
 
-        index
+        type:
+          element.dataset.type,
+
+        index:
+          Number(
+            element.dataset.index
+          )
 
       };
-
 
       element.classList.add(
         "dragging"
       );
+
+
+      if (
+        event.dataTransfer
+      ) {
+
+        event.dataTransfer.effectAllowed =
+          "move";
+
+      }
 
     }
   );
@@ -1128,13 +1098,12 @@ function setupImageDrag(
     "dragend",
     () => {
 
-      draggedImage =
-        null;
-
-
       element.classList.remove(
         "dragging"
       );
+
+      activeDrag =
+        null;
 
     }
   );
@@ -1146,6 +1115,15 @@ function setupImageDrag(
 
       event.preventDefault();
 
+      if (
+        event.dataTransfer
+      ) {
+
+        event.dataTransfer.dropEffect =
+          "move";
+
+      }
+
     }
   );
 
@@ -1156,87 +1134,10 @@ function setupImageDrag(
 
       event.preventDefault();
 
-
-      if (!draggedImage)
-        return;
-
-
-      const combined = [];
-
-
-      existingImages.forEach(
-        value => {
-
-          combined.push({
-
-            type: "existing",
-
-            value
-
-          });
-
-        }
-      );
-
-
-      newImages.forEach(
-        value => {
-
-          combined.push({
-
-            type: "new",
-
-            value
-
-          });
-
-        }
-      );
-
-
-      const draggedValue =
-        draggedImage.type ===
-        "existing"
-
-          ? existingImages[
-              draggedImage.index
-            ]
-
-          : newImages[
-              draggedImage.index
-            ];
-
-
-      const fromIndex =
-        combined.findIndex(
-          item =>
-            item.type ===
-              draggedImage.type &&
-            item.value ===
-              draggedValue
-        );
-
-
-      const targetValue =
-        type === "existing"
-
-          ? existingImages[index]
-
-          : newImages[index];
-
-
-      const toIndex =
-        combined.findIndex(
-          item =>
-            item.type === type &&
-            item.value ===
-              targetValue
-        );
-
-
       if (
-        fromIndex === -1 ||
-        toIndex === -1
+        !activeDrag ||
+        activeDrag.kind !==
+          "image"
       ) {
 
         return;
@@ -1244,51 +1145,161 @@ function setupImageDrag(
       }
 
 
-      const moved =
-        combined.splice(
-          fromIndex,
-          1
-        )[0];
+      const targetType =
+        element.dataset.type;
+
+      const targetIndex =
+        Number(
+          element.dataset.index
+        );
 
 
-      combined.splice(
-        toIndex,
-        0,
-        moved
+      reorderImages(
+        activeDrag.type,
+        activeDrag.index,
+        targetType,
+        targetIndex
       );
 
 
-      existingImages =
-        combined
-          .filter(
-            item =>
-              item.type ===
-              "existing"
-          )
-          .map(
-            item =>
-              item.value
-          );
-
-
-      newImages =
-        combined
-          .filter(
-            item =>
-              item.type ===
-              "new"
-          )
-          .map(
-            item =>
-              item.value
-          );
-
-
-      renderImagePreview();
+      activeDrag =
+        null;
 
     }
   );
 
+}
+
+
+// ============================================================
+// REORDER IMAGES
+// ============================================================
+
+function reorderImages(
+  fromType,
+  fromIndex,
+  toType,
+  toIndex
+) {
+
+  const combined = [];
+
+
+  existingImages.forEach(
+    (value, index) => {
+
+      combined.push({
+
+        type: "existing",
+
+        index,
+
+        value
+
+      });
+
+    }
+  );
+
+
+  newImages.forEach(
+    (value, index) => {
+
+      combined.push({
+
+        type: "new",
+
+        index,
+
+        value
+
+      });
+
+    }
+  );
+
+
+  const fromCombinedIndex =
+    combined.findIndex(
+      item =>
+        item.type === fromType &&
+        item.index === fromIndex
+    );
+
+
+  const toCombinedIndex =
+    combined.findIndex(
+      item =>
+        item.type === toType &&
+        item.index === toIndex
+    );
+
+
+  if (
+    fromCombinedIndex === -1 ||
+    toCombinedIndex === -1
+  ) {
+
+    return;
+
+  }
+
+
+  const moved =
+    combined.splice(
+      fromCombinedIndex,
+      1
+    )[0];
+
+
+  let insertIndex =
+    toCombinedIndex;
+
+
+  if (
+    fromCombinedIndex <
+    toCombinedIndex
+  ) {
+
+    insertIndex--;
+
+  }
+
+
+  combined.splice(
+    insertIndex + 1,
+    0,
+    moved
+  );
+
+
+  existingImages =
+    combined
+      .filter(
+        item =>
+          item.type ===
+          "existing"
+      )
+      .map(
+        item =>
+          item.value
+      );
+
+
+  newImages =
+    combined
+      .filter(
+        item =>
+          item.type ===
+          "new"
+      )
+      .map(
+        item =>
+          item.value
+      );
+
+
+  renderImagePreview();
 }
 
 
@@ -1304,8 +1315,7 @@ if (newImagesInput) {
 
       const files =
         Array.from(
-          newImagesInput.files ||
-          []
+          newImagesInput.files || []
         );
 
 
@@ -1319,9 +1329,7 @@ if (newImagesInput) {
             )
           ) {
 
-            newImages.push(
-              file
-            );
+            newImages.push(file);
 
           }
 
@@ -1350,9 +1358,7 @@ window.addColor =
 
     const name =
       document
-        .getElementById(
-          "colorName"
-        )
+        .getElementById("colorName")
         .value
         .trim();
 
@@ -1380,12 +1386,10 @@ window.addColor =
         "⚠ Enter color name"
       );
 
-
       setTimeout(
         hidePopup,
         1200
       );
-
 
       return;
 
@@ -1434,9 +1438,7 @@ function renderColors() {
       "colorList"
     );
 
-
   if (!list) return;
-
 
   list.innerHTML = "";
 
@@ -1465,15 +1467,11 @@ function renderColors() {
         <div class="variant-info">
 
           <strong>
-            ${escapeHTML(
-              color.name
-            )}
+            ${escapeHTML(color.name)}
           </strong>
 
           <span>
-            +₹${Number(
-              color.price || 0
-            )}
+            +₹${Number(color.price || 0)}
           </span>
 
           ${
@@ -1512,7 +1510,8 @@ function renderColors() {
       div.querySelector(
         "[data-edit]"
       ).onclick =
-        () => editColor(index);
+        () =>
+          editColor(index);
 
 
       div.querySelector(
@@ -1525,7 +1524,6 @@ function renderColors() {
             1
           );
 
-
           renderColors();
 
         };
@@ -1533,14 +1531,12 @@ function renderColors() {
 
       setupVariantDrag(
         div,
-        colors,
-        renderColors
+        "colors",
+        index
       );
 
 
-      list.appendChild(
-        div
-      );
+      list.appendChild(div);
 
     }
   );
@@ -1550,13 +1546,13 @@ function renderColors() {
 
 // ============================================================
 // EDIT COLOR
+// Uses SAME edit CSS class as variants
 // ============================================================
 
 function editColor(index) {
 
   const color =
     colors[index];
-
 
   if (!color) return;
 
@@ -1586,9 +1582,7 @@ function editColor(index) {
     <input
       type="text"
       class="edit-name"
-      value="${escapeHTML(
-        color.name
-      )}"
+      value="${escapeHTML(color.name)}"
       placeholder="Color name"
     >
 
@@ -1596,9 +1590,7 @@ function editColor(index) {
     <input
       type="number"
       class="edit-price"
-      value="${Number(
-        color.price || 0
-      )}"
+      value="${Number(color.price || 0)}"
       min="0"
       placeholder="Extra price"
     >
@@ -1621,29 +1613,31 @@ function editColor(index) {
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline save-btn"
-    >
-      Save
-    </button>
+    <div class="variant-edit-actions">
+
+      <button
+        type="button"
+        class="btn-outline save-btn"
+      >
+        Save
+      </button>
 
 
-    <button
-      type="button"
-      class="btn-outline cancel-btn"
-    >
-      Cancel
-    </button>
+      <button
+        type="button"
+        class="btn-outline cancel-btn"
+      >
+        Cancel
+      </button>
+
+    </div>
 
   `;
 
 
   if (old) {
 
-    old.replaceWith(
-      div
-    );
+    old.replaceWith(div);
 
   }
 
@@ -1705,7 +1699,8 @@ function editColor(index) {
   div.querySelector(
     ".cancel-btn"
   ).onclick =
-    () => renderColors();
+    () =>
+      renderColors();
 
 }
 
@@ -1719,9 +1714,7 @@ window.addSize =
 
     const name =
       document
-        .getElementById(
-          "sizeName"
-        )
+        .getElementById("sizeName")
         .value
         .trim();
 
@@ -1766,12 +1759,10 @@ window.addSize =
         "⚠ Enter size"
       );
 
-
       setTimeout(
         hidePopup,
         1200
       );
-
 
       return;
 
@@ -1841,7 +1832,6 @@ function renderSizes() {
 
   if (!list) return;
 
-
   list.innerHTML = "";
 
 
@@ -1897,19 +1887,15 @@ function renderSizes() {
         <div class="variant-info">
 
           <strong>
-            ${escapeHTML(
-              size.name
-            )}
+            ${escapeHTML(size.name)}
           </strong>
 
           <span>
-            +₹${Number(
-              size.price || 0
-            )}
+            +₹${Number(size.price || 0)}
           </span>
 
           <small>
-            ${shippingText}
+            ${escapeHTML(shippingText)}
           </small>
 
           ${
@@ -1948,7 +1934,8 @@ function renderSizes() {
       div.querySelector(
         "[data-edit]"
       ).onclick =
-        () => editSize(index);
+        () =>
+          editSize(index);
 
 
       div.querySelector(
@@ -1961,7 +1948,6 @@ function renderSizes() {
             1
           );
 
-
           renderSizes();
 
         };
@@ -1969,14 +1955,12 @@ function renderSizes() {
 
       setupVariantDrag(
         div,
-        sizes,
-        renderSizes
+        "sizes",
+        index
       );
 
 
-      list.appendChild(
-        div
-      );
+      list.appendChild(div);
 
     }
   );
@@ -1986,13 +1970,13 @@ function renderSizes() {
 
 // ============================================================
 // EDIT SIZE
+// SAME VARIANT EDIT CLASS
 // ============================================================
 
 function editSize(index) {
 
   const size =
     sizes[index];
-
 
   if (!size) return;
 
@@ -2022,9 +2006,7 @@ function editSize(index) {
     <input
       type="text"
       class="edit-name"
-      value="${escapeHTML(
-        size.name
-      )}"
+      value="${escapeHTML(size.name)}"
       placeholder="Size"
     >
 
@@ -2032,9 +2014,7 @@ function editSize(index) {
     <input
       type="number"
       class="edit-price"
-      value="${Number(
-        size.price || 0
-      )}"
+      value="${Number(size.price || 0)}"
       min="0"
       placeholder="Extra price"
     >
@@ -2087,29 +2067,31 @@ function editSize(index) {
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline save-btn"
-    >
-      Save
-    </button>
+    <div class="variant-edit-actions">
+
+      <button
+        type="button"
+        class="btn-outline save-btn"
+      >
+        Save
+      </button>
 
 
-    <button
-      type="button"
-      class="btn-outline cancel-btn"
-    >
-      Cancel
-    </button>
+      <button
+        type="button"
+        class="btn-outline cancel-btn"
+      >
+        Cancel
+      </button>
+
+    </div>
 
   `;
 
 
   if (old) {
 
-    old.replaceWith(
-      div
-    );
+    old.replaceWith(div);
 
   }
 
@@ -2226,38 +2208,51 @@ function editSize(index) {
   div.querySelector(
     ".cancel-btn"
   ).onclick =
-    () => renderSizes();
+    () =>
+      renderSizes();
 
 }
 
 
 // ============================================================
 // VARIANT DRAG
+// FIXED GLOBAL DRAG
 // ============================================================
 
 function setupVariantDrag(
   element,
-  array,
-  renderFunction
+  arrayName,
+  index
 ) {
-
-  let draggedIndex =
-    null;
-
 
   element.addEventListener(
     "dragstart",
-    () => {
+    event => {
 
-      draggedIndex =
-        Number(
-          element.dataset.index
-        );
+      activeDrag = {
+
+        kind: "variant",
+
+        arrayName,
+
+        index
+
+      };
 
 
       element.classList.add(
         "dragging"
       );
+
+
+      if (
+        event.dataTransfer
+      ) {
+
+        event.dataTransfer.effectAllowed =
+          "move";
+
+      }
 
     }
   );
@@ -2271,8 +2266,7 @@ function setupVariantDrag(
         "dragging"
       );
 
-
-      draggedIndex =
+      activeDrag =
         null;
 
     }
@@ -2285,6 +2279,15 @@ function setupVariantDrag(
 
       event.preventDefault();
 
+      if (
+        event.dataTransfer
+      ) {
+
+        event.dataTransfer.dropEffect =
+          "move";
+
+      }
+
     }
   );
 
@@ -2295,6 +2298,30 @@ function setupVariantDrag(
 
       event.preventDefault();
 
+      if (
+        !activeDrag ||
+        activeDrag.kind !==
+          "variant"
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        activeDrag.arrayName !==
+        arrayName
+      ) {
+
+        return;
+
+      }
+
+
+      const fromIndex =
+        activeDrag.index;
+
 
       const targetIndex =
         Number(
@@ -2303,9 +2330,51 @@ function setupVariantDrag(
 
 
       if (
-        draggedIndex === null ||
-        draggedIndex === targetIndex
+        fromIndex === targetIndex
       ) {
+
+        activeDrag =
+          null;
+
+        return;
+
+      }
+
+
+      let array;
+
+
+      if (
+        arrayName ===
+        "colors"
+      ) {
+
+        array =
+          colors;
+
+      } else if (
+        arrayName ===
+        "sizes"
+      ) {
+
+        array =
+          sizes;
+
+      } else if (
+        arrayName ===
+        "customOptions"
+      ) {
+
+        array =
+          customOptions;
+
+      }
+
+
+      if (!array) {
+
+        activeDrag =
+          null;
 
         return;
 
@@ -2314,7 +2383,7 @@ function setupVariantDrag(
 
       const moved =
         array.splice(
-          draggedIndex,
+          fromIndex,
           1
         )[0];
 
@@ -2326,7 +2395,32 @@ function setupVariantDrag(
       );
 
 
-      renderFunction();
+      activeDrag =
+        null;
+
+
+      if (
+        arrayName ===
+        "colors"
+      ) {
+
+        renderColors();
+
+      } else if (
+        arrayName ===
+        "sizes"
+      ) {
+
+        renderSizes();
+
+      } else if (
+        arrayName ===
+        "customOptions"
+      ) {
+
+        renderCustomOptions();
+
+      }
 
     }
   );
@@ -2338,21 +2432,14 @@ function setupVariantDrag(
 // CUSTOM OPTION CHOICE HELPERS
 // ============================================================
 
-function parseChoiceNames(
-  value
-) {
+function parseChoiceNames(value) {
 
-  return String(
-    value || ""
-  )
-
+  return String(value || "")
     .split(",")
-
     .map(
       item =>
         item.trim()
     )
-
     .filter(Boolean);
 
 }
@@ -2393,28 +2480,30 @@ function renderAddChoicePriceInputs() {
     .querySelectorAll(
       ".custom-choice-price-row"
     )
-    .forEach(row => {
+    .forEach(
+      row => {
 
-      const name =
-        row.dataset.name;
-
-
-      const price =
-        row.querySelector(
-          "input"
-        )?.value;
+        const name =
+          row.dataset.name;
 
 
-      if (name) {
+        const price =
+          row.querySelector(
+            "input"
+          )?.value;
 
-        previous[name] =
-          Number(
-            price || 0
-          );
+
+        if (name) {
+
+          previous[name] =
+            Number(
+              price || 0
+            );
+
+        }
 
       }
-
-    });
+    );
 
 
   editor.innerHTML = "";
@@ -2473,7 +2562,6 @@ function renderAddChoicePriceInputs() {
       label.textContent =
         name;
 
-
       label.style.flex =
         "1";
 
@@ -2497,19 +2585,13 @@ function renderAddChoicePriceInputs() {
         previous[name] ?? 0;
 
 
-      row.appendChild(
-        label
-      );
-
+      row.appendChild(label);
 
       row.appendChild(
         inputPrice
       );
 
-
-      editor.appendChild(
-        row
-      );
+      editor.appendChild(row);
 
     }
   );
@@ -2600,43 +2682,68 @@ function updateCustomOptionForm() {
     );
 
 
+  const choicePrices =
+    document.getElementById(
+      "customChoicePrices"
+    );
+
+
   if (!type) return;
 
 
   if (
-    type === "dropdown"
+    type ===
+    "dropdown"
   ) {
 
-    price.style.display =
-      "none";
+    if (price) {
 
-    price.disabled =
-      true;
+      price.style.display =
+        "none";
+
+      price.disabled =
+        true;
+
+    }
 
 
-    choices.style.display =
-      "block";
+    if (choices) {
+
+      choices.style.display =
+        "block";
+
+    }
 
 
     renderAddChoicePriceInputs();
 
   } else {
 
-    price.style.display =
-      "";
+    if (price) {
 
-    price.disabled =
-      false;
+      price.style.display =
+        "";
+
+      price.disabled =
+        false;
+
+    }
 
 
-    choices.style.display =
-      "none";
+    if (choices) {
+
+      choices.style.display =
+        "none";
+
+    }
 
 
-    document.getElementById(
-      "customChoicePrices"
-    ).style.display =
-      "none";
+    if (choicePrices) {
+
+      choicePrices.style.display =
+        "none";
+
+    }
 
   }
 
@@ -2651,7 +2758,6 @@ const customType =
   document.getElementById(
     "customType"
   );
-
 
 const customChoices =
   document.getElementById(
@@ -2721,12 +2827,10 @@ window.addCustomOption =
         "⚠ Enter option label"
       );
 
-
       setTimeout(
         hidePopup,
         1200
       );
-
 
       return;
 
@@ -2734,7 +2838,8 @@ window.addCustomOption =
 
 
     if (
-      type === "dropdown"
+      type ===
+      "dropdown"
     ) {
 
       const choices =
@@ -2747,12 +2852,10 @@ window.addCustomOption =
           "⚠ Add at least one dropdown choice"
         );
 
-
         setTimeout(
           hidePopup,
           1500
         );
-
 
         return;
 
@@ -2820,6 +2923,7 @@ window.addCustomOption =
 
 // ============================================================
 // RENDER CUSTOM OPTIONS
+// NOW USES variant-item
 // ============================================================
 
 function renderCustomOptions() {
@@ -2837,7 +2941,17 @@ function renderCustomOptions() {
 
 
   customOptions.forEach(
-    (option, index) => {
+    (rawOption, index) => {
+
+      const option =
+        normalizeCustomOption(
+          rawOption
+        );
+
+
+      customOptions[index] =
+        option;
+
 
       const div =
         document.createElement(
@@ -2845,8 +2959,11 @@ function renderCustomOptions() {
         );
 
 
+      // IMPORTANT:
+      // Same class as variants
       div.className =
-        "custom-option-item";
+        "variant-item";
+
 
       div.draggable =
         true;
@@ -2880,9 +2997,11 @@ function renderCustomOptions() {
 
                   <div>
 
-                    ${escapeHTML(
-                      choice.name
-                    )}
+                    <span>
+                      ${escapeHTML(
+                        choice.name
+                      )}
+                    </span>
 
                     <strong>
                       +₹${Number(
@@ -2916,35 +3035,34 @@ function renderCustomOptions() {
 
       div.innerHTML = `
 
-        <div class="custom-option-main">
+        <div class="variant-info">
 
-          <div>
+          <strong>
+            ${escapeHTML(
+              option.label
+            )}
+          </strong>
 
-            <strong>
-              ${escapeHTML(
-                option.label
-              )}
-            </strong>
 
-            <span>
-              ${escapeHTML(
-                option.type
-              )}
-            </span>
+          <span>
+            ${escapeHTML(
+              option.type
+            )}
+          </span>
 
-            ${
-              overallPrice
-                ? `<span>${overallPrice}</span>`
-                : ""
-            }
 
-            ${
-              option.required
-                ? `<small>(Required)</small>`
-                : ""
-            }
+          ${
+            overallPrice
+              ? `<span>${overallPrice}</span>`
+              : ""
+          }
 
-          </div>
+
+          ${
+            option.required
+              ? `<small>(Required)</small>`
+              : ""
+          }
 
 
           ${details}
@@ -2952,7 +3070,7 @@ function renderCustomOptions() {
         </div>
 
 
-        <div class="custom-option-actions">
+        <div class="variant-actions">
 
           <button
             type="button"
@@ -2993,7 +3111,6 @@ function renderCustomOptions() {
             1
           );
 
-
           renderCustomOptions();
 
         };
@@ -3001,14 +3118,12 @@ function renderCustomOptions() {
 
       setupVariantDrag(
         div,
-        customOptions,
-        renderCustomOptions
+        "customOptions",
+        index
       );
 
 
-      list.appendChild(
-        div
-      );
+      list.appendChild(div);
 
     }
   );
@@ -3018,6 +3133,7 @@ function renderCustomOptions() {
 
 // ============================================================
 // EDIT CUSTOM OPTION
+// SAME variant-edit-form CLASS
 // ============================================================
 
 function editCustomOption(index) {
@@ -3047,8 +3163,10 @@ function editCustomOption(index) {
     );
 
 
+  // IMPORTANT:
+  // Use the same edit class as variants
   div.className =
-    "custom-option-edit";
+    "variant-edit-form";
 
 
   const choices =
@@ -3064,7 +3182,9 @@ function editCustomOption(index) {
 
   div.innerHTML = `
 
-    <select class="edit-option-type">
+    <select
+      class="edit-option-type"
+    >
 
       <option value="text">
         Text
@@ -3086,6 +3206,7 @@ function editCustomOption(index) {
 
 
     <input
+      type="text"
       class="edit-option-label"
       placeholder="Option label"
       value="${escapeHTML(
@@ -3095,8 +3216,8 @@ function editCustomOption(index) {
 
 
     <input
-      class="edit-option-price"
       type="number"
+      class="edit-option-price"
       min="0"
       placeholder="Extra price"
       value="${Number(
@@ -3106,6 +3227,7 @@ function editCustomOption(index) {
 
 
     <input
+      type="text"
       class="edit-option-choices"
       placeholder="Dropdown choices (comma separated)"
       value="${escapeHTML(
@@ -3141,29 +3263,31 @@ function editCustomOption(index) {
     </label>
 
 
-    <button
-      type="button"
-      class="btn-outline save-custom"
-    >
-      Save
-    </button>
+    <div class="variant-edit-actions">
+
+      <button
+        type="button"
+        class="btn-outline save-custom"
+      >
+        Save
+      </button>
 
 
-    <button
-      type="button"
-      class="btn-outline cancel-custom"
-    >
-      Cancel
-    </button>
+      <button
+        type="button"
+        class="btn-outline cancel-custom"
+      >
+        Cancel
+      </button>
+
+    </div>
 
   `;
 
 
   if (old) {
 
-    old.replaceWith(
-      div
-    );
+    old.replaceWith(div);
 
   }
 
@@ -3196,6 +3320,10 @@ function editCustomOption(index) {
     option.type;
 
 
+  // ----------------------------------------------------------
+  // CHOICE PRICE RENDERER
+  // ----------------------------------------------------------
+
   function renderEditChoicePrices() {
 
     if (
@@ -3209,18 +3337,14 @@ function editCustomOption(index) {
       choiceEditor.style.display =
         "none";
 
-
       choicesInput.style.display =
         "none";
-
 
       priceInput.style.display =
         "";
 
-
       priceInput.disabled =
         false;
-
 
       return;
 
@@ -3248,38 +3372,40 @@ function editCustomOption(index) {
     const previous = {};
 
 
+    // Preserve current editor values
     choiceEditor
       .querySelectorAll(
         ".custom-choice-price-row"
       )
-      .forEach(row => {
+      .forEach(
+        row => {
 
-        const name =
-          row.dataset.name;
-
-
-        const price =
-          row.querySelector(
-            "input"
-          )?.value;
+          const name =
+            row.dataset.name;
 
 
-        if (name) {
+          const value =
+            row.querySelector(
+              "input"
+            )?.value;
 
-          previous[name] =
-            Number(
-              price || 0
-            );
+
+          if (name) {
+
+            previous[name] =
+              Number(
+                value || 0
+              );
+
+          }
 
         }
+      );
 
-      });
 
-
+    // On first render use saved prices
     if (
-      !Object.keys(
-        previous
-      ).length
+      !Object.keys(previous).length
     ) {
 
       choices.forEach(
@@ -3300,6 +3426,16 @@ function editCustomOption(index) {
 
     choiceEditor.innerHTML =
       "";
+
+
+    if (!names.length) {
+
+      choiceEditor.style.display =
+        "none";
+
+      return;
+
+    }
 
 
     choiceEditor.style.display =
@@ -3345,7 +3481,6 @@ function editCustomOption(index) {
         label.textContent =
           name;
 
-
         label.style.flex =
           "1";
 
@@ -3365,20 +3500,13 @@ function editCustomOption(index) {
         input.placeholder =
           "Price";
 
-
         input.value =
           previous[name] ?? 0;
 
 
-        row.appendChild(
-          label
-        );
+        row.appendChild(label);
 
-
-        row.appendChild(
-          input
-        );
-
+        row.appendChild(input);
 
         choiceEditor.appendChild(
           row
@@ -3406,7 +3534,7 @@ function editCustomOption(index) {
 
 
   // ----------------------------------------------------------
-  // SAVE
+  // SAVE CUSTOM OPTION
   // ----------------------------------------------------------
 
   div.querySelector(
@@ -3436,12 +3564,10 @@ function editCustomOption(index) {
           "⚠ Enter option label"
         );
 
-
         setTimeout(
           hidePopup,
           1200
         );
-
 
         return;
 
@@ -3449,7 +3575,8 @@ function editCustomOption(index) {
 
 
       if (
-        type === "dropdown"
+        type ===
+        "dropdown"
       ) {
 
         const names =
@@ -3464,12 +3591,10 @@ function editCustomOption(index) {
             "⚠ Add dropdown choices"
           );
 
-
           setTimeout(
             hidePopup,
             1200
           );
-
 
           return;
 
@@ -3611,9 +3736,7 @@ async function loadDesignProducts() {
 // RENDER RELATED PRODUCTS
 // ============================================================
 
-function renderDesignList(
-  products
-) {
+function renderDesignList(products) {
 
   const box =
     document.getElementById(
@@ -3704,9 +3827,7 @@ function renderDesignList(
       );
 
 
-      box.appendChild(
-        row
-      );
+      box.appendChild(row);
 
     }
   );
@@ -3783,9 +3904,7 @@ window.filterDesigns =
             ""
           )
             .toLowerCase()
-            .includes(
-              search
-            )
+            .includes(search)
       );
 
 
@@ -3888,9 +4007,7 @@ async function loadTags() {
       );
 
 
-      box.appendChild(
-        row
-      );
+      box.appendChild(row);
 
     }
   );
@@ -4082,9 +4199,7 @@ window.openGalleryPicker =
 // LOAD GALLERY FOLDER
 // ============================================================
 
-async function loadGalleryFolder(
-  path
-) {
+async function loadGalleryFolder(path) {
 
   currentGalleryPath =
     path;
@@ -4162,9 +4277,7 @@ async function loadGalleryFolder(
             );
 
 
-        grid.appendChild(
-          div
-        );
+        grid.appendChild(div);
 
       }
     );
@@ -4214,9 +4327,7 @@ async function loadGalleryFolder(
 
 
         <img
-          src="${escapeHTML(
-            url
-          )}"
+          src="${escapeHTML(url)}"
         >
 
       `;
@@ -4260,9 +4371,7 @@ async function loadGalleryFolder(
         };
 
 
-      grid.appendChild(
-        div
-      );
+      grid.appendChild(div);
 
     }
 
@@ -4286,9 +4395,7 @@ async function loadGalleryFolder(
 // GALLERY BREADCRUMBS
 // ============================================================
 
-function updateGalleryBreadcrumbs(
-  path
-) {
+function updateGalleryBreadcrumbs(path) {
 
   if (!galleryBreadcrumbs)
     return;
@@ -4668,8 +4775,11 @@ window.updateProduct =
           finalShippingType,
 
         amount:
-          finalShippingType === "paid"
+          finalShippingType ===
+          "paid"
+
             ? finalShippingAmount
+
             : 0
 
       };
@@ -4744,7 +4854,7 @@ window.updateProduct =
 
 
       // ------------------------------------------------------
-      // GET OLD RELATED DESIGNS BEFORE UPDATE
+      // OLD RELATED PRODUCTS
       // ------------------------------------------------------
 
       const oldProductSnapshot =
@@ -4839,7 +4949,6 @@ window.updateProduct =
           paymentSettings,
 
           relatedDesigns:
-
             relatedDesigns.filter(
               productId =>
                 productId !== id
@@ -4863,7 +4972,8 @@ window.updateProduct =
       // ------------------------------------------------------
 
       for (
-        const relatedId of relatedDesigns
+        const relatedId of
+          relatedDesigns
       ) {
 
         if (
@@ -4913,14 +5023,10 @@ window.updateProduct =
 
 
         if (
-          !relatedArray.includes(
-            id
-          )
+          !relatedArray.includes(id)
         ) {
 
-          relatedArray.push(
-            id
-          );
+          relatedArray.push(id);
 
 
           await updateDoc(
@@ -5036,7 +5142,6 @@ window.updateProduct =
 
           hidePopup();
 
-
           location.href =
             "products.html";
 
@@ -5073,18 +5178,10 @@ async function init() {
 
   try {
 
-    // Load categories first so the product
-    // category can be selected correctly.
-
     await loadCategories();
-
-
-    // Then load product.
 
     await loadProduct();
 
-
-    // Then load related products and tags.
 
     await Promise.all([
 
@@ -5095,13 +5192,13 @@ async function init() {
     ]);
 
 
-    // Initialize UI.
-
     updateCustomOptionForm();
 
     updateSizeShippingUI();
 
     updateCommonShippingUI();
+
+    setupImagePreviewScrolling();
 
   } catch (error) {
 
