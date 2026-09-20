@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catalogue Manager</title>
+<link rel="stylesheet" href="../css/catalogue-manager.css">
+</head>
+<body>
+<header class="admin-header">
+  <div><h1>Catalogue Manager</h1><p>Create product catalogues with linked gallery images.</p></div>
+  <button id="logoutButton" class="secondary-btn">Logout</button>
+</header>
+<main class="admin-layout">
+  <section class="editor-card">
+    <div class="card-title-row">
+      <div><h2 id="formTitle">Add Catalogue</h2><p>Build the catalogue, price matrix and image-to-product links.</p></div>
+      <button id="resetButton" class="secondary-btn" type="button">New</button>
+    </div>
+    <form id="catalogueForm">
+      <div class="field"><label>Catalogue Name *</label><input id="catalogueName" required placeholder="Acrylic Glossy Name Plate"></div>
+      <div class="field"><label>Description</label><textarea id="catalogueDescription" rows="3" placeholder="Premium glossy acrylic name plates"></textarea></div>
+      <div class="two-col">
+        <div class="field"><label>Display Order</label><input id="catalogueOrder" type="number" value="0"></div>
+        <label class="switch-row"><input id="catalogueActive" type="checkbox" checked><span>Show on frontend</span></label>
+      </div>
+      <div class="section-block">
+        <div class="section-heading"><div><h3>Colours</h3><p>Add every colour used by this catalogue.</p></div></div>
+        <div class="inline-add"><input id="newColourName" placeholder="Black"><button type="button" id="addColourButton" class="gradient-btn">Add Colour</button></div>
+        <div id="colourList" class="chip-list"></div>
+      </div>
+      <div class="section-block">
+        <div class="section-heading"><div><h3>Sizes &amp; Prices</h3><p>Each size can have a different price for every colour.</p></div></div>
+        <div class="inline-add"><input id="newSizeName" placeholder="12×18"><button type="button" id="addSizeButton" class="gradient-btn">Add Size</button></div>
+        <div class="table-wrap"><table id="priceTable" class="price-table"></table></div>
+      </div>
+      <div class="section-block">
+        <div class="section-heading">
+          <div><h3>Catalogue Images</h3><p>Every image must be linked to an existing product. Drag to reorder.</p></div>
+          <label class="upload-btn">+ Add Images<input id="imageUpload" type="file" accept="image/*" multiple hidden></label>
+        </div>
+        <div id="imageList" class="image-list"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" id="saveButton" class="gradient-btn large-btn">Save Catalogue</button>
+        <button type="button" id="cancelButton" class="secondary-btn large-btn">Cancel</button>
+      </div>
+    </form>
+  </section>
+  <aside class="list-card">
+    <div class="section-heading"><div><h2>Existing Catalogues</h2><p>Edit or delete catalogues.</p></div></div>
+    <div id="catalogueList" class="catalogue-list"></div>
+  </aside>
+</main>
+<div id="loadingOverlay" class="loading-overlay hidden"><div class="loader"></div><span id="loadingText">Loading...</span></div>
+<div id="toast" class="toast"></div>
+<script type="module" src="../js/catalogue-manager.js"></script>
+</body>
+</html>
